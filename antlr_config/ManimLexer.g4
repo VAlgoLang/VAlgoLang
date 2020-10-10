@@ -1,3 +1,21 @@
 lexer grammar ManimLexer;
 
 WHITESPACE: [ \n\r\t] -> skip;
+SEMI: ';';
+COLON: ':';
+ADD: '+';
+MINUS: '-';
+TIMES: '*';
+DOT: '.';
+EQUAL: '=';
+COMMA: ',';
+OPEN_PARENTHESIS: '(' ;
+CLOSE_PARENTHESIS: ')' ;
+LET: 'let';
+INT: 'int';
+NEW: 'new';
+SLEEP: 'sleep';
+STACK: 'Stack';
+IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
+fragment DIGIT: '0'..'9' ;
+NUMBER: (DIGIT+) (DOT DIGIT+)?;
