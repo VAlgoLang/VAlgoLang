@@ -1,0 +1,12 @@
+bin
+src/main/java/antlr
+out/
+.gradle/
+.idea/
+build/
+
+#ignore Java class files
+*.class
+*.s
+#ignore other junk files
+*~
