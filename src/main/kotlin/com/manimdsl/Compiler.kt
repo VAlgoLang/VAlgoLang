@@ -24,7 +24,5 @@ fun main(args: Array<String>) {
 
     compile(args.first())
 
-
-
 }
 
