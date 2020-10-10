@@ -22,6 +22,7 @@ expr: NUMBER                                                        #NumberLiter
     | expr binary_operator=(ADD | MINUS | TIMES) expr               #BinaryExpression;
 
 types: INT | STACK                                                  #Type;
+
 // TODO: semantic analysis needs to take care of expressions like 1 --- 2
 // TODO: type checking needs to be VERY good
 // TODO: method checking on types
