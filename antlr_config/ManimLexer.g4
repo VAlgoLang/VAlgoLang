@@ -13,7 +13,7 @@ OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
-INT: 'int';
+NUMBER_TYPE: 'number';
 NEW: 'new';
 COMMENT: 'comment';
 SLEEP: 'sleep';

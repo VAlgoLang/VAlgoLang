@@ -1,4 +1,4 @@
-let x: Int = 1.5;
+let x: number = 1.5;
 # code comment
 let y: Stack = new Stack;
 comment("Now we push onto a stack");

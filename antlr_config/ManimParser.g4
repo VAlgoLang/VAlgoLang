@@ -22,5 +22,5 @@ expr: NUMBER                                                        #NumberLiter
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall;
 
-type: INT                                                    #IntType
+type: NUMBER_TYPE                                            #NumberType
     | STACK                                                  #StackType;

@@ -6,6 +6,9 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
+import kotlin.system.exitProcess
+
+val SYNTAX_ERROR = 1;
 
 class ManimDSLParser(private val input: InputStream) {
 
@@ -17,13 +20,13 @@ class ManimDSLParser(private val input: InputStream) {
         val tokens = CommonTokenStream(lexer)
         val parser = ManimParser(tokens)
         // Speeds up parser with no backtracking as our grammar is quite simple
-//        parser.interpreter.predictionMode = PredictionMode.SLL
+        parser.interpreter.predictionMode = PredictionMode.SLL
         parser.removeErrorListeners()
 //        parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
-//        if (parser.numberOfSyntaxErrors > 0) {
-//            exitProcess(SYNTAX_ERROR)
-//        }
+        if (parser.numberOfSyntaxErrors > 0) {
+            exitProcess(SYNTAX_ERROR)
+        }
         return convertToAst(program)
     }
 

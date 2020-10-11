@@ -68,14 +68,14 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCommentStatement(ctx: ManimParser.CommentStatementContext): CommentNode {
         // Command command given for render purposes
-        return CommentNode(ctx.text)
+        return CommentNode(ctx.STRING().text)
     }
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
         return NumberNode(ctx.start.line, ctx.NUMBER().symbol.text.toDouble())
     }
 
-    override fun visitIntType(ctx: ManimParser.IntTypeContext): IntType {
-        return IntType
+    override fun visitNumberType(ctx: ManimParser.NumberTypeContext): NumberType {
+        return NumberType
     }
 
     override fun visitStackType(ctx: ManimParser.StackTypeContext): StackType {
