@@ -4,7 +4,8 @@ import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
-    override fun visitProgram(ctx: ManimParser.ProgramContext?): ASTNode {
+    override fun visitProgram(ctx: ManimParser.ProgramContext): ASTNode {
+
         return super.visitProgram(ctx)
     }
 

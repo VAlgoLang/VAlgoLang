@@ -4,6 +4,7 @@ import antlr.ManimLexer
 import antlr.ManimParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
 
 class ManimDSLParser(private val input: InputStream) {
@@ -15,6 +16,8 @@ class ManimDSLParser(private val input: InputStream) {
         lexer.removeErrorListeners()
         val tokens = CommonTokenStream(lexer)
         val parser = ManimParser(tokens)
+        // Speeds up parser with no backtracking as our grammar is quite simple
+        parser.interpreter.predictionMode = PredictionMode.SLL
         parser.removeErrorListeners()
 //        parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
