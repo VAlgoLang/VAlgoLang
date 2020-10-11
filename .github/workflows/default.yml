@@ -25,7 +25,8 @@ jobs:
     steps:
       - name: Build
         run: ./gradlew clean build -x test
-      - uses: actions/upload-artifact@v2
+      - name: Package
+        uses: actions/upload-artifact@v2
           with:
             name: Package
             path: build/libs
