@@ -38,8 +38,10 @@ data class MinusExpression(override val lineNumber: Int, override val expr: Expr
 
 // Types (to be used in symbol table also)
 sealed class Type: ASTNode()
+// Primitive / Data structure distinction requested by code generation
 object IntType: Type()
-object StackType: Type()
+sealed class DataStructure: Type()
+object StackType: DataStructure()
 
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()

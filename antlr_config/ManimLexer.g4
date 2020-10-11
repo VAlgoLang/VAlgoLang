@@ -21,3 +21,6 @@ STACK: 'Stack';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;
 NUMBER: (DIGIT+) (DOT DIGIT+)?;
+fragment ESCAPED_CHAR: ('0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\');
+fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR;
+STRING: '"' (CHARACTER)* '"';
