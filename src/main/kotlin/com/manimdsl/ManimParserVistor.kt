@@ -26,27 +26,29 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
     }
 
-    override fun visitArgumentList(ctx: ManimParser.ArgumentListContext): ArgumentNode {
-        return ArgumentNode(ctx.expr().map { visit(it) as ExpressionNode })
+    override fun visitMethodCallExpression(ctx: ManimParser.MethodCallExpressionContext): MethodCallNode {
+        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
+    }
+
+    override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ArgumentNode {
+        return ArgumentNode((ctx?.expr()?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
-        val arguments = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext).arguments
+        val arguments = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
         return MethodCallNode(ctx.start.line, ctx.IDENT()[0].symbol.text, ctx.IDENT()[1].symbol.text, arguments)
     }
 
-    override fun visitStackCreate(ctx: ManimParser.StackCreateContext?): ASTNode {
-        return super.visitStackCreate(ctx)
+    override fun visitStackCreate(ctx: ManimParser.StackCreateContext): Constructor {
+        return Constructor(ctx.start.line, StackType, listOf())
     }
 
     override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
         return IdentifierNode(ctx.text, ctx.start.line)
     }
 
-    override fun visitMethodCallExpression(ctx: ManimParser.MethodCallExpressionContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
-    }
+
 
     override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext?): ASTNode {
         return super.visitBinaryExpression(ctx)
