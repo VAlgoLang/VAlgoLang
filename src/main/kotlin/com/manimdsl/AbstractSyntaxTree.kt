@@ -10,10 +10,21 @@ sealed class StatementNode: ASTNode()
 sealed class AnimationNode: StatementNode()
 data class SleepNode(val sleepTime: ExpressionNode): AnimationNode()
 
-// Algorithm Specific Nodes holding line number
-sealed class AlgorithmNode(open val lineNumber: Int) : StatementNode()
-data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode) : AlgorithmNode(lineNumber)
+// Code Specific Nodes holding line number
+sealed class CodeNode(open val lineNumber: Int) : StatementNode()
+data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode) : CodeNode(lineNumber)
+data class AssignmentNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode) : CodeNode(lineNumber)
 
 // Expressions
-sealed class ExpressionNode: ASTNode()
+sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
+data class IdentifierNode(val identifier: String, override val lineNumber: Int) : ExpressionNode(lineNumber)
+data class NumberNode(val double: Double, override val lineNumber: Int) : ExpressionNode(lineNumber)
+data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val methodIdentifier: String, val arguments: List<ExpressionNode>) : ExpressionNode(lineNumber)
 
+// Types (to be used in symbol table also)
+sealed class Type : ASTNode()
+object IntType: Type()
+object StackType: Type()
+
+// This is used to collect arguments up into method call node
+data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()

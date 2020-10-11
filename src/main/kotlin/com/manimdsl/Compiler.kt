@@ -11,9 +11,10 @@ private fun compile(filename: String) {
         exitProcess(1)
     }
 
-    val manimDSLParser = ManimDSLParser(file.inputStream())
-    val ast = manimDSLParser.parseFile()
-
+    val parser = ManimDSLParser(file.inputStream())
+    //TODO: also return symbol table here (will be useful for next IR)
+    val ast = parser.parseFile()
+    println(ast)
 }
 
 fun main(args: Array<String>) {
