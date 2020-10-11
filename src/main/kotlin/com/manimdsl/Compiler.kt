@@ -11,6 +11,7 @@ private fun compile(filename: String) {
         exitProcess(1)
     }
 
+    println("Compiling...")
     ManimDSLParser(file.inputStream()).parseFile()
 }
 
