@@ -37,29 +37,37 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
         val arguments = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
-        return MethodCallNode(ctx.start.line, ctx.IDENT()[0].symbol.text, ctx.IDENT()[1].symbol.text, arguments)
+        return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, ctx.IDENT(1).symbol.text, arguments)
     }
 
-    override fun visitStackCreate(ctx: ManimParser.StackCreateContext): Constructor {
-        return Constructor(ctx.start.line, StackType, listOf())
+    override fun visitStackCreate(ctx: ManimParser.StackCreateContext): ConstructorNode {
+        return ConstructorNode(ctx.start.line, StackType, listOf())
     }
 
     override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
-        return IdentifierNode(ctx.text, ctx.start.line)
+        return IdentifierNode(ctx.start.line, ctx.text)
     }
 
-
-
-    override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext?): ASTNode {
-        return super.visitBinaryExpression(ctx)
+    override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext): BinaryExpression {
+        val expr1 = visit(ctx.expr(0)) as ExpressionNode
+        val expr2 = visit(ctx.expr(1)) as ExpressionNode
+        return when (ctx.binary_operator.type) {
+            ManimParser.ADD -> AddExpression(ctx.start.line, expr1, expr2)
+            ManimParser.MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
+            else -> MultiplyExpression(ctx.start.line, expr1, expr2)
+        }
     }
 
-    override fun visitUnaryOperator(ctx: ManimParser.UnaryOperatorContext?): ASTNode {
-        return super.visitUnaryOperator(ctx)
+    override fun visitUnaryOperator(ctx: ManimParser.UnaryOperatorContext): UnaryExpression {
+        val expr = visit(ctx.expr()) as ExpressionNode
+        return when (ctx.unary_operator.type) {
+            ManimParser.ADD -> PlusExpression(ctx.start.line, expr)
+            else -> MinusExpression(ctx.start.line, expr)
+        }
     }
 
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
-        return NumberNode(ctx.NUMBER().symbol.text.toDouble(), ctx.start.line)
+        return NumberNode(ctx.start.line, ctx.NUMBER().symbol.text.toDouble())
     }
 
     override fun visitIntType(ctx: ManimParser.IntTypeContext): IntType {
