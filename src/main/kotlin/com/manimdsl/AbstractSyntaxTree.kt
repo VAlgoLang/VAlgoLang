@@ -3,14 +3,14 @@ package com.manimdsl
 sealed class ASTNode
 data class ProgramNode(val statements: List<StatementNode>): ASTNode()
 
-// All statements as in parser
+// All statements making up program
 sealed class StatementNode: ASTNode()
 
-// Animation Command Specific type for easy detection by code generator
+// Animation Command Specific type for easy detection
 sealed class AnimationNode: StatementNode()
 data class SleepNode(val sleepTime: ExpressionNode): AnimationNode()
 
-// Code Specific Nodes holding line number
+// Code Specific Nodes holding line number - todo: replace with composition
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
 data class AssignmentNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
