@@ -4,16 +4,17 @@ import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
-    override fun visitProgram(ctx: ManimParser.ProgramContext?): ASTNode {
-        return super.visitProgram(ctx)
+    override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
+        return ProgramNode(listOf())
     }
 
-    override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext?): ASTNode {
-        return super.visitSleepStatement(ctx)
+    override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
+        return SleepNode(visit(ctx.expr()) as ExpressionNode)
     }
 
-    override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext?): ASTNode {
-        return super.visitDeclarationStatement(ctx)
+    override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
+        println(ctx.IDENT().symbol.text)
+        return DeclarationNode(ctx.start.line, "", visit(ctx.expr()) as ExpressionNode)
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext?): ASTNode {

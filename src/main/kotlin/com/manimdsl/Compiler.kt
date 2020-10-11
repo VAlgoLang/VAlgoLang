@@ -11,7 +11,9 @@ private fun compile(filename: String) {
         exitProcess(1)
     }
 
-    ManimDSLParser(file.inputStream()).parseFile()
+    val manimDSLParser = ManimDSLParser(file.inputStream())
+    val ast = manimDSLParser.parseFile()
+
 }
 
 fun main(args: Array<String>) {
