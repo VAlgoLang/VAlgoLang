@@ -66,6 +66,10 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         }
     }
 
+    override fun visitCommentStatement(ctx: ManimParser.CommentStatementContext): CommentNode {
+        // Command command given for render purposes
+        return CommentNode(ctx.text)
+    }
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
         return NumberNode(ctx.start.line, ctx.NUMBER().symbol.text.toDouble())
     }

@@ -7,6 +7,7 @@ options {
 program: (stat SEMI | COMMENT)+ EOF;
 
 stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatement
+    | COMMENT OPEN_PARENTHESIS expr CLOSE_PARENTHESIS               #CommentStatement
     | LET IDENT (COLON type)? EQUAL expr                            #DeclarationStatement
     | IDENT EQUAL expr                                              #AssignmentStatement
     | method_call                                                   #MethodCallStatement;
