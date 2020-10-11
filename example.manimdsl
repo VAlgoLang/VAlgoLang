@@ -1,4 +1,5 @@
 let x: Int = 1.5;
+# comment
 let y: Stack = new Stack;
 y.push(1+6);
 sleep(x);

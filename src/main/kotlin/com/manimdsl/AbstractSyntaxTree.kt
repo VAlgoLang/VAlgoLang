@@ -14,6 +14,8 @@ data class SleepNode(val sleepTime: ExpressionNode): AnimationNode()
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
 data class AssignmentNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
+// Comments (not discarded so they can be rendered for educational purposes)
+data class CommentNode(override val lineNumber: Int, val content: String): CodeNode(lineNumber)
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)

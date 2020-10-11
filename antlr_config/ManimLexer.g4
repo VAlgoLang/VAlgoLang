@@ -11,6 +11,7 @@ EQUAL: '=';
 COMMA: ',';
 OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
+COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
 INT: 'int';
 NEW: 'new';

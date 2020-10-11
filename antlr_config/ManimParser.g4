@@ -4,7 +4,7 @@ options {
   tokenVocab=ManimLexer;
 }
 
-program: (stat SEMI)+ EOF;
+program: (stat SEMI | COMMENT)+ EOF;
 
 stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatement
     | LET IDENT (COLON type)? EQUAL expr                            #DeclarationStatement
