@@ -10,7 +10,7 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatem
     | LET IDENT (COLON types)? EQUAL expr                           #DeclarationStatement
     | IDENT EQUAL expr                                              #AssignmentStatement
     | method_call                                                   #MethodCallStatement;
-arg_list: expr (COMMA expr)*;
+arg_list: expr (COMMA expr)*                                        #ArgumentList;
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall;
 

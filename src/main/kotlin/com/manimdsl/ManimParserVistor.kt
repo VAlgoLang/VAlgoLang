@@ -4,8 +4,7 @@ import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
-    override fun visitProgram(ctx: ManimParser.ProgramContext): ASTNode {
-
+    override fun visitProgram(ctx: ManimParser.ProgramContext?): ASTNode {
         return super.visitProgram(ctx)
     }
 
@@ -25,8 +24,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         return super.visitMethodCallStatement(ctx)
     }
 
-    override fun visitArg_list(ctx: ManimParser.Arg_listContext?): ASTNode {
-        return super.visitArg_list(ctx)
+    override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ASTNode {
+        return super.visitArgumentList(ctx)
     }
 
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext?): ASTNode {
