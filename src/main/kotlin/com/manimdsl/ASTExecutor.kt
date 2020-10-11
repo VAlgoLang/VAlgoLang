@@ -37,9 +37,9 @@ class ASTExecutor(private val program: ProgramNode) {
     private fun executeMethodCall(node: MethodCallNode): ExecValue {
         return when (val ds = variables[node.instanceIdentifier]) {
             is StackValue -> {
-                return when (node.dataStructureMethod.toString()) {
-                    "push" -> DoubleValue(ds.stack.push((executeExpression(node.arguments[0]) as DoubleValue).value))
-                    "pop" -> DoubleValue(ds.stack.pop())
+                return when (node.dataStructureMethod) {
+                    is StackType.PushMethod -> DoubleValue(ds.stack.push((executeExpression(node.arguments[0]) as DoubleValue).value))
+                    is StackType.PopMethod -> DoubleValue(ds.stack.pop())
                     else -> EmptyValue
                 }
             }

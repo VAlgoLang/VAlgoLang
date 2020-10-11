@@ -69,6 +69,6 @@ class ASTExecutorTests {
     // Assumes syntactically correct program
     private fun buildAST(program: String): ProgramNode {
         val parser = ManimDSLParser(program.byteInputStream())
-        return parser.convertToAst(parser.parseFile().second).second
+        return parser.convertToAst(parser.parseFile().second).first
     }
 }
