@@ -6,7 +6,7 @@ plugins {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-description = """WACC Compiler"""
+description = """Manim DSL Compiler"""
 
 repositories {
     mavenCentral()
@@ -49,4 +49,7 @@ compileTestKotlin {
 
 test () {
     useJUnitPlatform()
+    testLogging {
+        events ("passed", "skipped", "failed")
+    }
 }

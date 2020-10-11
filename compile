@@ -1,1 +1,3 @@
-java -jar build/libs/Wacc-1.0.0.jar $1 $2
+#!/bin/bash
+
+java -jar build/libs/ManimDSLCompiler-1.0-SNAPSHOT.jar $1 $2
