@@ -1,4 +1,4 @@
-package com.manimdsl.syntaxAnalysis
+package com.manimdsl.syntaxanalysis
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.ManimDSLParser
