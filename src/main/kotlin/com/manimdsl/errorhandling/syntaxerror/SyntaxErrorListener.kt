@@ -5,6 +5,13 @@ import org.antlr.v4.runtime.*
 
 class SyntaxErrorListener : BaseErrorListener() {
 
+    /** Map to convert tokens to readable format.
+     * Please update when grammar updates **/
+    private val readableTokenMap = mapOf(
+        "IDENT" to "identifier",
+        "INT" to "integer",
+    )
+
     override fun syntaxError(
         recognizer: Recognizer<*, *>, offendingSymbol: Any,
         line: Int, charPositionInLine: Int, msg: String,
@@ -82,10 +89,11 @@ class SyntaxErrorListener : BaseErrorListener() {
     }
 
     private fun makeReadable(message: String): String {
-        return message.replace("IDENT", "identifier", false)
-            .replace("UNSIGNED", "integer", false)
-            .replace("STR_LITER", "string", false)
-            .replace("CHAR_LITER", "character", false)
+        var readableMessage = message;
+        readableTokenMap.forEach { (token, readable) ->
+            readableMessage = message.replace(token, readable, false)
+        }
+        return readableMessage;
     }
 
     data class OverflowInfo(val type: String, val token: String, val line: Int, val char: Int)
