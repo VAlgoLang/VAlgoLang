@@ -19,9 +19,9 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Check
-        run: ./gradlew clean check
+        run: ./gradlew clean check --info
       - name: UnitTest
-        run: ./gradlew clean test
+        run: ./gradlew clean test --info
 
   package:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build
-        run: ./gradlew clean build -x test
+        run: ./gradlew clean build -x test --info
       - uses: actions/upload-artifact@v2
         with:
           name: Package

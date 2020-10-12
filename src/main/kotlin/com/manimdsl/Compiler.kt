@@ -11,10 +11,17 @@ private fun compile(filename: String) {
         exitProcess(1)
     }
 
+    println("Compiling...")
     val parser = ManimDSLParser(file.inputStream())
-    //TODO: also return symbol table here (will be useful for next IR)
-    val ast = parser.parseFile()
-    println(ast)
+    val (exitStatus, program) = parser.parseFile()
+
+    // Error handling
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
+
+    val abstractSyntaxTree = parser.convertToAst(program)
+    println(abstractSyntaxTree)
 }
 
 fun main(args: Array<String>) {
