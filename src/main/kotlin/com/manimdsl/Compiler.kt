@@ -11,7 +11,13 @@ private fun compile(filename: String) {
         exitProcess(1)
     }
 
-    ManimDSLParser(file.inputStream()).parseFile()
+    println("Compiling...")
+    val (exitStatus, program) = ManimDSLParser(file.inputStream()).parseFile()
+
+    // Error handling
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
 }
 
 fun main(args: Array<String>) {

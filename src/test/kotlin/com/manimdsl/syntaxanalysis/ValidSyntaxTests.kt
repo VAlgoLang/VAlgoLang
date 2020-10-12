@@ -1,5 +1,8 @@
-package com.manimdsl
+package com.manimdsl.syntaxanalysis
 
+import com.manimdsl.ExitStatus
+import com.manimdsl.ManimDSLParser
+import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.params.ParameterizedTest
@@ -33,8 +36,8 @@ class ValidSyntaxTests {
     @MethodSource("data")
     fun testSyntaxParsingValid(fileName: String) {
         val inputFile = File(fileName)
-        ManimDSLParser(inputFile.inputStream()).parseFile()
-        assert(true)
+
+        assertEquals(ManimDSLParser(inputFile.inputStream()).parseFile().first, ExitStatus.EXIT_SUCCESS)
     }
 
 }
