@@ -1,5 +1,6 @@
 package com.manimdsl
 
+import com.manimdsl.errorHandling.ErrorHandler
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -12,7 +13,12 @@ private fun compile(filename: String) {
     }
 
     println("Compiling...")
-    ManimDSLParser(file.inputStream()).parseFile()
+    val (exitStatus, program) = ManimDSLParser(file.inputStream()).parseFile()
+
+    // Error handling
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
 }
 
 fun main(args: Array<String>) {

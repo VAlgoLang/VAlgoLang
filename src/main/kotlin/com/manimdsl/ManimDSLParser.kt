@@ -21,7 +21,7 @@ enum class ExitStatus(val code: Int) {
 class ManimDSLParser(private val input: InputStream) {
 
     // Build ANTLR Parse Tree and if Syntax Errors found, throw them and exit
-    fun parseFile(): ManimParser.ProgramContext {
+    fun parseFile(): Pair<ExitStatus, ManimParser.ProgramContext> {
         val input = CharStreams.fromStream(input)
         // Lexical analysis
         val lexer = ManimLexer(input)
@@ -37,13 +37,7 @@ class ManimDSLParser(private val input: InputStream) {
 
         val program = parser.program();
 
-        // Error handling
-        val exitStatus = ErrorHandler.checkErrors()
-        if (exitStatus != ExitStatus.EXIT_SUCCESS) {
-            exitProcess(exitStatus.code)
-        }
-
-        return program
+        return Pair(ErrorHandler.checkErrors(), program)
     }
 
 }
