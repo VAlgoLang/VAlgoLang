@@ -1,6 +1,5 @@
 package com.manimdsl
 
-import com.manimdsl.errorHandling.ErrorHandler
 import java.io.File
 import kotlin.system.exitProcess
 

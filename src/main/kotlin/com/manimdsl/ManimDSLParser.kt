@@ -2,13 +2,12 @@ package com.manimdsl
 
 import antlr.ManimLexer
 import antlr.ManimParser
-import com.manimdsl.errorHandling.ErrorHandler
-import com.manimdsl.errorHandling.SyntaxErrorListener
-import com.manimdsl.errorHandling.SyntaxErrorStrategy
+import com.manimdsl.errorhandling.ErrorHandler
+import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
+import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.io.InputStream
-import kotlin.system.exitProcess
 
 /* Exit status codes */
 enum class ExitStatus(val code: Int) {

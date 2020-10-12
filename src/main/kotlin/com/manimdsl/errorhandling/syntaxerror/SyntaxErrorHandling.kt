@@ -1,4 +1,6 @@
-package com.manimdsl.errorHandling
+package com.manimdsl.errorhandling.syntaxerror
+
+import com.manimdsl.errorhandling.ErrorHandler
 
 fun overflowError(info: SyntaxErrorListener.OverflowInfo, underlinedError: String) {
     ErrorHandler.addSyntaxError("${info.type} overflow\n$underlinedError", "${info.line}:${info.char}")

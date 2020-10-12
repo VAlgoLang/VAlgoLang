@@ -1,4 +1,4 @@
-package com.manimdsl.errorHandling
+package com.manimdsl.errorhandling
 
 import com.manimdsl.ExitStatus
 

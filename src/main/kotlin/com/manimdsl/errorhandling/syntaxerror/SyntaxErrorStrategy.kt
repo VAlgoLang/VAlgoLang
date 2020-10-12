@@ -1,4 +1,4 @@
-package com.manimdsl.errorHandling
+package com.manimdsl.errorhandling.syntaxerror
 
 import org.antlr.v4.runtime.*
 
