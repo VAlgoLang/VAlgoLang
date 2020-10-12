@@ -24,9 +24,9 @@ class ManimDSLParser(private val input: InputStream) {
         parser.removeErrorListeners()
 //        parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
-        if (parser.numberOfSyntaxErrors > 0) {
-            exitProcess(SYNTAX_ERROR)
-        }
+//        if (parser.numberOfSyntaxErrors > 0) {
+//            exitProcess(SYNTAX_ERROR)
+//        }
         return convertToAst(program)
     }
 
