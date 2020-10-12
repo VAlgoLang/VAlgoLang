@@ -7,7 +7,11 @@ import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
+import kotlin.system.exitProcess
+
+val SYNTAX_ERROR = 1;
 
 /* Exit status codes */
 enum class ExitStatus(val code: Int) {
@@ -29,14 +33,19 @@ class ManimDSLParser(private val input: InputStream) {
         // Syntax analysis
         val tokens = CommonTokenStream(lexer)
         val parser = ManimParser(tokens)
-
+        // Speeds up parser with no backtracking as our grammar is quite simple
+        parser.interpreter.predictionMode = PredictionMode.SLL
         parser.errorHandler = SyntaxErrorStrategy()
         parser.removeErrorListeners()
         parser.addErrorListener(SyntaxErrorListener())
-
-        val program = parser.program();
+//        parser.addErrorListener(SyntaxErrorListener())
+        val program = parser.program()
 
         return Pair(ErrorHandler.checkErrors(), program)
     }
 
+    fun convertToAst(program: ManimParser.ProgramContext): ProgramNode {
+        val visitor = ManimParserVisitor()
+        return visitor.visitProgram(program)
+    }
 }

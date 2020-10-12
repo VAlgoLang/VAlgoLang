@@ -12,12 +12,16 @@ private fun compile(filename: String) {
     }
 
     println("Compiling...")
-    val (exitStatus, program) = ManimDSLParser(file.inputStream()).parseFile()
+    val parser = ManimDSLParser(file.inputStream())
+    val (exitStatus, program) = parser.parseFile()
 
     // Error handling
     if (exitStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(exitStatus.code)
     }
+
+    val abstractSyntaxTree = parser.convertToAst(program)
+    println(abstractSyntaxTree)
 }
 
 fun main(args: Array<String>) {
