@@ -17,20 +17,22 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
-        // Type work done in Symbol Table - we can keep it entirely external or can reference from the AST Node here
-        if (!semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
+        if (semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
             println("Redeclared!!")
         }
-        val expression = visit(ctx.expr()) as ExpressionNode
 
-        val type = if (ctx.type() != null) {
-            visit(ctx.type()) as Type
-        } else {
-            semanticAnalyser.inferType(currentSymbolTable, expression)
+        val rhs = visit(ctx.expr()) as ExpressionNode
+
+        val rhsType = semanticAnalyser.inferType(currentSymbolTable, rhs)
+        if (ctx.type() != null) {
+            val lhsType = visit(ctx.type()) as Type
+            if (semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)) {
+                println("Incompatible types!!")
+            }
         }
 
-        currentSymbolTable.addVariable(identifier, type)
-        return DeclarationNode(ctx.start.line, identifier, expression)
+        currentSymbolTable.addVariable(identifier, rhsType)
+        return DeclarationNode(ctx.start.line, identifier, rhs)
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
@@ -50,7 +52,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): MethodCallNode {
-        // This one ignores return value/is a command returning void
+//        val dataStructure = ctx.method_call()
         return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
     }
 
@@ -70,7 +72,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitStackCreate(ctx: ManimParser.StackCreateContext): ConstructorNode {
-        return ConstructorNode(ctx.start.line, StackType, listOf())
+        return ConstructorNode(ctx.start.line, StackType(NoType), listOf())
     }
 
     override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
@@ -108,6 +110,6 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitStackType(ctx: ManimParser.StackTypeContext): StackType {
-        return StackType
+        return StackType(NoType)
     }
 }

@@ -30,7 +30,7 @@ class ValidASTTests {
                 "# code comment\n" +
                 "let y: Stack = new Stack;\n"
         val statements = listOf(DeclarationNode(1, "x", NumberNode(1, 1.5)),
-                DeclarationNode(3, "y", ConstructorNode(3, StackType, listOf())))
+                DeclarationNode(3, "y", ConstructorNode(3, StackType(NoType), listOf())))
         val reference = ProgramNode(statements)
 
         val actual = buildAST(multiLineProgram)
@@ -41,7 +41,7 @@ class ValidASTTests {
     fun methodCallProgram() {
         val methodProgram = "let y: Stack = new Stack;\n" +
                 "y.push(1);\n"
-        val statements = listOf(DeclarationNode(1, "y", ConstructorNode(1, StackType, listOf())),
+        val statements = listOf(DeclarationNode(1, "y", ConstructorNode(1, StackType(NoType), listOf())),
                 MethodCallNode(2, "y", "push", listOf(NumberNode(2, 1.0))))
         val reference = ProgramNode(statements)
 
