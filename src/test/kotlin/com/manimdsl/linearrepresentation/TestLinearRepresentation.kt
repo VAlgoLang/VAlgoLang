@@ -26,7 +26,7 @@ class TestLinearRepresentation {
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
-        writer.generateAnimation(writer.createPythonFile())
+//        writer.generateAnimation(writer.createPythonFile())
 
 //        println(ManimWriter(stackIR).build())
 //        assertEquals(ManimDSLParser(inputFile.inputStream()).parseFile().first, ExitStatus.EXIT_SUCCESS)
