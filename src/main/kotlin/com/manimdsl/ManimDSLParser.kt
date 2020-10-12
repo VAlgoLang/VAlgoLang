@@ -2,6 +2,7 @@ package com.manimdsl
 
 import antlr.ManimLexer
 import antlr.ManimParser
+import com.manimdsl.frontend.ProgramNode
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
@@ -9,7 +10,6 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
-import kotlin.system.exitProcess
 
 val SYNTAX_ERROR = 1;
 

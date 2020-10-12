@@ -2,8 +2,11 @@ package com.manimdsl
 
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
+import com.manimdsl.frontend.*
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
+    private val currentSymbolTable = SymbolTableNode()
+    private val semanticAnalyser = SemanticAnalysis()
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
@@ -13,8 +16,21 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
+        val identifier = ctx.IDENT().symbol.text
         // Type work done in Symbol Table - we can keep it entirely external or can reference from the AST Node here
-        return DeclarationNode(ctx.start.line, ctx.IDENT().symbol.text, visit(ctx.expr()) as ExpressionNode)
+        if (!semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
+            println("Redeclared!!")
+        }
+        val expression = visit(ctx.expr()) as ExpressionNode
+
+        val type = if (ctx.type() != null) {
+            visit(ctx.type()) as Type
+        } else {
+            semanticAnalyser.inferTypeDeclaration(currentSymbolTable, identifier, expression)
+        }
+
+        currentSymbolTable.addDeclaration(identifier, type)
+        return DeclarationNode(ctx.start.line, identifier, expression)
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
@@ -31,7 +47,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ArgumentNode {
-        return ArgumentNode((ctx?.expr()?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
+        return ArgumentNode((ctx?.expr()
+                ?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {

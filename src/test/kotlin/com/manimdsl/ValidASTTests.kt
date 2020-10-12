@@ -1,5 +1,6 @@
 package com.manimdsl
 
+import com.manimdsl.frontend.*
 import junit.framework.TestCase.assertEquals
 
 import org.junit.jupiter.api.Test
