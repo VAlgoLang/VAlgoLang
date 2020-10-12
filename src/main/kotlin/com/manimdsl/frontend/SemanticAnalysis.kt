@@ -31,5 +31,23 @@ class SemanticAnalysis {
         return currentSymbolTable.getTypeOf(identifier) == NoType
     }
 
+    fun failIfNotDataStructure(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
+        return currentSymbolTable.getTypeOf(identifier) !is DataStructureType
+    }
+
+    // Assume it is a data structure
+    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String): Boolean {
+        return when (currentSymbolTable.getTypeOf(identifier)) {
+            is StackType -> DataStructure.STACK.containsMethod(method)
+            else -> false
+        }
+    }
+
+    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, size: Int): Boolean {
+        return when (dataStructureType) {
+            is StackType -> DataStructure.STACK.hasValidNumberOfArguments(method, size)
+        }
+    }
+
 
 }

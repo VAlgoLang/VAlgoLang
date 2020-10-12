@@ -24,6 +24,9 @@ data class NumberNode(override val lineNumber: Int, val double: Double): Express
 data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val methodIdentifier: String, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 data class ConstructorNode(override val lineNumber: Int, val type: Type, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 
+// Method calls
+sealed class MethodClassNode()
+
 // Binary Expressions
 sealed class BinaryExpression(override val lineNumber: Int, open val expr1: ExpressionNode, open val expr2: ExpressionNode): ExpressionNode(lineNumber)
 data class AddExpression(override val lineNumber: Int, override val expr1: ExpressionNode, override val expr2: ExpressionNode): BinaryExpression(lineNumber, expr1, expr2)

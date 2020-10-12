@@ -52,7 +52,6 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): MethodCallNode {
-//        val dataStructure = ctx.method_call()
         return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
     }
 
@@ -68,6 +67,24 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
         val arguments = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+        val identifier = ctx.IDENT(0).symbol.text
+        val method = ctx.IDENT(1).symbol.text
+        if (semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier)) {
+            println("Not a data structure!!")
+        }
+        if (semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, method)) {
+            println("Not a valid method for this data structure!!")
+        }
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+        if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, method, arguments.size)) {
+            println("Invalid number of arguments for this method!!")
+        }
+        val typeInsideStructure = dataStructureType.type
+        if (typeInsideStructure is NoType) {
+            // assign type
+        } else {
+            // check that
+        }
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, ctx.IDENT(1).symbol.text, arguments)
     }
 
