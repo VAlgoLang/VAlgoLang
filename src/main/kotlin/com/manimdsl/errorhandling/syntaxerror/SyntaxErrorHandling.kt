@@ -11,5 +11,6 @@ fun extraneousInputError(token: String, line: Int, char: Int, underlinedError: S
 }
 
 fun otherError(msg: String, token: String, line: Int, char: Int, underlinedError: String) {
+    println(token)
     ErrorHandler.addSyntaxError("$msg\n$underlinedError", "$line:$char")
 }
