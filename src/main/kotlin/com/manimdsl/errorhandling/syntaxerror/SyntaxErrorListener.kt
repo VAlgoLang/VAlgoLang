@@ -89,7 +89,7 @@ class SyntaxErrorListener : BaseErrorListener() {
     }
 
     private fun makeReadable(message: String): String {
-        var readableMessage = message;
+        var readableMessage = message
         readableTokenMap.forEach { (token, readable) ->
             readableMessage = message.replace(token, readable, false)
         }
