@@ -9,13 +9,13 @@ sealed class StatementNode: ASTNode()
 // Animation Command Specific type for easy detection
 sealed class AnimationNode: StatementNode()
 data class SleepNode(val sleepTime: ExpressionNode): AnimationNode()
+// Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(val content: String): AnimationNode()
 
 // Code Specific Nodes holding line number - todo: replace with composition
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
 data class AssignmentNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
-// Comments (not discarded so they can be rendered for educational purposes)
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)

@@ -4,7 +4,7 @@ options {
   tokenVocab=ManimLexer;
 }
 
-program: (stat SEMI | COMMENT)+ EOF;
+program: (stat SEMI)+ EOF;
 
 stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatement
     | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS               #CommentStatement // when string type defined we can adjust

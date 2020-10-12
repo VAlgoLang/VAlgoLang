@@ -25,18 +25,26 @@ class ValidASTTests {
 
     @Test
     fun multiLineProgram() {
-        val declarationProgram = "let x: number = 1.5;\n" +
+        val multiLineProgram = "let x: number = 1.5;\n" +
                 "# code comment\n" +
-                "let y: Stack = new Stack;\n" +
-                "comment(\"Now we push onto a stack\");\n" +
-                "y.push(1+6);"
+                "let y: Stack = new Stack;\n"
         val statements = listOf(DeclarationNode(1, "x", NumberNode(1, 1.5)),
-                DeclarationNode(3, "y", ConstructorNode(3, StackType, listOf())),
-                CommentNode("\"Now we push onto a stack\""),
-                MethodCallNode(5, "y", "push", listOf(AddExpression(5, NumberNode(5, 1.0), NumberNode(5, 6.0)))))
+                DeclarationNode(3, "y", ConstructorNode(3, StackType, listOf())))
         val reference = ProgramNode(statements)
 
-        val actual = buildAST(declarationProgram)
+        val actual = buildAST(multiLineProgram)
+        assertEquals(reference, actual)
+    }
+
+    @Test
+    fun methodCallProgram() {
+        val methodProgram = "let y: Stack = new Stack;\n" +
+                "y.push(1);\n"
+        val statements = listOf(DeclarationNode(1, "y", ConstructorNode(1, StackType, listOf())),
+                MethodCallNode(2, "y", "push", listOf(NumberNode(2, 1.0))))
+        val reference = ProgramNode(statements)
+
+        val actual = buildAST(methodProgram)
         assertEquals(reference, actual)
     }
 
