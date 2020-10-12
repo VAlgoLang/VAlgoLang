@@ -5,10 +5,6 @@ class SemanticAnalysis {
         return currentSymbolTable.getTypeOf(identifier) != NoType
     }
 
-    fun inferTypeDeclaration(currentSymbolTable: SymbolTableNode, identifier: String, expression: ExpressionNode): Type {
-        // DO SEMANTIC LOGGING HERE!
-        return getExpressionType(expression, currentSymbolTable)
-    }
 
     private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type = when (expression) {
         is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
@@ -22,5 +18,18 @@ class SemanticAnalysis {
         }
         is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
     }
+
+    fun inferType(currentSymbolTable: SymbolTableNode, expression: ExpressionNode): Type {
+        return getExpressionType(expression, currentSymbolTable)
+    }
+
+    fun failIfIncompatibleTypes(lhsType: Type, rhsType: Type): Boolean {
+        return lhsType != rhsType
+    }
+
+    fun undeclaredAssignment(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
+        return currentSymbolTable.getTypeOf(identifier) == NoType
+    }
+
 
 }

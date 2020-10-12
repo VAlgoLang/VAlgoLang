@@ -15,7 +15,7 @@ object SymbolTableRoot: SymbolTable {
 class SymbolTableNode: SymbolTable {
 
     // we've already done semantic analysis
-    fun addDeclaration(identifier: String, type: Type) {
+    fun addVariable(identifier: String, type: Type) {
         table[identifier] = IdentifierData(type)
     }
 

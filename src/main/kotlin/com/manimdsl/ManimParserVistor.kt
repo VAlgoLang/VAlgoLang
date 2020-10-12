@@ -26,15 +26,27 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val type = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
-            semanticAnalyser.inferTypeDeclaration(currentSymbolTable, identifier, expression)
+            semanticAnalyser.inferType(currentSymbolTable, expression)
         }
 
-        currentSymbolTable.addDeclaration(identifier, type)
+        currentSymbolTable.addVariable(identifier, type)
         return DeclarationNode(ctx.start.line, identifier, expression)
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
-        return AssignmentNode(ctx.start.line, ctx.IDENT().symbol.text, visit(ctx.expr()) as ExpressionNode)
+        val expression = visit(ctx.expr()) as ExpressionNode
+        val identifier = ctx.IDENT().symbol.text
+        val rhsType = semanticAnalyser.inferType(currentSymbolTable, expression)
+        val identifierType = currentSymbolTable.getTypeOf(identifier)
+
+        if (semanticAnalyser.undeclaredAssignment(currentSymbolTable, identifier)) {
+            println("Undeclared Assignment!!")
+        }
+
+        if (semanticAnalyser.failIfIncompatibleTypes(identifierType, rhsType)) {
+            println("Incompatible Types!!")
+        }
+        return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
     override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): MethodCallNode {
