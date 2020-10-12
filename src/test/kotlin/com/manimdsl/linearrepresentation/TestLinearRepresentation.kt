@@ -1,9 +1,7 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.*
-import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
-import java.io.File
 
 class TestLinearRepresentation {
 
@@ -19,10 +17,15 @@ class TestLinearRepresentation {
             MoveToLine(2, "pointer", "code_block"),
             MoveObject("testIdent", "y", ObjectSide.ABOVE),
             MoveToLine(3, "pointer", "code_block"),
-            MoveObject("testIdent", "y", ObjectSide.ABOVE, 5)
+            MoveObject("testIdent", "y", ObjectSide.ABOVE, 5),
+            Sleep(2.0)
         )
 
-        println(ManimWriter(stackIR).build())
+        val writer = ManimProjectWriter(ManimWriter(stackIR).build())
+        writer.createPythonFile(false, "test.py")
+        writer.generateAnimation("test.py")
+
+//        println(ManimWriter(stackIR).build())
 //        assertEquals(ManimDSLParser(inputFile.inputStream()).parseFile().first, ExitStatus.EXIT_SUCCESS)
     }
 

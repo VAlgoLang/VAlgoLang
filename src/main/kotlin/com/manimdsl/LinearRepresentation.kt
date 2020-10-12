@@ -13,7 +13,7 @@ enum class ObjectSide(var coord: Pair<Double, Double>) {
     RIGHT(Pair(0.0, 0.25));
 
     fun addOffset(offset: Int): ObjectSide {
-        val newCoord = if(this == ABOVE) {
+        val newCoord = if (this == ABOVE) {
             Pair(this.coord.first, this.coord.second + offset)
         } else {
             this.coord
@@ -52,6 +52,12 @@ data class CodeBlock(
             "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
             "self.move_arrow_to_line(1, $pointerName, $ident)"
         )
+    }
+}
+
+data class Sleep(val length: Double = 1.0): IR {
+    override fun toPython(): List<String> {
+        return listOf("self.wait($length)")
     }
 }
 
