@@ -76,4 +76,11 @@ class InvalidSyntaxTests {
         assertTrue(outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: missing .* at .*")))
     }
 
+    @Test
+    fun extraneousInput() {
+        val inputFile = File("src/test/testFiles/invalid/syntaxErrors/extraneousInput.manimdsl")
+        ManimDSLParser(inputFile.inputStream()).parseFile()
+        assertTrue(outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: extraneous input .*")))
+    }
+
 }
