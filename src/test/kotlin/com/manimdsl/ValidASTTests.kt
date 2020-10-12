@@ -1,6 +1,6 @@
 package com.manimdsl
 
-import junit.framework.TestCase.assertTrue
+import junit.framework.TestCase.assertEquals
 
 import org.junit.jupiter.api.Test
 
@@ -12,7 +12,7 @@ class ValidASTTests {
         val declarationProgram = "let x: number = 1;"
         val reference = ProgramNode(listOf(DeclarationNode(1, "x", NumberNode(1, 1.0))))
         val actual = buildAST(declarationProgram)
-        assertTrue("Declaration AST equal", reference == actual)
+        assertEquals(reference, actual)
     }
 
     @Test
@@ -20,7 +20,7 @@ class ValidASTTests {
         val declarationProgram = "sleep(1.5);"
         val reference = ProgramNode(listOf(SleepNode(NumberNode(1, 1.5))))
         val actual = buildAST(declarationProgram)
-        assertTrue("Declaration AST equal", reference == actual)
+        assertEquals(reference, actual)
     }
 
     @Test
@@ -37,7 +37,7 @@ class ValidASTTests {
         val reference = ProgramNode(statements)
 
         val actual = buildAST(declarationProgram)
-        assertTrue("Declaration AST equal", reference == actual)
+        assertEquals(reference, actual)
     }
 
     // Assumes syntactically correct program
