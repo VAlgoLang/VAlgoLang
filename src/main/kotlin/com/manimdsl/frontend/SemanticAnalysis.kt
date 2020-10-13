@@ -1,7 +1,6 @@
 package com.manimdsl.frontend
 
 class SemanticAnalysis {
-    private val dataStructureHandler = DataStructureHandler()
 
     fun failIfRedeclaredVariable(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
         return currentSymbolTable.getTypeOf(identifier) != NoType
@@ -11,7 +10,7 @@ class SemanticAnalysis {
     private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type = when (expression) {
         is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
         is NumberNode -> NumberType
-        is MethodCallNode -> currentSymbolTable.getTypeOf(expression.instanceIdentifier)
+        is MethodCallNode -> expression.dataStructureMethod.returnType
         is ConstructorNode -> expression.type
         is BinaryExpression -> if (getExpressionType(expression.expr1, currentSymbolTable) is NumberType && getExpressionType(expression.expr2, currentSymbolTable) is NumberType) {
             NumberType
@@ -40,12 +39,15 @@ class SemanticAnalysis {
     // Assume it is a data structure
     fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String): Boolean {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
-        return dataStructureHandler.convertStringToMethod(method, dataStructureType) == ErrorMethod
+        return !dataStructureType.containsMethod(method)
     }
 
     fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int): Boolean {
-        return !dataStructureHandler.convertStringToMethod(method, dataStructureType).hasValidNumberOfArguments(numArgs)
+        return dataStructureType.getMethodByName(method).argumentTypes.size != numArgs
     }
 
+    fun failIfIncompatibleArgumentTypes(argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod): Boolean {
+        return argumentTypes == dataStructureMethod.argumentTypes
+    }
 
 }

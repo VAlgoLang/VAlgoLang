@@ -5,9 +5,9 @@ import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
-    private val currentSymbolTable = SymbolTableNode()
+    val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
-    private val dataStructureHandler = DataStructureHandler()
+
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
@@ -25,13 +25,14 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhs = visit(ctx.expr()) as ExpressionNode
 
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, rhs)
-        if (ctx.type() != null) {
-            val lhsType = visit(ctx.type()) as Type
-            if (semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)) {
-                println("Incompatible types!!")
-            }
+        val lhsType = if (ctx.type() != null) {
+            visit(ctx.type()) as Type
+        } else {
+            rhsType
         }
-
+        if (semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)) {
+            println("Incompatible types!!")
+        }
         currentSymbolTable.addVariable(identifier, rhsType)
         return DeclarationNode(ctx.start.line, identifier, rhs)
     }
@@ -83,13 +84,12 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
             println("Not a valid method for this data structure!!")
         }
 
-        val dataStructureType: DataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
 
         if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size)) {
             println("Invalid number of arguments for this method!!")
         }
-        val dataStructureMethod = dataStructureHandler.convertStringToMethod(methodName, dataStructureType)
-        val typeInsideStructure = dataStructureType.internalType
+        val dataStructureMethod = dataStructureType.getMethodByName(methodName)
 
         // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
         if (arguments.isNotEmpty()) {
@@ -98,16 +98,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
                 println("Data structure can only take primitive type!!")
             }
 
-            if (typeInsideStructure is NoType) {
-                // If NoType, we haven't assigned an internal type to this data structure yet, so we need to set it
-                if (dataStructureMethod is SetMethod) {
-                    currentSymbolTable.replaceDataStructure(identifier, dataStructureType, argTypes[0])
-                }
-            } else {
-                // Otherwise, check argument types match with data structure internal type
-                if (arguments.any { semanticAnalyser.inferType(currentSymbolTable, it) != typeInsideStructure }) {
-                    println("Argument types do not match data structure internal type!!")
-                }
+            if (!semanticAnalyser.failIfIncompatibleArgumentTypes(argTypes, dataStructureMethod)) {
+                println("Incompatible argument types")
             }
         }
 
@@ -115,7 +107,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitStackCreate(ctx: ManimParser.StackCreateContext): ConstructorNode {
-        return ConstructorNode(ctx.start.line, StackType(NoType), listOf())
+        return ConstructorNode(ctx.start.line, StackType(NumberType), listOf())
     }
 
     override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
@@ -153,6 +145,6 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitStackType(ctx: ManimParser.StackTypeContext): StackType {
-        return StackType(NoType)
+        return StackType(NumberType)
     }
 }

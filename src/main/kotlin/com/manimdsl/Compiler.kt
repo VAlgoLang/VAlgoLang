@@ -20,8 +20,9 @@ private fun compile(filename: String) {
         exitProcess(exitStatus.code)
     }
 
-    val abstractSyntaxTree = parser.convertToAst(program)
+    val (abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
     println(abstractSyntaxTree)
+    println(symbolTable)
 }
 
 fun main(args: Array<String>) {
