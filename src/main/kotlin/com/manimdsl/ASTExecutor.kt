@@ -1,7 +1,7 @@
 package com.manimdsl
 
 import com.manimdsl.frontend.*
-import com.manimdsl.linearrepresentation.Object
+import com.manimdsl.linearrepresentation.*
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -9,11 +9,24 @@ sealed class ExecValue
 
 data class DoubleValue(val value: Double) : ExecValue()
 
-data class StackValue(val stack: Stack<Pair<Double, Object>>) : ExecValue()
+data class StackValue(val initObject: Object, val stack: Stack<Pair<Double, Object>>) : ExecValue()
 
 object EmptyValue : ExecValue()
 
-class ASTExecutor(private val program: ProgramNode) {
+class ASTExecutor(private val program: ProgramNode, private val symbolTable: SymbolTable, val fileLines: List<String>) {
+
+    private val linearRepresentation = mutableListOf<ManimInstr>()
+    private val variableNameGenerator = VariableNameGenerator(symbolTable)
+
+    private val codeBlockVariable: String
+    private val codeTextVariable: String
+    private val pointerVariable: String
+
+    init {
+        pointerVariable = variableNameGenerator.generateNameFromPrefix("pointer")
+        codeBlockVariable = variableNameGenerator.generateNameFromPrefix("code_block")
+        codeTextVariable = variableNameGenerator.generateNameFromPrefix("code_text")
+    }
 
     // Map of all the variables and there current values
     private val variables = mutableMapOf<String, ExecValue>()
@@ -21,17 +34,19 @@ class ASTExecutor(private val program: ProgramNode) {
     // Keep track of next instruction to execute
     private var programCounter = 0
 
+    private val finalDSLCode = mutableListOf<String>()
+
     private fun executeExpression(node: ExpressionNode): ExecValue {
         return when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is MethodCallNode -> executeMethodCall(node)
-            is ConstructorNode -> executeConstructor(node)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
             is PlusExpression -> executeUnaryOp(node) { x -> x }
             is MinusExpression -> executeUnaryOp(node) { x -> -x }
+            else -> EmptyValue
         }
     }
 
@@ -40,11 +55,26 @@ class ASTExecutor(private val program: ProgramNode) {
             is StackValue -> {
                 return when (node.dataStructureMethod) {
                     is StackType.PushMethod -> {
-                        node.dataStructureMethod.animateMethod(
-                            listOf((executeExpression(node.arguments[0]) as DoubleValue).toString())
-                                    DoubleValue (ds.stack.push((executeExpression(node.arguments[0]) as DoubleValue).value).)
+                        val doubleValue = executeExpression(node.arguments[0]) as DoubleValue
+                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val (instructions, newObject) = node.dataStructureMethod.animateMethod(listOf(doubleValue.value.toString()), mapOf("top" to secondObject, "generator" to variableNameGenerator))
+                        linearRepresentation.addAll(instructions)
+                        ds.stack.push(Pair(doubleValue.value, newObject!!))
+                        doubleValue
                     }
-                    is StackType.PopMethod -> DoubleValue(ds.stack.pop().first)
+                    is StackType.PopMethod -> {
+                        val poppedValue = ds.stack.pop()
+                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val (instructions, _) = node.dataStructureMethod.animateMethod(
+                            emptyList(),
+                            mapOf(
+                                "top" to poppedValue.second,
+                                "second" to secondObject
+                            )
+                        )
+                        linearRepresentation.addAll(instructions)
+                        DoubleValue(poppedValue.first)
+                    }
                     else -> EmptyValue
                 }
             }
@@ -52,9 +82,13 @@ class ASTExecutor(private val program: ProgramNode) {
         }
     }
 
-    private fun executeConstructor(node: ConstructorNode): ExecValue {
+    private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
         return when (node.type) {
-            is StackType -> StackValue(Stack())
+            is StackType -> {
+                val (instructions, newObject) = node.type.init(identifier, 2, -1)
+                linearRepresentation.addAll(instructions)
+                StackValue(newObject, Stack())
+            }
         }
     }
 
@@ -72,26 +106,35 @@ class ASTExecutor(private val program: ProgramNode) {
     }
 
     // Returns whether the program is complete and the state of all the variables after executing the statement
-    fun executeNextStatement(): Pair<Boolean, MutableMap<String, ExecValue>> {
-        val node = program.statements[programCounter]
+    fun executeNextStatement(): Pair<Boolean, List<ManimInstr>> {
+        val node = program.statements[programCounter] as StatementNode
         programCounter++
-        when (node) {
-            is DeclarationNode -> variables[node.identifier] = executeExpression(node.expression)
-            is AssignmentNode -> variables[node.identifier] = executeExpression(node.expression)
-            is ExpressionNode -> executeExpression(node)
-            // Comment or sleep command so skip to next statement
-            else -> return executeNextStatement()
+
+        if (node is CodeNode){
+            finalDSLCode.add(fileLines[node.lineNumber - 1])
+            linearRepresentation.add(MoveToLine(finalDSLCode.size, pointerVariable, codeBlockVariable))
         }
-        return Pair(program.statements.size == programCounter, variables)
+
+        when (node) {
+            is DeclarationOrAssignment -> visitAssignmentOrDeclaration(node)
+            is ExpressionNode -> executeExpression(node)
+            is SleepNode -> linearRepresentation.add(Sleep((executeExpression(node.sleepTime) as DoubleValue).value))
+        }
+
+        val endOfProgram = program.statements.size == programCounter
+        if(endOfProgram) {
+            linearRepresentation.add(0, CodeBlock(finalDSLCode, codeBlockVariable, codeTextVariable, pointerVariable))
+        }
+
+        return Pair(endOfProgram, linearRepresentation)
     }
 
-    fun executeStatement(statementNode: StatementNode) {
-        when (statementNode) {
-            is DeclarationNode -> variables[statementNode.identifier] = executeExpression(statementNode.expression)
-            is AssignmentNode -> variables[statementNode.identifier] = executeExpression(statementNode.expression)
-            is ExpressionNode -> executeExpression(statementNode)
-            // Comment or sleep command so skip to next statement
-        }
+    private fun visitAssignmentOrDeclaration(node: DeclarationOrAssignment) {
+        variables[node.identifier] =
+            when (node.expression) {
+                is ConstructorNode -> executeConstructor(node.expression as ConstructorNode, node.identifier)
+                else -> executeExpression(node.expression)
+            }
     }
 
     fun getValue(identifier: String): ExecValue {

@@ -24,16 +24,15 @@ class TestLinearRepresentation {
             MoveToLine(3, "pointer", "code_block"),
             NewObject(Rectangle("3"), "testIdent1"),
             MoveObject("testIdent1", "testIdent", ObjectSide.ABOVE),
-            Sleep(2.0),
             MoveToLine(4, "pointer", "code_block"),
             MoveObject("testIdent1", "testIdent", ObjectSide.ABOVE, 20, true),
-            Sleep(2.0)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
 
         val expected = File("src/test/testFiles/python/stack.py").readText()
         val generated = File(writer.createPythonFile()).readText()
+
 
         assertEquals(expected, generated)
     }

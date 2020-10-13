@@ -18,8 +18,15 @@ data class CommentNode(val content: String): AnimationNode()
 
 // Code Specific Nodes holding line number - todo: replace with composition
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
-data class DeclarationNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
-data class AssignmentNode(override val lineNumber: Int, val identifier: String, val expression: ExpressionNode): CodeNode(lineNumber)
+
+interface DeclarationOrAssignment{
+    val lineNumber: Int;
+    val identifier: String
+    val expression: ExpressionNode
+}
+
+data class DeclarationNode(override val lineNumber: Int, override val identifier: String, override val expression: ExpressionNode): CodeNode(lineNumber), DeclarationOrAssignment
+data class AssignmentNode(override val lineNumber: Int, override val identifier: String, override val expression: ExpressionNode): CodeNode(lineNumber), DeclarationOrAssignment
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
@@ -62,7 +69,7 @@ sealed class DataStructureType(
         identifier: String,
         x: Int,
         y: Int,
-        variableName: String = "empty"
+        text: String = "empty"
     ): Pair<List<ManimInstr>, Object>
 }
 
@@ -91,7 +98,8 @@ data class StackType(
             arguments: List<String>,
             options: Map<String, Any>
         ): Pair<List<ManimInstr>, Object?> {
-            val rectangle = NewObject(Rectangle(arguments[0]))
+            val rectangleShape = Rectangle(arguments[0])
+            val rectangle = NewObject(rectangleShape, (options["generator"] as VariableNameGenerator).generateShapeName(rectangleShape))
             return Pair(
                 listOf(
                     rectangle,
@@ -115,7 +123,7 @@ data class StackType(
                         (options["second"] as Object).ident,
                         ObjectSide.ABOVE,
                         20,
-                        options["fadeOut"] as Boolean
+                        options["fadeOut"] as? Boolean? ?: false
                     ),
                 ), null
             )
@@ -130,8 +138,8 @@ data class StackType(
         return methods[method]!!
     }
 
-    override fun init(identifier: String, x: Int, y: Int, variableName: String): Pair<List<ManimInstr>, Object> {
-        val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, variableName)
+    override fun init(identifier: String, x: Int, y: Int, text: String): Pair<List<ManimInstr>, Object> {
+        val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, text)
 
         // Add to stack of objects to keep track of identifier
         return Pair(listOf(stackInit), stackInit)

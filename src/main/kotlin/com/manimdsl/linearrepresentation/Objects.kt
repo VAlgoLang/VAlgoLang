@@ -50,17 +50,17 @@ data class CodeBlock(
 }
 
 data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, override val ident: String,
-                         val variableName: String) : Object {
+                         val text: String) : Object {
     override fun toPython(): List<String> {
         return listOf(
-                "$variableName = Init_structure(\"${ident}\", ${alignment.angle}).build()",
-                "$variableName.to_edge(np.array([$x, $y, 0]))",
-                "self.play(ShowCreation($variableName))"
+                "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
+                "$ident.to_edge(np.array([$x, $y, 0]))",
+                "self.play(ShowCreation($ident))"
         )
     }
 }
 
-data class NewObject(val shape: Shape, override val ident: String = shape.generateVariableName()) : Object {
+data class NewObject(val shape: Shape, override val ident: String) : Object {
     override fun toPython(): List<String> {
         return listOf("$ident = ${shape.className}(\"${shape.text}\").build()")
     }
