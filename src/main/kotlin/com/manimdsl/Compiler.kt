@@ -21,7 +21,15 @@ private fun compile(filename: String) {
     }
 
     val abstractSyntaxTree = parser.convertToAst(program)
-    println(abstractSyntaxTree)
+
+    val executor = ASTExecutor(abstractSyntaxTree)
+
+    do {
+        val state = executor.executeNextStatement()
+        // TODO: Replace with conversion to IR
+        println(state)
+    } while (!state.first)
+
 }
 
 fun main(args: Array<String>) {
