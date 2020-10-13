@@ -49,12 +49,12 @@ data class CodeBlock(
     }
 }
 
-data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, override val ident: String) : Object {
+data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, override val ident: String,
+                         val variableName: String) : Object {
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = Line()",
-            "${ident}.to_edge(np.array([$x,$y, 0]))",
-            "self.play(ShowCreation($ident))"
+                "$variableName = Init_structure(\"${ident}\", $x, $y, ${alignment.angle}).build()",
+                "self.play(ShowCreation($variableName))"
         )
     }
 }

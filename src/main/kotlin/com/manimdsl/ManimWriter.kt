@@ -1,6 +1,7 @@
 package com.manimdsl
 
 import com.manimdsl.linearrepresentation.CodeBlock
+import com.manimdsl.linearrepresentation.InitStructure
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.NewObject
 import java.io.File
@@ -21,6 +22,9 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                 }
                 is CodeBlock -> {
                     shapeClassPaths.add("pythonLib/code_block.py")
+                }
+                is InitStructure -> {
+                    shapeClassPaths.add("pythonLib/init_structure.py")
                 }
             }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))

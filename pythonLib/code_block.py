@@ -1,4 +1,4 @@
-class Code_block():
+class Code_block:
     def __init__(self, code):
         self.code = TextMobject(*code)
 
