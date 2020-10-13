@@ -1,6 +1,8 @@
 package com.manimdsl
 
 import com.manimdsl.frontend.ProgramNode
+import com.manimdsl.frontend.SymbolTable
+import com.manimdsl.linearrepresentation.*
 import junit.framework.TestCase.assertEquals
 
 import org.junit.jupiter.api.Test
@@ -15,48 +17,36 @@ class ASTExecutorTests {
                 "# code comment\n" +
                 "let y: Stack = new Stack;\n"
 
-        val abstractSyntaxTree = buildAST(program)
+        val (abstractSyntaxTree, symbolTable) = buildAST(program)
 
-        val executor = ASTExecutor(abstractSyntaxTree)
+        val executor = ASTExecutor(abstractSyntaxTree, symbolTable, program.split("\n"))
 
         val states = listOf(
-            Pair(false, mapOf("x" to DoubleValue(1.5))),
-            Pair(true, mapOf("x" to DoubleValue(1.5), "y" to StackValue(Stack())))
-        )
+            Pair(false, listOf(MoveToLine(1, pointerName = "pointer", codeBlockName = "code_block"))),
+                Pair(
+                    true,
+                    listOf(
+                        CodeBlock(
+                            lines = listOf("let x: number = 1.5;", "let y: Stack = new Stack;"),
+                            ident = "code_block",
+                            codeTextName = "code_text",
+                            pointerName = "pointer"
+                        ),
+                        MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
+                        MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
+                        InitStructure(x = 2, y = -1, alignment = Alignment.HORIZONTAL, ident = "y", text = "empty")
+                    )
+                )
+            )
 
         checkExecutionStates(executor, states)
 
     }
 
-    @Test
-    fun checkStatePopPushProgramStates() {
-        val program = "let x: number = 1.5;\n" +
-                "# code comment\n" +
-                "let y: Stack = new Stack;\n" +
-                "y.push(10);\n" +
-                "let z = y.pop();\n"
-
-        val abstractSyntaxTree = buildAST(program)
-
-        val executor = ASTExecutor(abstractSyntaxTree)
-
-        val stack = Stack<Double>()
-        stack.push(10.0)
-
-        val states = mutableListOf(
-            Pair(false, mapOf("x" to DoubleValue(1.5))),
-            Pair(false, mapOf("x" to DoubleValue(1.5), "y" to StackValue(Stack()))),
-            Pair(false, mapOf("x" to DoubleValue(1.5), "y" to StackValue(stack))),
-            Pair(true, mapOf("x" to DoubleValue(1.5), "z" to DoubleValue(10.0), "y" to StackValue(Stack())))
-        )
-
-        checkExecutionStates(executor, states)
-
-    }
 
     private fun checkExecutionStates(
         executor: ASTExecutor,
-        states: List<Pair<Boolean, Map<String, ExecValue>>>
+        states: List<Pair<Boolean, List<ManimInstr>>>
     ) {
         var stateCounter = 0
         do {
@@ -67,8 +57,8 @@ class ASTExecutorTests {
     }
 
     // Assumes syntactically correct program
-    private fun buildAST(program: String): ProgramNode {
+    private fun buildAST(program: String): Pair<ProgramNode, SymbolTable> {
         val parser = ManimDSLParser(program.byteInputStream())
-        return parser.convertToAst(parser.parseFile().second).first
+        return parser.convertToAst(parser.parseFile().second)
     }
 }
