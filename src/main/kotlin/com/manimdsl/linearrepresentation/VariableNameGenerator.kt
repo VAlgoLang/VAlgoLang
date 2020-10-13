@@ -7,7 +7,7 @@ import com.manimdsl.shapes.Shape
 class VariableNameGenerator(private val symbolTable: SymbolTable) {
     private val prefixCounter: MutableMap<String, Int> = mutableMapOf()
 
-    fun generateShapeName(shape: Shape): String = generateNameFromPrefix(shape.toString())
+    fun generateShapeName(shape: Shape): String = generateNameFromPrefix(shape.pythonVariablePrefix)
 
     fun generateNameFromPrefix(prefix: String): String {
         var count = prefixCounter.getOrDefault(prefix, 0)
@@ -15,6 +15,6 @@ class VariableNameGenerator(private val symbolTable: SymbolTable) {
             count++
         }
         prefixCounter[prefix] = count + 1
-        return "$prefix$count"
+        return if (count > 0) "$prefix$count" else prefix
     }
 }
