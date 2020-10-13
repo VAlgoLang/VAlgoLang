@@ -21,7 +21,7 @@ data class AssignmentNode(override val lineNumber: Int, val identifier: String, 
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String): ExpressionNode(lineNumber)
 data class NumberNode(override val lineNumber: Int, val double: Double): ExpressionNode(lineNumber)
-data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
+data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod?, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 data class ConstructorNode(override val lineNumber: Int, val type: Type, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 
 // Binary Expressions
@@ -42,7 +42,11 @@ sealed class Type: ASTNode()
 sealed class PrimitiveType: Type()
 object NumberType: PrimitiveType()
 sealed class DataStructureType(open var internalType: Type): Type()
-data class StackType(override var internalType: Type): DataStructureType(internalType)
+data class StackType(override var internalType: Type): DataStructureType(internalType) {
+    override fun toString(): String {
+        return "Stack"
+    }
+}
 
 object NoType: Type()
 // This is used to collect arguments up into method call node

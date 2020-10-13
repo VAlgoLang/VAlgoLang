@@ -21,6 +21,10 @@ private fun compile(filename: String) {
     }
 
     val abstractSyntaxTree = parser.convertToAst(program)
+    // Error handling
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
     println(abstractSyntaxTree)
 }
 

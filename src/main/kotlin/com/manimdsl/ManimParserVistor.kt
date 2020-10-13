@@ -3,11 +3,13 @@ package com.manimdsl
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
+import com.manimdsl.errorhandling.semanticerror.*
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     private val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
     private val dataStructureHandler = DataStructureHandler()
+
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
@@ -19,7 +21,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
         if (semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
-            println("Redeclared!!")
+            redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
         }
 
         val rhs = visit(ctx.expr()) as ExpressionNode
@@ -27,9 +29,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, rhs)
         if (ctx.type() != null) {
             val lhsType = visit(ctx.type()) as Type
-            if (semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)) {
-                println("Incompatible types!!")
-            }
+            semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType, ctx.expr().text, ctx)
         }
 
         currentSymbolTable.addVariable(identifier, rhsType)
@@ -42,13 +42,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, expression)
         val identifierType = currentSymbolTable.getTypeOf(identifier)
 
-        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
-            println("Undeclared Assignment!!")
-        }
-
-        if (semanticAnalyser.failIfIncompatibleTypes(identifierType, rhsType)) {
-            println("Incompatible Types!!")
-        }
+        semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.failIfIncompatibleTypes(identifierType, rhsType, ctx.expr().text, ctx)
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
@@ -71,42 +66,36 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
-        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
-            println("Undeclared variable!!")
-        }
+        semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName, ctx)
 
-        if (semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier)) {
-            println("Not a data structure!!")
-        }
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier)
+        var dataStructureMethod: DataStructureMethod? = null
+        if (dataStructureType is DataStructureType) {
+            semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size, ctx)
 
-        if (semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName)) {
-            println("Not a valid method for this data structure!!")
-        }
+            dataStructureMethod = dataStructureHandler.convertStringToMethod(methodName, dataStructureType)
+            val typeInsideStructure = dataStructureType.internalType
 
-        val dataStructureType: DataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+            // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
+            if (arguments.isNotEmpty()) {
+                val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
+                semanticAnalyser.checkArgTypes(argTypes, methodName, dataStructureType, ctx)
 
-        if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size)) {
-            println("Invalid number of arguments for this method!!")
-        }
-        val dataStructureMethod = dataStructureHandler.convertStringToMethod(methodName, dataStructureType)
-        val typeInsideStructure = dataStructureType.internalType
-
-        // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
-        if (arguments.isNotEmpty()) {
-            val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
-            if (argTypes.any{it !is PrimitiveType}) {
-                println("Data structure can only take primitive type!!")
-            }
-
-            if (typeInsideStructure is NoType) {
-                // If NoType, we haven't assigned an internal type to this data structure yet, so we need to set it
-                if (dataStructureMethod is SetMethod) {
-                    currentSymbolTable.replaceDataStructure(identifier, dataStructureType, argTypes[0])
-                }
-            } else {
-                // Otherwise, check argument types match with data structure internal type
-                if (arguments.any { semanticAnalyser.inferType(currentSymbolTable, it) != typeInsideStructure }) {
-                    println("Argument types do not match data structure internal type!!")
+                if (typeInsideStructure is NoType) {
+                    // If NoType, we haven't assigned an internal type to this data structure yet, so we need to set it
+                    if (dataStructureMethod is SetMethod) {
+                        currentSymbolTable.replaceDataStructure(identifier, dataStructureType, argTypes[0])
+                    }
+                } else {
+                    // Otherwise, check argument types match with data structure internal type
+                    semanticAnalyser.failIfDataStructureIncompatibleTypes(
+                        argTypes,
+                        typeInsideStructure,
+                        dataStructureType,
+                        ctx
+                    )
                 }
             }
         }
