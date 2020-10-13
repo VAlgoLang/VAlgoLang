@@ -2,7 +2,6 @@ package com.manimdsl.errorhandling.semanticerror
 
 import antlr.ManimParser
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
-import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 

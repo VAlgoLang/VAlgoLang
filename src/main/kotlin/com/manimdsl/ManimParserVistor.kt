@@ -32,7 +32,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
-        semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)
+        semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType, ctx.expr().text, ctx)
 
         currentSymbolTable.addVariable(identifier, rhsType)
         return DeclarationNode(ctx.start.line, identifier, rhs)
@@ -73,25 +73,25 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName, ctx)
 
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
-        var dataStructureMethod: DataStructureMethod? = null
-        if (dataStructureType is DataStructureType) {
+
+        val dataStructureMethod = if (dataStructureType is DataStructureType) {
             semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size, ctx)
 
-        val dataStructureType: DataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
-            val dataStructureMethod = dataStructureType.getMethodByName(methodName)
-        val typeInsideStructure = dataStructureType.internalType
+            val method = dataStructureType.getMethodByName(methodName)
 
-            // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
-        val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
-//                semanticAnalyser.checkArgTypes(argTypes, methodName, dataStructureType, ctx)
-        semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size)
-//                 semanticAnalyser.failIfDataStructureIncompatibleTypes(
-//                        argTypes,
-//                        typeInsideStructure,
-//                        dataStructureType,
-//                        ctx
-//                )
+                // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
+            val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
+            semanticAnalyser.checkArgTypes(argTypes, methodName, dataStructureType, ctx)
+            semanticAnalyser.failIfIncompatibleArgumentTypes(
+                    dataStructureType,
+                    argTypes,
+                    method,
+                    ctx
+            )
+            method
 
+        } else {
+            ErrorMethod()
         }
 
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)

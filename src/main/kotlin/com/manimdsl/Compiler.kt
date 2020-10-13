@@ -13,17 +13,17 @@ private fun compile(filename: String) {
 
     println("Compiling...")
     val parser = ManimDSLParser(file.inputStream())
-    val (exitStatus, program) = parser.parseFile()
+    val (syntaxErrorStatus, program) = parser.parseFile()
 
     // Error handling
-    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
-        exitProcess(exitStatus.code)
+    if (syntaxErrorStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(syntaxErrorStatus.code)
     }
 
-    val (abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
+    val (semanticErrorStatus, abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
     // Error handling
-    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
-        exitProcess(exitStatus.code)
+    if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(semanticErrorStatus.code)
     }
 
     println(abstractSyntaxTree)

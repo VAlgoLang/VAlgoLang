@@ -44,9 +44,9 @@ class ManimDSLParser(private val input: InputStream) {
         return Pair(ErrorHandler.checkErrors(), program)
     }
 
-    fun convertToAst(program: ManimParser.ProgramContext): Pair<ExitStatus, ProgramNode> {
+    fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTable> {
         val visitor = ManimParserVisitor()
         val ast = visitor.visitProgram(program)
-        return Pair(ErrorHandler.checkErrors(), ast)
+        return Triple(ErrorHandler.checkErrors(), ast, visitor.currentSymbolTable)
     }
 }

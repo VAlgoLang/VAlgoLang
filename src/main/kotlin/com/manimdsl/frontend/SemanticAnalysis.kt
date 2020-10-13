@@ -46,7 +46,7 @@ class SemanticAnalysis {
         }
     }
 
-    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String) {
+    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String, ctx: ParserRuleContext) {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
@@ -69,14 +69,16 @@ class SemanticAnalysis {
         }
     }
 
-    fun failIfIncompatibleArgumentTypes(argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod) {
-//        argumentTypes.forEachIndexed { index, type ->
-//            if (type !is typeInsideStructure) {
-//                val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
-//                val argName = ctx.arg_list().getChild(index).text
-//                typeOfArgsInMethodCallError(type.toString(), argName, argCtx)
-//            }
-//        }
+    fun failIfIncompatibleArgumentTypes(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
+
+        argumentTypes.forEachIndexed { index, type ->
+            if (type !== dataStructureMethod.argumentTypes[index]) {
+                val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+                val argName = ctx.arg_list().getChild(index).text
+                typeOfArgsInMethodCallError(dataStructureType.toString(), dataStructureMethod.toString(), type.toString(), argName, argCtx)
+
+            }
+        }
     }
 
 }

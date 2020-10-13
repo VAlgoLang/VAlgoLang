@@ -21,7 +21,7 @@ data class AssignmentNode(override val lineNumber: Int, val identifier: String, 
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String): ExpressionNode(lineNumber)
 data class NumberNode(override val lineNumber: Int, val double: Double): ExpressionNode(lineNumber)
-data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod?, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
+data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 data class ConstructorNode(override val lineNumber: Int, val type: Type, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 
 // Binary Expressions
@@ -47,6 +47,7 @@ sealed class DataStructureType(open var internalType: Type, open val methods: Ha
 }
 
 open class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>)
+data class ErrorMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type> = listOf()) : DataStructureMethod(returnType, argumentTypes)
 
 data class StackType(override var internalType: Type = NumberType,
                      override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
@@ -60,6 +61,10 @@ data class StackType(override var internalType: Type = NumberType,
 
     override fun getMethodByName(method: String): DataStructureMethod {
         return methods[method]!!
+    }
+
+    override fun toString(): String {
+        return "Stack<${internalType}>"
     }
 }
 
