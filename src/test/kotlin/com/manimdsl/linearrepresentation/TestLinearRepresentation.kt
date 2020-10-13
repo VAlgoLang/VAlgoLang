@@ -74,25 +74,44 @@ class TestLinearRepresentation {
             longer = Pair(actualList, "actual")
         }
 
+        var differenceBlockShorter = mutableListOf<String>()
+        var differenceBlockLonger = mutableListOf<String>()
+
         for (i in longer.first.indices) {
-            /* If i is in range of shorter file */
+            /* If i is in range of shorter file compare and handle otherwise print excess */
             if (i in shorter.first.indices) {
                 /* If line at i is not equal in both files print difference otherwise print line */
                 if (shorter.first[i] != longer.first[i]) {
-                    println(">>>>>>>>>>>>> ${shorter.second} >>>>>>>>>>>>>>")
-                    println("$i: ${shorter.first[i]}")
-                    println("<<<<<<<<<<<<<<< ${longer.second} <<<<<<<<<<<<<<<")
-                    println("$i: ${longer.first[i]}")
+                    differenceBlockShorter.add("$i: ${shorter.first[i]}")
+                    differenceBlockLonger.add("$i: ${longer.first[i]}")
                 } else {
+                    if (printDifferenceBlocks(differenceBlockLonger, differenceBlockShorter, shorter, longer)) {
+                        differenceBlockLonger = mutableListOf()
+                        differenceBlockShorter = mutableListOf()
+                    }
                     println("$i: ${longer.first[i]}")
                 }
             } else {
-                /* Print missing lines that are at end of the file */
-                println(">>>>>>>>>>>>> ${shorter.second} >>>>>>>>>>>>>>")
-                println("<<<<<<<<<<<<<<< ${longer.second}  <<<<<<<<<<<<<<<")
+                printDifferenceBlocks(differenceBlockLonger, differenceBlockShorter, shorter, longer)
                 println("$i: ${longer.first[i]}")
             }
         }
+    }
+
+    private fun printDifferenceBlocks(
+        differenceBlockLonger: MutableList<String>, differenceBlockShorter: MutableList<String>,
+        shorter: Pair<List<String>, String>, longer: Pair<List<String>, String>
+    ): Boolean {
+        if (differenceBlockLonger.size > 0 || differenceBlockShorter.size > 0) {
+            println(">>>>>>>>>>>>> ${shorter.second} >>>>>>>>>>>>>>")
+            differenceBlockShorter.forEach { println(it) }
+            println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            println("<<<<<<<<<<<<<<< ${longer.second} <<<<<<<<<<<<<<<")
+            differenceBlockLonger.forEach { println(it) }
+            println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+            return true
+        }
+        return false
     }
 
 }
