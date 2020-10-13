@@ -67,7 +67,6 @@ class ASTExecutor(private val program: ProgramNode) {
 
     // Returns whether the program is complete and the state of all the variables after executing the statement
     fun executeNextStatement(): Pair<Boolean, MutableMap<String, ExecValue>> {
-
         val node = program.statements[programCounter]
         programCounter++
         when (node) {
