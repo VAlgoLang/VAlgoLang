@@ -1,14 +1,18 @@
 package com.manimdsl.frontend
 
+import com.manimdsl.linearrepresentation.*
+import com.manimdsl.shapes.Rectangle
+import java.util.*
+
 sealed class ASTNode
-data class ProgramNode(val statements: List<StatementNode>): ASTNode()
+data class ProgramNode(val statements: List<StatementNode>) : ASTNode()
 
 // All statements making up program
-sealed class StatementNode: ASTNode()
+sealed class StatementNode : ASTNode()
 
 // Animation Command Specific type for easy detection
-sealed class AnimationNode: StatementNode()
-data class SleepNode(val sleepTime: ExpressionNode): AnimationNode()
+sealed class AnimationNode : StatementNode()
+data class SleepNode(val sleepTime: ExpressionNode) : AnimationNode()
 // Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(val content: String): AnimationNode()
 
@@ -31,28 +35,90 @@ data class SubtractExpression(override val lineNumber: Int, override val expr1: 
 data class MultiplyExpression(override val lineNumber: Int, override val expr1: ExpressionNode, override val expr2: ExpressionNode): BinaryExpression(lineNumber, expr1, expr2)
 
 // Unary Expressions
-sealed class UnaryExpression(override val lineNumber: Int, open val expr: ExpressionNode): ExpressionNode(lineNumber)
-data class PlusExpression(override val lineNumber: Int, override val expr: ExpressionNode): UnaryExpression(lineNumber, expr)
-data class MinusExpression(override val lineNumber: Int, override val expr: ExpressionNode): UnaryExpression(lineNumber, expr)
+sealed class UnaryExpression(override val lineNumber: Int, open val expr: ExpressionNode) : ExpressionNode(lineNumber)
+data class PlusExpression(override val lineNumber: Int, override val expr: ExpressionNode) :
+    UnaryExpression(lineNumber, expr)
+
+data class MinusExpression(override val lineNumber: Int, override val expr: ExpressionNode) :
+    UnaryExpression(lineNumber, expr)
 
 
 // Types (to be used in symbol table also)
-sealed class Type: ASTNode()
+sealed class Type : ASTNode()
+
 // Primitive / Data structure distinction requested by code generation
-sealed class PrimitiveType: Type()
-object NumberType: PrimitiveType()
-sealed class DataStructureType(open var internalType: Type, open val methods: HashMap<String, DataStructureMethod>): Type() {
+sealed class PrimitiveType : Type()
+object NumberType : PrimitiveType()
+
+sealed class DataStructureType<T : Collection<Object>>(
+    open var internalType: Type,
+    open val methods: HashMap<String, DataStructureMethod>
+) : Type() {
+    abstract val collection: T
+
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
+
+    /** Init methods are to return instructions needed to create MObject **/
+    abstract fun init(identifier: String, x: Int, y: Int, variableName: String = "empty"): List<ManimInstr>
+
+    abstract fun invoke(t: (T) -> Unit): List<ManimInstr>
 }
 
-open class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>)
+abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
+    abstract fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, Object?>
+}
 
-data class StackType(override var internalType: Type = NumberType,
-                     override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
+data class StackType(
+    override var internalType: Type = NumberType,
+    override val methods: HashMap<String, DataStructureMethod> = hashMapOf(
+        "push" to PushMethod(
+            argumentTypes = listOf(
+                NumberType
+            )
+        ), "pop" to PopMethod(internalType)
+    )
+) : DataStructureType<Stack<Object>>(internalType, methods) {
 
-    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes)
-    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes)
+    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
+        DataStructureMethod(returnType, argumentTypes) {
+        override fun animateMethod(
+            arguments: List<String>,
+            options: Map<String, Any>
+        ): Pair<List<ManimInstr>, Object?> {
+            val rectangle = NewObject(Rectangle(arguments[0]))
+            // stack.push(rectangle)
+            return Pair(
+                listOf(
+                    rectangle,
+                    //TODO Get it to point to stack on parent data class
+                    MoveObject(rectangle.ident, "IDENTIFIER_FOR_TOP_OF_STACK", ObjectSide.ABOVE),
+                ), rectangle
+            )
+        }
+
+    }
+
+    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
+        DataStructureMethod(returnType, argumentTypes) {
+        override fun animateMethod(
+            arguments: List<String>,
+            options: Map<String, Any>
+        ): Pair<List<ManimInstr>, Object?> {
+            return Pair(
+                listOf(
+                    //TODO Get arguments[0] = top of stack identifier, pop, and peak second = arguments[1]
+                    MoveObject(
+                        (options["top"] as Object).ident,
+                        (options["second"] as Object).ident,
+                        ObjectSide.ABOVE,
+                        20,
+                        options["fadeOut"] as Boolean
+                    ),
+                ), null
+            )
+        }
+    }
 
     override fun containsMethod(method: String): Boolean {
         return methods.containsKey(method)
@@ -60,6 +126,19 @@ data class StackType(override var internalType: Type = NumberType,
 
     override fun getMethodByName(method: String): DataStructureMethod {
         return methods[method]!!
+    }
+
+    override fun init(identifier: String, x: Int, y: Int, variableName: String): List<ManimInstr> {
+        val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, variableName)
+
+        // Add to stack of objects to keep track of identifier
+        return listOf(
+            stackInit
+        )
+    }
+
+    override fun invoke(t: (Stack<Object>) -> Unit): List<ManimInstr> {
+        TODO("Not yet implemented")
     }
 }
 

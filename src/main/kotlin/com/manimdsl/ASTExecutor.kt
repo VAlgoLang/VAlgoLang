@@ -1,6 +1,7 @@
 package com.manimdsl
 
 import com.manimdsl.frontend.*
+import com.manimdsl.linearrepresentation.Object
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -8,7 +9,7 @@ sealed class ExecValue
 
 data class DoubleValue(val value: Double) : ExecValue()
 
-data class StackValue(val stack: Stack<Double>) : ExecValue()
+data class StackValue(val stack: Stack<Pair<Double, Object>>) : ExecValue()
 
 object EmptyValue : ExecValue()
 
@@ -38,8 +39,12 @@ class ASTExecutor(private val program: ProgramNode) {
         return when (val ds = variables[node.instanceIdentifier]) {
             is StackValue -> {
                 return when (node.dataStructureMethod) {
-                    is StackType.PushMethod -> DoubleValue(ds.stack.push((executeExpression(node.arguments[0]) as DoubleValue).value))
-                    is StackType.PopMethod -> DoubleValue(ds.stack.pop())
+                    is StackType.PushMethod -> {
+                        node.dataStructureMethod.animateMethod(
+                            listOf((executeExpression(node.arguments[0]) as DoubleValue).toString())
+                                    DoubleValue (ds.stack.push((executeExpression(node.arguments[0]) as DoubleValue).value).)
+                    }
+                    is StackType.PopMethod -> DoubleValue(ds.stack.pop().first)
                     else -> EmptyValue
                 }
             }
@@ -80,4 +85,16 @@ class ASTExecutor(private val program: ProgramNode) {
         return Pair(program.statements.size == programCounter, variables)
     }
 
+    fun executeStatement(statementNode: StatementNode) {
+        when (statementNode) {
+            is DeclarationNode -> variables[statementNode.identifier] = executeExpression(statementNode.expression)
+            is AssignmentNode -> variables[statementNode.identifier] = executeExpression(statementNode.expression)
+            is ExpressionNode -> executeExpression(statementNode)
+            // Comment or sleep command so skip to next statement
+        }
+    }
+
+    fun getValue(identifier: String): ExecValue {
+        return this.variables.getOrDefault(identifier, EmptyValue)
+    }
 }
