@@ -8,7 +8,8 @@ class Main(Scene):
         self.play(FadeIn(code_text))
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         self.move_arrow_to_line(1, pointer, code_block)
-        empty = Init_structure("y", 2, -1, 0).build()
+        empty = Init_structure("y", 0).build()
+        empty.to_edge(np.array([2, -1, 0]))
         self.play(ShowCreation(empty))
         testIdent = Rectangle_block("2").build()
         self.move_arrow_to_line(2, pointer, code_block)
@@ -45,10 +46,8 @@ class Code_block:
         return self.code[line_number - 1]
 
 class Init_structure:
-    def __init__(self, ident, x, y, angle, length=1.5, color=BLUE):
+    def __init__(self, ident, angle, length=1.5, color=WHITE):
         self.ident = ident
-        self.x = x
-        self.y = y
         self.angle = angle
         self.length = length
         self.color = color
@@ -57,7 +56,6 @@ class Init_structure:
         line = Line()
         line.set_length(self.length)
         line.set_angle(self.angle)
-        line.to_edge(np.array([self.x, self.y, 0]))
         label = TextMobject(self.ident)
         label.next_to(line, DOWN, SMALL_BUFF)
         group = VGroup(label, line)

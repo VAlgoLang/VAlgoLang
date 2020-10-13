@@ -53,7 +53,8 @@ data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, overr
                          val variableName: String) : Object {
     override fun toPython(): List<String> {
         return listOf(
-                "$variableName = Init_structure(\"${ident}\", $x, $y, ${alignment.angle}).build()",
+                "$variableName = Init_structure(\"${ident}\", ${alignment.angle}).build()",
+                "$variableName.to_edge(np.array([$x, $y, 0]))",
                 "self.play(ShowCreation($variableName))"
         )
     }
