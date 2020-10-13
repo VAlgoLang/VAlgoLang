@@ -1,6 +1,6 @@
 ## Manim DSL Compiler
 
-ManimDSL is a domain specific language using Manim to create animations for
+ManimDSL is a domain specific language using [Manim](https://github.com/3b1b/manim) to create animations for
 data structures and algorithms.
 
 ## Table of Contents:
