@@ -53,10 +53,10 @@ class Init_structure:
         self.color = color
 
     def build(self):
-        line = Line()
+        line = Line(color=self.color)
         line.set_length(self.length)
         line.set_angle(self.angle)
-        label = TextMobject(self.ident)
+        label = TextMobject(self.ident, color=self.color)
         label.next_to(line, DOWN, SMALL_BUFF)
         group = VGroup(label, line)
         return group
