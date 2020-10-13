@@ -1,4 +1,4 @@
-package com.manimdsl
+package com.manimdsl.frontend
 
 sealed class ASTNode
 data class ProgramNode(val statements: List<StatementNode>): ASTNode()
@@ -21,8 +21,8 @@ data class AssignmentNode(override val lineNumber: Int, val identifier: String, 
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String): ExpressionNode(lineNumber)
 data class NumberNode(override val lineNumber: Int, val double: Double): ExpressionNode(lineNumber)
-data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val methodIdentifier: String, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
-data class ConstructorNode(override val lineNumber: Int, val type: DataStructure, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
+data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
+data class ConstructorNode(override val lineNumber: Int, val type: DataStructureType, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 
 // Binary Expressions
 sealed class BinaryExpression(override val lineNumber: Int, open val expr1: ExpressionNode, open val expr2: ExpressionNode): ExpressionNode(lineNumber)
@@ -39,9 +39,30 @@ data class MinusExpression(override val lineNumber: Int, override val expr: Expr
 // Types (to be used in symbol table also)
 sealed class Type: ASTNode()
 // Primitive / Data structure distinction requested by code generation
-object NumberType: Type()
-sealed class DataStructure: Type()
-object StackType: DataStructure()
+sealed class PrimitiveType: Type()
+object NumberType: PrimitiveType()
+sealed class DataStructureType(open var internalType: Type, open val methods: HashMap<String, DataStructureMethod>): Type() {
+    abstract fun containsMethod(method: String): Boolean
+    abstract fun getMethodByName(method: String): DataStructureMethod
+}
 
+open class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>)
+
+data class StackType(override var internalType: Type = NumberType,
+                     override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
+
+    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes)
+    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes)
+
+    override fun containsMethod(method: String): Boolean {
+        return methods.containsKey(method)
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return methods[method]!!
+    }
+}
+
+object NoType: Type()
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
