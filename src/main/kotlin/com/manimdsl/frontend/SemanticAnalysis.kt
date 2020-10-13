@@ -29,7 +29,7 @@ class SemanticAnalysis {
         return lhsType != rhsType
     }
 
-    fun undeclaredAssignment(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
+    fun undeclaredIdentifier(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
         return currentSymbolTable.getTypeOf(identifier) == NoType
     }
 
@@ -44,7 +44,7 @@ class SemanticAnalysis {
     }
 
     fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int): Boolean {
-        return dataStructureHandler.convertStringToMethod(method, dataStructureType).hasValidNumberOfArguments(numArgs)
+        return !dataStructureHandler.convertStringToMethod(method, dataStructureType).hasValidNumberOfArguments(numArgs)
     }
 
 

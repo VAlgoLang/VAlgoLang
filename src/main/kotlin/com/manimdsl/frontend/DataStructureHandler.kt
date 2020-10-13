@@ -15,15 +15,13 @@ class DataStructureHandler {
                 "push" -> StackPush
                 else -> ErrorMethod
             }
-            else -> ErrorMethod
         }
     }
 
 }
 
 enum class DataStructure {
-    STACK,
-    NONE
+    STACK
 }
 
 
@@ -33,14 +31,16 @@ sealed class DataStructureMethod(open val numberOfArguments: Int, open val dataS
     }
 }
 
+interface SetMethod
+interface GetMethod
 
-object StackPop : DataStructureMethod(numberOfArguments = 0, dataStructure = DataStructure.STACK) {
+object StackPop : DataStructureMethod(numberOfArguments = 0, dataStructure = DataStructure.STACK), GetMethod {
     override fun toString(): String {
         return "pop"
     }
 }
 
-object StackPush : DataStructureMethod(numberOfArguments = 1, dataStructure = DataStructure.STACK) {
+object StackPush : DataStructureMethod(numberOfArguments = 1, dataStructure = DataStructure.STACK), SetMethod {
     override fun toString(): String {
         return "push"
     }

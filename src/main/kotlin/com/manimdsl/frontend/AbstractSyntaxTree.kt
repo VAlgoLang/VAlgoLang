@@ -21,11 +21,8 @@ data class AssignmentNode(override val lineNumber: Int, val identifier: String, 
 sealed class ExpressionNode(override val lineNumber: Int): CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String): ExpressionNode(lineNumber)
 data class NumberNode(override val lineNumber: Int, val double: Double): ExpressionNode(lineNumber)
-data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val methodIdentifier: String, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
+data class MethodCallNode(override val lineNumber: Int, val instanceIdentifier: String, val dataStructureMethod: DataStructureMethod, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
 data class ConstructorNode(override val lineNumber: Int, val type: Type, val arguments: List<ExpressionNode>): ExpressionNode(lineNumber)
-
-// Method calls
-sealed class MethodClassNode()
 
 // Binary Expressions
 sealed class BinaryExpression(override val lineNumber: Int, open val expr1: ExpressionNode, open val expr2: ExpressionNode): ExpressionNode(lineNumber)
@@ -44,8 +41,8 @@ sealed class Type: ASTNode()
 // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType: Type()
 object NumberType: PrimitiveType()
-sealed class DataStructureType(open val type: Type): Type()
-data class StackType(override val type: Type): DataStructureType(type)
+sealed class DataStructureType(open var internalType: Type): Type()
+data class StackType(override var internalType: Type): DataStructureType(internalType)
 
 object NoType: Type()
 // This is used to collect arguments up into method call node

@@ -19,6 +19,13 @@ class SymbolTableNode: SymbolTable {
         table[identifier] = IdentifierData(type)
     }
 
+    fun replaceDataStructure(identifier: String, type: DataStructureType, internalType: Type) {
+        val newType = when (type) {
+            is StackType -> StackType(internalType)
+        }
+        table[identifier] = IdentifierData(newType)
+    }
+
     override fun getTypeOf(identifier: String): Type {
         return table[identifier]?.type?:parent.getTypeOf(identifier)
     }

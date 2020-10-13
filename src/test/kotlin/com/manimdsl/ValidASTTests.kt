@@ -42,7 +42,7 @@ class ValidASTTests {
         val methodProgram = "let y: Stack = new Stack;\n" +
                 "y.push(1);\n"
         val statements = listOf(DeclarationNode(1, "y", ConstructorNode(1, StackType(NoType), listOf())),
-                MethodCallNode(2, "y", "push", listOf(NumberNode(2, 1.0))))
+                MethodCallNode(2, "y",  StackPush, listOf(NumberNode(2, 1.0))))
         val reference = ProgramNode(statements)
 
         val actual = buildAST(methodProgram)

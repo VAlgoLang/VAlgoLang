@@ -7,6 +7,7 @@ import com.manimdsl.frontend.*
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     private val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
+    private val dataStructureHandler = DataStructureHandler()
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
@@ -41,7 +42,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, expression)
         val identifierType = currentSymbolTable.getTypeOf(identifier)
 
-        if (semanticAnalyser.undeclaredAssignment(currentSymbolTable, identifier)) {
+        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
             println("Undeclared Assignment!!")
         }
 
@@ -66,26 +67,51 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
-        val arguments = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+        val arguments: List<ExpressionNode> = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
         val identifier = ctx.IDENT(0).symbol.text
-        val method = ctx.IDENT(1).symbol.text
+        val methodName = ctx.IDENT(1).symbol.text
+
+        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
+            println("Undeclared variable!!")
+        }
+
         if (semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier)) {
             println("Not a data structure!!")
         }
-        if (semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, method)) {
+
+        if (semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName)) {
             println("Not a valid method for this data structure!!")
         }
-        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
-        if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, method, arguments.size)) {
+
+        val dataStructureType: DataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+
+        if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size)) {
             println("Invalid number of arguments for this method!!")
         }
-        val typeInsideStructure = dataStructureType.type
-        if (typeInsideStructure is NoType) {
-            // assign type
-        } else {
-            // check that
+        val dataStructureMethod = dataStructureHandler.convertStringToMethod(methodName, dataStructureType)
+        val typeInsideStructure = dataStructureType.internalType
+
+        // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
+        if (arguments.isNotEmpty()) {
+            val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
+            if (argTypes.any{it !is PrimitiveType}) {
+                println("Data structure can only take primitive type!!")
+            }
+
+            if (typeInsideStructure is NoType) {
+                // If NoType, we haven't assigned an internal type to this data structure yet, so we need to set it
+                if (dataStructureMethod is SetMethod) {
+                    currentSymbolTable.replaceDataStructure(identifier, dataStructureType, argTypes[0])
+                }
+            } else {
+                // Otherwise, check argument types match with data structure internal type
+                if (arguments.any { semanticAnalyser.inferType(currentSymbolTable, it) != typeInsideStructure }) {
+                    println("Argument types do not match data structure internal type!!")
+                }
+            }
         }
-        return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, ctx.IDENT(1).symbol.text, arguments)
+
+        return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
     }
 
     override fun visitStackCreate(ctx: ManimParser.StackCreateContext): ConstructorNode {
