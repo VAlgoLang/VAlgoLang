@@ -51,7 +51,7 @@ class ValidASTTests {
     // Assumes syntactically correct program
     private fun buildAST(program: String): ASTNode {
         val parser = ManimDSLParser(program.byteInputStream())
-        val (ast, symbolTable) = parser.convertToAst(parser.parseFile().second)
+        val (_, ast) = parser.convertToAst(parser.parseFile().second)
         return ast
     }
 }

@@ -1,5 +1,9 @@
 package com.manimdsl.frontend
 
+import antlr.ManimParser
+import com.manimdsl.errorhandling.semanticerror.*
+import org.antlr.v4.runtime.ParserRuleContext
+
 class SemanticAnalysis {
 
     fun failIfRedeclaredVariable(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
@@ -24,30 +28,55 @@ class SemanticAnalysis {
         return getExpressionType(expression, currentSymbolTable)
     }
 
-    fun failIfIncompatibleTypes(lhsType: Type, rhsType: Type): Boolean {
-        return lhsType != rhsType
+    fun failIfIncompatibleTypes(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
+        if (lhsType != rhsType){
+            declareAssignError(text, rhsType, lhsType, ctx)
+        }
     }
 
-    fun undeclaredIdentifier(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
-        return currentSymbolTable.getTypeOf(identifier) == NoType
+    fun undeclaredIdentifier(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) == NoType){
+            undeclaredAssignError(identifier, ctx)
+        }
     }
 
-    fun failIfNotDataStructure(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
-        return currentSymbolTable.getTypeOf(identifier) !is DataStructureType
+    fun failIfNotDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
+            nonDataStructureMethodError(identifier, ctx)
+        }
     }
 
-    // Assume it is a data structure
-    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String): Boolean {
-        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
-        return !dataStructureType.containsMethod(method)
+    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String) {
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier)
+        if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
+            unsupportedMethodError(dataStructureType.toString(), method, ctx)
+        }
     }
 
-    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int): Boolean {
-        return dataStructureType.getMethodByName(method).argumentTypes.size != numArgs
+    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int, ctx: ParserRuleContext) {
+        if (dataStructureType.getMethodByName(method).argumentTypes.size != numArgs) {
+            numOfArgsInMethodCallError(dataStructureType.toString(), method, numArgs, ctx)
+        }
     }
 
-    fun failIfIncompatibleArgumentTypes(argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod): Boolean {
-        return argumentTypes == dataStructureMethod.argumentTypes
+    fun checkArgTypes(argTypes: List<Type>, method: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
+        argTypes.forEachIndexed { index, type ->
+            if (type !is PrimitiveType) {
+                val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+                val argName = ctx.arg_list().getChild(index).text
+                typeOfArgsInMethodCallError(dataStructureType.toString(), method, type.toString(), argName, argCtx)
+            }
+        }
+    }
+
+    fun failIfIncompatibleArgumentTypes(argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod) {
+//        argumentTypes.forEachIndexed { index, type ->
+//            if (type !is typeInsideStructure) {
+//                val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+//                val argName = ctx.arg_list().getChild(index).text
+//                typeOfArgsInMethodCallError(type.toString(), argName, argCtx)
+//            }
+//        }
     }
 
 }

@@ -21,6 +21,11 @@ private fun compile(filename: String) {
     }
 
     val (abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
+    // Error handling
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
+
     println(abstractSyntaxTree)
     println(symbolTable)
 }
