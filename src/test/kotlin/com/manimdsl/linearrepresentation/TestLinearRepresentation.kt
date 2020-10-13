@@ -31,7 +31,6 @@ class TestLinearRepresentation {
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
-        writer.createPythonFile("test.py")
 
         val expected = File("src/test/testFiles/python/stack.py").readText()
         val generated = File(writer.createPythonFile()).readText()
