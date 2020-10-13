@@ -8,9 +8,8 @@ class Main(Scene):
         self.play(FadeIn(code_text))
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         self.move_arrow_to_line(1, pointer, code_block)
-        y = Line()
-        y.to_edge(np.array([2,-1, 0]))
-        self.play(ShowCreation(y))
+        empty = Init_structure("y", 2, -1, 0).build()
+        self.play(ShowCreation(empty))
         testIdent = Rectangle_block("2").build()
         self.move_arrow_to_line(2, pointer, code_block)
         self.move_relative_to_obj(testIdent, y, 0.0, 0.25)
@@ -34,7 +33,7 @@ class Main(Scene):
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
     
-class Code_block():
+class Code_block:
     def __init__(self, code):
         self.code = TextMobject(*code)
 
@@ -44,7 +43,26 @@ class Code_block():
     def get_line_at(self, line_number):
         return self.code[line_number - 1]
 
-class Rectangle_block():
+class Init_structure:
+    def __init__(self, ident, x, y, angle, length=1.5, color=BLUE):
+        self.ident = ident
+        self.x = x
+        self.y = y
+        self.angle = angle
+        self.length = length
+        self.color = color
+
+    def build(self):
+        line = Line()
+        line.set_length(self.length)
+        line.set_angle(self.angle)
+        line.to_edge(np.array([self.x, self.y, 0]))
+        label = TextMobject(self.ident)
+        label.next_to(line, DOWN, SMALL_BUFF)
+        group = VGroup(label, line)
+        return group
+
+class Rectangle_block:
     def __init__(self, text, height=0.75, width=1.5, color=BLUE):
         self.text   = text
         self.height = height
