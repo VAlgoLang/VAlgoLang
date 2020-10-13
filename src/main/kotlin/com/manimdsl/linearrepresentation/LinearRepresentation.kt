@@ -4,8 +4,8 @@ interface ManimInstr {
     fun toPython(): List<String>
 }
 
-enum class Alignment(val angle: Int) {
-    HORIZONTAL(0), VERTICAL(90)
+enum class Alignment(val angle: String) {
+    HORIZONTAL("0"), VERTICAL("TAU/4")
 }
 
 /** Animation Functions **/
