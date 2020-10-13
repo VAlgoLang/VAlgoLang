@@ -26,6 +26,7 @@ private fun compile(filename: String) {
 
     do {
         val state = executor.executeNextStatement()
+        // TODO: Replace with conversion to IR
         println(state)
     } while (!state.first)
 
