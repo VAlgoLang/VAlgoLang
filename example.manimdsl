@@ -1,7 +1,8 @@
-let x: number = 1.5;
-# code comment
-let y: Stack = new Stack;
-comment("Now we push onto a stack");
-y.push(1+6);
-sleep(x);
-let z = y.pop();
+let y = new Stack;
+y.push(3);
+y.push(1);
+y.push(1);
+y.push(1);
+y.push(1);
+y.pop();
+sleep(2);

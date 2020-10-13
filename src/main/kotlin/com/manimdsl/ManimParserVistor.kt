@@ -7,8 +7,10 @@ import com.manimdsl.frontend.*
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
-    override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
 
+    private val finalDSLCode = mutableListOf<String>()
+
+    override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
 

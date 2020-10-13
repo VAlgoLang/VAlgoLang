@@ -1,5 +1,6 @@
 package com.manimdsl
 
+import com.manimdsl.linearrepresentation.ManimInstr
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -26,14 +27,18 @@ private fun compile(filename: String) {
         exitProcess(semanticErrorStatus.code)
     }
 
-    val executor = ASTExecutor(abstractSyntaxTree)
+    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
 
+    var state: Pair<Boolean, List<ManimInstr>>
     do {
-        val state = executor.executeNextStatement()
+         state = executor.executeNextStatement()
         // TODO: Replace with conversion to IR
         println(state)
     } while (!state.first)
-
+    val writer = ManimProjectWriter(ManimWriter(state.second).build())
+    writer.createPythonFile("test23.py")
+    writer.generateAnimation("test23.py")
+    println("done")
 }
 
 fun main(args: Array<String>) {
@@ -45,6 +50,5 @@ fun main(args: Array<String>) {
     }
 
     compile(args.first())
-
 }
 
