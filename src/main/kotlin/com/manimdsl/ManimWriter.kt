@@ -1,8 +1,11 @@
 package com.manimdsl
 
+import com.manimdsl.linearrepresentation.CodeBlock
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.NewObject
 import java.io.File
 
-class ManimWriter(private val linearRepresentation: List<IR>) {
+class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
     fun build(): String {
         var pythonCode = initialPythonSetup()

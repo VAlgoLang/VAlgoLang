@@ -1,6 +1,8 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.*
+import com.manimdsl.ManimProjectWriter
+import com.manimdsl.ManimWriter
+import com.manimdsl.shapes.Rectangle
 import org.junit.jupiter.api.Test
 
 class TestLinearRepresentation {

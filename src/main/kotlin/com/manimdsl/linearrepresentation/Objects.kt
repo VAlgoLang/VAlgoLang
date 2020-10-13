@@ -1,9 +1,11 @@
-package com.manimdsl
+package com.manimdsl.linearrepresentation
 
-import java.util.*
+import com.manimdsl.shapes.Shape
 
-interface IR {
-    fun toPython(): List<String>
+/** Objects **/
+
+interface Object : ManimInstr {
+    val ident: String
 }
 
 enum class ObjectSide(var coord: Pair<Double, Double>) {
@@ -28,14 +30,6 @@ enum class ObjectSide(var coord: Pair<Double, Double>) {
     }
 }
 
-enum class Alignment {
-    HORIZONTAL, VERTICAL
-}
-
-interface Object : IR {
-    val ident: String
-}
-
 data class CodeBlock(
     val lines: List<String>,
     override val ident: String,
@@ -55,18 +49,6 @@ data class CodeBlock(
     }
 }
 
-data class Sleep(val length: Double = 1.0): IR {
-    override fun toPython(): List<String> {
-        return listOf("self.wait($length)")
-    }
-}
-
-data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String) : IR {
-    override fun toPython(): List<String> {
-        return listOf("self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)")
-    }
-}
-
 data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, override val ident: String) : Object {
     override fun toPython(): List<String> {
         return listOf(
@@ -81,33 +63,4 @@ data class NewObject(val shape: Shape, override val ident: String = shape.genera
     override fun toPython(): List<String> {
         return listOf("$ident = ${shape.className}(\"${shape.text}\").build()")
     }
-}
-
-data class MoveObject(val ident: String, val moveToIdent: String, val objectSide: ObjectSide, val offset: Int = 0) :
-    IR {
-    override fun toPython(): List<String> {
-        return listOf("self.move_relative_to_obj($ident, $moveToIdent, ${objectSide.addOffset(offset)})")
-    }
-}
-
-data class Rectangle(override val text: String) : Shape {
-
-
-    override val classPath: String = "pythonLib/rectangle.py"
-    override val className: String = "Rectangle_block"
-
-    override fun generateVariableName(): String {
-        return UUID.randomUUID().toString()
-    }
-
-
-}
-
-interface Shape {
-
-    val text: String
-    val classPath: String
-    val className: String
-
-    fun generateVariableName(): String
 }
