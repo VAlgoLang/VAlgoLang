@@ -1,6 +1,8 @@
 package com.manimdsl.frontend
 
 class SemanticAnalysis {
+    private val dataStructureHandler = DataStructureHandler()
+
     fun failIfRedeclaredVariable(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
         return currentSymbolTable.getTypeOf(identifier) != NoType
     }
@@ -37,16 +39,12 @@ class SemanticAnalysis {
 
     // Assume it is a data structure
     fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String): Boolean {
-        return when (currentSymbolTable.getTypeOf(identifier)) {
-            is StackType -> DataStructure.STACK.containsMethod(method)
-            else -> false
-        }
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+        return dataStructureHandler.convertStringToMethod(method, dataStructureType) == ErrorMethod
     }
 
-    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, size: Int): Boolean {
-        return when (dataStructureType) {
-            is StackType -> DataStructure.STACK.hasValidNumberOfArguments(method, size)
-        }
+    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int): Boolean {
+        return dataStructureHandler.convertStringToMethod(method, dataStructureType).hasValidNumberOfArguments(numArgs)
     }
 
 
