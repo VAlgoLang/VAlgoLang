@@ -1,13 +1,8 @@
 package com.manimdsl.errorhandling.semanticerror
 
-import antlr.ManimParser
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
-
-fun expressionTypeError(expression: String, type: String, linePos: String) {
-    addSemanticError("$expression must be of type $type", linePos)
-}
 
 fun declareAssignError(action: String, rhsType: Type, lhsType: Type,
                        ctx: ParserRuleContext) {
