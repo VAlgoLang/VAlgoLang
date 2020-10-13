@@ -3,7 +3,6 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.ManimProjectWriter
 import com.manimdsl.ManimWriter
 import com.manimdsl.shapes.Rectangle
-import org.apache.commons.io.FileUtils
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -33,8 +32,8 @@ class TestLinearRepresentation {
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
 
-        val expected = FileUtils.readFileToString(File("src/test/testFiles/python/stack.py"))
-        val generated = FileUtils.readFileToString(File(writer.createPythonFile()))
+        val expected = File("src/test/testFiles/python/stack.py").readText()
+        val generated = File(writer.createPythonFile()).readText()
 
         assertEquals(expected, generated)
     }
