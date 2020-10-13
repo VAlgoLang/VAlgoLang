@@ -50,23 +50,27 @@ sealed class Type : ASTNode()
 sealed class PrimitiveType : Type()
 object NumberType : PrimitiveType()
 
-sealed class DataStructureType<T : Collection<Object>>(
+sealed class DataStructureType(
     open var internalType: Type,
     open val methods: HashMap<String, DataStructureMethod>
 ) : Type() {
-    abstract val collection: T
-
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
 
     /** Init methods are to return instructions needed to create MObject **/
-    abstract fun init(identifier: String, x: Int, y: Int, variableName: String = "empty"): List<ManimInstr>
-
-    abstract fun invoke(t: (T) -> Unit): List<ManimInstr>
+    abstract fun init(
+        identifier: String,
+        x: Int,
+        y: Int,
+        variableName: String = "empty"
+    ): Pair<List<ManimInstr>, Object>
 }
 
 abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
-    abstract fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, Object?>
+    abstract fun animateMethod(
+        arguments: List<String>,
+        options: Map<String, Any> = emptyMap()
+    ): Pair<List<ManimInstr>, Object?>
 }
 
 data class StackType(
@@ -78,21 +82,20 @@ data class StackType(
             )
         ), "pop" to PopMethod(internalType)
     )
-) : DataStructureType<Stack<Object>>(internalType, methods) {
+) : DataStructureType(internalType, methods) {
 
     data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
         DataStructureMethod(returnType, argumentTypes) {
+        /** arguments = {value} **/
         override fun animateMethod(
             arguments: List<String>,
             options: Map<String, Any>
         ): Pair<List<ManimInstr>, Object?> {
             val rectangle = NewObject(Rectangle(arguments[0]))
-            // stack.push(rectangle)
             return Pair(
                 listOf(
                     rectangle,
-                    //TODO Get it to point to stack on parent data class
-                    MoveObject(rectangle.ident, "IDENTIFIER_FOR_TOP_OF_STACK", ObjectSide.ABOVE),
+                    MoveObject(rectangle.ident, (options["top"] as Object).ident, ObjectSide.ABOVE),
                 ), rectangle
             )
         }
@@ -107,7 +110,6 @@ data class StackType(
         ): Pair<List<ManimInstr>, Object?> {
             return Pair(
                 listOf(
-                    //TODO Get arguments[0] = top of stack identifier, pop, and peak second = arguments[1]
                     MoveObject(
                         (options["top"] as Object).ident,
                         (options["second"] as Object).ident,
@@ -128,17 +130,11 @@ data class StackType(
         return methods[method]!!
     }
 
-    override fun init(identifier: String, x: Int, y: Int, variableName: String): List<ManimInstr> {
+    override fun init(identifier: String, x: Int, y: Int, variableName: String): Pair<List<ManimInstr>, Object> {
         val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, variableName)
 
         // Add to stack of objects to keep track of identifier
-        return listOf(
-            stackInit
-        )
-    }
-
-    override fun invoke(t: (Stack<Object>) -> Unit): List<ManimInstr> {
-        TODO("Not yet implemented")
+        return Pair(listOf(stackInit), stackInit)
     }
 }
 
