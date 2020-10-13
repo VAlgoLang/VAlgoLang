@@ -22,10 +22,14 @@ data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBloc
     }
 }
 
-data class MoveObject(val ident: String, val moveToIdent: String, val objectSide: ObjectSide, val offset: Int = 0) :
+data class MoveObject(val ident: String, val moveToIdent: String, val objectSide: ObjectSide, val offset: Int = 0, val fadeOut: Boolean = false) :
     ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.move_relative_to_obj($ident, $moveToIdent, ${objectSide.addOffset(offset)})")
+        val instructions = mutableListOf("self.move_relative_to_obj($ident, $moveToIdent, ${objectSide.addOffset(offset)})")
+        if (fadeOut) {
+            instructions.add("self.play(FadeOut($ident))")
+        }
+        return instructions
     }
 }
 

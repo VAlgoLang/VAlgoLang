@@ -20,13 +20,13 @@ class TestLinearRepresentation {
             InitStructure(2, -1, Alignment.HORIZONTAL, "y", "empty"),
             NewObject(Rectangle("2"), "testIdent"),
             MoveToLine(2, "pointer", "code_block"),
-            MoveObject("testIdent", "y", ObjectSide.ABOVE),
+            MoveObject("testIdent", "empty", ObjectSide.ABOVE),
             MoveToLine(3, "pointer", "code_block"),
             NewObject(Rectangle("3"), "testIdent1"),
             MoveObject("testIdent1", "testIdent", ObjectSide.ABOVE),
             Sleep(2.0),
             MoveToLine(4, "pointer", "code_block"),
-            MoveObject("testIdent1", "testIdent", ObjectSide.ABOVE, 20),
+            MoveObject("testIdent1", "testIdent", ObjectSide.ABOVE, 20, true),
             Sleep(2.0)
         )
 
