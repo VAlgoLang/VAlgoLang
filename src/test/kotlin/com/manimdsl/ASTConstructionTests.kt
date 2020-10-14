@@ -6,7 +6,7 @@ import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 
 
-class ValidASTTests {
+class ASTConstructionTests {
 
     @Test
     fun variableDeclaration() {
@@ -32,7 +32,6 @@ class ValidASTTests {
         val statements = listOf(DeclarationNode(1, "x", NumberNode(1, 1.5)),
                 DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), listOf())))
         val reference = ProgramNode(statements)
-
         val actual = buildAST(multiLineProgram)
         assertEquals(reference, actual)
     }
@@ -42,9 +41,8 @@ class ValidASTTests {
         val methodProgram = "let y: Stack = new Stack;\n" +
                 "y.push(1);\n"
         val statements = listOf(DeclarationNode(1, "y", ConstructorNode(1, StackType(NumberType), listOf())),
-                MethodCallNode(2, "y", StackType.PushMethod(argumentTypes = listOf(NumberType)), listOf(NumberNode(2, 1.0))))
+                MethodCallNode(2, "y",  StackType.PushMethod(returnType = NoType, argumentTypes = listOf(NumberType)), listOf(NumberNode(2, 1.0))))
         val reference = ProgramNode(statements)
-
         val actual = buildAST(methodProgram)
         assertEquals(reference, actual)
     }
@@ -52,6 +50,7 @@ class ValidASTTests {
     // Assumes syntactically correct program
     private fun buildAST(program: String): ASTNode {
         val parser = ManimDSLParser(program.byteInputStream())
-        return parser.convertToAst(parser.parseFile().second).second
+        val (_, ast, _) = parser.convertToAst(parser.parseFile().second)
+        return ast
     }
 }

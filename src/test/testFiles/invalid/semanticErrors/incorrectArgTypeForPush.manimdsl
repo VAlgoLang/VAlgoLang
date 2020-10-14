@@ -1,0 +1,3 @@
+let x = new Stack;
+let y = new Stack;
+x.push(y);

@@ -20,10 +20,11 @@ class InvalidSyntaxTests {
     private val outputStreamCaptor = ByteArrayOutputStream()
 
     companion object {
+        private const val syntaxErrorFilePath = "src/test/testFiles/invalid/syntaxErrors"
 
         @JvmStatic
         fun data(): Stream<Arguments> {
-            return File("src/test/testFiles/invalid/syntaxErrors").walk().filter { it.isFile }
+            return File(syntaxErrorFilePath).walk().filter { it.isFile }
                 .map { Arguments.of(it.path) }.asStream()
         }
 
@@ -62,7 +63,7 @@ class InvalidSyntaxTests {
 
     @Test
     fun mismatchedInput() {
-        val inputFile = File("src/test/testFiles/invalid/syntaxErrors/mismatchedInput.manimdsl")
+        val inputFile = File("$syntaxErrorFilePath/mismatchedInput.manimdsl")
         ManimDSLParser(inputFile.inputStream()).parseFile()
         assertTrue(
             outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: mismatched input .* expecting .*"))
@@ -71,14 +72,14 @@ class InvalidSyntaxTests {
 
     @Test
     fun missingToken() {
-        val inputFile = File("src/test/testFiles/invalid/syntaxErrors/missingToken.manimdsl")
+        val inputFile = File("$syntaxErrorFilePath/missingToken.manimdsl")
         ManimDSLParser(inputFile.inputStream()).parseFile()
         assertTrue(outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: missing .* at .*")))
     }
 
     @Test
     fun extraneousInput() {
-        val inputFile = File("src/test/testFiles/invalid/syntaxErrors/extraneousInput.manimdsl")
+        val inputFile = File("$syntaxErrorFilePath/extraneousInput.manimdsl")
         ManimDSLParser(inputFile.inputStream()).parseFile()
         assertTrue(outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: extraneous input .*")))
     }

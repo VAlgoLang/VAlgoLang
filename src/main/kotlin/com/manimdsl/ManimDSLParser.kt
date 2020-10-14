@@ -2,9 +2,11 @@ package com.manimdsl
 
 import antlr.ManimLexer
 import antlr.ManimParser
+import com.manimdsl.frontend.ProgramNode
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
+import com.manimdsl.frontend.SymbolTable
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
@@ -36,12 +38,12 @@ class ManimDSLParser(private val input: InputStream) {
         parser.removeErrorListeners()
         parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
-
         return Pair(ErrorHandler.checkErrors(), program)
     }
 
-    fun convertToAst(program: ManimParser.ProgramContext): ProgramNode {
+    fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTable> {
         val visitor = ManimParserVisitor()
-        return visitor.visitProgram(program)
+        val ast = visitor.visitProgram(program)
+        return Triple(ErrorHandler.checkErrors(), ast, visitor.currentSymbolTable)
     }
 }
