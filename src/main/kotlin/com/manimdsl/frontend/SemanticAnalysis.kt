@@ -31,13 +31,13 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if (lhsType != NoType && rhsType != NoType && lhsType != rhsType){
+        if (lhsType != NoType && rhsType != NoType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
 
     fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
-        if (currentSymbolTable.getTypeOf(identifier) == NoType){
+        if (currentSymbolTable.getTypeOf(identifier) == NoType) {
             undeclaredAssignError(identifier, ctx)
         }
     }
@@ -55,18 +55,19 @@ class SemanticAnalysis {
         }
     }
 
-    fun invalidNumberOfArgumentsCheck(dataStructureType: DataStructureType, method: String, numArgs: Int, ctx: ParserRuleContext) {
-        if (dataStructureType.getMethodByName(method).argumentTypes.size != numArgs) {
-            numOfArgsInMethodCallError(dataStructureType.toString(), method, numArgs, ctx)
+    fun invalidNumberOfArgumentsCheck(dataStructureType: DataStructureType, methodName: String, numArgs: Int, ctx: ParserRuleContext) {
+        val method = dataStructureType.getMethodByName(methodName)
+        if (method != ErrorMethod() && method.argumentTypes.size != numArgs) {
+            numOfArgsInMethodCallError(dataStructureType.toString(), methodName, numArgs, ctx)
         }
     }
 
-    fun argTypesCheck(argTypes: List<Type>, method: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
+    fun primitiveArgTypesCheck(argTypes: List<Type>, methodName: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
         argTypes.forEachIndexed { index, type ->
             if (type !is PrimitiveType) {
                 val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
                 val argName = ctx.arg_list().getChild(index).text
-                typeOfArgsInMethodCallError(dataStructureType.toString(), method, type.toString(), argName, argCtx)
+                typeOfArgsInMethodCallError(dataStructureType.toString(), methodName, type.toString(), argName, argCtx)
             }
         }
     }
@@ -74,7 +75,7 @@ class SemanticAnalysis {
     fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
         if (dataStructureMethod != ErrorMethod()) {
             argumentTypes.forEachIndexed { index, type ->
-                if (type !== dataStructureMethod.argumentTypes[index]) {
+                if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
                     val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
                     val argName = ctx.arg_list().getChild(index).text
                     typeOfArgsInMethodCallError(dataStructureType.toString(), dataStructureMethod.toString(), type.toString(), argName, argCtx)

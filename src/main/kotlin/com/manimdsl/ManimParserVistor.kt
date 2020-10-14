@@ -3,7 +3,6 @@ package com.manimdsl
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
-import javax.lang.model.type.ErrorType
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     val currentSymbolTable = SymbolTableNode()
@@ -79,7 +78,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
             // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
-            semanticAnalyser.argTypesCheck(argTypes, methodName, dataStructureType, ctx)
+            semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
             semanticAnalyser.incompatibleArgumentTypesCheck(
                     dataStructureType,
                     argTypes,

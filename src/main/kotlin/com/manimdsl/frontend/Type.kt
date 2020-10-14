@@ -21,8 +21,16 @@ data class ErrorMethod(override val returnType: Type = NoType, override var argu
 data class StackType(override var internalType: Type = NumberType,
                      override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
 
-    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes)
-    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes)
+    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes) {
+        override fun toString(): String {
+            return "push"
+        }
+    }
+    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes) {
+        override fun toString(): String {
+            return "pop"
+        }
+    }
 
     override fun containsMethod(method: String): Boolean {
         return methods.containsKey(method)

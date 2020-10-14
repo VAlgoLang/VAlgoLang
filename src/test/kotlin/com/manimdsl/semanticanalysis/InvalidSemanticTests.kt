@@ -112,6 +112,14 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun incorrectArgumentTypesForDataStructureMethod() {
+        runSyntaxAndSemanticAnalysis("incorrectArgTypeForPush.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* method on .* does not accept argument .* of type .*"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
