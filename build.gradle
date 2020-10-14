@@ -37,6 +37,7 @@ dependencies {
     testCompile "org.junit.jupiter:junit-jupiter-params:5.4.2"
     testCompileOnly 'junit:junit:4.12'
     compile fileTree(dir: 'lib', include: ['*.jar'])
+    compile 'info.picocli:picocli:4.5.1'
 }
 
 compileKotlin {

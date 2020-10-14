@@ -4,9 +4,7 @@ import com.manimdsl.frontend.ProgramNode
 import com.manimdsl.frontend.SymbolTable
 import com.manimdsl.linearrepresentation.*
 import junit.framework.TestCase.assertEquals
-
 import org.junit.jupiter.api.Test
-import java.util.*
 
 
 class ASTExecutorTests {

@@ -1,10 +1,13 @@
 package com.manimdsl
 
 import com.manimdsl.linearrepresentation.ManimInstr
+import picocli.CommandLine
+import picocli.CommandLine.*
 import java.io.File
+import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String) {
+private fun compile(filename: String, output: String?, manimOptions: List<String>) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -26,27 +29,60 @@ private fun compile(filename: String) {
     val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
 
     var state: Pair<Boolean, List<ManimInstr>>
-
     do {
          state = executor.executeNextStatement()
     } while (!state.first)
 
     val writer = ManimProjectWriter(ManimWriter(state.second).build())
 
-    writer.createPythonFile("test.py")
-    writer.generateAnimation("test.py")
+    if(output !== null) println("Writing file to $output")
+    val outputFile = writer.createPythonFile(output)
+
+    println("Generating animation...")
+    val exitCode = writer.generateAnimation(outputFile, manimOptions)
+
+    if(exitCode != 0) {
+        println("Animation could not be generated")
+        exitProcess(1)
+    }
 
     println("Animation Complete!")
 }
 
-fun main(args: Array<String>) {
+enum class AnimationQuality {
+    LOW,
+    HIGH;
 
-    if (args.isEmpty()) {
-        // No argument passed in
-        println("Please enter a file name")
-        return
+    override fun toString(): String {
+        return this.name.toLowerCase()
     }
-
-    compile(args.first())
 }
 
+@Command(name = "manimdsl", mixinStandardHelpOptions = true, version = ["manimdsl 1.0"], description = ["ManimDSL compiler to produce manim animations"])
+class DSLCommandLineArguments : Callable<Int> {
+
+    private val manimArguments = mutableListOf<String>()
+
+    @Parameters(index = "0", description = ["The manimdsl file to compile and animate"])
+    lateinit var file: String
+
+    @Option(names = ["-o", "--output"], description = ["Output generated python & manim code (optional)"])
+    var output: String? = null
+
+    @Option(names = ["-p", "--preview"], defaultValue = "false", description = ["Preview animation after generation (default: \${DEFAULT-VALUE})"])
+    fun preview(preview: Boolean = false) {
+        if(preview) manimArguments.add("p")
+    }
+
+    @Option(names = ["-q", "--quality"], defaultValue = "low", description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})"])
+    fun quality(quality: AnimationQuality = AnimationQuality.LOW) {
+        if (quality == AnimationQuality.LOW) manimArguments.add("l")
+    }
+
+    override fun call(): Int {
+        compile(file, output, manimArguments)
+        return 0
+    }
+}
+
+fun main(args: Array<String>) : Unit = exitProcess(CommandLine(DSLCommandLineArguments()).execute(*args))

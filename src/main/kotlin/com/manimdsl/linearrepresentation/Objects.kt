@@ -43,8 +43,7 @@ data class CodeBlock(
             "$codeTextName = $ident.build()",
             "self.place_at($codeTextName, -1, 0)",
             "self.play(FadeIn($codeTextName))",
-            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
-            "self.move_arrow_to_line(1, $pointerName, $ident)"
+            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"
         )
     }
 }
