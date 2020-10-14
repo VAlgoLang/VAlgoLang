@@ -68,7 +68,13 @@ sealed class DataStructureType(
         identifier: String,
         x: Int,
         y: Int,
-        text: String
+        text: String,
+    ): Pair<List<ManimInstr>, Object>
+
+    abstract fun initRelativeToObject(
+        identifier: String,
+        text: String,
+        moveRelativeTo: String
     ): Pair<List<ManimInstr>, Object>
 }
 
@@ -141,6 +147,15 @@ data class StackType(
         val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, text)
 
         // Add to stack of objects to keep track of identifier
+        return Pair(listOf(stackInit), stackInit)
+    }
+
+    override fun initRelativeToObject(
+        identifier: String,
+        text: String,
+        moveRelativeTo: String
+    ): Pair<List<ManimInstr>, Object> {
+        val stackInit = InitStructureRelative(Alignment.HORIZONTAL, identifier, text, moveRelativeTo)
         return Pair(listOf(stackInit), stackInit)
     }
 }

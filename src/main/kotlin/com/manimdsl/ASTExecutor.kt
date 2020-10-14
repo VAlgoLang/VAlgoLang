@@ -13,7 +13,11 @@ data class StackValue(val initObject: Object, val stack: Stack<Pair<Double, Obje
 
 object EmptyValue : ExecValue()
 
-class ASTExecutor(private val program: ProgramNode, private val symbolTable: SymbolTable, val fileLines: List<String>) {
+class ASTExecutor(
+    private val program: ProgramNode,
+    private val symbolTable: SymbolTable,
+    private val fileLines: List<String>
+) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
     private val variableNameGenerator = VariableNameGenerator(symbolTable)
@@ -57,7 +61,10 @@ class ASTExecutor(private val program: ProgramNode, private val symbolTable: Sym
                     is StackType.PushMethod -> {
                         val doubleValue = executeExpression(node.arguments[0]) as DoubleValue
                         val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
-                        val (instructions, newObject) = node.dataStructureMethod.animateMethod(listOf(doubleValue.value.toString()), mapOf("top" to secondObject, "generator" to variableNameGenerator))
+                        val (instructions, newObject) = node.dataStructureMethod.animateMethod(
+                            listOf(doubleValue.value.toString()),
+                            mapOf("top" to secondObject, "generator" to variableNameGenerator)
+                        )
                         linearRepresentation.addAll(instructions)
                         ds.stack.push(Pair(doubleValue.value, newObject!!))
                         doubleValue
@@ -85,7 +92,21 @@ class ASTExecutor(private val program: ProgramNode, private val symbolTable: Sym
     private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
         return when (node.type) {
             is StackType -> {
-                val (instructions, newObject) = node.type.init(variableNameGenerator.generateNameFromPrefix("empty"), 2, -1, identifier)
+                val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
+                val (instructions, newObject) = if (numStack == null) {
+                    node.type.init(
+                        variableNameGenerator.generateNameFromPrefix("empty"),
+                        2,
+                        -1,
+                        identifier
+                    )
+                } else {
+                    node.type.initRelativeToObject(
+                        variableNameGenerator.generateNameFromPrefix("empty"),
+                        identifier,
+                        numStack.initObject.ident
+                    )
+                }
                 linearRepresentation.addAll(instructions)
                 StackValue(newObject, Stack())
             }
@@ -110,7 +131,7 @@ class ASTExecutor(private val program: ProgramNode, private val symbolTable: Sym
         val node = program.statements[programCounter] as StatementNode
         programCounter++
 
-        if (node is CodeNode){
+        if (node is CodeNode) {
             finalDSLCode.add(fileLines[node.lineNumber - 1])
             linearRepresentation.add(MoveToLine(finalDSLCode.size, pointerVariable, codeBlockVariable))
         }
@@ -122,7 +143,7 @@ class ASTExecutor(private val program: ProgramNode, private val symbolTable: Sym
         }
 
         val endOfProgram = program.statements.size == programCounter
-        if(endOfProgram) {
+        if (endOfProgram) {
             linearRepresentation.add(0, CodeBlock(finalDSLCode, codeBlockVariable, codeTextVariable, pointerVariable))
         }
 
