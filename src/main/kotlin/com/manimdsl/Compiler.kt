@@ -22,21 +22,21 @@ private fun compile(filename: String) {
     }
 
     val (abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
-    println(abstractSyntaxTree)
-    println(symbolTable)
 
     val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
 
     var state: Pair<Boolean, List<ManimInstr>>
+
     do {
          state = executor.executeNextStatement()
-        // TODO: Replace with conversion to IR
-        println(state)
     } while (!state.first)
+
     val writer = ManimProjectWriter(ManimWriter(state.second).build())
-    writer.createPythonFile("test23.py")
-    writer.generateAnimation("test23.py")
-    println("done")
+
+    writer.createPythonFile("test.py")
+    writer.generateAnimation("test.py")
+
+    println("Animation Complete!")
 }
 
 fun main(args: Array<String>) {

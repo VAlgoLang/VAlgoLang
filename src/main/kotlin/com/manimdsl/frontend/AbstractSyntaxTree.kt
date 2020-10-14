@@ -123,7 +123,7 @@ data class StackType(
                         (options["second"] as Object).ident,
                         ObjectSide.ABOVE,
                         20,
-                        options["fadeOut"] as? Boolean? ?: false
+                        options["fadeOut"] as? Boolean? ?: true
                     ),
                 ), null
             )
