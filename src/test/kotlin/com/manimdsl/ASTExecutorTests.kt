@@ -1,5 +1,6 @@
 package com.manimdsl
 
+import com.manimdsl.frontend.ProgramNode
 import junit.framework.TestCase.assertEquals
 
 import org.junit.jupiter.api.Test
@@ -68,6 +69,6 @@ class ASTExecutorTests {
     // Assumes syntactically correct program
     private fun buildAST(program: String): ProgramNode {
         val parser = ManimDSLParser(program.byteInputStream())
-        return parser.convertToAst(parser.parseFile().second)
+        return parser.convertToAst(parser.parseFile().second).second
     }
 }
