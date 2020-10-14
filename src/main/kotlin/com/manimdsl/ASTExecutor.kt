@@ -9,7 +9,7 @@ sealed class ExecValue
 
 data class DoubleValue(val value: Double) : ExecValue()
 
-data class StackValue(val initObject: Object, val stack: Stack<Pair<Double, Object>>) : ExecValue()
+data class StackValue(val initMObject: MObject, val stack: Stack<Pair<Double, MObject>>) : ExecValue()
 
 object EmptyValue : ExecValue()
 
@@ -60,7 +60,7 @@ class ASTExecutor(
                 return when (node.dataStructureMethod) {
                     is StackType.PushMethod -> {
                         val doubleValue = executeExpression(node.arguments[0]) as DoubleValue
-                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val secondObject = if (ds.stack.empty()) ds.initMObject else ds.stack.peek().second
                         val (instructions, newObject) = node.dataStructureMethod.animateMethod(
                             listOf(doubleValue.value.toString()),
                             mapOf("top" to secondObject, "generator" to variableNameGenerator)
@@ -71,7 +71,7 @@ class ASTExecutor(
                     }
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
-                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val secondObject = if (ds.stack.empty()) ds.initMObject else ds.stack.peek().second
                         val (instructions, _) = node.dataStructureMethod.animateMethod(
                             emptyList(),
                             mapOf(
@@ -104,7 +104,7 @@ class ASTExecutor(
                     node.type.initRelativeToObject(
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
-                        numStack.initObject.ident
+                        numStack.initMObject.ident
                     )
                 }
                 linearRepresentation.addAll(instructions)

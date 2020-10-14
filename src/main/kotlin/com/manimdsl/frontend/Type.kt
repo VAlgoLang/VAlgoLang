@@ -23,26 +23,28 @@ sealed class DataStructureType(
         x: Int,
         y: Int,
         text: String,
-    ): Pair<List<ManimInstr>, Object>
+    ): Pair<List<ManimInstr>, MObject>
 
     abstract fun initRelativeToObject(
         identifier: String,
         text: String,
         moveRelativeTo: String
-    ): Pair<List<ManimInstr>, Object>
+    ): Pair<List<ManimInstr>, MObject>
 }
 
-abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
-    abstract fun animateMethod(
-        arguments: List<String>,
-        options: Map<String, Any> = emptyMap()
-    ): Pair<List<ManimInstr>, com.manimdsl.linearrepresentation.Object?>
+interface DataStructureMethod {
+    fun animateMethod(arguments: List<String>, options: Map<String, Any> = emptyMap()): Pair<List<ManimInstr>, MObject?>
+    val returnType: Type
+    val argumentTypes: List<Type>
 }
 
-object ErrorMethod : DataStructureMethod(NoType, emptyList()) {
-    override fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, Object?> {
+object ErrorMethod : DataStructureMethod {
+    override fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, MObject?> {
         return Pair(emptyList(), null)
     }
+
+    override val returnType: Type = NoType
+    override val argumentTypes: List<Type> = emptyList()
 }
 
 // This is used to collect arguments up into method call node
@@ -59,38 +61,37 @@ data class StackType(
 ) : DataStructureType(internalType, methods) {
 
     data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
-        DataStructureMethod(returnType, argumentTypes) {
+        DataStructureMethod {
         /** arguments = {value} **/
         override fun animateMethod(
             arguments: List<String>,
             options: Map<String, Any>
-        ): Pair<List<ManimInstr>, Object?> {
+        ): Pair<List<ManimInstr>, MObject?> {
             val rectangleShape = Rectangle(arguments[0])
-            val rectangle = NewObject(
+            val rectangle = NewMObject(
                 rectangleShape,
                 (options["generator"] as VariableNameGenerator).generateShapeName(rectangleShape)
             )
             return Pair(
                 listOf(
                     rectangle,
-                    MoveObject(rectangle.ident, (options["top"] as Object).ident, ObjectSide.ABOVE),
+                    MoveObject(rectangle.ident, (options["top"] as MObject).ident, ObjectSide.ABOVE),
                 ), rectangle
             )
         }
-
     }
 
     data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
-        DataStructureMethod(returnType, argumentTypes) {
+        DataStructureMethod {
         override fun animateMethod(
             arguments: List<String>,
             options: Map<String, Any>
-        ): Pair<List<ManimInstr>, Object?> {
+        ): Pair<List<ManimInstr>, MObject?> {
             return Pair(
                 listOf(
                     MoveObject(
-                        (options["top"] as Object).ident,
-                        (options["second"] as Object).ident,
+                        (options["top"] as MObject).ident,
+                        (options["second"] as MObject).ident,
                         ObjectSide.ABOVE,
                         20,
                         options["fadeOut"] as? Boolean? ?: true
@@ -108,7 +109,7 @@ data class StackType(
         return methods.getOrDefault(method, ErrorMethod)
     }
 
-    override fun init(identifier: String, x: Int, y: Int, text: String): Pair<List<ManimInstr>, Object> {
+    override fun init(identifier: String, x: Int, y: Int, text: String): Pair<List<ManimInstr>, MObject> {
         val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, text)
 
         // Add to stack of objects to keep track of identifier
@@ -119,7 +120,7 @@ data class StackType(
         identifier: String,
         text: String,
         moveRelativeTo: String
-    ): Pair<List<ManimInstr>, Object> {
+    ): Pair<List<ManimInstr>, MObject> {
         val stackInit = InitStructureRelative(Alignment.HORIZONTAL, identifier, text, moveRelativeTo)
         return Pair(listOf(stackInit), stackInit)
     }

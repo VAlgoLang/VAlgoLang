@@ -4,7 +4,7 @@ import com.manimdsl.shapes.Shape
 
 /** Objects **/
 
-interface Object : ManimInstr {
+interface MObject : ManimInstr {
     val ident: String
 }
 
@@ -37,7 +37,7 @@ data class CodeBlock(
     override val ident: String,
     val codeTextName: String,
     val pointerName: String
-) : Object {
+) : MObject {
 
     override fun toPython(): List<String> {
         return listOf(
@@ -53,7 +53,7 @@ data class CodeBlock(
 data class InitStructure(
     val x: Int, val y: Int, val alignment: Alignment, override val ident: String,
     val text: String, val moveIdent: String? = null
-) : Object {
+) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
@@ -66,7 +66,7 @@ data class InitStructure(
 data class InitStructureRelative(
     val alignment: Alignment, override val ident: String, val text: String,
     val moveIdent: String? = null
-) : Object {
+) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
@@ -76,7 +76,7 @@ data class InitStructureRelative(
     }
 }
 
-data class NewObject(val shape: Shape, override val ident: String) : Object {
+data class NewMObject(val shape: Shape, override val ident: String) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = ${shape.className}(\"${shape.text}\").build()",
