@@ -10,9 +10,9 @@ interface Object : ManimInstr {
 
 enum class ObjectSide(var coord: Pair<Double, Double>) {
     ABOVE(Pair(0.0, 0.25)),
-    BELOW(Pair(-0.25, 0.0)),
+    BELOW(Pair(0.0, -0.25)),
     LEFT(Pair(-0.25, 0.0)),
-    RIGHT(Pair(0.025, 0.0));
+    RIGHT(Pair(0.25, 0.0));
 
     fun addOffset(offset: Int): ObjectSide {
         val newCoord = if (this == ABOVE) {
