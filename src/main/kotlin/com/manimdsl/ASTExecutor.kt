@@ -7,9 +7,9 @@ import java.util.*
 // Wrapper classes for values of variables while executing code
 sealed class ExecValue
 
-data class DoubleValue(val value: Double) : ExecValue()
+data class DoubleValue(val value: Double, val manimObject: MObject? = null) : ExecValue()
 
-data class StackValue(val initMObject: MObject, val stack: Stack<Pair<Double, MObject>>) : ExecValue()
+data class StackValue(val initObject: MObject, val stack: Stack<Pair<Double, MObject>>) : ExecValue()
 
 object EmptyValue : ExecValue()
 
@@ -40,11 +40,11 @@ class ASTExecutor(
 
     private val finalDSLCode = mutableListOf<String>()
 
-    private fun executeExpression(node: ExpressionNode): ExecValue {
+    private fun executeExpression(node: ExpressionNode, insideMethodCall :Boolean = false): ExecValue {
         return when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
-            is MethodCallNode -> executeMethodCall(node)
+            is MethodCallNode -> executeMethodCall(node, insideMethodCall)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
@@ -54,16 +54,23 @@ class ASTExecutor(
         }
     }
 
-    private fun executeMethodCall(node: MethodCallNode): ExecValue {
+    private fun executeMethodCall(node: MethodCallNode, insideMethodCall :Boolean): ExecValue {
         return when (val ds = variables[node.instanceIdentifier]) {
             is StackValue -> {
                 return when (node.dataStructureMethod) {
                     is StackType.PushMethod -> {
-                        val doubleValue = executeExpression(node.arguments[0]) as DoubleValue
-                        val secondObject = if (ds.stack.empty()) ds.initMObject else ds.stack.peek().second
+                        val doubleValue = executeExpression(node.arguments[0], true) as DoubleValue
+                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val options = mutableMapOf(
+                            "top" to secondObject,
+                            "generator" to variableNameGenerator,
+                        )
+
+                        if(doubleValue.manimObject != null) options["oldShape"] = doubleValue.manimObject
+
                         val (instructions, newObject) = node.dataStructureMethod.animateMethod(
                             listOf(doubleValue.value.toString()),
-                            mapOf("top" to secondObject, "generator" to variableNameGenerator)
+                            options
                         )
                         linearRepresentation.addAll(instructions)
                         ds.stack.push(Pair(doubleValue.value, newObject!!))
@@ -71,16 +78,17 @@ class ASTExecutor(
                     }
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
-                        val secondObject = if (ds.stack.empty()) ds.initMObject else ds.stack.peek().second
+                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
                         val (instructions, _) = node.dataStructureMethod.animateMethod(
                             emptyList(),
                             mapOf(
                                 "top" to poppedValue.second,
-                                "second" to secondObject
+                                "second" to secondObject,
+                                "fadeOut" to !insideMethodCall
                             )
                         )
                         linearRepresentation.addAll(instructions)
-                        DoubleValue(poppedValue.first)
+                        DoubleValue(poppedValue.first, poppedValue.second)
                     }
                     else -> EmptyValue
                 }
@@ -104,7 +112,7 @@ class ASTExecutor(
                     node.type.initRelativeToObject(
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
-                        numStack.initMObject.ident
+                        numStack.initObject.ident
                     )
                 }
                 linearRepresentation.addAll(instructions)

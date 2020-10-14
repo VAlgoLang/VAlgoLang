@@ -32,19 +32,17 @@ sealed class DataStructureType(
     ): Pair<List<ManimInstr>, MObject>
 }
 
-interface DataStructureMethod {
-    fun animateMethod(arguments: List<String>, options: Map<String, Any> = emptyMap()): Pair<List<ManimInstr>, MObject?>
-    val returnType: Type
-    val argumentTypes: List<Type>
+abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
+    abstract fun animateMethod(
+        arguments: List<String>,
+        options: Map<String, Any> = emptyMap()
+    ): Pair<List<ManimInstr>, MObject?>
 }
 
-object ErrorMethod : DataStructureMethod {
+object ErrorMethod : DataStructureMethod(NoType, emptyList()) {
     override fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, MObject?> {
         return Pair(emptyList(), null)
     }
-
-    override val returnType: Type = NoType
-    override val argumentTypes: List<Type> = emptyList()
 }
 
 // This is used to collect arguments up into method call node
@@ -61,28 +59,32 @@ data class StackType(
 ) : DataStructureType(internalType, methods) {
 
     data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
-        DataStructureMethod {
+        DataStructureMethod(returnType, argumentTypes) {
         /** arguments = {value} **/
         override fun animateMethod(
             arguments: List<String>,
             options: Map<String, Any>
         ): Pair<List<ManimInstr>, MObject?> {
             val rectangleShape = Rectangle(arguments[0])
-            val rectangle = NewMObject(
+
+            val rectangle = options["oldShape"] as? MObject ?: NewMObject(
                 rectangleShape,
                 (options["generator"] as VariableNameGenerator).generateShapeName(rectangleShape)
             )
+
+            val instructions = mutableListOf<ManimInstr>(MoveObject(rectangle.ident, (options["top"] as MObject).ident, ObjectSide.ABOVE))
+            if(!options.contains("oldShape")) {
+                instructions.add(0, rectangle)
+            }
             return Pair(
-                listOf(
-                    rectangle,
-                    MoveObject(rectangle.ident, (options["top"] as MObject).ident, ObjectSide.ABOVE),
-                ), rectangle
+                instructions, rectangle
             )
         }
+
     }
 
     data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
-        DataStructureMethod {
+        DataStructureMethod(returnType, argumentTypes) {
         override fun animateMethod(
             arguments: List<String>,
             options: Map<String, Any>
@@ -94,7 +96,7 @@ data class StackType(
                         (options["second"] as MObject).ident,
                         ObjectSide.ABOVE,
                         20,
-                        options["fadeOut"] as? Boolean? ?: true
+                        options["fadeOut"] as? Boolean? ?: false
                     ),
                 ), null
             )
