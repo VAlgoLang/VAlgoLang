@@ -68,7 +68,7 @@ sealed class DataStructureType(
         identifier: String,
         x: Int,
         y: Int,
-        text: String = "empty"
+        text: String
     ): Pair<List<ManimInstr>, Object>
 }
 

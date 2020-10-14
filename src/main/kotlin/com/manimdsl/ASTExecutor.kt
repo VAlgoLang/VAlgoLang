@@ -85,7 +85,7 @@ class ASTExecutor(private val program: ProgramNode, private val symbolTable: Sym
     private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
         return when (node.type) {
             is StackType -> {
-                val (instructions, newObject) = node.type.init(identifier, 2, -1)
+                val (instructions, newObject) = node.type.init(variableNameGenerator.generateNameFromPrefix("empty"), 2, -1, identifier)
                 linearRepresentation.addAll(instructions)
                 StackValue(newObject, Stack())
             }
