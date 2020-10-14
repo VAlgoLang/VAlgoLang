@@ -17,7 +17,7 @@ class AnimationFlags(vararg activateFlags: Flag = emptyArray()) {
     }
 
     /** Array like access functions**/
-    operator fun get(flag: Flag): Boolean = flags[flag] ?: false
+    operator fun get(flag: Flag): Boolean = flags.getOrDefault(flag, false)
     operator fun set(flag: Flag, set: Boolean) {
         flags[flag] = set
     }
