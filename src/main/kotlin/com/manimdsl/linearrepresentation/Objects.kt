@@ -44,7 +44,6 @@ data class CodeBlock(
             "self.place_at($codeTextName, -1, 0)",
             "self.play(FadeIn($codeTextName))",
             "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
-            "self.move_arrow_to_line(1, $pointerName, $ident)"
         )
     }
 }
@@ -62,6 +61,8 @@ data class InitStructure(val x: Int, val y: Int, val alignment: Alignment, overr
 
 data class NewObject(val shape: Shape, override val ident: String) : Object {
     override fun toPython(): List<String> {
-        return listOf("$ident = ${shape.className}(\"${shape.text}\").build()")
+        return listOf(
+            "$ident = ${shape.className}(\"${shape.text}\").build()",
+            "self.play(FadeIn($ident))")
     }
 }
