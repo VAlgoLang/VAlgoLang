@@ -30,10 +30,10 @@ class TestLinearRepresentation {
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
 
-        val expected = File("src/test/testFiles/python/stack.py").readText()
-        val generated = File(writer.createPythonFile()).readText()
+        val expected = File("src/test/testFiles/python/stack.py").readLines()
+        val generated = File(writer.createPythonFile()).readLines()
 
 
-        assertEquals(expected, generated)
+        assertEquals(expected.filter { it.trim() != "" }, generated.filter { it.trim() != "" })
     }
 }
