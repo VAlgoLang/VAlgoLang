@@ -6,7 +6,7 @@ import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 
 
-class ValidASTTests {
+class ASTConstructionTests {
 
     @Test
     fun variableDeclaration() {
