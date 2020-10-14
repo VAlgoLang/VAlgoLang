@@ -15,8 +15,6 @@ RUN pip3 install manimlib
 COPY . /src/
 WORKDIR /src
 
-RUN ls src
-
 # Build jar file using gradle
 RUN gradle build -x test
 
