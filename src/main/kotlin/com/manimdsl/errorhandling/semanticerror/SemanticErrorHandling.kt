@@ -20,7 +20,7 @@ fun undeclaredAssignError(variable: String,
 }
 
 fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext){
-    addSemanticError("$identifier is not a Data Structure", getErrorLinePos(ctx))
+    addSemanticError("$identifier is not a data structure", getErrorLinePos(ctx))
 }
 
 fun unsupportedMethodError(dataStructureType: String, method: String, ctx: ParserRuleContext){

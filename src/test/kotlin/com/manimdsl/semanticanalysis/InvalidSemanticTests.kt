@@ -96,6 +96,21 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun primitiveTypeMethodCall() {
+        runSyntaxAndSemanticAnalysis("methodCallOnPrimitiveType.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* is not a data structure"))
+        )
+    }
+
+    @Test
+    fun incorrectMethodNameForDataStructure() {
+        runSyntaxAndSemanticAnalysis("incorrectMethodName.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* does not support .* method"))
+        )
+    }
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

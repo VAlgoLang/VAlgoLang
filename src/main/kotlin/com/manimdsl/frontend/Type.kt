@@ -1,6 +1,5 @@
 package com.manimdsl.frontend
 
-
 sealed class Type: ASTNode()
 
 sealed class PrimitiveType: Type()
@@ -30,7 +29,7 @@ data class StackType(override var internalType: Type = NumberType,
     }
 
     override fun getMethodByName(method: String): DataStructureMethod {
-        return methods[method]!!
+        return methods[method]?: ErrorMethod()
     }
 
     override fun toString(): String {

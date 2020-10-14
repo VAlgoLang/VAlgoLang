@@ -72,13 +72,13 @@ class SemanticAnalysis {
     }
 
     fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
-
-        argumentTypes.forEachIndexed { index, type ->
-            if (type !== dataStructureMethod.argumentTypes[index]) {
-                val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
-                val argName = ctx.arg_list().getChild(index).text
-                typeOfArgsInMethodCallError(dataStructureType.toString(), dataStructureMethod.toString(), type.toString(), argName, argCtx)
-
+        if (dataStructureMethod != ErrorMethod()) {
+            argumentTypes.forEachIndexed { index, type ->
+                if (type !== dataStructureMethod.argumentTypes[index]) {
+                    val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+                    val argName = ctx.arg_list().getChild(index).text
+                    typeOfArgsInMethodCallError(dataStructureType.toString(), dataStructureMethod.toString(), type.toString(), argName, argCtx)
+                }
             }
         }
     }

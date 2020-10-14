@@ -32,7 +32,6 @@ class ASTConstructionTests {
         val statements = listOf(DeclarationNode(1, "x", NumberNode(1, 1.5)),
                 DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), listOf())))
         val reference = ProgramNode(statements)
-
         val actual = buildAST(multiLineProgram)
         assertEquals(reference, actual)
     }
