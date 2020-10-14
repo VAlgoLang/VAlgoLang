@@ -1,6 +1,6 @@
 package com.manimdsl.frontend
 
-sealed class ASTNode
+open class ASTNode
 data class ProgramNode(val statements: List<StatementNode>): ASTNode()
 
 // All statements making up program
@@ -35,39 +35,5 @@ sealed class UnaryExpression(override val lineNumber: Int, open val expr: Expres
 data class PlusExpression(override val lineNumber: Int, override val expr: ExpressionNode): UnaryExpression(lineNumber, expr)
 data class MinusExpression(override val lineNumber: Int, override val expr: ExpressionNode): UnaryExpression(lineNumber, expr)
 
-
-// Types (to be used in symbol table also)
-sealed class Type: ASTNode()
-// Primitive / Data structure distinction requested by code generation
-sealed class PrimitiveType: Type()
-object NumberType: PrimitiveType()
-sealed class DataStructureType(open var internalType: Type, open val methods: HashMap<String, DataStructureMethod>): Type() {
-    abstract fun containsMethod(method: String): Boolean
-    abstract fun getMethodByName(method: String): DataStructureMethod
-}
-
-open class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>)
-data class ErrorMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type> = listOf()) : DataStructureMethod(returnType, argumentTypes)
-
-data class StackType(override var internalType: Type = NumberType,
-                     override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
-
-    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes)
-    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes)
-
-    override fun containsMethod(method: String): Boolean {
-        return methods.containsKey(method)
-    }
-
-    override fun getMethodByName(method: String): DataStructureMethod {
-        return methods[method]!!
-    }
-
-    override fun toString(): String {
-        return "Stack<${internalType}>"
-    }
-}
-
-object NoType: Type()
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
