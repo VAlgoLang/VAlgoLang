@@ -6,11 +6,6 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
 
-    fun redeclaredVariableCheck(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
-        return currentSymbolTable.getTypeOf(identifier) != NoType
-    }
-
-
     private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type = when (expression) {
         is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
         is NumberNode -> NumberType
@@ -26,6 +21,13 @@ class SemanticAnalysis {
 
     fun inferType(currentSymbolTable: SymbolTableNode, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
+    }
+
+
+    fun redeclaredVariableCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) != NoType) {
+            redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
+        }
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
