@@ -32,17 +32,30 @@ sealed class DataStructureType(
     ): Pair<List<ManimInstr>, MObject>
 }
 
-abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
-    abstract fun animateMethod(
-        arguments: List<String>,
-        options: Map<String, Any> = emptyMap()
+interface DataStructureMethod {
+    fun animateMethod(
+        arguments: List<String> = emptyList(),
+        variableNameGenerator: NameGenerator = DummyNameGenerator,
+        animationFlags: AnimationFlags = AnimationFlags(),
+        vararg mObjects: MObject = emptyArray(),
     ): Pair<List<ManimInstr>, MObject?>
+
+    val returnType: Type
+    val argumentTypes: List<Type>
 }
 
-object ErrorMethod : DataStructureMethod(NoType, emptyList()) {
-    override fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, MObject?> {
+object ErrorMethod : DataStructureMethod {
+    override fun animateMethod(
+        arguments: List<String>,
+        variableNameGenerator: NameGenerator,
+        animationFlags: AnimationFlags,
+        vararg mObjects: MObject
+    ): Pair<List<ManimInstr>, MObject?> {
         return Pair(emptyList(), null)
     }
+
+    override val returnType: Type = NoType
+    override val argumentTypes: List<Type> = emptyList()
 }
 
 // This is used to collect arguments up into method call node
@@ -59,21 +72,24 @@ data class StackType(
 ) : DataStructureType(internalType, methods) {
 
     data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
-        DataStructureMethod(returnType, argumentTypes) {
-        /** arguments = {value} **/
+        DataStructureMethod {
         override fun animateMethod(
             arguments: List<String>,
-            options: Map<String, Any>
+            variableNameGenerator: NameGenerator,
+            animationFlags: AnimationFlags,
+            vararg mObjects: MObject
         ): Pair<List<ManimInstr>, MObject?> {
             val rectangleShape = Rectangle(arguments[0])
-
-            val rectangle = options["oldShape"] as? MObject ?: NewMObject(
+            val topOfStack = mObjects[0]
+            val oldShape = mObjects[1]
+            val rectangle = if (animationFlags[OldShape]) oldShape else NewMObject(
                 rectangleShape,
-                (options["generator"] as VariableNameGenerator).generateShapeName(rectangleShape)
+                variableNameGenerator.generateShapeName(rectangleShape)
             )
 
-            val instructions = mutableListOf<ManimInstr>(MoveObject(rectangle.ident, (options["top"] as MObject).ident, ObjectSide.ABOVE))
-            if(!options.contains("oldShape")) {
+            val instructions =
+                mutableListOf<ManimInstr>(MoveObject(rectangle.ident, topOfStack.ident, ObjectSide.ABOVE))
+            if (!animationFlags[OldShape]) {
                 instructions.add(0, rectangle)
             }
             return Pair(
@@ -84,19 +100,23 @@ data class StackType(
     }
 
     data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
-        DataStructureMethod(returnType, argumentTypes) {
+        DataStructureMethod {
         override fun animateMethod(
             arguments: List<String>,
-            options: Map<String, Any>
+            variableNameGenerator: NameGenerator,
+            animationFlags: AnimationFlags,
+            vararg mObjects: MObject
         ): Pair<List<ManimInstr>, MObject?> {
+            val topOfStack = mObjects[0]
+            val secondTopOfStack = mObjects[1]
             return Pair(
                 listOf(
                     MoveObject(
-                        (options["top"] as MObject).ident,
-                        (options["second"] as MObject).ident,
+                        topOfStack.ident,
+                        secondTopOfStack.ident,
                         ObjectSide.ABOVE,
                         20,
-                        options["fadeOut"] as? Boolean? ?: false
+                        animationFlags[FadeOut]
                     ),
                 ), null
             )
@@ -129,4 +149,4 @@ data class StackType(
 }
 
 
-object NoType: Type()
+object NoType : Type()

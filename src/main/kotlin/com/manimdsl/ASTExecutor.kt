@@ -61,16 +61,17 @@ class ASTExecutor(
                     is StackType.PushMethod -> {
                         val doubleValue = executeExpression(node.arguments[0], true) as DoubleValue
                         val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
-                        val options = mutableMapOf(
-                            "top" to secondObject,
-                            "generator" to variableNameGenerator,
-                        )
 
-                        if(doubleValue.manimObject != null) options["oldShape"] = doubleValue.manimObject
+                        // Set animation flags
+                        val animationFlags = AnimationFlags()
+                        animationFlags[OldShape] = doubleValue.manimObject != null
 
                         val (instructions, newObject) = node.dataStructureMethod.animateMethod(
                             listOf(doubleValue.value.toString()),
-                            options
+                            variableNameGenerator,
+                            animationFlags,
+                            secondObject,
+                            doubleValue.manimObject ?: EmptyMObject
                         )
                         linearRepresentation.addAll(instructions)
                         ds.stack.push(Pair(doubleValue.value, newObject!!))
@@ -79,12 +80,16 @@ class ASTExecutor(
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
                         val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+
+                        // Set animation flags
+                        val animationFlags = AnimationFlags()
+                        animationFlags[FadeOut] = !insideMethodCall
+
                         val (instructions, _) = node.dataStructureMethod.animateMethod(
-                            emptyList(),
-                            mapOf(
-                                "top" to poppedValue.second,
-                                "second" to secondObject,
-                                "fadeOut" to !insideMethodCall
+                            animationFlags = animationFlags,
+                            mObjects = arrayOf(
+                                poppedValue.second,
+                                secondObject,
                             )
                         )
                         linearRepresentation.addAll(instructions)

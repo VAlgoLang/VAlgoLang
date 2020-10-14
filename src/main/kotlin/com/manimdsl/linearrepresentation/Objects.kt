@@ -84,3 +84,8 @@ data class NewMObject(val shape: Shape, override val ident: String) : MObject {
         )
     }
 }
+
+object EmptyMObject : MObject {
+    override val ident: String = "null"
+    override fun toPython(): List<String> = emptyList()
+}
