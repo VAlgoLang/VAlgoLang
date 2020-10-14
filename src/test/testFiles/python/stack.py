@@ -7,7 +7,6 @@ class Main(Scene):
         self.place_at(code_text, -1, 0)
         self.play(FadeIn(code_text))
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
-        self.move_arrow_to_line(1, pointer, code_block)
         y = Init_structure("empty", 0).build()
         y.to_edge(np.array([2, -1, 0]))
         self.play(ShowCreation(y))
