@@ -26,8 +26,14 @@ private fun compile(filename: String) {
         exitProcess(semanticErrorStatus.code)
     }
 
-    println(abstractSyntaxTree)
-    println(symbolTable)
+    val executor = ASTExecutor(abstractSyntaxTree)
+
+    do {
+        val state = executor.executeNextStatement()
+        // TODO: Replace with conversion to IR
+        println(state)
+    } while (!state.first)
+
 }
 
 fun main(args: Array<String>) {
