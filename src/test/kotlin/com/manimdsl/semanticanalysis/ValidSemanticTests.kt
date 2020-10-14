@@ -37,8 +37,8 @@ class ValidSemanticTests {
     fun testFileIsSemanticallyValid(fileName: String) {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
-        val (_, program) = parser.parseFile()
-        val (semanticErrorStatus, _, _) = parser.convertToAst(program)
+        val program = parser.parseFile().second
+        val semanticErrorStatus = parser.convertToAst(program).first
         assertEquals(semanticErrorStatus, ExitStatus.EXIT_SUCCESS)
     }
 

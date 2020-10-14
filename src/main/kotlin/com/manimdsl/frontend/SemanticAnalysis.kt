@@ -31,7 +31,7 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if (lhsType != rhsType){
+        if (lhsType != NoType && rhsType != NoType && lhsType != rhsType){
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }

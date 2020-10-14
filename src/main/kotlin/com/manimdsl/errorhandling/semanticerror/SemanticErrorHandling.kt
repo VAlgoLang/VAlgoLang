@@ -4,9 +4,9 @@ import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 
-fun declareAssignError(action: String, rhsType: Type, lhsType: Type,
+fun declareAssignError(identifier: String, rhsType: Type, lhsType: Type,
                        ctx: ParserRuleContext) {
-    addSemanticError("$action $rhsType to $lhsType", getErrorLinePos(ctx))
+    addSemanticError("Cannot assign expression of type $rhsType to $identifier, which is of type $lhsType", getErrorLinePos(ctx))
 }
 
 fun redeclarationError(variable: String, variableType: Type,

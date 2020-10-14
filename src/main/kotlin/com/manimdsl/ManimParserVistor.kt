@@ -29,7 +29,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
-        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, ctx.expr().text, ctx)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         currentSymbolTable.addVariable(identifier, rhsType)
         return DeclarationNode(ctx.start.line, identifier, rhs)
@@ -42,7 +42,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val identifierType = currentSymbolTable.getTypeOf(identifier)
 
         semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, identifier, ctx)
-        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, ctx.expr().text, ctx)
+        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
@@ -105,6 +105,12 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext): BinaryExpression {
         val expr1 = visit(ctx.expr(0)) as ExpressionNode
         val expr2 = visit(ctx.expr(1)) as ExpressionNode
+        if (expr1 is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr1.identifier, ctx)
+        }
+        if (expr2 is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr2.identifier, ctx)
+        }
         return when (ctx.binary_operator.type) {
             ManimParser.ADD -> AddExpression(ctx.start.line, expr1, expr2)
             ManimParser.MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
@@ -114,6 +120,9 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitUnaryOperator(ctx: ManimParser.UnaryOperatorContext): UnaryExpression {
         val expr = visit(ctx.expr()) as ExpressionNode
+        if (expr is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr.identifier, ctx)
+        }
         return when (ctx.unary_operator.type) {
             ManimParser.ADD -> PlusExpression(ctx.start.line, expr)
             else -> MinusExpression(ctx.start.line, expr)

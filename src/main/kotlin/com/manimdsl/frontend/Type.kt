@@ -4,7 +4,11 @@ package com.manimdsl.frontend
 sealed class Type: ASTNode()
 
 sealed class PrimitiveType: Type()
-object NumberType: PrimitiveType()
+object NumberType: PrimitiveType() {
+    override fun toString(): String {
+        return "number"
+    }
+}
 
 sealed class DataStructureType(open var internalType: Type, open val methods: HashMap<String, DataStructureMethod>): Type() {
     abstract fun containsMethod(method: String): Boolean
@@ -35,4 +39,3 @@ data class StackType(override var internalType: Type = NumberType,
 }
 
 object NoType: Type()
-
