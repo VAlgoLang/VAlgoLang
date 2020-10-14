@@ -73,7 +73,7 @@ class SemanticAnalysis {
     }
 
     fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
-        if (dataStructureMethod != ErrorMethod()) {
+        if (dataStructureMethod != ErrorMethod() && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
             argumentTypes.forEachIndexed { index, type ->
                 if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
                     val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
