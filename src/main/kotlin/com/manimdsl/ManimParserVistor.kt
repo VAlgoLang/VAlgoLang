@@ -3,7 +3,6 @@ package com.manimdsl
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
-import com.manimdsl.errorhandling.semanticerror.*
 
 class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     val currentSymbolTable = SymbolTableNode()
@@ -19,9 +18,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
-        if (semanticAnalyser.redeclaredVariableCheck(currentSymbolTable, identifier)) {
-            redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
-        }
+        semanticAnalyser.redeclaredVariableCheck(currentSymbolTable, identifier, ctx)
 
         val rhs = visit(ctx.expr()) as ExpressionNode
 
