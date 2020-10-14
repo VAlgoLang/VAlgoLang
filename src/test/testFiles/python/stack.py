@@ -8,14 +8,16 @@ class Main(Scene):
         self.play(FadeIn(code_text))
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         self.move_arrow_to_line(1, pointer, code_block)
-        y = Init_structure("empty", 0).build()
-        y.to_edge(np.array([2, -1, 0]))
-        self.play(ShowCreation(y))
+        empty = Init_structure("y", 0).build()
+        empty.to_edge(np.array([2, -1, 0]))
+        self.play(ShowCreation(empty))
         testIdent = Rectangle_block("2").build()
+        self.play(FadeIn(testIdent))
         self.move_arrow_to_line(2, pointer, code_block)
         self.move_relative_to_obj(testIdent, empty, 0.0, 0.25)
         self.move_arrow_to_line(3, pointer, code_block)
         testIdent1 = Rectangle_block("3").build()
+        self.play(FadeIn(testIdent1))
         self.move_relative_to_obj(testIdent1, testIdent, 0.0, 0.25)
         self.move_arrow_to_line(4, pointer, code_block)
         self.move_relative_to_obj(testIdent1, testIdent, 0.0, 20.25)
@@ -35,13 +37,16 @@ class Main(Scene):
 
 class Code_block:
     def __init__(self, code):
-        self.code = TextMobject(*code)
+        group = VGroup()
+        for c in code:
+            group.add(TextMobject(c))
+        self.group = group
 
     def build(self):
-        return self.code.arrange(DOWN, aligned_edge=LEFT)
+        return self.group.arrange(DOWN, aligned_edge=LEFT)
 
     def get_line_at(self, line_number):
-        return self.code[line_number - 1]
+        return self.group[line_number - 1]
 
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE):
