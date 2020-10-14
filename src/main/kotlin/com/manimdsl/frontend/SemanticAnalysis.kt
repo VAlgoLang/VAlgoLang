@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
 
-    fun failIfRedeclaredVariable(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
+    fun redeclaredVariableCheck(currentSymbolTable: SymbolTableNode, identifier: String): Boolean {
         return currentSymbolTable.getTypeOf(identifier) != NoType
     }
 
@@ -28,38 +28,38 @@ class SemanticAnalysis {
         return getExpressionType(expression, currentSymbolTable)
     }
 
-    fun failIfIncompatibleTypes(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
+    fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
         if (lhsType != rhsType){
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
 
-    fun undeclaredIdentifier(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+    fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == NoType){
             undeclaredAssignError(identifier, ctx)
         }
     }
 
-    fun failIfNotDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+    fun notDataStructureCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }
 
-    fun notValidMethodNameForDataStructure(currentSymbolTable: SymbolTableNode, identifier: String, method: String, ctx: ParserRuleContext) {
+    fun notValidMethodNameForDataStructureCheck(currentSymbolTable: SymbolTableNode, identifier: String, method: String, ctx: ParserRuleContext) {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
         }
     }
 
-    fun invalidNumberOfArguments(dataStructureType: DataStructureType, method: String, numArgs: Int, ctx: ParserRuleContext) {
+    fun invalidNumberOfArgumentsCheck(dataStructureType: DataStructureType, method: String, numArgs: Int, ctx: ParserRuleContext) {
         if (dataStructureType.getMethodByName(method).argumentTypes.size != numArgs) {
             numOfArgsInMethodCallError(dataStructureType.toString(), method, numArgs, ctx)
         }
     }
 
-    fun checkArgTypes(argTypes: List<Type>, method: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
+    fun argTypesCheck(argTypes: List<Type>, method: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
         argTypes.forEachIndexed { index, type ->
             if (type !is PrimitiveType) {
                 val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
@@ -69,7 +69,7 @@ class SemanticAnalysis {
         }
     }
 
-    fun failIfIncompatibleArgumentTypes(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
+    fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
 
         argumentTypes.forEachIndexed { index, type ->
             if (type !== dataStructureMethod.argumentTypes[index]) {

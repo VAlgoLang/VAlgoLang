@@ -19,7 +19,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
-        if (semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
+        if (semanticAnalyser.redeclaredVariableCheck(currentSymbolTable, identifier)) {
             redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
         }
 
@@ -32,7 +32,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
-        semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType, ctx.expr().text, ctx)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, ctx.expr().text, ctx)
 
         currentSymbolTable.addVariable(identifier, rhsType)
         return DeclarationNode(ctx.start.line, identifier, rhs)
@@ -44,8 +44,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, expression)
         val identifierType = currentSymbolTable.getTypeOf(identifier)
 
-        semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier, ctx)
-        semanticAnalyser.failIfIncompatibleTypes(identifierType, rhsType, ctx.expr().text, ctx)
+        semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, ctx.expr().text, ctx)
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
@@ -68,21 +68,21 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
-        semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier, ctx)
-        semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier, ctx)
-        semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName, ctx)
+        semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.notDataStructureCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.notValidMethodNameForDataStructureCheck(currentSymbolTable, identifier, methodName, ctx)
 
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
-            semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size, ctx)
+            semanticAnalyser.invalidNumberOfArgumentsCheck(dataStructureType, methodName, arguments.size, ctx)
 
             val method = dataStructureType.getMethodByName(methodName)
 
                 // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
-            semanticAnalyser.checkArgTypes(argTypes, methodName, dataStructureType, ctx)
-            semanticAnalyser.failIfIncompatibleArgumentTypes(
+            semanticAnalyser.argTypesCheck(argTypes, methodName, dataStructureType, ctx)
+            semanticAnalyser.incompatibleArgumentTypesCheck(
                     dataStructureType,
                     argTypes,
                     method,

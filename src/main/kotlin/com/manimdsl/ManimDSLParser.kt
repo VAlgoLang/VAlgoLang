@@ -12,8 +12,6 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
 
-val SYNTAX_ERROR = 1;
-
 /* Exit status codes */
 enum class ExitStatus(val code: Int) {
     EXIT_SUCCESS(0),
@@ -39,7 +37,6 @@ class ManimDSLParser(private val input: InputStream) {
         parser.errorHandler = SyntaxErrorStrategy()
         parser.removeErrorListeners()
         parser.addErrorListener(SyntaxErrorListener())
-//        parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
         return Pair(ErrorHandler.checkErrors(), program)
     }
