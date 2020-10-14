@@ -1,34 +1,102 @@
 package com.manimdsl.frontend
 
-sealed class Type: ASTNode()
+import com.manimdsl.linearrepresentation.*
+import com.manimdsl.shapes.Rectangle
 
-sealed class PrimitiveType: Type()
-object NumberType: PrimitiveType() {
-    override fun toString(): String {
-        return "number"
-    }
-}
+// Types (to be used in symbol table also)
+sealed class Type : ASTNode()
 
-sealed class DataStructureType(open var internalType: Type, open val methods: HashMap<String, DataStructureMethod>): Type() {
+// Primitive / Data structure distinction requested by code generation
+sealed class PrimitiveType : Type()
+object NumberType : PrimitiveType()
+
+sealed class DataStructureType(
+    open var internalType: Type,
+    open val methods: HashMap<String, DataStructureMethod>
+) : Type() {
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
+
+    /** Init methods are to return instructions needed to create MObject **/
+    abstract fun init(
+        identifier: String,
+        x: Int,
+        y: Int,
+        text: String,
+    ): Pair<List<ManimInstr>, Object>
+
+    abstract fun initRelativeToObject(
+        identifier: String,
+        text: String,
+        moveRelativeTo: String
+    ): Pair<List<ManimInstr>, Object>
 }
 
-// Pre-defined methods for each data structure
-open class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>)
-data class ErrorMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type> = listOf()) : DataStructureMethod(returnType, argumentTypes)
+abstract class DataStructureMethod(open val returnType: Type, open var argumentTypes: List<Type>) {
+    abstract fun animateMethod(
+        arguments: List<String>,
+        options: Map<String, Any> = emptyMap()
+    ): Pair<List<ManimInstr>, com.manimdsl.linearrepresentation.Object?>
+}
 
-data class StackType(override var internalType: Type = NumberType,
-                     override val methods: HashMap<String, DataStructureMethod> = hashMapOf("push" to PushMethod(argumentTypes=listOf(NumberType)), "pop" to PopMethod(internalType))): DataStructureType(internalType, methods) {
-
-    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>): DataStructureMethod(returnType, argumentTypes) {
-        override fun toString(): String {
-            return "push"
-        }
+object ErrorMethod : DataStructureMethod(NoType, emptyList()) {
+    override fun animateMethod(arguments: List<String>, options: Map<String, Any>): Pair<List<ManimInstr>, Object?> {
+        return Pair(emptyList(), null)
     }
-    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()): DataStructureMethod(returnType, argumentTypes) {
-        override fun toString(): String {
-            return "pop"
+}
+
+// This is used to collect arguments up into method call node
+data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
+data class StackType(
+    override var internalType: Type = NumberType,
+    override val methods: HashMap<String, DataStructureMethod> = hashMapOf(
+        "push" to PushMethod(
+            argumentTypes = listOf(
+                NumberType
+            )
+        ), "pop" to PopMethod(internalType)
+    )
+) : DataStructureType(internalType, methods) {
+
+    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
+        DataStructureMethod(returnType, argumentTypes) {
+        /** arguments = {value} **/
+        override fun animateMethod(
+            arguments: List<String>,
+            options: Map<String, Any>
+        ): Pair<List<ManimInstr>, Object?> {
+            val rectangleShape = Rectangle(arguments[0])
+            val rectangle = NewObject(
+                rectangleShape,
+                (options["generator"] as VariableNameGenerator).generateShapeName(rectangleShape)
+            )
+            return Pair(
+                listOf(
+                    rectangle,
+                    MoveObject(rectangle.ident, (options["top"] as Object).ident, ObjectSide.ABOVE),
+                ), rectangle
+            )
+        }
+
+    }
+
+    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
+        DataStructureMethod(returnType, argumentTypes) {
+        override fun animateMethod(
+            arguments: List<String>,
+            options: Map<String, Any>
+        ): Pair<List<ManimInstr>, Object?> {
+            return Pair(
+                listOf(
+                    MoveObject(
+                        (options["top"] as Object).ident,
+                        (options["second"] as Object).ident,
+                        ObjectSide.ABOVE,
+                        20,
+                        options["fadeOut"] as? Boolean? ?: true
+                    ),
+                ), null
+            )
         }
     }
 
@@ -37,12 +105,25 @@ data class StackType(override var internalType: Type = NumberType,
     }
 
     override fun getMethodByName(method: String): DataStructureMethod {
-        return methods[method]?: ErrorMethod()
+        return methods.getOrDefault(method, ErrorMethod)
     }
 
-    override fun toString(): String {
-        return "Stack<${internalType}>"
+    override fun init(identifier: String, x: Int, y: Int, text: String): Pair<List<ManimInstr>, Object> {
+        val stackInit = InitStructure(x, y, Alignment.HORIZONTAL, identifier, text)
+
+        // Add to stack of objects to keep track of identifier
+        return Pair(listOf(stackInit), stackInit)
+    }
+
+    override fun initRelativeToObject(
+        identifier: String,
+        text: String,
+        moveRelativeTo: String
+    ): Pair<List<ManimInstr>, Object> {
+        val stackInit = InitStructureRelative(Alignment.HORIZONTAL, identifier, text, moveRelativeTo)
+        return Pair(listOf(stackInit), stackInit)
     }
 }
+
 
 object NoType: Type()
