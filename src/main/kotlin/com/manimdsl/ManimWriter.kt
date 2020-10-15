@@ -3,7 +3,7 @@ package com.manimdsl
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.InitStructure
 import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.linearrepresentation.NewObject
+import com.manimdsl.linearrepresentation.NewMObject
 import java.io.File
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
@@ -17,7 +17,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
         linearRepresentation.forEach {
             when (it) {
-                is NewObject -> {
+                is NewMObject -> {
                     shapeClassPaths.add(it.shape.classPath)
                 }
                 is CodeBlock -> {

@@ -57,7 +57,7 @@ class SemanticAnalysis {
 
     fun invalidNumberOfArgumentsCheck(dataStructureType: DataStructureType, methodName: String, numArgs: Int, ctx: ParserRuleContext) {
         val method = dataStructureType.getMethodByName(methodName)
-        if (method != ErrorMethod() && method.argumentTypes.size != numArgs) {
+        if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
             numOfArgsInMethodCallError(dataStructureType.toString(), methodName, numArgs, ctx)
         }
     }
@@ -73,12 +73,18 @@ class SemanticAnalysis {
     }
 
     fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
-        if (dataStructureMethod != ErrorMethod() && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
+        if (dataStructureMethod != ErrorMethod && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
             argumentTypes.forEachIndexed { index, type ->
                 if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
                     val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
                     val argName = ctx.arg_list().getChild(index).text
-                    typeOfArgsInMethodCallError(dataStructureType.toString(), dataStructureMethod.toString(), type.toString(), argName, argCtx)
+                    typeOfArgsInMethodCallError(
+                        dataStructureType.toString(),
+                        dataStructureMethod.toString(),
+                        type.toString(),
+                        argName,
+                        argCtx
+                    )
                 }
             }
         }

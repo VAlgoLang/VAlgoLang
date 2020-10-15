@@ -38,7 +38,7 @@ class ValidSyntaxTests {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
         val (syntaxErrorStatus, _) = parser.parseFile()
-        assertEquals(syntaxErrorStatus, ExitStatus.EXIT_SUCCESS)
+        assertEquals(ExitStatus.EXIT_SUCCESS, syntaxErrorStatus)
     }
 
 }

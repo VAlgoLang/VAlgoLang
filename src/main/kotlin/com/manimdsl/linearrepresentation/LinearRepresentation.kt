@@ -1,5 +1,7 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.ExecValue
+
 interface ManimInstr {
     fun toPython(): List<String>
 }
@@ -33,7 +35,11 @@ data class MoveObject(val ident: String, val moveToIdent: String, val objectSide
     }
 }
 
-
+data class VariableState(val variableStates: Map<String, ExecValue>) : ManimInstr {
+    override fun toPython(): List<String> {
+        TODO("Not yet implemented")
+    }
+}
 
 
 
