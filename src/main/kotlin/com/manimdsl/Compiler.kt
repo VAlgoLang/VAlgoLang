@@ -75,7 +75,7 @@ class DSLCommandLineArguments : Callable<Int> {
     @Parameters(index = "0", description = ["The manimdsl file to compile and animate"])
     lateinit var file: String
 
-    @Option(names = ["-o", "--ouput"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
+    @Option(names = ["-o", "--output"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
     var outputMP4: String = "out.mp4"
 
     @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (default: false)"])
