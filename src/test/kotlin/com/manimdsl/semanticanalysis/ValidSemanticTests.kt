@@ -16,7 +16,8 @@ class ValidSemanticTests {
     companion object {
         @JvmStatic
         fun data(): Stream<Arguments> {
-            return File("src/test/testFiles/valid/").walk().filter { it.isFile  }.map { Arguments.of(it.path) }.asStream()
+            return File("src/test/testFiles/valid/").walk().filter { it.isFile }.map { Arguments.of(it.path) }
+                .asStream()
         }
 
         @JvmStatic

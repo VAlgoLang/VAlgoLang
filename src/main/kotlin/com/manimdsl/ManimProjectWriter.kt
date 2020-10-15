@@ -15,11 +15,10 @@ class ManimProjectWriter(private val pythonCode: String) {
         }
     }
 
-    fun generateAnimation(fileName: String): Int {
-        println(fileName)
-        val process = ProcessBuilder("manim $fileName Main -pl".split(" ")).start()
-
-        return process.waitFor()
+    fun generateAnimation(fileName: String, preview: List<String>): Int {
+        val commandOptions = preview.joinToString("")
+        return ProcessBuilder("manim $fileName Main -$commandOptions".split(" "))
+            .start().waitFor()
     }
 
 }

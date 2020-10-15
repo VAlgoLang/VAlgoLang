@@ -3,5 +3,6 @@ y.push(3);
 y.push(1);
 y.push(1);
 let x = new Stack;
+y.push(2);
 x.push(y.pop());
 sleep(2);

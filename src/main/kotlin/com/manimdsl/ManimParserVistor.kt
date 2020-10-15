@@ -4,7 +4,7 @@ import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
 
-class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
+class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
 
@@ -56,12 +56,13 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ArgumentNode {
         return ArgumentNode((ctx?.expr()
-                ?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
+            ?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
     override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
-        val arguments: List<ExpressionNode> = visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+        val arguments: List<ExpressionNode> =
+            visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
@@ -80,10 +81,10 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
             val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
             semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
             semanticAnalyser.incompatibleArgumentTypesCheck(
-                    dataStructureType,
-                    argTypes,
-                    method,
-                    ctx
+                dataStructureType,
+                argTypes,
+                method,
+                ctx
             )
             method
 
@@ -133,6 +134,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         // Command command given for render purposes
         return CommentNode(ctx.STRING().text)
     }
+
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
         return NumberNode(ctx.start.line, ctx.NUMBER().symbol.text.toDouble())
     }

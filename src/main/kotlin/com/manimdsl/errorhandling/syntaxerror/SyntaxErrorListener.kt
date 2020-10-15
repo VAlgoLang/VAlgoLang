@@ -93,7 +93,7 @@ class SyntaxErrorListener : BaseErrorListener() {
         readableTokenMap.forEach { (token, readable) ->
             readableMessage = message.replace(token, readable, false)
         }
-        return readableMessage;
+        return readableMessage
     }
 
     data class OverflowInfo(val type: String, val token: String, val line: Int, val char: Int)

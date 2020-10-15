@@ -25,7 +25,7 @@ class InvalidSemanticTests {
         @JvmStatic
         fun data(): Stream<Arguments> {
             return File(semanticErrorFilePath).walk().filter { it.isFile }
-                    .map { Arguments.of(it.path) }.asStream()
+                .map { Arguments.of(it.path) }.asStream()
         }
 
         @JvmStatic
@@ -68,7 +68,7 @@ class InvalidSemanticTests {
     fun redeclaredVariable() {
         runSyntaxAndSemanticAnalysis("redeclaredVariable.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+            outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
         )
     }
 
@@ -76,7 +76,8 @@ class InvalidSemanticTests {
     fun incompatibleTypesOnDeclaration() {
         runSyntaxAndSemanticAnalysis("incompatibleExplicitCast.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
         )
     }
 
@@ -84,7 +85,8 @@ class InvalidSemanticTests {
     fun incompatibleTypesOnAssignment() {
         runSyntaxAndSemanticAnalysis("incompatibleTypesAssignment.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
         )
     }
 
@@ -92,7 +94,7 @@ class InvalidSemanticTests {
     fun undeclaredVariableUsage() {
         runSyntaxAndSemanticAnalysis("undeclaredVariableUse.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
         )
     }
 
@@ -100,7 +102,7 @@ class InvalidSemanticTests {
     fun primitiveTypeMethodCall() {
         runSyntaxAndSemanticAnalysis("methodCallOnPrimitiveType.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* is not a data structure"))
+            outputStreamCaptor.toString().contains(Regex(".* is not a data structure"))
         )
     }
 
@@ -108,7 +110,7 @@ class InvalidSemanticTests {
     fun incorrectMethodNameForDataStructure() {
         runSyntaxAndSemanticAnalysis("incorrectMethodName.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* does not support .* method"))
+            outputStreamCaptor.toString().contains(Regex(".* does not support .* method"))
         )
     }
 
@@ -116,7 +118,7 @@ class InvalidSemanticTests {
     fun incorrectArgumentTypesForDataStructureMethod() {
         runSyntaxAndSemanticAnalysis("incorrectArgTypeForPush.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* method on .* does not accept argument .* of type .*"))
+            outputStreamCaptor.toString().contains(Regex(".* method on .* does not accept argument .* of type .*"))
         )
     }
 

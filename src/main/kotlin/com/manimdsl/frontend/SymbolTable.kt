@@ -6,13 +6,13 @@ interface SymbolTable {
     fun getTypeOf(identifier: String): Type
 }
 
-object SymbolTableRoot: SymbolTable {
+object SymbolTableRoot : SymbolTable {
     override fun getTypeOf(identifier: String): Type {
         return NoType
     }
 }
 
-class SymbolTableNode: SymbolTable {
+class SymbolTableNode : SymbolTable {
 
     // we've already done semantic analysis
     fun addVariable(identifier: String, type: Type) {
@@ -21,7 +21,7 @@ class SymbolTableNode: SymbolTable {
 
 
     override fun getTypeOf(identifier: String): Type {
-        return table[identifier]?.type?:parent.getTypeOf(identifier)
+        return table[identifier]?.type ?: parent.getTypeOf(identifier)
     }
 
     private val table: MutableMap<String, IdentifierData> = mutableMapOf()
