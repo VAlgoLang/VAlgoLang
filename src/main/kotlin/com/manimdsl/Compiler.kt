@@ -33,8 +33,6 @@ private fun compile(filename: String, output: String?, manimOptions: List<String
     val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
 
     var state: Pair<Boolean, List<ManimInstr>>
-
-    var state: Pair<Boolean, List<ManimInstr>>
     do {
          state = executor.executeNextStatement()
     } while (!state.first)
