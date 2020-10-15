@@ -54,12 +54,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
     }
 
     fun printWithIndent(identSize: Int, lines: List<String>): String {
-        return lines.map { line ->  "${"    ".repeat(identSize)}${line}" }.joinToString("\n")
+        return lines.map { line -> "${"    ".repeat(identSize)}${line}" }.joinToString("\n")
     }
-
-
-
-
 
 
 }

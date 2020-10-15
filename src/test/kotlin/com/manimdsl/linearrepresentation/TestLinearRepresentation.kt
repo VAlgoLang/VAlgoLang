@@ -13,7 +13,7 @@ class TestLinearRepresentation {
     @Test
     fun mockStackLinearRepresentation() {
 
-        val codeBlock = listOf("let y = new Stack;", "y.push(2);", "y.push(3);", "y.pop();");
+        val codeBlock = listOf("let y = new Stack;", "y.push(2);", "y.push(3);", "y.pop();")
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
@@ -35,6 +35,9 @@ class TestLinearRepresentation {
         val generated = File(writer.createPythonFile()).readLines()
 
 
-        assertEquals(expected.filter { it.trim() != "" }.joinToString("\n"), generated.filter { it.trim() != "" }.joinToString("\n"))
+        assertEquals(
+            expected.filter { it.trim() != "" }.joinToString("\n"),
+            generated.filter { it.trim() != "" }.joinToString("\n")
+        )
     }
 }

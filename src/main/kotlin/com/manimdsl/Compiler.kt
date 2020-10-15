@@ -34,18 +34,18 @@ private fun compile(filename: String, output: String?, manimOptions: List<String
 
     var state: Pair<Boolean, List<ManimInstr>>
     do {
-         state = executor.executeNextStatement()
+        state = executor.executeNextStatement()
     } while (!state.first)
 
     val writer = ManimProjectWriter(ManimWriter(state.second).build())
 
-    if(output !== null) println("Writing file to $output")
+    if (output !== null) println("Writing file to $output")
     val outputFile = writer.createPythonFile(output)
 
     println("Generating animation...")
     val exitCode = writer.generateAnimation(outputFile, manimOptions)
 
-    if(exitCode != 0) {
+    if (exitCode != 0) {
         println("Animation could not be generated")
         exitProcess(1)
     }
@@ -62,7 +62,12 @@ enum class AnimationQuality {
     }
 }
 
-@Command(name = "manimdsl", mixinStandardHelpOptions = true, version = ["manimdsl 1.0"], description = ["ManimDSL compiler to produce manim animations"])
+@Command(
+    name = "manimdsl",
+    mixinStandardHelpOptions = true,
+    version = ["manimdsl 1.0"],
+    description = ["ManimDSL compiler to produce manim animations"]
+)
 class DSLCommandLineArguments : Callable<Int> {
 
     private val manimArguments = mutableListOf<String>()
@@ -73,12 +78,20 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-o", "--output"], description = ["Output generated python & manim code (optional)"])
     var output: String? = null
 
-    @Option(names = ["-p", "--preview"], defaultValue = "false", description = ["Preview animation after generation (default: \${DEFAULT-VALUE})"])
+    @Option(
+        names = ["-p", "--preview"],
+        defaultValue = "false",
+        description = ["Preview animation after generation (default: \${DEFAULT-VALUE})"]
+    )
     fun preview(preview: Boolean = false) {
-        if(preview) manimArguments.add("p")
+        if (preview) manimArguments.add("p")
     }
 
-    @Option(names = ["-q", "--quality"], defaultValue = "low", description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})"])
+    @Option(
+        names = ["-q", "--quality"],
+        defaultValue = "low",
+        description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})"]
+    )
     fun quality(quality: AnimationQuality = AnimationQuality.LOW) {
         if (quality == AnimationQuality.LOW) manimArguments.add("l")
     }
@@ -89,4 +102,4 @@ class DSLCommandLineArguments : Callable<Int> {
     }
 }
 
-fun main(args: Array<String>) : Unit = exitProcess(CommandLine(DSLCommandLineArguments()).execute(*args))
+fun main(args: Array<String>): Unit = exitProcess(CommandLine(DSLCommandLineArguments()).execute(*args))

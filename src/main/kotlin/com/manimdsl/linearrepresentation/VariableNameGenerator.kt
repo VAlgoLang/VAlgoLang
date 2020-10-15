@@ -2,7 +2,6 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.NoType
 import com.manimdsl.frontend.SymbolTable
-import com.manimdsl.linearrepresentation.NameGenerator
 import com.manimdsl.shapes.Shape
 
 interface NameGenerator {

@@ -21,21 +21,21 @@ class ASTExecutorTests {
 
         val states = listOf(
             Pair(false, listOf(MoveToLine(1, pointerName = "pointer", codeBlockName = "code_block"))),
-                Pair(
-                    true,
-                    listOf(
-                        CodeBlock(
-                            lines = listOf("let x: number = 1.5;", "let y: Stack = new Stack;"),
-                            ident = "code_block",
-                            codeTextName = "code_text",
-                            pointerName = "pointer"
-                        ),
-                        MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
-                        MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
-                        InitStructure(x = 2, y = -1, alignment = Alignment.HORIZONTAL, ident = "empty", text = "y")
-                    )
+            Pair(
+                true,
+                listOf(
+                    CodeBlock(
+                        lines = listOf("let x: number = 1.5;", "let y: Stack = new Stack;"),
+                        ident = "code_block",
+                        codeTextName = "code_text",
+                        pointerName = "pointer"
+                    ),
+                    MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
+                    MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
+                    InitStructure(x = 2, y = -1, alignment = Alignment.HORIZONTAL, ident = "empty", text = "y")
                 )
             )
+        )
 
         checkExecutionStates(executor, states)
 

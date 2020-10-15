@@ -6,18 +6,23 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
 
-    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type = when (expression) {
-        is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
-        is NumberNode -> NumberType
-        is MethodCallNode -> expression.dataStructureMethod.returnType
-        is ConstructorNode -> expression.type
-        is BinaryExpression -> if (getExpressionType(expression.expr1, currentSymbolTable) is NumberType && getExpressionType(expression.expr2, currentSymbolTable) is NumberType) {
-            NumberType
-        } else {
-            NoType
+    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type =
+        when (expression) {
+            is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
+            is NumberNode -> NumberType
+            is MethodCallNode -> expression.dataStructureMethod.returnType
+            is ConstructorNode -> expression.type
+            is BinaryExpression -> if (getExpressionType(
+                    expression.expr1,
+                    currentSymbolTable
+                ) is NumberType && getExpressionType(expression.expr2, currentSymbolTable) is NumberType
+            ) {
+                NumberType
+            } else {
+                NoType
+            }
+            is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
         }
-        is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
-    }
 
     fun inferType(currentSymbolTable: SymbolTableNode, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
@@ -48,21 +53,36 @@ class SemanticAnalysis {
         }
     }
 
-    fun notValidMethodNameForDataStructureCheck(currentSymbolTable: SymbolTableNode, identifier: String, method: String, ctx: ParserRuleContext) {
+    fun notValidMethodNameForDataStructureCheck(
+        currentSymbolTable: SymbolTableNode,
+        identifier: String,
+        method: String,
+        ctx: ParserRuleContext
+    ) {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
         }
     }
 
-    fun invalidNumberOfArgumentsCheck(dataStructureType: DataStructureType, methodName: String, numArgs: Int, ctx: ParserRuleContext) {
+    fun invalidNumberOfArgumentsCheck(
+        dataStructureType: DataStructureType,
+        methodName: String,
+        numArgs: Int,
+        ctx: ParserRuleContext
+    ) {
         val method = dataStructureType.getMethodByName(methodName)
         if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
             numOfArgsInMethodCallError(dataStructureType.toString(), methodName, numArgs, ctx)
         }
     }
 
-    fun primitiveArgTypesCheck(argTypes: List<Type>, methodName: String, dataStructureType: DataStructureType, ctx: ManimParser.MethodCallContext) {
+    fun primitiveArgTypesCheck(
+        argTypes: List<Type>,
+        methodName: String,
+        dataStructureType: DataStructureType,
+        ctx: ManimParser.MethodCallContext
+    ) {
         argTypes.forEachIndexed { index, type ->
             if (type !is PrimitiveType) {
                 val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
@@ -72,7 +92,12 @@ class SemanticAnalysis {
         }
     }
 
-    fun incompatibleArgumentTypesCheck(dataStructureType: DataStructureType, argumentTypes: List<Type>, dataStructureMethod: DataStructureMethod, ctx: ManimParser.MethodCallContext) {
+    fun incompatibleArgumentTypesCheck(
+        dataStructureType: DataStructureType,
+        argumentTypes: List<Type>,
+        dataStructureMethod: DataStructureMethod,
+        ctx: ManimParser.MethodCallContext
+    ) {
         if (dataStructureMethod != ErrorMethod && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
             argumentTypes.forEachIndexed { index, type ->
                 if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
