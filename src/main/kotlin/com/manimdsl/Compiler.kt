@@ -87,7 +87,10 @@ class DSLCommandLineArguments : Callable<Int> {
         description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})"]
     )
     fun quality(quality: AnimationQuality = AnimationQuality.LOW) {
-        if (quality == AnimationQuality.LOW) manimArguments.add("l")
+        when (quality) {
+            AnimationQuality.LOW -> manimArguments.add("-l")
+            AnimationQuality.HIGH -> manimArguments.add("--high_quality")
+        }
     }
 
     override fun call(): Int {

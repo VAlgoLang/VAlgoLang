@@ -1,6 +1,7 @@
 package com.manimdsl
 
 import java.io.File
+import java.util.*
 
 class ManimProjectWriter(private val pythonCode: String) {
 
@@ -16,12 +17,13 @@ class ManimProjectWriter(private val pythonCode: String) {
     }
 
     fun generateAnimation(fileName: String, options: List<String>, outputFile: String): Int {
-        val commandOptions = options.joinToString("")
-        val manimExitCode = ProcessBuilder("manim $fileName Main -$commandOptions --video_output_dir tmp".split(" "))
+        val uid = UUID.randomUUID().toString()
+        val commandOptions = options.joinToString(" ")
+        val manimExitCode = ProcessBuilder("manim $fileName Main $commandOptions --video_output_dir $uid --media_dir $uid".split(" "))
             .start().waitFor()
-        val copyExitCode = ProcessBuilder("cp -f tmp/Main.mp4 $outputFile".split(" "))
+        val copyExitCode = ProcessBuilder("cp -f $uid/Main.mp4 $outputFile".split(" "))
             .start().waitFor()
-        val removeTempExitCode = ProcessBuilder("rm -rf tmp".split(" "))
+        val removeTempExitCode = ProcessBuilder("rm -rf $uid".split(" "))
             .start().waitFor()
         return copyExitCode + manimExitCode + removeTempExitCode
     }
