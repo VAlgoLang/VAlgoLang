@@ -7,7 +7,6 @@ data structures and algorithms.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Documentation](#documentation)
-- [Help with Manim](#help-with-manim)
 - [Contributing](#contributing)
 
 ## Installation
