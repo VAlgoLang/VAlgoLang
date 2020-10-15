@@ -13,7 +13,7 @@ class ASTExecutorTests {
     fun checkBasicProgramStates() {
         val program = "let x: number = 1.5;\n" +
                 "# code comment\n" +
-                "let y: Stack = new Stack;\n"
+                "let y: Stack<number> = new Stack<number>;\n"
 
         val (_, abstractSyntaxTree, symbolTable) = buildAST(program)
 
@@ -25,7 +25,7 @@ class ASTExecutorTests {
                 true,
                 listOf(
                     CodeBlock(
-                        lines = listOf("let x: number = 1.5;", "let y: Stack = new Stack;"),
+                        lines = listOf("let x: number = 1.5;", "let y: Stack<number> = new Stack<number>;"),
                         ident = "code_block",
                         codeTextName = "code_text",
                         pointerName = "pointer"
