@@ -11,7 +11,7 @@ private fun compile(filename: String, output: String?, manimOptions: List<String
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
-        println("Please enter a valid file className: $filename not found")
+        println("Please enter a valid file name: $filename not found")
         exitProcess(1)
     }
 

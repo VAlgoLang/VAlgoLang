@@ -9,7 +9,7 @@ interface Shape {
 }
 
 data class Rectangle(override val text: String) : Shape {
-    override val classPath: String = "pythonLib/rectangle.py"
+    override val classPath: String = "python/rectangle.py"
     override val className: String = "Rectangle_block"
     override val pythonVariablePrefix: String = "rectangle"
 }
