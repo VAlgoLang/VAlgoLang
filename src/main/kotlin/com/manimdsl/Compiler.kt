@@ -76,9 +76,9 @@ class DSLCommandLineArguments : Callable<Int> {
     lateinit var file: String
 
     @Option(names = ["-o", "--output"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
-    var outputMP4: String = "out.mp4"
+    var output: String = "out.mp4"
 
-    @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (default: false)"])
+    @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)"])
     var python: Boolean = false
 
     @Option(
@@ -94,7 +94,7 @@ class DSLCommandLineArguments : Callable<Int> {
     }
 
     override fun call(): Int {
-        compile(file, outputMP4, python, manimArguments)
+        compile(file, output, python, manimArguments)
         return 0
     }
 }
