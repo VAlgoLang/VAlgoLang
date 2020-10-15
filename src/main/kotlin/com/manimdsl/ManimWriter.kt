@@ -4,7 +4,6 @@ import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.InitStructure
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.NewMObject
-import java.io.File
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -21,10 +20,10 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.add(it.shape.classPath)
                 }
                 is CodeBlock -> {
-                    shapeClassPaths.add("pythonLib/code_block.py")
+                    shapeClassPaths.add("python/code_block.py")
                 }
                 is InitStructure -> {
-                    shapeClassPaths.add("pythonLib/init_structure.py")
+                    shapeClassPaths.add("python/init_structure.py")
                 }
             }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
@@ -34,13 +33,19 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
         pythonCode += printWithIndent(1, addUtilityFunctions()) + "\n"
 
-        pythonCode += printWithIndent(0, shapeClassPaths.map { File(it).readText() })
+        pythonCode += printWithIndent(
+            0,
+            shapeClassPaths.map { getResourceAsText(it) })
 
         return pythonCode
     }
 
     private fun addUtilityFunctions(): List<String> {
-        return File("pythonLib/util.py").readLines()
+        return getResourceAsText("python/util.py").split("\n")
+    }
+
+    private fun getResourceAsText(path: String): String {
+        return ClassLoader.getSystemResource(path).readText()
     }
 
     private fun initialPythonSetup(): String {
@@ -53,7 +58,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         """.trimIndent()
     }
 
-    fun printWithIndent(identSize: Int, lines: List<String>): String {
+    private fun printWithIndent(identSize: Int, lines: List<String>): String {
         return lines.map { line -> "${"    ".repeat(identSize)}${line}" }.joinToString("\n")
     }
 
