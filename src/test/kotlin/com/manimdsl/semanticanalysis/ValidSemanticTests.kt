@@ -1,4 +1,4 @@
-package com.manimdsl.syntaxanalysis
+package com.manimdsl.semanticanalysis
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.ManimDSLParser
@@ -12,7 +12,7 @@ import java.io.File
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-class ValidSyntaxTests {
+class ValidSemanticTests {
     companion object {
         @JvmStatic
         fun data(): Stream<Arguments> {
@@ -34,11 +34,12 @@ class ValidSyntaxTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("data")
-    fun testFileIsSyntacticallyValid(fileName: String) {
+    fun testFileIsSemanticallyValid(fileName: String) {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
-        val (syntaxErrorStatus, _) = parser.parseFile()
-        assertEquals(ExitStatus.EXIT_SUCCESS, syntaxErrorStatus)
+        val program = parser.parseFile().second
+        val semanticErrorStatus = parser.convertToAst(program).first
+        assertEquals(ExitStatus.EXIT_SUCCESS, semanticErrorStatus)
     }
 
 }

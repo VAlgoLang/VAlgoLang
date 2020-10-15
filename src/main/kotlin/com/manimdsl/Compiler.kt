@@ -11,22 +11,28 @@ private fun compile(filename: String, output: String?, manimOptions: List<String
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
-        println("Please enter a valid file className: ${file.name} not found")
+        println("Please enter a valid file className: $filename not found")
         exitProcess(1)
     }
 
     println("Compiling...")
     val parser = ManimDSLParser(file.inputStream())
-    val (exitStatus, program) = parser.parseFile()
+    val (syntaxErrorStatus, program) = parser.parseFile()
 
     // Error handling
-    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
-        exitProcess(exitStatus.code)
+    if (syntaxErrorStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(syntaxErrorStatus.code)
     }
 
-    val (abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
+    val (semanticErrorStatus, abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
+    // Error handling
+    if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(semanticErrorStatus.code)
+    }
 
     val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
+
+    var state: Pair<Boolean, List<ManimInstr>>
 
     var state: Pair<Boolean, List<ManimInstr>>
     do {

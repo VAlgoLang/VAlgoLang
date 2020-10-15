@@ -8,8 +8,6 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     val currentSymbolTable = SymbolTableNode()
     private val semanticAnalyser = SemanticAnalysis()
 
-    private val finalDSLCode = mutableListOf<String>()
-
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
@@ -20,9 +18,7 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
-        if (semanticAnalyser.failIfRedeclaredVariable(currentSymbolTable, identifier)) {
-            println("Redeclared!!")
-        }
+        semanticAnalyser.redeclaredVariableCheck(currentSymbolTable, identifier, ctx)
 
         val rhs = visit(ctx.expr()) as ExpressionNode
 
@@ -32,9 +28,9 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         } else {
             rhsType
         }
-        if (semanticAnalyser.failIfIncompatibleTypes(lhsType, rhsType)) {
-            println("Incompatible types!!")
-        }
+
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
+
         currentSymbolTable.addVariable(identifier, rhsType)
         return DeclarationNode(ctx.start.line, identifier, rhs)
     }
@@ -45,13 +41,8 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val rhsType = semanticAnalyser.inferType(currentSymbolTable, expression)
         val identifierType = currentSymbolTable.getTypeOf(identifier)
 
-        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
-            println("Undeclared Assignment!!")
-        }
-
-        if (semanticAnalyser.failIfIncompatibleTypes(identifierType, rhsType)) {
-            println("Incompatible Types!!")
-        }
+        semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
@@ -74,35 +65,30 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
-        if (semanticAnalyser.undeclaredIdentifier(currentSymbolTable, identifier)) {
-            println("Undeclared variable!!")
-        }
+        semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.notDataStructureCheck(currentSymbolTable, identifier, ctx)
+        semanticAnalyser.notValidMethodNameForDataStructureCheck(currentSymbolTable, identifier, methodName, ctx)
 
-        if (semanticAnalyser.failIfNotDataStructure(currentSymbolTable, identifier)) {
-            println("Not a data structure!!")
-        }
+        val dataStructureType = currentSymbolTable.getTypeOf(identifier)
 
-        if (semanticAnalyser.notValidMethodNameForDataStructure(currentSymbolTable, identifier, methodName)) {
-            println("Not a valid method for this data structure!!")
-        }
+        val dataStructureMethod = if (dataStructureType is DataStructureType) {
+            semanticAnalyser.invalidNumberOfArgumentsCheck(dataStructureType, methodName, arguments.size, ctx)
 
-        val dataStructureType = currentSymbolTable.getTypeOf(identifier) as DataStructureType
+            val method = dataStructureType.getMethodByName(methodName)
 
-        if (semanticAnalyser.invalidNumberOfArguments(dataStructureType, methodName, arguments.size)) {
-            println("Invalid number of arguments for this method!!")
-        }
-        val dataStructureMethod = dataStructureType.getMethodByName(methodName)
-
-        // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
-        if (arguments.isNotEmpty()) {
+            // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(currentSymbolTable, it) }.toList()
-            if (argTypes.any{it !is PrimitiveType}) {
-                println("Data structure can only take primitive type!!")
-            }
+            semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
+            semanticAnalyser.incompatibleArgumentTypesCheck(
+                    dataStructureType,
+                    argTypes,
+                    method,
+                    ctx
+            )
+            method
 
-            if (!semanticAnalyser.failIfIncompatibleArgumentTypes(argTypes, dataStructureMethod)) {
-                println("Incompatible argument types")
-            }
+        } else {
+            ErrorMethod
         }
 
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
@@ -119,6 +105,12 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
     override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext): BinaryExpression {
         val expr1 = visit(ctx.expr(0)) as ExpressionNode
         val expr2 = visit(ctx.expr(1)) as ExpressionNode
+        if (expr1 is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr1.identifier, ctx)
+        }
+        if (expr2 is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr2.identifier, ctx)
+        }
         return when (ctx.binary_operator.type) {
             ManimParser.ADD -> AddExpression(ctx.start.line, expr1, expr2)
             ManimParser.MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
@@ -128,6 +120,9 @@ class ManimParserVisitor: ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitUnaryOperator(ctx: ManimParser.UnaryOperatorContext): UnaryExpression {
         val expr = visit(ctx.expr()) as ExpressionNode
+        if (expr is IdentifierNode) {
+            semanticAnalyser.undeclaredIdentifierCheck(currentSymbolTable, expr.identifier, ctx)
+        }
         return when (ctx.unary_operator.type) {
             ManimParser.ADD -> PlusExpression(ctx.start.line, expr)
             else -> MinusExpression(ctx.start.line, expr)

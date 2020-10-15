@@ -15,7 +15,7 @@ class ASTExecutorTests {
                 "# code comment\n" +
                 "let y: Stack = new Stack;\n"
 
-        val (abstractSyntaxTree, symbolTable) = buildAST(program)
+        val (_, abstractSyntaxTree, symbolTable) = buildAST(program)
 
         val executor = ASTExecutor(abstractSyntaxTree, symbolTable, program.split("\n"))
 
@@ -32,7 +32,7 @@ class ASTExecutorTests {
                         ),
                         MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
                         MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
-                        InitStructure(x = 2, y = -1, alignment = Alignment.HORIZONTAL, ident = "y", text = "empty")
+                        InitStructure(x = 2, y = -1, alignment = Alignment.HORIZONTAL, ident = "empty", text = "y")
                     )
                 )
             )
@@ -55,7 +55,7 @@ class ASTExecutorTests {
     }
 
     // Assumes syntactically correct program
-    private fun buildAST(program: String): Pair<ProgramNode, SymbolTable> {
+    private fun buildAST(program: String): Triple<ExitStatus, ProgramNode, SymbolTable> {
         val parser = ManimDSLParser(program.byteInputStream())
         return parser.convertToAst(parser.parseFile().second)
     }

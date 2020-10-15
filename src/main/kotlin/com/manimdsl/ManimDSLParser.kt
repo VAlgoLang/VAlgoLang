@@ -38,13 +38,12 @@ class ManimDSLParser(private val input: InputStream) {
         parser.removeErrorListeners()
         parser.addErrorListener(SyntaxErrorListener())
         val program = parser.program()
-
         return Pair(ErrorHandler.checkErrors(), program)
     }
 
-    fun convertToAst(program: ManimParser.ProgramContext): Pair<ProgramNode, SymbolTable> {
+    fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTable> {
         val visitor = ManimParserVisitor()
         val ast = visitor.visitProgram(program)
-        return Pair(ast, visitor.currentSymbolTable)
+        return Triple(ErrorHandler.checkErrors(), ast, visitor.currentSymbolTable)
     }
 }
