@@ -16,13 +16,9 @@ class ManimProjectWriter(private val pythonCode: String) {
     }
 
     fun generateAnimation(fileName: String, preview: List<String>): Int {
-
-        var commandOptions = preview.joinToString("")
-
-        val process = ProcessBuilder("manim $fileName Main -$commandOptions".split(" "))
-            .start()
-
-        return process.waitFor()
+        val commandOptions = preview.joinToString("")
+        return ProcessBuilder("manim $fileName Main -$commandOptions".split(" "))
+            .start().waitFor()
     }
 
 }

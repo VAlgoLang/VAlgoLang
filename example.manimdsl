@@ -4,5 +4,5 @@ y.push(1);
 y.push(1);
 let x = new Stack;
 y.push(2);
-y.pop();
+x.push(y.pop());
 sleep(2);
