@@ -2,6 +2,7 @@ package com.manimdsl
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.shapes.Rectangle
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -40,7 +41,7 @@ class ASTExecutor(
 
     private val finalDSLCode = mutableListOf<String>()
 
-    private fun executeExpression(node: ExpressionNode, insideMethodCall :Boolean = false): ExecValue {
+    private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false): ExecValue {
         return when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
@@ -54,7 +55,7 @@ class ASTExecutor(
         }
     }
 
-    private fun executeMethodCall(node: MethodCallNode, insideMethodCall :Boolean): ExecValue {
+    private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
         return when (val ds = variables[node.instanceIdentifier]) {
             is StackValue -> {
                 return when (node.dataStructureMethod) {
@@ -62,36 +63,40 @@ class ASTExecutor(
                         val doubleValue = executeExpression(node.arguments[0], true) as DoubleValue
                         val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
 
-                        // Set animation flags
-                        val animationFlags = AnimationFlags()
-                        animationFlags[OldShape] = doubleValue.manimObject != null
+                        val hasOldShape = doubleValue.manimObject != null
 
-                        val (instructions, newObject) = node.dataStructureMethod.animateMethod(
-                            listOf(doubleValue.value.toString()),
-                            variableNameGenerator,
-                            animationFlags,
-                            secondObject,
-                            doubleValue.manimObject ?: EmptyMObject
+                        val rectangleShape = Rectangle(doubleValue.value.toString())
+                        val oldShape = doubleValue.manimObject ?: EmptyMObject
+                        val rectangle = if (hasOldShape) oldShape else NewMObject(
+                            rectangleShape,
+                            variableNameGenerator.generateShapeName(rectangleShape)
                         )
+
+                        val instructions =
+                            mutableListOf<ManimInstr>(MoveObject(rectangle.ident, secondObject.ident, ObjectSide.ABOVE))
+                        if (!hasOldShape) {
+                            instructions.add(0, rectangle)
+                        }
+
                         linearRepresentation.addAll(instructions)
-                        ds.stack.push(Pair(doubleValue.value, newObject!!))
+                        ds.stack.push(Pair(doubleValue.value, rectangle))
                         doubleValue
                     }
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
                         val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
 
-                        // Set animation flags
-                        val animationFlags = AnimationFlags()
-                        animationFlags[FadeOut] = !insideMethodCall
-
-                        val (instructions, _) = node.dataStructureMethod.animateMethod(
-                            animationFlags = animationFlags,
-                            mObjects = arrayOf(
-                                poppedValue.second,
-                                secondObject,
-                            )
+                        val topOfStack = poppedValue.second
+                        val instructions = listOf(
+                            MoveObject(
+                                topOfStack.ident,
+                                secondObject.ident,
+                                ObjectSide.ABOVE,
+                                20,
+                                !insideMethodCall
+                            ),
                         )
+
                         linearRepresentation.addAll(instructions)
                         DoubleValue(poppedValue.first, poppedValue.second)
                     }
@@ -107,18 +112,23 @@ class ASTExecutor(
             is StackType -> {
                 val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                 val (instructions, newObject) = if (numStack == null) {
-                    node.type.init(
-                        variableNameGenerator.generateNameFromPrefix("empty"),
+                    val stackInit = InitStructure(
                         2,
                         -1,
+                        Alignment.HORIZONTAL,
+                        variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier
                     )
+                    // Add to stack of objects to keep track of identifier
+                    Pair(listOf(stackInit), stackInit)
                 } else {
-                    node.type.initRelativeToObject(
+                    val stackInit = InitStructureRelative(
+                        Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
                         numStack.initObject.ident
                     )
+                    Pair(listOf(stackInit), stackInit)
                 }
                 linearRepresentation.addAll(instructions)
                 StackValue(newObject, Stack())
