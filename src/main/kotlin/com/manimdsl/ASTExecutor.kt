@@ -69,7 +69,8 @@ class ASTExecutor(
                         val oldShape = doubleValue.manimObject ?: EmptyMObject
                         val rectangle = if (hasOldShape) oldShape else NewMObject(
                             rectangleShape,
-                            variableNameGenerator.generateShapeName(rectangleShape)
+                            variableNameGenerator.generateShapeName(rectangleShape),
+                            codeTextVariable
                         )
 
                         val instructions =

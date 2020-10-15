@@ -78,10 +78,12 @@ class InvalidSyntaxTests {
     }
 
     @Test
-    fun extraneousInput() {
-        val inputFile = File("$syntaxErrorFilePath/extraneousInput.manimdsl")
+    fun invalidTypeParameter() {
+        val inputFile = File("$syntaxErrorFilePath/invalidTypeParameter.manimdsl")
         ManimDSLParser(inputFile.inputStream()).parseFile()
-        assertTrue(outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: extraneous input .*")))
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: mismatched input .* expecting .*"))
+        )
     }
 
 }
