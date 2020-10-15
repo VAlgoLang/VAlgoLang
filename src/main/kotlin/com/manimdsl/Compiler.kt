@@ -8,7 +8,7 @@ private fun compile(filename: String) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
-        println("Please enter a valid file className: ${file.name} not found")
+        println("Please enter a valid file className: $filename not found")
         exitProcess(1)
     }
 
@@ -44,7 +44,7 @@ private fun compile(filename: String) {
 }
 
 fun main(args: Array<String>) {
-
+    args.forEach { println(it) }
     if (args.isEmpty()) {
         // No argument passed in
         println("Please enter a file name")

@@ -141,7 +141,7 @@ class ASTExecutor(
 
     // Returns whether the program is complete and the state of all the variables after executing the statement
     fun executeNextStatement(): Pair<Boolean, List<ManimInstr>> {
-        val node = program.statements[programCounter] as StatementNode
+        val node = program.statements[programCounter]
         programCounter++
 
         if (node is CodeNode) {
