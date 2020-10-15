@@ -7,7 +7,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, output: String?, manimOptions: List<String>) {
+private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, manimOptions: List<String>) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -39,11 +39,11 @@ private fun compile(filename: String, output: String?, manimOptions: List<String
 
     val writer = ManimProjectWriter(ManimWriter(state.second).build())
 
-    if (output !== null) println("Writing file to $output")
-    val outputFile = writer.createPythonFile(output)
+    if (generatePython) println("Writing file to ${outputVideoFile.removeSuffix(".mp4") + ".py"}")
+    val outputFile = writer.createPythonFile(if (generatePython) outputVideoFile.removeSuffix(".mp4") + ".py" else null)
 
     println("Generating animation...")
-    val exitCode = writer.generateAnimation(outputFile, manimOptions)
+    val exitCode = writer.generateAnimation(outputFile, manimOptions, outputVideoFile)
 
     if (exitCode != 0) {
         println("Animation could not be generated")
@@ -75,17 +75,11 @@ class DSLCommandLineArguments : Callable<Int> {
     @Parameters(index = "0", description = ["The manimdsl file to compile and animate"])
     lateinit var file: String
 
-    @Option(names = ["-o", "--output"], description = ["Output generated python & manim code (optional)"])
-    var output: String? = null
+    @Option(names = ["-o", "--ouput"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
+    var outputMP4: String = "out.mp4"
 
-    @Option(
-        names = ["-p", "--preview"],
-        defaultValue = "false",
-        description = ["Preview animation after generation (default: \${DEFAULT-VALUE})"]
-    )
-    fun preview(preview: Boolean = false) {
-        if (preview) manimArguments.add("p")
-    }
+    @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (default: false)"])
+    var python: Boolean = false
 
     @Option(
         names = ["-q", "--quality"],
@@ -97,7 +91,7 @@ class DSLCommandLineArguments : Callable<Int> {
     }
 
     override fun call(): Int {
-        compile(file, output, manimArguments)
+        compile(file, outputMP4, python, manimArguments)
         return 0
     }
 }
