@@ -16,12 +16,15 @@ arg_list: expr (COMMA expr)*                                        #ArgumentLis
 
 expr: NUMBER                                                        #NumberLiteral
     | IDENT                                                         #Identifier
-    | NEW STACK                                                     #StackCreate
+    | NEW data_structure_type                                       #DataStructureContructor
     | method_call                                                   #MethodCallExpression
     | unary_operator=(ADD | MINUS) expr                             #UnaryOperator
     | expr binary_operator=(ADD | MINUS | TIMES) expr               #BinaryExpression;
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall;
 
-type: NUMBER_TYPE                                                   #NumberType
-    | STACK                                                         #StackType;
+type: data_structure_type                                            #DataStructureType
+    | primitive_type                                                 #PrimitiveType;
+
+data_structure_type: STACK OPEN_GENERIC primitive_type CLOSE_GENERIC #StackType;
+primitive_type: NUMBER_TYPE                                          #NumberType;

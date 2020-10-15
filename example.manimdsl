@@ -1,8 +1,4 @@
-let y = new Stack;
-y.push(3);
-y.push(1);
-y.push(1);
-let x = new Stack;
-y.push(2);
-x.push(y.pop());
-sleep(2);
+let stack1 = new Stack<number>;
+let stack2 = new Stack<number>;
+stack1.push(1);
+stack2.push(stack1.pop());
