@@ -9,6 +9,8 @@ TIMES: '*';
 DOT: '.';
 EQUAL: '=';
 COMMA: ',';
+OPEN_GENERIC: '<' ;
+CLOSE_GENERIC: '>' ;
 OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;

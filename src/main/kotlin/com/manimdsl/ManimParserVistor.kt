@@ -95,8 +95,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
     }
 
-    override fun visitStackCreate(ctx: ManimParser.StackCreateContext): ConstructorNode {
-        return ConstructorNode(ctx.start.line, StackType(NumberType), listOf())
+    override fun visitDataStructureContructor(ctx: ManimParser.DataStructureContructorContext): ASTNode {
+        return ConstructorNode(ctx.start.line, visit(ctx.data_structure_type()) as DataStructureType, listOf())
     }
 
     override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
@@ -143,7 +143,17 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return NumberType
     }
 
+    override fun visitDataStructureType(ctx: ManimParser.DataStructureTypeContext): DataStructureType {
+        return visit(ctx.data_structure_type()) as DataStructureType
+    }
+
+    override fun visitPrimitiveType(ctx: ManimParser.PrimitiveTypeContext): PrimitiveType {
+        return visit(ctx.primitive_type()) as PrimitiveType
+    }
+
     override fun visitStackType(ctx: ManimParser.StackTypeContext): StackType {
-        return StackType(NumberType)
+        // Stack only contains primitives as per grammar
+        val containerType = visit(ctx.primitive_type()) as PrimitiveType
+        return StackType(containerType)
     }
 }

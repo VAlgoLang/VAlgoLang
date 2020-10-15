@@ -1,4 +1,4 @@
 let x = 1;
-let y: Stack = new Stack;
+let y: Stack<number> = new Stack<number>;
 y.push(x);
 let z = y.pop();
