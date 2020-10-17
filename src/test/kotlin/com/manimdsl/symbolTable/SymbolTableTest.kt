@@ -80,4 +80,29 @@ internal class SymbolTableTest {
         symbolTable.goToScope(secondScope)
         assertEquals(StackType(), symbolTable.getTypeOf("x"))
     }
+
+    @Test
+    fun currentScopeIsUpdatedCorrectlyOnEnterAndLeave() {
+        // Check current is global scope ID
+        val globalScopeID = 0
+        assertEquals(globalScopeID, symbolTable.getCurrentScopeID())
+
+        val firstScope = symbolTable.enterScope()
+        assertEquals(firstScope, symbolTable.getCurrentScopeID())
+        symbolTable.leaveScope()
+
+        assertEquals(globalScopeID, symbolTable.getCurrentScopeID())
+
+        val secondScope = symbolTable.enterScope()
+        assertEquals(secondScope, symbolTable.getCurrentScopeID())
+
+        val thirdScope = symbolTable.enterScope()
+        assertEquals(thirdScope, symbolTable.getCurrentScopeID())
+
+        symbolTable.leaveScope()
+        assertEquals(secondScope, symbolTable.getCurrentScopeID())
+
+        symbolTable.leaveScope()
+        assertEquals(globalScopeID, symbolTable.getCurrentScopeID())
+    }
 }

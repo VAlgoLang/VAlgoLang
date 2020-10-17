@@ -30,6 +30,7 @@ class SymbolTable {
         }
     }
 
+    fun getCurrentScopeID(): Int = scopes.indexOf(currentScope)
 }
 
 class GlobalScopeSymbolTable: ScopedSymbolTable(null)
