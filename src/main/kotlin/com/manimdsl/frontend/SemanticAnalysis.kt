@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
 
-    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableNode): Type =
+    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTable): Type =
         when (expression) {
             is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
             is NumberNode -> NumberType
@@ -24,12 +24,12 @@ class SemanticAnalysis {
             is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
         }
 
-    fun inferType(currentSymbolTable: SymbolTableNode, expression: ExpressionNode): Type {
+    fun inferType(currentSymbolTable: SymbolTable, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
     }
 
 
-    fun redeclaredVariableCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+    fun redeclaredVariableCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) != NoType) {
             redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
         }
@@ -41,23 +41,23 @@ class SemanticAnalysis {
         }
     }
 
-    fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+    fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == NoType) {
             undeclaredAssignError(identifier, ctx)
         }
     }
 
-    fun notDataStructureCheck(currentSymbolTable: SymbolTableNode, identifier: String, ctx: ParserRuleContext) {
+    fun notDataStructureCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }
 
     fun notValidMethodNameForDataStructureCheck(
-        currentSymbolTable: SymbolTableNode,
-        identifier: String,
-        method: String,
-        ctx: ParserRuleContext
+            currentSymbolTable: SymbolTable,
+            identifier: String,
+            method: String,
+            ctx: ParserRuleContext
     ) {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {

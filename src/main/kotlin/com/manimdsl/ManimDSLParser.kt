@@ -44,6 +44,6 @@ class ManimDSLParser(private val input: InputStream) {
     fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTable> {
         val visitor = ManimParserVisitor()
         val ast = visitor.visitProgram(program)
-        return Triple(ErrorHandler.checkErrors(), ast, visitor.currentSymbolTable)
+        return Triple(ErrorHandler.checkErrors(), ast, visitor.symbolTable)
     }
 }
