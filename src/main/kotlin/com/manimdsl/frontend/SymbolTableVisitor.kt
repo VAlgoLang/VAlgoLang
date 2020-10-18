@@ -2,20 +2,23 @@ package com.manimdsl.frontend
 
 data class IdentifierData(val type: Type)
 
-class SymbolTableVisitor {
-    private val scopes = mutableListOf<SymbolTable>(GlobalScopeSymbolTable())
-    private var currentScope: SymbolTable = scopes[0]
+interface SymbolTable {
+    fun getTypeOf(identifier: String): Type
+}
 
-    fun getTypeOf(identifier: String): Type {
-        return currentScope.table[identifier]?.type ?: (currentScope.parent?.table?.get(identifier)?.type ?: ErrorType)
-    }
+// Visitor
+class SymbolTableVisitor {
+    private val scopes = mutableListOf<SymbolTableNode>(GlobalScopeSymbolTable())
+    private var currentScope: SymbolTableNode = scopes[0]
+
+    fun getTypeOf(identifier: String): Type = currentScope.getTypeOf(identifier)
 
     fun addVariable(identifier: String, type: Type) {
         currentScope.table[identifier] = IdentifierData(type)
     }
 
     fun enterScope(): Int {
-        val newScope = SymbolTable(currentScope, scopes.size)
+        val newScope = SymbolTableNode(currentScope, scopes.size)
         scopes.add(newScope)
         currentScope = newScope
         // Returning index of this new symbol table (used in AST)
@@ -23,7 +26,10 @@ class SymbolTableVisitor {
     }
 
     fun leaveScope() {
-        currentScope = currentScope.parent?: scopes[0]
+        val currentScopeParent = currentScope.parent
+        if (currentScopeParent is SymbolTableNode) {
+            currentScope = currentScopeParent
+        }
     }
 
     fun goToScope(scopeID: Int) {
@@ -35,8 +41,20 @@ class SymbolTableVisitor {
     fun getCurrentScopeID(): Int = currentScope.id
 }
 
-class GlobalScopeSymbolTable : SymbolTable(null, 0)
 
-open class SymbolTable(val parent: SymbolTable?, val id: Int) {
-    val table: MutableMap<String, IdentifierData> = mutableMapOf()
+object SymbolTableRoot : SymbolTable {
+    override fun getTypeOf(identifier: String): Type {
+        return ErrorType
+    }
 }
+
+open class SymbolTableNode(val parent: SymbolTable, val id: Int): SymbolTable {
+    val table: MutableMap<String, IdentifierData> = mutableMapOf()
+
+    override fun getTypeOf(identifier: String): Type {
+        return table[identifier]?.type ?: parent.getTypeOf(identifier)
+    }
+}
+
+class GlobalScopeSymbolTable: SymbolTableNode(SymbolTableRoot, 0)
+
