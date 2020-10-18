@@ -34,10 +34,6 @@ class TestLinearRepresentation {
         val expected = File("src/test/testFiles/python/stack.py").readLines()
         val generated = File(writer.createPythonFile()).readLines()
 
-
-        assertEquals(
-            expected.filter { it.trim() != "" }.joinToString("\n"),
-            generated.filter { it.trim() != "" }.joinToString("\n")
-        )
+        assertEquals(expected, generated)
     }
 }
