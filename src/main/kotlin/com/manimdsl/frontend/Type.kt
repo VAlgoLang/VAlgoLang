@@ -22,7 +22,7 @@ interface DataStructureMethod {
 }
 
 object ErrorMethod : DataStructureMethod {
-    override val returnType: Type = NoType
+    override val returnType: Type = ErrorType
     override val argumentTypes: List<Type> = emptyList()
 }
 
@@ -39,7 +39,7 @@ data class StackType(
     )
 ) : DataStructureType(internalType, methods) {
 
-    data class PushMethod(override val returnType: Type = NoType, override var argumentTypes: List<Type>) :
+    data class PushMethod(override val returnType: Type = ErrorType, override var argumentTypes: List<Type>) :
         DataStructureMethod
 
     data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
@@ -55,4 +55,4 @@ data class StackType(
 }
 
 
-object NoType : Type()
+object ErrorType : Type()
