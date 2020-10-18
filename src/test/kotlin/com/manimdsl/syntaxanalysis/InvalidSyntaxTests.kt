@@ -54,7 +54,7 @@ class InvalidSyntaxTests {
         System.setOut(standardOut)
     }
 
-    @ParameterizedTest(name = "{1}")
+    @ParameterizedTest(name = "{0}")
     @MethodSource("data")
     fun invalidSyntaxErrorTests(fileName: String) {
         val inputFile = File(fileName)
