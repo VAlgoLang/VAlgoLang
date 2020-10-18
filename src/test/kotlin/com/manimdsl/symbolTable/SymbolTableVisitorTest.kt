@@ -12,7 +12,7 @@ internal class SymbolTableVisitorTest {
 
     @Test
     fun declaredVariableReturnsCorrectTypeAtGlobalScope() {
-        symbolTable.addVariable("x", NumberType)
+        symbolTable.addVariableToCurrentScope("x", NumberType)
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
     }
 
@@ -39,7 +39,7 @@ internal class SymbolTableVisitorTest {
     @Test
     fun variableDeclaredInScopeIsOnlyAccessibleInThatScope() {
         symbolTable.enterScope()
-        symbolTable.addVariable("x", NumberType)
+        symbolTable.addVariableToCurrentScope("x", NumberType)
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
         symbolTable.leaveScope()
         assertEquals(ErrorType, symbolTable.getTypeOf("x"))
@@ -47,7 +47,7 @@ internal class SymbolTableVisitorTest {
 
     @Test
     fun variableDeclaredInParentScopeIsAccessibleInChildScope() {
-        symbolTable.addVariable("x", NumberType)
+        symbolTable.addVariableToCurrentScope("x", NumberType)
         symbolTable.enterScope()
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
     }
@@ -55,7 +55,7 @@ internal class SymbolTableVisitorTest {
     @Test
     fun variableDeclaredInUnrelatedScopesIsUnaccessible() {
         symbolTable.enterScope()
-        symbolTable.addVariable("x", NumberType)
+        symbolTable.addVariableToCurrentScope("x", NumberType)
         symbolTable.leaveScope()
 
         symbolTable.enterScope()
@@ -65,11 +65,11 @@ internal class SymbolTableVisitorTest {
     @Test
     fun goToScopeCanJumpBetweenScopesCorrectly() {
         val firstScope = symbolTable.enterScope()
-        symbolTable.addVariable("x", NumberType)
+        symbolTable.addVariableToCurrentScope("x", NumberType)
         symbolTable.leaveScope()
 
         val secondScope = symbolTable.enterScope()
-        symbolTable.addVariable("x", StackType())
+        symbolTable.addVariableToCurrentScope("x", StackType())
         symbolTable.leaveScope()
 
         assertEquals(ErrorType, symbolTable.getTypeOf("x"))
