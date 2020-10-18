@@ -31,7 +31,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
-        symbolTable.addVariableToCurrentScope(identifier, rhsType)
+        symbolTable.addVariable(identifier, IdentifierData(rhsType))
         return DeclarationNode(ctx.start.line, identifier, rhs)
     }
 

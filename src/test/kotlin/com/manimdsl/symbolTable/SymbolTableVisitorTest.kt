@@ -1,18 +1,15 @@
 package com.manimdsl.symbolTable
 
-import com.manimdsl.frontend.ErrorType
-import com.manimdsl.frontend.NumberType
-import com.manimdsl.frontend.StackType
-import com.manimdsl.frontend.SymbolTableVisitor
+import com.manimdsl.frontend.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class SymbolTableVisitorTest {
+class SymbolTableVisitorTest {
     private val symbolTable = SymbolTableVisitor()
 
     @Test
     fun declaredVariableReturnsCorrectTypeAtGlobalScope() {
-        symbolTable.addVariableToCurrentScope("x", NumberType)
+        symbolTable.addVariable("x", IdentifierData(NumberType))
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
     }
 
@@ -39,7 +36,7 @@ internal class SymbolTableVisitorTest {
     @Test
     fun variableDeclaredInScopeIsOnlyAccessibleInThatScope() {
         symbolTable.enterScope()
-        symbolTable.addVariableToCurrentScope("x", NumberType)
+        symbolTable.addVariable("x", IdentifierData(NumberType))
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
         symbolTable.leaveScope()
         assertEquals(ErrorType, symbolTable.getTypeOf("x"))
@@ -47,7 +44,8 @@ internal class SymbolTableVisitorTest {
 
     @Test
     fun variableDeclaredInParentScopeIsAccessibleInChildScope() {
-        symbolTable.addVariableToCurrentScope("x", NumberType)
+        symbolTable.addVariable("x", IdentifierData(NumberType))
+        symbolTable.enterScope()
         symbolTable.enterScope()
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
     }
@@ -55,7 +53,7 @@ internal class SymbolTableVisitorTest {
     @Test
     fun variableDeclaredInUnrelatedScopesIsUnaccessible() {
         symbolTable.enterScope()
-        symbolTable.addVariableToCurrentScope("x", NumberType)
+        symbolTable.addVariable("x", IdentifierData(NumberType))
         symbolTable.leaveScope()
 
         symbolTable.enterScope()
@@ -65,11 +63,11 @@ internal class SymbolTableVisitorTest {
     @Test
     fun goToScopeCanJumpBetweenScopesCorrectly() {
         val firstScope = symbolTable.enterScope()
-        symbolTable.addVariableToCurrentScope("x", NumberType)
+        symbolTable.addVariable("x", IdentifierData(NumberType))
         symbolTable.leaveScope()
 
         val secondScope = symbolTable.enterScope()
-        symbolTable.addVariableToCurrentScope("x", StackType())
+        symbolTable.addVariable("x", IdentifierData(StackType()))
         symbolTable.leaveScope()
 
         assertEquals(ErrorType, symbolTable.getTypeOf("x"))
