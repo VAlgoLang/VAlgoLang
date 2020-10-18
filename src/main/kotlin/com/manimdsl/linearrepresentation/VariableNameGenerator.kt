@@ -1,7 +1,7 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.frontend.NoType
-import com.manimdsl.frontend.SymbolTable
+import com.manimdsl.frontend.ErrorType
+import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.shapes.Shape
 
 interface NameGenerator {
@@ -10,14 +10,14 @@ interface NameGenerator {
     fun generateNameFromPrefix(prefix: String): String
 }
 
-class VariableNameGenerator(private val symbolTable: SymbolTable) : NameGenerator {
+class VariableNameGenerator(private val symbolTableVisitor: SymbolTableVisitor) : NameGenerator {
     private val prefixCounter: MutableMap<String, Int> = mutableMapOf()
 
     override fun generateShapeName(shape: Shape): String = generateNameFromPrefix(shape.pythonVariablePrefix)
 
     override fun generateNameFromPrefix(prefix: String): String {
         var count = prefixCounter.getOrDefault(prefix, 0)
-        while (symbolTable.getTypeOf("$prefix$count") !is NoType) {
+        while (symbolTableVisitor.getTypeOf("$prefix$count") !is ErrorType) {
             count++
         }
         prefixCounter[prefix] = count + 1

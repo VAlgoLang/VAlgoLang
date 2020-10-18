@@ -1,14 +1,14 @@
 package com.manimdsl.symbolTable
 
-import com.manimdsl.frontend.NoType
+import com.manimdsl.frontend.ErrorType
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
-import com.manimdsl.frontend.SymbolTable
+import com.manimdsl.frontend.SymbolTableVisitor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class SymbolTableTest {
-    private val symbolTable = SymbolTable()
+internal class SymbolTableVisitorTest {
+    private val symbolTable = SymbolTableVisitor()
 
     @Test
     fun declaredVariableReturnsCorrectTypeAtGlobalScope() {
@@ -18,13 +18,13 @@ internal class SymbolTableTest {
 
     @Test
     fun undeclaredVariableReturnsNoTypeAtGlobalScope() {
-        assertEquals(NoType, symbolTable.getTypeOf("x"))
+        assertEquals(ErrorType, symbolTable.getTypeOf("x"))
     }
 
     @Test
     fun undeclaredVariableReturnsNoTypeAtChildScope() {
         symbolTable.enterScope()
-        assertEquals(NoType, symbolTable.getTypeOf("x"))
+        assertEquals(ErrorType, symbolTable.getTypeOf("x"))
     }
 
     @Test
@@ -42,7 +42,7 @@ internal class SymbolTableTest {
         symbolTable.addVariable("x", NumberType)
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
         symbolTable.leaveScope()
-        assertEquals(NoType, symbolTable.getTypeOf("x"))
+        assertEquals(ErrorType, symbolTable.getTypeOf("x"))
     }
 
     @Test
@@ -59,7 +59,7 @@ internal class SymbolTableTest {
         symbolTable.leaveScope()
 
         symbolTable.enterScope()
-        assertEquals(NoType, symbolTable.getTypeOf("x"))
+        assertEquals(ErrorType, symbolTable.getTypeOf("x"))
     }
 
     @Test
@@ -72,7 +72,7 @@ internal class SymbolTableTest {
         symbolTable.addVariable("x", StackType())
         symbolTable.leaveScope()
 
-        assertEquals(NoType, symbolTable.getTypeOf("x"))
+        assertEquals(ErrorType, symbolTable.getTypeOf("x"))
 
         symbolTable.goToScope(firstScope)
         assertEquals(NumberType, symbolTable.getTypeOf("x"))

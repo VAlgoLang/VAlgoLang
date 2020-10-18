@@ -6,7 +6,7 @@ import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
 import com.manimdsl.frontend.ProgramNode
-import com.manimdsl.frontend.SymbolTable
+import com.manimdsl.frontend.SymbolTableVisitor
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
@@ -41,7 +41,7 @@ class ManimDSLParser(private val input: InputStream) {
         return Pair(ErrorHandler.checkErrors(), program)
     }
 
-    fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTable> {
+    fun convertToAst(program: ManimParser.ProgramContext): Triple<ExitStatus, ProgramNode, SymbolTableVisitor> {
         val visitor = ManimParserVisitor()
         val ast = visitor.visitProgram(program)
         return Triple(ErrorHandler.checkErrors(), ast, visitor.symbolTable)

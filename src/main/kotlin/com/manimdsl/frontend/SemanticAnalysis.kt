@@ -6,7 +6,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
 
-    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTable): Type =
+    private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableVisitor): Type =
         when (expression) {
             is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
             is NumberNode -> NumberType
@@ -19,42 +19,42 @@ class SemanticAnalysis {
             ) {
                 NumberType
             } else {
-                NoType
+                ErrorType
             }
             is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
         }
 
-    fun inferType(currentSymbolTable: SymbolTable, expression: ExpressionNode): Type {
+    fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
     }
 
 
-    fun redeclaredVariableCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
-        if (currentSymbolTable.getTypeOf(identifier) != NoType) {
+    fun redeclaredVariableCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) != ErrorType) {
             redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
         }
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if (lhsType != NoType && rhsType != NoType && lhsType != rhsType) {
+        if (lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
 
-    fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
-        if (currentSymbolTable.getTypeOf(identifier) == NoType) {
+    fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
             undeclaredAssignError(identifier, ctx)
         }
     }
 
-    fun notDataStructureCheck(currentSymbolTable: SymbolTable, identifier: String, ctx: ParserRuleContext) {
+    fun notDataStructureCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }
 
     fun notValidMethodNameForDataStructureCheck(
-            currentSymbolTable: SymbolTable,
+            currentSymbolTable: SymbolTableVisitor,
             identifier: String,
             method: String,
             ctx: ParserRuleContext

@@ -1,7 +1,7 @@
 package com.manimdsl
 
 import com.manimdsl.frontend.ProgramNode
-import com.manimdsl.frontend.SymbolTable
+import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.*
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
@@ -55,7 +55,7 @@ class ASTExecutorTests {
     }
 
     // Assumes syntactically correct program
-    private fun buildAST(program: String): Triple<ExitStatus, ProgramNode, SymbolTable> {
+    private fun buildAST(program: String): Triple<ExitStatus, ProgramNode, SymbolTableVisitor> {
         val parser = ManimDSLParser(program.byteInputStream())
         return parser.convertToAst(parser.parseFile().second)
     }

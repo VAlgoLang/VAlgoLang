@@ -16,12 +16,12 @@ object EmptyValue : ExecValue()
 
 class ASTExecutor(
         private val program: ProgramNode,
-        private val symbolTable: SymbolTable,
+        private val symbolTableVisitor: SymbolTableVisitor,
         private val fileLines: List<String>
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
-    private val variableNameGenerator = VariableNameGenerator(symbolTable)
+    private val variableNameGenerator = VariableNameGenerator(symbolTableVisitor)
 
     private val codeBlockVariable: String
     private val codeTextVariable: String

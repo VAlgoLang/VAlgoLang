@@ -5,7 +5,7 @@ import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
-    val symbolTable = SymbolTable()
+    val symbolTable = SymbolTableVisitor()
     private val semanticAnalyser = SemanticAnalysis()
 
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
