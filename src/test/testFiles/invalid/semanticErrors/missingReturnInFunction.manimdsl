@@ -1,0 +1,5 @@
+def func2(number x): number {
+    let z: number = x + 1;
+}
+
+let z = func2(5);

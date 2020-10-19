@@ -159,4 +159,10 @@ class SemanticAnalysis {
         }
     }
 
+    fun missingReturnCheck(identifier: String, statements: List<StatementNode>, type: Type, ctx: ManimParser.FunctionContext) {
+        if(!statements.any { it is ReturnNode }) {
+            missingReturnError(identifier, type.toString(), ctx)
+        }
+    }
+
 }

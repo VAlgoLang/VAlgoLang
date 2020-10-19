@@ -34,6 +34,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val statements = ctx.stat().map { visit(it) as StatementNode }
         symbolTable.leaveScope()
 
+        if (functionReturnType !is VoidType) {
+            semanticAnalyser.missingReturnCheck(identifier, statements, functionReturnType, ctx)
+        }
+
         symbolTable.addVariable(identifier, FunctionData(parameters, type))
 
         inFunction = false
