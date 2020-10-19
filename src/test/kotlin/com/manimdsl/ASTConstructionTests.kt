@@ -2,7 +2,6 @@ package com.manimdsl
 
 import com.manimdsl.frontend.*
 import junit.framework.TestCase.assertEquals
-import org.antlr.v4.codegen.model.decl.Decl
 
 import org.junit.jupiter.api.Test
 

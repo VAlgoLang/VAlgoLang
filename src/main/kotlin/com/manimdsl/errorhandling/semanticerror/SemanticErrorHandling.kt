@@ -3,7 +3,6 @@ package com.manimdsl.errorhandling.semanticerror
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
-import kotlin.math.exp
 
 fun declareAssignError(
     identifier: String, rhsType: Type, lhsType: Type,
