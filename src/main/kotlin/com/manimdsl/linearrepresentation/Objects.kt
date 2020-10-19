@@ -1,5 +1,6 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.shapes.CodeBlockShape
 import com.manimdsl.shapes.Shape
 
 /** Objects **/
@@ -8,7 +9,11 @@ interface MObject : ManimInstr {
     val ident: String
 }
 
-data class Coord(val x: Double, val y: Double) {
+/** Positioning **/
+interface Position
+object RelativeToMoveIdent : Position
+
+data class Coord(val x: Double, val y: Double) : Position {
     override fun toString(): String {
         return "$x, $y"
     }
@@ -50,10 +55,6 @@ data class CodeBlock(
     }
 }
 
-interface Position
-
-data class Coordinate(val x: Int, val y: Int) : Position
-object RelativeToMoveIdent : Position
 
 data class InitStructure(
     val position: Position, val alignment: Alignment, override val ident: String,
@@ -63,7 +64,7 @@ data class InitStructure(
         val python = mutableListOf("$ident = Init_structure(\"${text}\", ${alignment.angle}).build()")
         python.add(
             when (position) {
-                is Coordinate -> "$ident.to_edge(np.array([${position.x}, ${position.y}, 0]))"
+                is Coord -> "$ident.to_edge(np.array([${position.x}, ${position.y}, 0]))"
                 else -> "self.place_relative_to_obj($ident, $moveIdent, ${ObjectSide.LEFT.addOffset(0)})"
             }
         )

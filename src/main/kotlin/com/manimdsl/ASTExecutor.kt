@@ -114,7 +114,7 @@ class ASTExecutor(
                 val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                 val (instructions, newObject) = if (numStack == null) {
                     val stackInit = InitStructure(
-                        Coordinate(2, -1),
+                        Coord(2.0, -1.0),
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier

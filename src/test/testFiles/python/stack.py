@@ -9,7 +9,7 @@ class Main(Scene):
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         self.move_arrow_to_line(1, pointer, code_block)
         empty = Init_structure("y", 0).build()
-        empty.to_edge(np.array([2, -1, 0]))
+        empty.to_edge(np.array([2.0, -1.0, 0]))
         self.play(ShowCreation(empty))
         testIdent = Rectangle_block("2").build()
         self.place_relative_to_obj(testIdent, code_text, 0.25, 0.0)

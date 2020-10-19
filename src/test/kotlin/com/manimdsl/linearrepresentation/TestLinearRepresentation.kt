@@ -18,7 +18,7 @@ class TestLinearRepresentation {
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
             MoveToLine(1, "pointer", "code_block"),
-            InitStructure(Coordinate(2, -1), Alignment.HORIZONTAL, "empty", "y"),
+            InitStructure(Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y"),
             NewMObject(Rectangle("2"), "testIdent", "code_text"),
             MoveToLine(2, "pointer", "code_block"),
             MoveObject("testIdent", "empty", ObjectSide.ABOVE),
@@ -34,6 +34,9 @@ class TestLinearRepresentation {
         val expected = File("src/test/testFiles/python/stack.py").readLines()
         val generated = File(writer.createPythonFile()).readLines()
 
-        assertEquals(expected, generated)
+        assertEquals(
+            expected.filter { it.trim() != "" }.joinToString("\n"),
+            generated.filter { it.trim() != "" }.joinToString("\n")
+        )
     }
 }

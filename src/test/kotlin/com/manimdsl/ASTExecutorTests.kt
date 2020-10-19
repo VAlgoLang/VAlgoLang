@@ -32,7 +32,7 @@ class ASTExecutorTests {
                     ),
                     MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
                     MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
-                    InitStructure(Coordinate(2, -1), alignment = Alignment.HORIZONTAL, ident = "empty", text = "y")
+                    InitStructure(Coord(2.0, -1.0), alignment = Alignment.HORIZONTAL, ident = "empty", text = "y")
                 )
             )
         )
