@@ -1,5 +1,7 @@
 package com.manimdsl.shapes
 
+import com.manimdsl.linearrepresentation.Alignment
+
 sealed class Shape {
     abstract val text: String
     abstract val classPath: String
@@ -7,17 +9,17 @@ sealed class Shape {
     abstract val pythonVariablePrefix: String
     val style = Style()
 
-    open fun getConstructor(): String {
+    override fun toString(): String {
         return "${className}(\"${text}\"$style).build()"
     }
 }
 
-data class Rectangle(
+class Rectangle(
     override val text: String,
-    val color: String? = null,
-    val textColor: String? = null,
-    val textWeight: String? = null,
-    val font: String? = null
+    private val color: String? = null,
+    private val textColor: String? = null,
+    private val textWeight: String? = null,
+    private val font: String? = null
 ) : Shape() {
     override val classPath: String = "python/rectangle.py"
     override val className: String = "Rectangle_block"
@@ -31,24 +33,48 @@ data class Rectangle(
     }
 }
 
-data class CodeBlockShape(
-    val lines: List<String>,
-    val textColor: String? = null,
-    val textWeight: String? = null,
-    val font: String? = null
+class CodeBlockShape(
+    lines: List<String>,
+    private val textColor: String? = null,
+    private val textWeight: String? = null,
+    private val font: String? = null
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
     override val pythonVariablePrefix: String = "code_block"
     override val text: String = "[\"${lines.joinToString("\",\"")}\"]"
 
-    override fun getConstructor(): String {
-        return "${className}($text$style)"
-    }
-
     init {
         textColor?.let { style.addStyleAttribute(TextColor(textColor)) }
         textWeight?.let { style.addStyleAttribute(TextWeight(textWeight)) }
         font?.let { style.addStyleAttribute(Font(font)) }
+    }
+
+    override fun toString(): String {
+        return "${className}($text$style)"
+    }
+}
+
+class InitStructureShape(
+    override val text: String,
+    private val alignment: Alignment,
+    private val color: String? = null,
+    private val textColor: String? = null,
+    private val textWeight: String? = null,
+    private val font: String? = null
+) : Shape() {
+    override val classPath: String = "python/init_structure.py"
+    override val className: String = "Init_structure"
+    override val pythonVariablePrefix: String = ""
+
+    init {
+        color?.let { style.addStyleAttribute(Color(color)) }
+        textColor?.let { style.addStyleAttribute(TextColor(textColor)) }
+        textWeight?.let { style.addStyleAttribute(TextWeight(textWeight)) }
+        font?.let { style.addStyleAttribute(Font(font)) }
+    }
+
+    override fun toString(): String {
+        return "${className}(\"$text\", ${alignment.angle}$style).build()"
     }
 }

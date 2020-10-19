@@ -1,6 +1,7 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.shapes.CodeBlockShape
+import com.manimdsl.shapes.InitStructureShape
 import com.manimdsl.shapes.Shape
 
 /** Objects **/
@@ -48,7 +49,7 @@ data class CodeBlock(
 ) : MObject {
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = ${CodeBlockShape(lines, textColor, textWeight, font).getConstructor()}",
+            "$ident = ${CodeBlockShape(lines, textColor, textWeight, font)}",
             "$codeTextName = $ident.build()",
             "self.place_at($codeTextName, -1, 0)",
             "self.play(FadeIn($codeTextName))",
@@ -59,11 +60,19 @@ data class CodeBlock(
 
 
 data class InitStructure(
-    val position: Position, val alignment: Alignment, override val ident: String,
-    val text: String, val moveIdent: String? = null
+    val position: Position,
+    val alignment: Alignment,
+    override val ident: String,
+    val text: String,
+    val moveIdent: String? = null,
+    val color: String? = null,
+    val textColor: String? = null,
+    val textWeight: String? = null,
+    val font: String? = null
 ) : MObject {
     override fun toPython(): List<String> {
-        val python = mutableListOf("$ident = Init_structure(\"${text}\", ${alignment.angle}).build()")
+        val python =
+            mutableListOf("$ident = ${InitStructureShape(text, alignment, color, textColor, textWeight, font)}")
         python.add(
             when (position) {
                 is Coord -> "$ident.to_edge(np.array([${position.x}, ${position.y}, 0]))"
@@ -78,7 +87,7 @@ data class InitStructure(
 data class NewMObject(val shape: Shape, override val ident: String, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = ${shape.getConstructor()}",
+            "$ident = $shape",
             "self.place_relative_to_obj($ident, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
             "self.play(FadeIn($ident))"
         )
