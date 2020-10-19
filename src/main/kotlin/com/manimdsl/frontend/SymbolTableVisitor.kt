@@ -1,8 +1,10 @@
 package com.manimdsl.frontend
 
-open class IdentifierData(val type: Type)
+open class IdentifierData(open val type: Type)
 
 object ErrorIdentifierData : IdentifierData(ErrorType)
+
+data class FunctionData(val parameters: List<ParameterNode>?, override val type: Type) : IdentifierData(type)
 
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {

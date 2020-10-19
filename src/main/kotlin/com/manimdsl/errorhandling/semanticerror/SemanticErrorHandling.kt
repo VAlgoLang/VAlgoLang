@@ -55,6 +55,14 @@ fun typeOfArgsInMethodCallError(
     )
 }
 
+fun globalReturnError(ctx: ParserRuleContext) {
+    addSemanticError("Cannot return from global scope", getErrorLinePos(ctx))
+}
+
+fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

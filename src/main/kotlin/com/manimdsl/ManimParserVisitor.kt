@@ -3,11 +3,12 @@ package com.manimdsl
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
-import javax.swing.plaf.nimbus.State
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
     private val semanticAnalyser = SemanticAnalysis()
+    private var inFunction: Boolean = false
+    private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
         return ProgramNode(
@@ -16,16 +17,29 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitFunction(ctx: ManimParser.FunctionContext): FunctionNode {
+        inFunction = true
         val identifier = ctx.IDENT().symbol.text
+        semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
+
         val type = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
             VoidType
         }
+        functionReturnType = type
+
+        symbolTable.enterScope()
         val parameters: List<ParameterNode> =
             visitParameterList(ctx.param_list() as ManimParser.ParameterListContext?).parameters
+        val statements = ctx.stat().map { visit(it) as StatementNode }
+        symbolTable.leaveScope()
 
-        return FunctionNode(identifier, parameters, ctx.stat().map { visit(it) as StatementNode })
+        symbolTable.addVariable(identifier, FunctionData(parameters, type))
+
+        inFunction = false
+        functionReturnType = VoidType
+
+        return FunctionNode(identifier, parameters, statements)
     }
 
     override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{
@@ -36,11 +50,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitParameter(ctx: ManimParser.ParameterContext): ParameterNode {
-        return ParameterNode(ctx.IDENT().symbol.text, visit(ctx.type()) as Type)
+        val identifier = ctx.IDENT().symbol.text
+        semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
+
+        val type = visit(ctx.type()) as Type
+        symbolTable.addVariable(identifier, IdentifierData(type))
+        return ParameterNode(identifier, type)
     }
 
     override fun visitReturnStatement(ctx: ManimParser.ReturnStatementContext): ReturnNode {
-        return ReturnNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
+        semanticAnalyser.globalReturnCheck(inFunction, ctx)
+        val expression = visit(ctx.expr()) as ExpressionNode
+        semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
+        return ReturnNode(ctx.start.line, expression)
     }
 
     override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {

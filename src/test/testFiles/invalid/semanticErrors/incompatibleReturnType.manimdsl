@@ -1,0 +1,5 @@
+def func(number x) {
+return 5;
+}
+
+let z = func(5);

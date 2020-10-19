@@ -6,7 +6,7 @@ options {
 
 program: function* (stat SEMI)+ EOF;
 
-function: DEF IDENT OPEN_PARENTHESIS param_list? CLOSE_PARENTHESIS COLON type? OPEN_CURLY_BRACKET (stat SEMI)+ CLOSE_CURLY_BRACKET;
+function: DEF IDENT OPEN_PARENTHESIS param_list? CLOSE_PARENTHESIS (COLON type)? OPEN_CURLY_BRACKET (stat SEMI)+ CLOSE_CURLY_BRACKET;
 
 param_list: param (COMMA param)*                                    #ParameterList;
 

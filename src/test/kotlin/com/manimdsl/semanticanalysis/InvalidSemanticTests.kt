@@ -122,6 +122,22 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun globalReturn() {
+        runSyntaxAndSemanticAnalysis("globalReturn.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains("Cannot return from global scope")
+        )
+    }
+
+    @Test
+    fun incompatibleReturnType() {
+        runSyntaxAndSemanticAnalysis("incompatibleReturnType.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex("Cannot return expression of type .* in a function with return type .*"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

@@ -116,4 +116,17 @@ class SemanticAnalysis {
         }
     }
 
+    fun globalReturnCheck(inFunction: Boolean, ctx: ManimParser.ReturnStatementContext) {
+        if (!inFunction) {
+            globalReturnError(ctx)
+        }
+    }
+
+    fun incompatibleReturnTypesCheck(currentSymbolTable: SymbolTableVisitor, functionReturnType: Type, expression: ExpressionNode, ctx: ManimParser.ReturnStatementContext) {
+        val type = inferType(currentSymbolTable, expression)
+        if (type != functionReturnType) {
+            returnTypeError(type.toString(), functionReturnType.toString(), ctx)
+        }
+    }
+
 }
