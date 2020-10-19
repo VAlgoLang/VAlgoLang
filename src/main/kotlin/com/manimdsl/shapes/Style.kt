@@ -23,19 +23,30 @@ sealed class ColorAttribute : StyleAttribute() {
     }
 }
 
-data class Color(override val value: String) : ColorAttribute() {
+class Color(override val value: String) : ColorAttribute() {
     override val name: String = "color"
 }
 
-data class TextColor(override val value: String) : ColorAttribute() {
+class TextColor(override val value: String) : ColorAttribute() {
     override val name: String = "text_color"
 }
 
-data class TextWeight(override val value: String) : StyleAttribute() {
+class TextWeight(override val value: String) : StyleAttribute() {
     override val name: String = "text_weight"
+    private val default = "NORMAL"
+    private val validWeights = setOf(default, "BOLD")
+
+    override fun toString(): String {
+        val upperCaseValue = value.toUpperCase()
+        return if (validWeights.contains(upperCaseValue)) {
+            "$name=$upperCaseValue"
+        } else {
+            "$name=$default"
+        }
+    }
 }
 
-data class Font(override val value: String) : StyleAttribute() {
+class Font(override val value: String) : StyleAttribute() {
     override val name: String = "font"
 
     override fun toString(): String = "$name=\"$value\""

@@ -79,7 +79,7 @@ data class InitStructureRelative(
 data class NewMObject(val shape: Shape, override val ident: String, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = ${shape.className}(\"${shape.text}\").build()",
+            "$ident = ${shape.className}(\"${shape.text}\", ${shape.getStyle().joinToString(", ")}).build()",
             "self.place_relative_to_obj($ident, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
             "self.play(FadeIn($ident))"
         )
