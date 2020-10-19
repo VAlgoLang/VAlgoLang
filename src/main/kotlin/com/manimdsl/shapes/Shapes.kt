@@ -29,4 +29,13 @@ data class Rectangle(
     }
 }
 
+data class InitStructure(
+    override val text: String,
+
+    ) : Shape() {
+    override val classPath: String = "python/init_structure.py"
+    override val className: String = "Init_structure"
+    override val pythonVariablePrefix = ""
+}
+
 

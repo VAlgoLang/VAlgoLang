@@ -50,36 +50,34 @@ data class CodeBlock(
     }
 }
 
+interface Position
+
+data class Coordinate(val x: Int, val y: Int) : Position
+object RelativeToMoveIdent : Position
+
 data class InitStructure(
-    val x: Int, val y: Int, val alignment: Alignment, override val ident: String,
+    val position: Position, val alignment: Alignment, override val ident: String,
     val text: String, val moveIdent: String? = null
 ) : MObject {
     override fun toPython(): List<String> {
-        return listOf(
-            "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
-            "$ident.to_edge(np.array([$x, $y, 0]))",
-            "self.play(ShowCreation($ident))"
+        val python = mutableListOf("$ident = Init_structure(\"${text}\", ${alignment.angle}).build()")
+        python.add(
+            when (position) {
+                is Coordinate -> "$ident.to_edge(np.array([${position.x}, ${position.y}, 0]))"
+                else -> "self.place_relative_to_obj($ident, $moveIdent, ${ObjectSide.LEFT.addOffset(0)})"
+            }
         )
-    }
-}
-
-data class InitStructureRelative(
-    val alignment: Alignment, override val ident: String, val text: String,
-    val moveIdent: String? = null
-) : MObject {
-    override fun toPython(): List<String> {
-        return listOf(
-            "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
-            "self.place_relative_to_obj($ident, $moveIdent, ${ObjectSide.LEFT.addOffset(0)})",
-            "self.play(ShowCreation($ident))"
-        )
+        python.add("self.play(ShowCreation($ident))")
+        return python
     }
 }
 
 data class NewMObject(val shape: Shape, override val ident: String, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
+        val style = shape.getStyle()
         return listOf(
-            "$ident = ${shape.className}(\"${shape.text}\", ${shape.getStyle().joinToString(", ")}).build()",
+            "$ident = ${shape.className}(\"${shape.text}\"" +
+                    "${if (style.isNotEmpty()) ", ${style.joinToString(", ")}" else ""}).build()",
             "self.place_relative_to_obj($ident, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
             "self.play(FadeIn($ident))"
         )

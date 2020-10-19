@@ -18,7 +18,7 @@ class TestLinearRepresentation {
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
             MoveToLine(1, "pointer", "code_block"),
-            InitStructure(2, -1, Alignment.HORIZONTAL, "empty", "y"),
+            InitStructure(Coordinate(2, -1), Alignment.HORIZONTAL, "empty", "y"),
             NewMObject(Rectangle("2"), "testIdent", "code_text"),
             MoveToLine(2, "pointer", "code_block"),
             MoveObject("testIdent", "empty", ObjectSide.ABOVE),
