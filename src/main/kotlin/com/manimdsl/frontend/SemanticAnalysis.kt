@@ -165,4 +165,10 @@ class SemanticAnalysis {
         }
     }
 
+    fun voidTypeDeclarationCheck(rhsType: Type, identifier: String, ctx: ParserRuleContext) {
+        if (rhsType is VoidType) {
+            voidTypeDeclarationError(identifier, ctx)
+        }
+    }
+
 }

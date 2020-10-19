@@ -86,6 +86,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
+        semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))

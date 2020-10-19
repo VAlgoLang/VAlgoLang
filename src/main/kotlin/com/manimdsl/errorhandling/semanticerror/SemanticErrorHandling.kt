@@ -85,6 +85,10 @@ fun missingReturnError(function: String, type: String, ctx: ParserRuleContext) {
     addSemanticError("Missing return statement in $function function that expects return type of $type", getErrorLinePos(ctx))
 }
 
+fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot declare $identifier to function call that has void return type", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

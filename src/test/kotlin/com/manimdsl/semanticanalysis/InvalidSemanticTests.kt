@@ -178,6 +178,14 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun voidTypeDeclaration() {
+        runSyntaxAndSemanticAnalysis("voidTypeDeclaration.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex("Cannot declare .* to function call that has void return type"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
