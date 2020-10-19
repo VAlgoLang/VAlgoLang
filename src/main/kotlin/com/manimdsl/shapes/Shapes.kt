@@ -5,7 +5,14 @@ sealed class Shape {
     abstract val classPath: String
     abstract val className: String
     abstract val pythonVariablePrefix: String
-    open fun getStyle(): Set<StyleAttribute> = emptySet()
+
+    abstract fun getStyle(): Set<StyleAttribute>
+
+    fun getConstructor(): String {
+        val style = getStyle()
+        return "${className}(\"${text}\"" +
+                "${if (style.isNotEmpty()) ", ${style.joinToString(", ")}" else ""}).build()"
+    }
 }
 
 data class Rectangle(
@@ -25,17 +32,7 @@ data class Rectangle(
         textColor?.let { style.add(TextColor(textColor)) }
         textWeight?.let { style.add(TextWeight(textWeight)) }
         font?.let { style.add(Font(font)) }
-        return style;
+        return style
     }
 }
-
-data class InitStructure(
-    override val text: String,
-
-    ) : Shape() {
-    override val classPath: String = "python/init_structure.py"
-    override val className: String = "Init_structure"
-    override val pythonVariablePrefix = ""
-}
-
 

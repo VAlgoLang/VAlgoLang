@@ -74,10 +74,8 @@ data class InitStructure(
 
 data class NewMObject(val shape: Shape, override val ident: String, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
-        val style = shape.getStyle()
         return listOf(
-            "$ident = ${shape.className}(\"${shape.text}\"" +
-                    "${if (style.isNotEmpty()) ", ${style.joinToString(", ")}" else ""}).build()",
+            "$ident = ${shape.getConstructor()}",
             "self.place_relative_to_obj($ident, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
             "self.play(FadeIn($ident))"
         )
