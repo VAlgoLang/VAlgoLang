@@ -1,8 +1,8 @@
 class Code_block:
-    def __init__(self, code, color=WHITE):
+    def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         for c in code:
-            group.add(TextMobject(c, color=color))
+            group.add(Text(c, color=text_color, weight=text_weight, font=font))
         self.group = group
 
     def build(self):
