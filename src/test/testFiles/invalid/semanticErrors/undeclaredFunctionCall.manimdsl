@@ -1,0 +1,6 @@
+def function(number x, number y): number {
+    let z: number = x + x;
+    return z;
+}
+
+let z = abc(5);

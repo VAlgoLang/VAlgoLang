@@ -9,6 +9,7 @@ data class ProgramNode(
 ) : ASTNode()
 
 data class FunctionNode(
+        val scope: Int,
         val identifier: String,
         val parameters: List<ParameterNode>,
         val statements: List<StatementNode>

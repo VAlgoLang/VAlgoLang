@@ -129,4 +129,34 @@ class SemanticAnalysis {
         }
     }
 
+    fun invalidNumberOfArgumentsForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, numArgs: Int, ctx: ManimParser.FunctionCallContext) {
+        val functionData = currentSymbolTable.getData(identifier)
+        if (functionData is FunctionData) {
+            val expected = functionData.parameters.size
+            if (numArgs != expected) {
+                numOfArgsInFunctionCallError(identifier, numArgs, expected, ctx)
+            }
+        }
+    }
+
+    fun incompatibleArgumentTypesForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, argTypes: List<Type>, ctx: ManimParser.FunctionCallContext) {
+        val functionData = currentSymbolTable.getData(identifier)
+        if (functionData is FunctionData) {
+            val parameters = functionData.parameters
+            argTypes.forEachIndexed { index, type ->
+                if (type != parameters[index].type) {
+                    val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+                    val argName = ctx.arg_list().getChild(index).text
+                    typeOfArgsInFunctionCallError(
+                        identifier,
+                        type.toString(),
+                        argName,
+                        parameters[index].type.toString(),
+                        argCtx
+                    )
+                }
+            }
+        }
+    }
+
 }

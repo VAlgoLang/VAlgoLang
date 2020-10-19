@@ -3,6 +3,7 @@ package com.manimdsl.errorhandling.semanticerror
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
+import kotlin.math.exp
 
 fun declareAssignError(
     identifier: String, rhsType: Type, lhsType: Type,
@@ -61,6 +62,24 @@ fun globalReturnError(ctx: ParserRuleContext) {
 
 fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
+}
+
+fun numOfArgsInFunctionCallError(function: String, numArgs: Int, expected:Int, ctx: ParserRuleContext) {
+    addSemanticError("$function function does not accept $numArgs arguments (expected: $expected, actual: $numArgs)", getErrorLinePos(ctx))
+}
+
+fun typeOfArgsInFunctionCallError(
+        function: String,
+        argType: String,
+        argName: String,
+        expected: String,
+        ctx: ParserRuleContext
+) {
+    // To modify once nex version is merged
+    addSemanticError(
+            "$function function does not accept argument $argName of type $argType (expected: $expected, actual: $argType)",
+            getErrorLinePos(ctx)
+    )
 }
 
 /* Helper function that returns line and character position for errors */

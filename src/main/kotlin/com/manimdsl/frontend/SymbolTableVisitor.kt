@@ -4,7 +4,7 @@ open class IdentifierData(open val type: Type)
 
 object ErrorIdentifierData : IdentifierData(ErrorType)
 
-data class FunctionData(val parameters: List<ParameterNode>?, override val type: Type) : IdentifierData(type)
+data class FunctionData(val parameters: List<ParameterNode>, override val type: Type) : IdentifierData(type)
 
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {
@@ -12,6 +12,8 @@ class SymbolTableVisitor {
     private var currentScope: SymbolTable = scopes[0]
 
     fun getTypeOf(identifier: String): Type = currentScope[identifier].type
+
+    fun getData(identifier: String): IdentifierData = currentScope[identifier]
 
     fun addVariable(identifier: String, data: IdentifierData) {
         currentScope[identifier] = data

@@ -59,6 +59,10 @@ data class StackType(
     override fun getMethodByName(method: String): DataStructureMethod {
         return methods.getOrDefault(method, ErrorMethod)
     }
+
+    override fun toString(): String {
+        return "stack"
+    }
 }
 
 

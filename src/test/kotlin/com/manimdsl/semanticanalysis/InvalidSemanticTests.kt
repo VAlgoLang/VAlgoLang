@@ -126,7 +126,7 @@ class InvalidSemanticTests {
     fun globalReturn() {
         runSyntaxAndSemanticAnalysis("globalReturn.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains("Cannot return from global scope")
+            outputStreamCaptor.toString().contains("Cannot return from global scope")
         )
     }
 
@@ -134,7 +134,39 @@ class InvalidSemanticTests {
     fun incompatibleReturnType() {
         runSyntaxAndSemanticAnalysis("incompatibleReturnType.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Cannot return expression of type .* in a function with return type .*"))
+            outputStreamCaptor.toString().contains(Regex("Cannot return expression of type .* in a function with return type .*"))
+        )
+    }
+
+    @Test
+    fun redeclaredParameters() {
+        runSyntaxAndSemanticAnalysis("redeclaredParameterInFunction.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+        )
+    }
+
+    @Test
+    fun undeclaredFunctionCall() {
+        runSyntaxAndSemanticAnalysis("undeclaredFunctionCall.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+        )
+    }
+
+    @Test
+    fun incorrectArgNumForFunctionCall() {
+        runSyntaxAndSemanticAnalysis("incorrectArgNumForFunctionCall.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* function does not accept .* arguments \\(expected: .*, actual: .*\\)"))
+        )
+    }
+
+    @Test
+    fun incorrectArgTypeForFunctionCall() {
+        runSyntaxAndSemanticAnalysis("incorrectArgTypeForFunctionCall.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
         )
     }
 
