@@ -3,13 +3,44 @@ package com.manimdsl
 import antlr.ManimParser
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
+import javax.swing.plaf.nimbus.State
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
     private val semanticAnalyser = SemanticAnalysis()
 
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
-        return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
+        return ProgramNode(
+                ctx.function().map { visit(it) as FunctionNode },
+                ctx.stat().map { visit(it) as StatementNode })
+    }
+
+    override fun visitFunction(ctx: ManimParser.FunctionContext): FunctionNode {
+        val identifier = ctx.IDENT().symbol.text
+        val type = if (ctx.type() != null) {
+            visit(ctx.type()) as Type
+        } else {
+            VoidType
+        }
+        val parameters: List<ParameterNode> =
+            visitParameterList(ctx.param_list() as ManimParser.ParameterListContext?).parameters
+
+        return FunctionNode(identifier, parameters, ctx.stat().map { visit(it) as StatementNode })
+    }
+
+    override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{
+        if (ctx == null) {
+            return ParameterListNode(listOf())
+        }
+        return ParameterListNode(ctx.param().map { visit(it) as ParameterNode })
+    }
+
+    override fun visitParameter(ctx: ManimParser.ParameterContext): ParameterNode {
+        return ParameterNode(ctx.IDENT().symbol.text, visit(ctx.type()) as Type)
+    }
+
+    override fun visitReturnStatement(ctx: ManimParser.ReturnStatementContext): ReturnNode {
+        return ReturnNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
     }
 
     override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
@@ -46,12 +77,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
-    override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
+    override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): ASTNode {
+        return visit(ctx.method_call())
     }
 
-    override fun visitMethodCallExpression(ctx: ManimParser.MethodCallExpressionContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
+    override fun visitMethodCallExpression(ctx: ManimParser.MethodCallExpressionContext): ASTNode {
+        return visit(ctx.method_call())
     }
 
     override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ArgumentNode {
@@ -93,6 +124,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         }
 
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+    }
+
+    override fun visitFunctionCall(ctx: ManimParser.FunctionCallContext): FunctionCallNode {
+        val arguments: List<ExpressionNode> =
+                visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+        return FunctionCallNode(ctx.start.line, ctx.IDENT().symbol.text, arguments)
     }
 
     override fun visitDataStructureContructor(ctx: ManimParser.DataStructureContructorContext): ASTNode {

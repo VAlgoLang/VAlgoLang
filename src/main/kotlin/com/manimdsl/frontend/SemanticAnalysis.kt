@@ -22,6 +22,7 @@ class SemanticAnalysis {
                 ErrorType
             }
             is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
+            is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
         }
 
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {

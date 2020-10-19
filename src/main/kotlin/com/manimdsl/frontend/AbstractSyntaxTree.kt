@@ -1,7 +1,18 @@
 package com.manimdsl.frontend
 
+import javax.swing.plaf.nimbus.State
+
 open class ASTNode
-data class ProgramNode(val statements: List<StatementNode>) : ASTNode()
+data class ProgramNode(
+        val functions: List<FunctionNode>,
+        val statements: List<StatementNode>
+) : ASTNode()
+
+data class FunctionNode(
+        val identifier: String,
+        val parameters: List<ParameterNode>,
+        val statements: List<StatementNode>
+) : ASTNode()
 
 // All statements making up program
 sealed class StatementNode : ASTNode()
@@ -34,6 +45,11 @@ data class AssignmentNode(
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
+data class ReturnNode(
+    override val lineNumber: Int,
+    val expression: ExpressionNode
+) : CodeNode(lineNumber)
+
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String) : ExpressionNode(lineNumber)
@@ -48,6 +64,12 @@ data class MethodCallNode(
 data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
+    val arguments: List<ExpressionNode>
+) : ExpressionNode(lineNumber)
+
+data class FunctionCallNode(
+    override val lineNumber: Int,
+    val functionIdentifier: String,
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
