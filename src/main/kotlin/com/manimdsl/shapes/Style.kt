@@ -1,5 +1,19 @@
 package com.manimdsl.shapes
 
+class Style {
+    private val styleAttributes: MutableSet<StyleAttribute> = mutableSetOf()
+
+    fun addStyleAttribute(styleAttribute: StyleAttribute) {
+        styleAttributes.add(styleAttribute)
+    }
+
+    override fun toString(): String {
+        return if (styleAttributes.isNotEmpty()) {
+            ", ${styleAttributes.joinToString(", ")}"
+        } else ""
+    }
+}
+
 sealed class StyleAttribute {
     abstract val name: String
     abstract val value: String

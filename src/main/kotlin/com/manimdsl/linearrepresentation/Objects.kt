@@ -41,12 +41,14 @@ data class CodeBlock(
     val lines: List<String>,
     override val ident: String,
     val codeTextName: String,
-    val pointerName: String
+    val pointerName: String,
+    val textColor: String? = null,
+    val textWeight: String? = null,
+    val font: String? = null
 ) : MObject {
-
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = Code_block([\"${lines.joinToString("\",\"")}\"])",
+            "$ident = ${CodeBlockShape(lines, textColor, textWeight, font).getConstructor()}",
             "$codeTextName = $ident.build()",
             "self.place_at($codeTextName, -1, 0)",
             "self.play(FadeIn($codeTextName))",
