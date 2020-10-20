@@ -69,28 +69,28 @@ enum class AnimationQuality {
     name = "manimdsl",
     mixinStandardHelpOptions = true,
     version = ["manimdsl 1.0"],
-    description = ["ManimDSL compiler to produce manim animations"]
+    description = ["ManimDSL compiler to produce manim animations."]
 )
 class DSLCommandLineArguments : Callable<Int> {
 
     private val manimArguments = mutableListOf<String>()
 
-    @Parameters(index = "0", description = ["The manimdsl file to compile and animate"])
+    @Parameters(index = "0", description = ["The manimdsl file to compile and animate."])
     lateinit var file: String
 
-    @Option(names = ["-o", "--output"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
+    @Option(names = ["-o", "--output"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})."])
     var output: String = "out.mp4"
 
-    @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)"])
+    @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)."])
     var python: Boolean = false
 
-    @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code"])
+    @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code."])
     var manim: Boolean = false
 
     @Option(
         names = ["-q", "--quality"],
         defaultValue = "low",
-        description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})"]
+        description = ["Quality of animation. [\${COMPLETION-CANDIDATES}] (default: \${DEFAULT-VALUE})."]
     )
     fun quality(quality: AnimationQuality = AnimationQuality.LOW) {
         when (quality) {
@@ -99,12 +99,12 @@ class DSLCommandLineArguments : Callable<Int> {
         }
     }
 
-    @Option(names = ["-f", "--show_file_in_finder"], description = ["Show the output file in finder"])
+    @Option(names = ["-f", "--show_file_in_finder"], description = ["Show the output file in finder."])
     fun show_file_in_finder(showFile: Boolean = false) {
         if (showFile) manimArguments.add("-f")
     }
 
-    @Option(names = ["--preview"], description = ["Automatically open the saved file once its done"])
+    @Option(names = ["--preview"], description = ["Automatically open the saved file once its done."])
     fun open_file(open_file: Boolean = false) {
         if (open_file) manimArguments.add("-p")
     }
