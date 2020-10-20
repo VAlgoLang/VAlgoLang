@@ -3,10 +3,10 @@ class Code_block:
         group = VGroup()
         for c in code:
             group.add(Text(c, color=text_color, weight=text_weight, font=font))
-        self.group = group
+        self.all = group
 
     def build(self):
-        return self.group.arrange(DOWN, aligned_edge=LEFT)
+        return self.all.arrange(DOWN, aligned_edge=LEFT)
 
     def get_line_at(self, line_number):
-        return self.group[line_number - 1]
+        return self.all[line_number - 1]

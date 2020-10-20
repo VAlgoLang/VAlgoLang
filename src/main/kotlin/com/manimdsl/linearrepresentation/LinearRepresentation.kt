@@ -1,6 +1,7 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.ExecValue
+import com.manimdsl.shapes.Shape
 
 interface ManimInstr {
     fun toPython(): List<String>
@@ -25,8 +26,8 @@ data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBloc
 }
 
 data class MoveObject(
-    val ident: String,
-    val moveToIdent: String,
+    val shape: Shape,
+    val moveToShape: Shape,
     val objectSide: ObjectSide,
     val offset: Int = 0,
     val fadeOut: Boolean = false
@@ -34,9 +35,9 @@ data class MoveObject(
     ManimInstr {
     override fun toPython(): List<String> {
         val instructions =
-            mutableListOf("self.move_relative_to_obj($ident, $moveToIdent, ${objectSide.addOffset(offset)})")
+            mutableListOf("self.move_relative_to_obj($shape, $moveToShape, ${objectSide.addOffset(offset)})")
         if (fadeOut) {
-            instructions.add("self.play(FadeOut($ident))")
+            instructions.add("self.play(FadeOut($shape))")
         }
         return instructions
     }

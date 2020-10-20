@@ -14,12 +14,12 @@ class StyleTests {
         val textColor = "black"
         val textWeight = "normal"
         val font = "TestFont"
-        val rectangle = Rectangle("rectangle", color, textColor, textWeight, font)
+        val rectangle = Rectangle("x", "rectangle", color, textColor, textWeight, font)
 
-        val mobject = NewMObject(rectangle, "x", "codeBlock")
+        val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()}, text_weight=${textWeight.toUpperCase()}, font=\"$font\").build()"
+            "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()}, text_weight=${textWeight.toUpperCase()}, font=\"$font\")"
         assertEquals(expected, mobject.toPython()[0])
     }
 
@@ -28,12 +28,12 @@ class StyleTests {
 
         val color = "#ffffff"
         val textColor = "#ffffff"
-        val rectangle = Rectangle("rectangle", color, textColor)
+        val rectangle = Rectangle("x", "rectangle", color, textColor)
 
-        val mobject = NewMObject(rectangle, "x", "codeBlock")
+        val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", color=\"$color\", text_color=\"$textColor\").build()"
+            "x = Rectangle_block(\"rectangle\", color=\"$color\", text_color=\"$textColor\")"
         assertEquals(expected, mobject.toPython()[0])
     }
 
@@ -41,12 +41,12 @@ class StyleTests {
     fun invalidTextWeightsAreReturnedToDefault() {
 
         val textWeight = "invalid"
-        val rectangle = Rectangle("rectangle", textWeight = textWeight)
+        val rectangle = Rectangle("x", "rectangle", textWeight = textWeight)
 
-        val mobject = NewMObject(rectangle, "x", "codeBlock")
+        val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", text_weight=NORMAL).build()"
+            "x = Rectangle_block(\"rectangle\", text_weight=NORMAL)"
         assertEquals(expected, mobject.toPython()[0])
     }
 }

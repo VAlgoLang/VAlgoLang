@@ -8,22 +8,22 @@ class Main(Scene):
         self.play(FadeIn(code_text))
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         self.move_arrow_to_line(1, pointer, code_block)
-        empty = Init_structure("y", 0).build()
-        empty.to_edge(np.array([2.0, -1.0, 0]))
-        self.play(ShowCreation(empty))
-        testIdent = Rectangle_block("2").build()
-        self.place_relative_to_obj(testIdent, code_text, 0.25, 0.0)
-        self.play(FadeIn(testIdent))
+        empty = Init_structure("y", 0)
+        empty.all.to_edge(np.array([2.0, -1.0, 0]))
+        self.play(ShowCreation(empty.all))
+        testIdent = Rectangle_block("2")
+        self.place_relative_to_obj(testIdent.all, code_text, 0.25, 0.0)
+        self.play(FadeIn(testIdent.all))
         self.move_arrow_to_line(2, pointer, code_block)
-        self.move_relative_to_obj(testIdent, empty, 0.0, 0.25)
+        self.move_relative_to_obj(testIdent.all, empty.all, 0.0, 0.25)
         self.move_arrow_to_line(3, pointer, code_block)
-        testIdent1 = Rectangle_block("3").build()
-        self.place_relative_to_obj(testIdent1, code_text, 0.25, 0.0)
-        self.play(FadeIn(testIdent1))
-        self.move_relative_to_obj(testIdent1, testIdent, 0.0, 0.25)
+        testIdent1 = Rectangle_block("3")
+        self.place_relative_to_obj(testIdent1.all, code_text, 0.25, 0.0)
+        self.play(FadeIn(testIdent1.all))
+        self.move_relative_to_obj(testIdent1.all, testIdent.all, 0.0, 0.25)
         self.move_arrow_to_line(4, pointer, code_block)
-        self.move_relative_to_obj(testIdent1, testIdent, 0.0, 20.25)
-        self.play(FadeOut(testIdent1))
+        self.move_relative_to_obj(testIdent1.all, testIdent.all, 0.0, 20.25)
+        self.play(FadeOut(testIdent1.all))
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
     
@@ -46,45 +46,25 @@ class Code_block:
         group = VGroup()
         for c in code:
             group.add(Text(c, color=text_color, weight=text_weight, font=font))
-        self.group = group
+        self.all = group
 
     def build(self):
-        return self.group.arrange(DOWN, aligned_edge=LEFT)
+        return self.all.arrange(DOWN, aligned_edge=LEFT)
 
     def get_line_at(self, line_number):
-        return self.group[line_number - 1]
+        return self.all[line_number - 1]
 
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
-        self.text = text
-        self.angle = angle
-        self.length = length
-        self.color = color
-        self.text_color = text_color
-        self.text_weight = text_weight
-        self.font = font
-
-    def build(self):
-        line = Line(color=self.color)
-        line.set_length(self.length)
-        line.set_angle(self.angle)
-        label = Text(self.text, color=self.text_color, weight=self.text_weight, font=self.font)
-        label.next_to(line, DOWN, SMALL_BUFF)
-        group = VGroup(label, line)
-        return group
+        self.shape = Line(color=color)
+        self.shape.set_length(length)
+        self.shape.set_angle(angle)
+        self.text = Text(text, color=text_color, weight=text_weight, font=font)
+        self.text.next_to(self.shape, DOWN, SMALL_BUFF)
+        self.all = VGroup(self.text, self.shape)
 
 class Rectangle_block:
     def __init__(self, text, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
-        self.text   = text
-        self.height = height
-        self.width  = width
-        self.color  = color
-        self.text_color  = text_color
-        self.text_weight = text_weight
-        self.font   = font
-
-    def build(self):
-        inside_text = Text(self.text, color=self.text_color, weight=self.text_weight, font=self.font)
-        rectangle   = Rectangle(height=self.height, width=self.width, color=self.color)
-        group       = VGroup(inside_text, rectangle)
-        return group
+        self.text = Text(text, color=text_color, weight=text_weight, font=font)
+        self.shape = Rectangle(height=height, width=width, color=color)
+        self.all = VGroup(self.text, self.shape)
