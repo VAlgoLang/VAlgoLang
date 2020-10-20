@@ -1,10 +1,14 @@
 package com.manimdsl.frontend
 
-open class IdentifierData(open val type: Type)
+interface SymbolTableData {
+    val type: Type
+}
+
+open class IdentifierData(override val type: Type) : SymbolTableData
 
 object ErrorIdentifierData : IdentifierData(ErrorType)
 
-data class FunctionData(val parameters: List<ParameterNode>, override val type: Type) : IdentifierData(type)
+data class FunctionData(val parameters: List<ParameterNode>, override val type: Type) : SymbolTableData
 
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {
@@ -13,9 +17,9 @@ class SymbolTableVisitor {
 
     fun getTypeOf(identifier: String): Type = currentScope[identifier].type
 
-    fun getData(identifier: String): IdentifierData = currentScope[identifier]
+    fun getData(identifier: String): SymbolTableData = currentScope[identifier]
 
-    fun addVariable(identifier: String, data: IdentifierData) {
+    fun addVariable(identifier: String, data: SymbolTableData) {
         currentScope[identifier] = data
     }
 
@@ -41,23 +45,23 @@ class SymbolTableVisitor {
 }
 
 sealed class SymbolTable(open val id: Int) {
-    protected val table: MutableMap<String, IdentifierData> = mutableMapOf()
+    protected val table: MutableMap<String, SymbolTableData> = mutableMapOf()
 
-    abstract operator fun get(identifier: String): IdentifierData
+    abstract operator fun get(identifier: String): SymbolTableData
 
-    operator fun set(identifier: String, data: IdentifierData) {
+    operator fun set(identifier: String, data: SymbolTableData) {
         table[identifier] = data
     }
 }
 
 open class SymbolTableNode(val parent: SymbolTable, override val id: Int) : SymbolTable(id) {
-    override operator fun get(identifier: String): IdentifierData {
+    override operator fun get(identifier: String): SymbolTableData {
         return table[identifier] ?: parent[identifier]
     }
 }
 
 class GlobalScopeSymbolTable : SymbolTable(id = 0) {
-    override operator fun get(identifier: String): IdentifierData {
+    override operator fun get(identifier: String): SymbolTableData {
         return table[identifier] ?: ErrorIdentifierData
     }
 }
