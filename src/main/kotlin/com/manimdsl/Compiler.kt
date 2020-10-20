@@ -84,7 +84,7 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)."])
     var python: Boolean = false
 
-    @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code."])
+    @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code (optional)."])
     var manim: Boolean = false
 
     @Option(
@@ -99,12 +99,12 @@ class DSLCommandLineArguments : Callable<Int> {
         }
     }
 
-    @Option(names = ["-f", "--open_file_manager_to_generated_files"], description = ["Show the output file in file manager."])
+    @Option(names = ["-f", "--open_file_manager_to_generated_files"], description = ["Show the output file in file manager (optional)."])
     fun open_file_manager_to_generated_files(showFile: Boolean = false) {
         if (showFile) manimArguments.add("-f")
     }
 
-    @Option(names = ["--preview"], description = ["Automatically open the saved file once its done."])
+    @Option(names = ["--preview"], description = ["Automatically open the saved file once its done (optional)."])
     fun open_file(open_file: Boolean = false) {
         if (open_file) manimArguments.add("-p")
     }
