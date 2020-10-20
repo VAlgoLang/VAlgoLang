@@ -182,7 +182,7 @@ class InvalidSemanticTests {
     fun voidTypeDeclaration() {
         runSyntaxAndSemanticAnalysis("voidTypeDeclaration.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Cannot declare .* to function call that has void return type"))
+                outputStreamCaptor.toString().contains(Regex("Cannot instantiate .* to function call that has void return type"))
         )
     }
 

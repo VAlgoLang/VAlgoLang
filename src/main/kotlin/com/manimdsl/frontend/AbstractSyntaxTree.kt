@@ -1,7 +1,5 @@
 package com.manimdsl.frontend
 
-import javax.swing.plaf.nimbus.State
-
 open class ASTNode
 data class ProgramNode(
         val functions: List<FunctionNode>,

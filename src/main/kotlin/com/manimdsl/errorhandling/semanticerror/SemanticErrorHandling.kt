@@ -86,7 +86,7 @@ fun missingReturnError(function: String, type: String, ctx: ParserRuleContext) {
 }
 
 fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
-    addSemanticError("Cannot declare $identifier to function call that has void return type", getErrorLinePos(ctx))
+    addSemanticError("Cannot instantiate $identifier to function call that has void return type", getErrorLinePos(ctx))
 }
 
 /* Helper function that returns line and character position for errors */
