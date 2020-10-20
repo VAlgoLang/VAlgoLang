@@ -99,8 +99,8 @@ class DSLCommandLineArguments : Callable<Int> {
         }
     }
 
-    @Option(names = ["-f", "--show_file_in_finder"], description = ["Show the output file in finder."])
-    fun show_file_in_finder(showFile: Boolean = false) {
+    @Option(names = ["-f", "--open_file_manager_to_generated_files"], description = ["Show the output file in file manager."])
+    fun open_file_manager_to_generated_files(showFile: Boolean = false) {
         if (showFile) manimArguments.add("-f")
     }
 
