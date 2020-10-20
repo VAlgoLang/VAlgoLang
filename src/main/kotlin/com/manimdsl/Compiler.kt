@@ -7,7 +7,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, manimOptions: List<String>) {
+private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -41,16 +41,19 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
 
     if (generatePython) println("Writing file to ${outputVideoFile.removeSuffix(".mp4") + ".py"}")
     val outputFile = writer.createPythonFile(if (generatePython) outputVideoFile.removeSuffix(".mp4") + ".py" else null)
+    println("File written successfully!")
 
-    println("Generating animation...")
-    val exitCode = writer.generateAnimation(outputFile, manimOptions, outputVideoFile)
+    if (!onlyGenerateManim) {
+        println("Generating animation...")
+        val exitCode = writer.generateAnimation(outputFile, manimOptions, outputVideoFile)
 
-    if (exitCode != 0) {
-        println("Animation could not be generated")
-        exitProcess(1)
+        if (exitCode != 0) {
+            println("Animation could not be generated")
+            exitProcess(1)
+        }
+
+        println("Animation Complete!")
     }
-
-    println("Animation Complete!")
 }
 
 enum class AnimationQuality {
@@ -81,6 +84,9 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)"])
     var python: Boolean = false
 
+    @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code"])
+    var manim: Boolean = false
+
     @Option(
         names = ["-q", "--quality"],
         defaultValue = "low",
@@ -93,8 +99,18 @@ class DSLCommandLineArguments : Callable<Int> {
         }
     }
 
+    @Option(names = ["-f", "--show_file_in_finder"], description = ["Show the output file in finder"])
+    fun show_file_in_finder(showFile: Boolean = false) {
+        if (showFile) manimArguments.add("-f")
+    }
+
+    @Option(names = ["--preview"], description = ["Automatically open the saved file once its done"])
+    fun open_file(open_file: Boolean = false) {
+        if (open_file) manimArguments.add("-p")
+    }
+
     override fun call(): Int {
-        compile(file, output, python, manimArguments)
+        compile(file, output, python, manim, manimArguments)
         return 0
     }
 }
