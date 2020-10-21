@@ -80,6 +80,54 @@ data class MultiplyExpression(
     override val expr2: ExpressionNode
 ) : BinaryExpression(lineNumber, expr1, expr2)
 
+data class AndExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class OrExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class EqExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class NeqExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class GtExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class LtExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class GeExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
+data class LeExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2)
+
 // Unary Expressions
 sealed class UnaryExpression(override val lineNumber: Int, open val expr: ExpressionNode) : ExpressionNode(lineNumber)
 data class PlusExpression(override val lineNumber: Int, override val expr: ExpressionNode) :

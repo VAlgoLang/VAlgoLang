@@ -115,19 +115,33 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitBinaryExpression(ctx: BinaryExpressionContext): BinaryExpression {
-        val expr1 = visit(ctx.expr(0)) as ExpressionNode
-        val expr2 = visit(ctx.expr(1)) as ExpressionNode
+        val expr1 = visit(ctx.left) as ExpressionNode
+        val expr2 = visit(ctx.right) as ExpressionNode
         if (expr1 is IdentifierNode) {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr1.identifier, ctx)
         }
         if (expr2 is IdentifierNode) {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr2.identifier, ctx)
         }
-        return when (ctx.binary_operator.type) {
+
+        val binaryOpExpr = when (ctx.op.type) {
             ADD -> AddExpression(ctx.start.line, expr1, expr2)
             MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
-            else -> MultiplyExpression(ctx.start.line, expr1, expr2)
+            TIMES -> MultiplyExpression(ctx.start.line, expr1, expr2)
+            AND -> AndExpression(ctx.start.line, expr1, expr2)
+            OR -> OrExpression(ctx.start.line, expr1, expr2)
+            EQ -> EqExpression(ctx.start.line, expr1, expr2)
+            NEQ -> NeqExpression(ctx.start.line, expr1, expr2)
+            GT -> GtExpression(ctx.start.line, expr1, expr2)
+            GE -> GeExpression(ctx.start.line, expr1, expr2)
+            LT -> LtExpression(ctx.start.line, expr1, expr2)
+            LE -> LeExpression(ctx.start.line, expr1, expr2)
+            else -> throw UnsupportedOperationException("Operation not supported")
         }
+
+        semanticAnalyser.incompatibleOperatorTypeCheck(binaryOpExpr, symbolTable, ctx)
+
+        return binaryOpExpr
     }
 
     override fun visitUnaryOperator(ctx: UnaryOperatorContext): UnaryExpression {
