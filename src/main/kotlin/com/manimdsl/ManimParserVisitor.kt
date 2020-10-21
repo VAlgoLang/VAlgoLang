@@ -6,6 +6,9 @@ import com.manimdsl.frontend.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
+
+    val lineNumberNodeMap = mutableMapOf<Int, ASTNode>()
+
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
     private var functionReturnType: Type = VoidType
@@ -43,7 +46,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         inFunction = false
         functionReturnType = VoidType
 
-        return FunctionNode(scope, identifier, parameters, statements, ctx.start.line)
+        val node = FunctionNode(scope, identifier, parameters, statements, ctx.start.line)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
     }
 
     override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{
@@ -66,11 +71,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.globalReturnCheck(inFunction, ctx)
         val expression = visit(ctx.expr()) as ExpressionNode
         semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
-        return ReturnNode(ctx.start.line, expression)
+        val node = ReturnNode(ctx.start.line, expression)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
+
     }
 
     override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
-        return SleepNode(visit(ctx.expr()) as ExpressionNode)
+        val node = SleepNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
     }
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
@@ -90,7 +100,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        return DeclarationNode(ctx.start.line, identifier, rhs)
+        val node = DeclarationNode(ctx.start.line, identifier, rhs)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
@@ -101,7 +113,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
-        return AssignmentNode(ctx.start.line, identifier, expression)
+        val node = AssignmentNode(ctx.start.line, identifier, expression)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
     }
 
     override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): ASTNode {
@@ -150,7 +164,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        val node = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+
+        if (dataStructureMethod.returnType is ErrorType) {
+            lineNumberNodeMap[ctx.start.line] = node
+        }
+        return node
     }
 
     override fun visitFunctionCall(ctx: ManimParser.FunctionCallContext): FunctionCallNode {
@@ -204,7 +223,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCommentStatement(ctx: ManimParser.CommentStatementContext): CommentNode {
         // Command command given for render purposes
-        return CommentNode(ctx.STRING().text)
+        val node = CommentNode(ctx.start.line, ctx.STRING().text)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
     }
 
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {

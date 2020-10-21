@@ -1,4 +1,5 @@
 let stack1 = new Stack<number>;
 let stack2 = new Stack<number>;
 stack1.push(1);
-stack2.push(stack1.pop());
+# aseuifdh
+let x = stack1.pop();

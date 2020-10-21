@@ -19,7 +19,7 @@ class ValidASTTests {
     @Test
     fun sleepCommand() {
         val declarationProgram = "sleep(1.5);"
-        val reference = ProgramNode(listOf(), listOf(SleepNode(NumberNode(1, 1.5))))
+        val reference = ProgramNode(listOf(), listOf(SleepNode(1, NumberNode(1, 1.5))))
         val actual = buildAST(declarationProgram)
         assertEquals(reference, actual)
     }
@@ -56,6 +56,6 @@ class ValidASTTests {
     // Assumes syntactically correct program
     private fun buildAST(program: String): ASTNode {
         val parser = ManimDSLParser(program.byteInputStream())
-        return parser.convertToAst(parser.parseFile().second).second
+        return parser.convertToAst(parser.parseFile().second).abstractSyntaxTree
     }
 }
