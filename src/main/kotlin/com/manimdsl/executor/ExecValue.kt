@@ -3,7 +3,6 @@ package com.manimdsl.executor
 import com.manimdsl.frontend.ErrorType
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.MObject
-import com.sun.jdi.BooleanValue
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -33,7 +32,7 @@ sealed class ExecValue {
 
     /** '!' **/
     operator fun not(): Boolean = when (this) {
-        is BooleanValue -> !this.value()
+        is BoolValue -> !this.value
         else -> throw UnsupportedOperationException("Wrong type")
     }
 
