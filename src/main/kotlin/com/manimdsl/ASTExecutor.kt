@@ -164,6 +164,10 @@ class ASTExecutor(
             is DeclarationOrAssignment -> visitAssignmentOrDeclaration(node)
             is ExpressionNode -> executeExpression(node)
             is SleepNode -> linearRepresentation.add(Sleep((executeExpression(node.sleepTime) as DoubleValue).value))
+            is CommentNode -> TODO()
+            is DeclarationNode -> TODO()
+            is AssignmentNode -> TODO()
+            is ReturnNode -> TODO()
         }
 
         val endOfProgram = program.statements.size == programCounter

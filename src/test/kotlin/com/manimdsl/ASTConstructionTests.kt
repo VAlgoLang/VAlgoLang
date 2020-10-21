@@ -72,7 +72,8 @@ class ASTConstructionTests {
                 1,
                 "func",
                 listOf(ParameterNode("x", NumberType)),
-                functionStatements
+                functionStatements,
+                    1
             )
         )
         val statements = listOf(DeclarationNode(5, "z", NumberNode(5, 5.0)))
@@ -98,7 +99,8 @@ class ASTConstructionTests {
                     1,
                     "func",
                     listOf(ParameterNode("x", NumberType), ParameterNode("y", NumberType)),
-                    functionStatements
+                    functionStatements,
+                        1
                 )
         )
         val statements = listOf(

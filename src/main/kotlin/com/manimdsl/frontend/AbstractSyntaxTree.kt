@@ -10,8 +10,9 @@ data class FunctionNode(
         val scope: Int,
         val identifier: String,
         val parameters: List<ParameterNode>,
-        val statements: List<StatementNode>
-) : ASTNode()
+        val statements: List<StatementNode>,
+        override val lineNumber: Int
+        ) : CodeNode(lineNumber)
 
 // All statements making up program
 sealed class StatementNode : ASTNode()
@@ -23,7 +24,7 @@ data class SleepNode(val sleepTime: ExpressionNode) : AnimationNode()
 // Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(val content: String) : AnimationNode()
 
-// Code Specific Nodes holding line number - todo: replace with composition
+// Code Specific Nodes holding line number
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 
 interface DeclarationOrAssignment {
