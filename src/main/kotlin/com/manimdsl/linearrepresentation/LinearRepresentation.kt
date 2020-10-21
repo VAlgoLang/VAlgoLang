@@ -1,6 +1,6 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.ExecValue
+import com.manimdsl.executor.ExecValue
 import com.manimdsl.shapes.Shape
 
 interface ManimInstr {

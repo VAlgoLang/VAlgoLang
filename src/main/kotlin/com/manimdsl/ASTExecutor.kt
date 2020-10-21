@@ -1,18 +1,10 @@
 package com.manimdsl
 
+import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
 import java.util.*
-
-// Wrapper classes for values of variables while executing code
-sealed class ExecValue
-
-data class DoubleValue(val value: Double, val manimObject: MObject? = null) : ExecValue()
-
-data class StackValue(val initObject: MObject, val stack: Stack<Pair<Double, MObject>>) : ExecValue()
-
-object EmptyValue : ExecValue()
 
 class ASTExecutor(
         private val program: ProgramNode,
@@ -50,7 +42,17 @@ class ASTExecutor(
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
             is PlusExpression -> executeUnaryOp(node) { x -> x }
-            is MinusExpression -> executeUnaryOp(node) { x -> -x }
+            is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
+            is BoolNode -> BoolValue(node.value)
+            is AndExpression -> executeBinaryOp(node) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
+            is OrExpression -> executeBinaryOp(node) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
+            is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
+            is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
+            is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
+            is LtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x < y) }
+            is GeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x >= y) }
+            is LeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x <= y) }
+            is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             else -> EmptyValue
         }
     }
@@ -60,15 +62,15 @@ class ASTExecutor(
             is StackValue -> {
                 return when (node.dataStructureMethod) {
                     is StackType.PushMethod -> {
-                        val doubleValue = executeExpression(node.arguments[0], true) as DoubleValue
-                        val topOfStack = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val value = executeExpression(node.arguments[0], true)
+                        val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
 
-                        val hasOldMObject = doubleValue.manimObject != null
-                        val oldMObject = doubleValue.manimObject ?: EmptyMObject
+                        val hasOldMObject = value.manimObject !is EmptyMObject
+                        val oldMObject = value.manimObject
                         val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                             Rectangle(
                                 variableNameGenerator.generateNameFromPrefix("rectangle"),
-                                doubleValue.value.toString()
+                                value.value.toString()
                             ),
                             codeTextVariable
                         )
@@ -80,14 +82,15 @@ class ASTExecutor(
                         }
 
                         linearRepresentation.addAll(instructions)
-                        ds.stack.push(Pair(doubleValue.value, rectangle))
-                        doubleValue
+                        value.manimObject = rectangle
+                        ds.stack.push(value)
+                        value
                     }
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
-                        val newTopOfStack = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val newTopOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
 
-                        val topOfStack = poppedValue.second
+                        val topOfStack = poppedValue.manimObject
                         val instructions = listOf(
                             MoveObject(
                                 topOfStack.shape,
@@ -99,7 +102,7 @@ class ASTExecutor(
                         )
 
                         linearRepresentation.addAll(instructions)
-                        DoubleValue(poppedValue.first, poppedValue.second)
+                        return poppedValue
                     }
                     else -> EmptyValue
                 }
@@ -127,7 +130,7 @@ class ASTExecutor(
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
-                        numStack.initObject.shape
+                        numStack.manimObject.shape
                     )
                     Pair(listOf(stackInit), stackInit)
                 }
@@ -137,18 +140,20 @@ class ASTExecutor(
         }
     }
 
-    private fun executeUnaryOp(node: UnaryExpression, op: (first: Double) -> Double): ExecValue {
-        return DoubleValue(op((executeExpression(node.expr) as DoubleValue).value))
+    private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
+        return op(executeExpression(node.expr))
     }
 
-    private fun executeBinaryOp(node: BinaryExpression, op: (first: Double, seconds: Double) -> Double): ExecValue {
-        return DoubleValue(
-            op(
-                (executeExpression(node.expr1) as DoubleValue).value,
-                (executeExpression(node.expr2) as DoubleValue).value
-            )
+    private fun executeBinaryOp(
+        node: BinaryExpression,
+        op: (first: ExecValue, seconds: ExecValue) -> ExecValue
+    ): ExecValue {
+        return op(
+            executeExpression(node.expr1),
+            executeExpression(node.expr2)
         )
     }
+
 
     // Returns whether the program is complete and the state of all the variables after executing the statement
     fun executeNextStatement(): Pair<Boolean, List<ManimInstr>> {
