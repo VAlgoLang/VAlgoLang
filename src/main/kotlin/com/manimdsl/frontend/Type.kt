@@ -61,7 +61,7 @@ data class StackType(
     }
 
     override fun toString(): String {
-        return "stack"
+        return "stack<$internalType>"
     }
 }
 

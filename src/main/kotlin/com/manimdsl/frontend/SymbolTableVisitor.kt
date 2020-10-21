@@ -8,7 +8,12 @@ open class IdentifierData(override val type: Type) : SymbolTableData
 
 object ErrorIdentifierData : IdentifierData(ErrorType)
 
-data class FunctionData(val parameters: List<ParameterNode>, override val type: Type) : SymbolTableData
+data class FunctionData(
+        val inferred : Boolean,
+        var firstTime: Boolean,
+        val parameters: List<ParameterNode>,
+        override var type: Type,
+) : SymbolTableData
 
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {

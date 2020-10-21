@@ -17,7 +17,7 @@ OPEN_CURLY_BRACKET: '{';
 CLOSE_CURLY_BRACKET: '}';
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
-DEF: 'def';
+FUN: 'fun';
 RETURN: 'return';
 NUMBER_TYPE: 'number';
 NEW: 'new';
