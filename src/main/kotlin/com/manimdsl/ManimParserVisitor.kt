@@ -149,7 +149,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitBooleanLiteral(ctx: BooleanLiteralContext): ASTNode {
-        return BoolNode(ctx.start.line, ctx.text.toBoolean())
+        return BoolNode(ctx.start.line, ctx.bool().text.toBoolean())
     }
 
     /** Types **/

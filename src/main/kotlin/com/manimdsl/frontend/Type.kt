@@ -5,8 +5,17 @@ sealed class Type : ASTNode()
 
 // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType : Type()
-object NumberType : PrimitiveType()
-object BoolType : PrimitiveType()
+object NumberType : PrimitiveType() {
+    override fun toString(): String {
+        return "number"
+    }
+}
+
+object BoolType : PrimitiveType() {
+    override fun toString(): String {
+        return "boolean"
+    }
+}
 
 sealed class DataStructureType(
     open var internalType: Type,
@@ -52,6 +61,10 @@ data class StackType(
 
     override fun getMethodByName(method: String): DataStructureMethod {
         return methods.getOrDefault(method, ErrorMethod)
+    }
+
+    override fun toString(): String {
+        return "Stack<$internalType>"
     }
 }
 
