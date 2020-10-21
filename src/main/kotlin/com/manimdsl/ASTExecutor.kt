@@ -63,21 +63,21 @@ class ASTExecutor(
                 return when (node.dataStructureMethod) {
                     is StackType.PushMethod -> {
                         val doubleValue = executeExpression(node.arguments[0], true) as DoubleValue
-                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val topOfStack = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
 
-                        val hasOldShape = doubleValue.manimObject != null
-
-                        val rectangleShape = Rectangle(doubleValue.value.toString())
-                        val oldShape = doubleValue.manimObject ?: EmptyMObject
-                        val rectangle = if (hasOldShape) oldShape else NewMObject(
-                            rectangleShape,
-                            variableNameGenerator.generateShapeName(rectangleShape),
+                        val hasOldMObject = doubleValue.manimObject != null
+                        val oldMObject = doubleValue.manimObject ?: EmptyMObject
+                        val rectangle = if (hasOldMObject) oldMObject else NewMObject(
+                            Rectangle(
+                                variableNameGenerator.generateNameFromPrefix("rectangle"),
+                                doubleValue.value.toString()
+                            ),
                             codeTextVariable
                         )
 
                         val instructions =
-                            mutableListOf<ManimInstr>(MoveObject(rectangle.ident, secondObject.ident, ObjectSide.ABOVE))
-                        if (!hasOldShape) {
+                            mutableListOf<ManimInstr>(MoveObject(rectangle.shape, topOfStack.shape, ObjectSide.ABOVE))
+                        if (!hasOldMObject) {
                             instructions.add(0, rectangle)
                         }
 
@@ -87,13 +87,13 @@ class ASTExecutor(
                     }
                     is StackType.PopMethod -> {
                         val poppedValue = ds.stack.pop()
-                        val secondObject = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
+                        val newTopOfStack = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
 
                         val topOfStack = poppedValue.second
                         val instructions = listOf(
                             MoveObject(
-                                topOfStack.ident,
-                                secondObject.ident,
+                                topOfStack.shape,
+                                newTopOfStack.shape,
                                 ObjectSide.ABOVE,
                                 20,
                                 !insideMethodCall
@@ -116,8 +116,7 @@ class ASTExecutor(
                 val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                 val (instructions, newObject) = if (numStack == null) {
                     val stackInit = InitStructure(
-                        2,
-                        -1,
+                        Coord(2.0, -1.0),
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier
@@ -125,11 +124,12 @@ class ASTExecutor(
                     // Add to stack of objects to keep track of identifier
                     Pair(listOf(stackInit), stackInit)
                 } else {
-                    val stackInit = InitStructureRelative(
+                    val stackInit = InitStructure(
+                        RelativeToMoveIdent,
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
-                        numStack.initObject.ident
+                        numStack.initObject.shape
                     )
                     Pair(listOf(stackInit), stackInit)
                 }
