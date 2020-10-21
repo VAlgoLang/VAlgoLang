@@ -34,29 +34,29 @@ sealed class ShapeWithText : Shape() {
 class Rectangle(
     override val ident: String,
     override val text: String,
-    private val color: String? = null,
-    private val textColor: String? = null,
-    private val textWeight: String? = null,
-    private val font: String? = null,
+    color: String? = null,
+    textColor: String? = null,
+    textWeight: String? = null,
+    font: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/rectangle.py"
     override val className: String = "Rectangle_block"
     override val pythonVariablePrefix: String = "rectangle"
 
     init {
-        color?.let { style.addStyleAttribute(Color(color)) }
-        textColor?.let { style.addStyleAttribute(TextColor(textColor)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(textWeight)) }
-        font?.let { style.addStyleAttribute(Font(font)) }
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
+        font?.let { style.addStyleAttribute(Font(it)) }
     }
 }
 
 class CodeBlockShape(
     override val ident: String,
     lines: List<String>,
-    private val textColor: String? = null,
-    private val textWeight: String? = null,
-    private val font: String? = null
+    textColor: String? = null,
+    textWeight: String? = null,
+    font: String? = null
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -64,9 +64,9 @@ class CodeBlockShape(
     override val text: String = "[\"${lines.joinToString("\",\"")}\"]"
 
     init {
-        textColor?.let { style.addStyleAttribute(TextColor(textColor)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(textWeight)) }
-        font?.let { style.addStyleAttribute(Font(font)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
+        font?.let { style.addStyleAttribute(Font(it)) }
     }
 
     override fun getConstructor(): String {
@@ -78,20 +78,20 @@ class InitStructureShape(
     override val ident: String,
     override val text: String,
     private val alignment: Alignment,
-    private val color: String? = null,
-    private val textColor: String? = null,
-    private val textWeight: String? = null,
-    private val font: String? = null
+    color: String? = null,
+    textColor: String? = null,
+    textWeight: String? = null,
+    font: String? = null
 ) : ShapeWithText() {
     override val classPath: String = "python/init_structure.py"
     override val className: String = "Init_structure"
     override val pythonVariablePrefix: String = ""
 
     init {
-        color?.let { style.addStyleAttribute(Color(color)) }
-        textColor?.let { style.addStyleAttribute(TextColor(textColor)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(textWeight)) }
-        font?.let { style.addStyleAttribute(Font(font)) }
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
+        font?.let { style.addStyleAttribute(Font(it)) }
     }
 
     override fun getConstructor(): String {
