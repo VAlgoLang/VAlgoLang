@@ -43,7 +43,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         inFunction = false
         functionReturnType = VoidType
 
-        return FunctionNode(scope, identifier, parameters, statements)
+        return FunctionNode(ctx.start.line, scope, identifier, parameters, statements)
     }
 
     override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{

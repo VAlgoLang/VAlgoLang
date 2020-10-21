@@ -7,11 +7,12 @@ data class ProgramNode(
 ) : ASTNode()
 
 data class FunctionNode(
+        override val lineNumber: Int,
         val scope: Int,
         val identifier: String,
         val parameters: List<ParameterNode>,
         val statements: List<StatementNode>
-) : ASTNode()
+) : CodeNode(lineNumber)
 
 // All statements making up program
 sealed class StatementNode : ASTNode()
