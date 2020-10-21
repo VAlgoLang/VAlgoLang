@@ -1,13 +1,14 @@
 package com.manimdsl
 
 import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.stylesheet.parseStylesheet
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, manimOptions: List<String>) {
+private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, manimOptions: List<String>, stylesheetPath: String?) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -29,8 +30,9 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(semanticErrorStatus.code)
     }
+    val stylesheetMap = if(stylesheetPath != null) parseStylesheet(stylesheetPath) else null
 
-    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines())
+    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines(), stylesheetMap)
 
     var state: Pair<Boolean, List<ManimInstr>>
     do {
@@ -78,6 +80,9 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-o", "--output"], description = ["The animated mp4 file location (default: \${DEFAULT-VALUE})"])
     var output: String = "out.mp4"
 
+    @Option(names = ["-s", "--stylesheet"], description = ["The JSON stylesheet associated with your code"])
+    var stylesheet: String? = null
+
     @Option(names = ["-p", "--python"], description = ["Output generated python & manim code (optional)"])
     var python: Boolean = false
 
@@ -94,7 +99,7 @@ class DSLCommandLineArguments : Callable<Int> {
     }
 
     override fun call(): Int {
-        compile(file, output, python, manimArguments)
+        compile(file, output, python, manimArguments, stylesheet)
         return 0
     }
 }

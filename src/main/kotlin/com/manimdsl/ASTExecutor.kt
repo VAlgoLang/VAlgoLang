@@ -3,6 +3,7 @@ package com.manimdsl
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.BasicStylesheet
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -17,7 +18,8 @@ object EmptyValue : ExecValue()
 class ASTExecutor(
         private val program: ProgramNode,
         private val symbolTableVisitor: SymbolTableVisitor,
-        private val fileLines: List<String>
+        private val fileLines: List<String>,
+        private val stylesheetMap: Map<String, BasicStylesheet>? = null
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
