@@ -15,16 +15,26 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatem
 arg_list: expr (COMMA expr)*                                        #ArgumentList;
 
 expr: NUMBER                                                        #NumberLiteral
+    | bool                                                          #BooleanLiteral
     | IDENT                                                         #Identifier
     | NEW data_structure_type                                       #DataStructureContructor
     | method_call                                                   #MethodCallExpression
     | unary_operator=(ADD | MINUS) expr                             #UnaryOperator
-    | expr binary_operator=(ADD | MINUS | TIMES) expr               #BinaryExpression;
+    | left=expr binary_operator=(ADD | MINUS | TIMES) right=expr    #BinaryExpression
+    | left=expr op=(GT | GE | LE | LT) right=expr                   #BinaryExpression
+    | left=expr op=(EQ | NEQ) right=expr                            #BinaryExpression
+    | left=expr op=(AND | OR) right=expr                            #BinaryExpression
+    ;
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall;
 
 type: data_structure_type                                            #DataStructureType
     | primitive_type                                                 #PrimitiveType;
 
-data_structure_type: STACK OPEN_GENERIC primitive_type CLOSE_GENERIC #StackType;
-primitive_type: NUMBER_TYPE                                          #NumberType;
+data_structure_type: STACK '<' primitive_type '>'                    #StackType;
+
+primitive_type: NUMBER_TYPE                                          #NumberType
+    | BOOL_TYPE                                                      #BoolType
+    ;
+
+bool: TRUE | FALSE;

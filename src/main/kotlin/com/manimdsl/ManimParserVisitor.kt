@@ -1,6 +1,6 @@
 package com.manimdsl
 
-import antlr.ManimParser
+import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
 import com.manimdsl.frontend.*
 
@@ -8,15 +8,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
     private val semanticAnalyser = SemanticAnalysis()
 
-    override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
+    /** Program **/
+
+    override fun visitProgram(ctx: ProgramContext): ProgramNode {
         return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
     }
 
-    override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
+    /** Statements **/
+
+    override fun visitSleepStatement(ctx: SleepStatementContext): SleepNode {
         return SleepNode(visit(ctx.expr()) as ExpressionNode)
     }
 
-    override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
+    override fun visitDeclarationStatement(ctx: DeclarationStatementContext): DeclarationNode {
         val identifier = ctx.IDENT().symbol.text
         semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
 
@@ -35,7 +39,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return DeclarationNode(ctx.start.line, identifier, rhs)
     }
 
-    override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
+    override fun visitAssignmentStatement(ctx: AssignmentStatementContext): AssignmentNode {
         val expression = visit(ctx.expr()) as ExpressionNode
         val identifier = ctx.IDENT().symbol.text
         val rhsType = semanticAnalyser.inferType(symbolTable, expression)
@@ -46,23 +50,30 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
-    override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
+    override fun visitMethodCallStatement(ctx: MethodCallStatementContext): MethodCallNode {
+        return visitMethodCall(ctx.method_call() as MethodCallContext)
     }
 
-    override fun visitMethodCallExpression(ctx: ManimParser.MethodCallExpressionContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as ManimParser.MethodCallContext)
+    override fun visitCommentStatement(ctx: CommentStatementContext): CommentNode {
+        // Command command given for render purposes
+        return CommentNode(ctx.STRING().text)
     }
 
-    override fun visitArgumentList(ctx: ManimParser.ArgumentListContext?): ArgumentNode {
+    /** Expressions **/
+
+    override fun visitMethodCallExpression(ctx: MethodCallExpressionContext): MethodCallNode {
+        return visitMethodCall(ctx.method_call() as MethodCallContext)
+    }
+
+    override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
         return ArgumentNode((ctx?.expr()
-            ?: listOf<ManimParser.ExprContext>()).map { visit(it) as ExpressionNode })
+            ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
-    override fun visitMethodCall(ctx: ManimParser.MethodCallContext): MethodCallNode {
+    override fun visitMethodCall(ctx: MethodCallContext): MethodCallNode {
         // Type signature of methods to be determined by symbol table
         val arguments: List<ExpressionNode> =
-            visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+            visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
@@ -95,15 +106,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
     }
 
-    override fun visitDataStructureContructor(ctx: ManimParser.DataStructureContructorContext): ASTNode {
+    override fun visitDataStructureContructor(ctx: DataStructureContructorContext): ASTNode {
         return ConstructorNode(ctx.start.line, visit(ctx.data_structure_type()) as DataStructureType, listOf())
     }
 
-    override fun visitIdentifier(ctx: ManimParser.IdentifierContext): IdentifierNode {
+    override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
         return IdentifierNode(ctx.start.line, ctx.text)
     }
 
-    override fun visitBinaryExpression(ctx: ManimParser.BinaryExpressionContext): BinaryExpression {
+    override fun visitBinaryExpression(ctx: BinaryExpressionContext): BinaryExpression {
         val expr1 = visit(ctx.expr(0)) as ExpressionNode
         val expr2 = visit(ctx.expr(1)) as ExpressionNode
         if (expr1 is IdentifierNode) {
@@ -113,45 +124,53 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr2.identifier, ctx)
         }
         return when (ctx.binary_operator.type) {
-            ManimParser.ADD -> AddExpression(ctx.start.line, expr1, expr2)
-            ManimParser.MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
+            ADD -> AddExpression(ctx.start.line, expr1, expr2)
+            MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
             else -> MultiplyExpression(ctx.start.line, expr1, expr2)
         }
     }
 
-    override fun visitUnaryOperator(ctx: ManimParser.UnaryOperatorContext): UnaryExpression {
+    override fun visitUnaryOperator(ctx: UnaryOperatorContext): UnaryExpression {
         val expr = visit(ctx.expr()) as ExpressionNode
         if (expr is IdentifierNode) {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr.identifier, ctx)
         }
         return when (ctx.unary_operator.type) {
-            ManimParser.ADD -> PlusExpression(ctx.start.line, expr)
+            ADD -> PlusExpression(ctx.start.line, expr)
             else -> MinusExpression(ctx.start.line, expr)
         }
     }
 
-    override fun visitCommentStatement(ctx: ManimParser.CommentStatementContext): CommentNode {
-        // Command command given for render purposes
-        return CommentNode(ctx.STRING().text)
+
+    /** Literals **/
+
+    override fun visitNumberLiteral(ctx: NumberLiteralContext): NumberNode {
+        return NumberNode(ctx.start.line, ctx.text.toDouble())
     }
 
-    override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
-        return NumberNode(ctx.start.line, ctx.NUMBER().symbol.text.toDouble())
+    override fun visitBooleanLiteral(ctx: BooleanLiteralContext): ASTNode {
+        return BoolNode(ctx.start.line, ctx.text.toBoolean())
     }
 
-    override fun visitNumberType(ctx: ManimParser.NumberTypeContext): NumberType {
-        return NumberType
-    }
+    /** Types **/
 
-    override fun visitDataStructureType(ctx: ManimParser.DataStructureTypeContext): DataStructureType {
-        return visit(ctx.data_structure_type()) as DataStructureType
-    }
-
-    override fun visitPrimitiveType(ctx: ManimParser.PrimitiveTypeContext): PrimitiveType {
+    override fun visitPrimitiveType(ctx: PrimitiveTypeContext): PrimitiveType {
         return visit(ctx.primitive_type()) as PrimitiveType
     }
 
-    override fun visitStackType(ctx: ManimParser.StackTypeContext): StackType {
+    override fun visitNumberType(ctx: NumberTypeContext): NumberType {
+        return NumberType
+    }
+
+    override fun visitBoolType(ctx: BoolTypeContext): ASTNode {
+        return BoolType
+    }
+
+    override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
+        return visit(ctx.data_structure_type()) as DataStructureType
+    }
+
+    override fun visitStackType(ctx: StackTypeContext): StackType {
         // Stack only contains primitives as per grammar
         val containerType = visit(ctx.primitive_type()) as PrimitiveType
         return StackType(containerType)

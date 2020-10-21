@@ -6,6 +6,7 @@ sealed class Type : ASTNode()
 // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType : Type()
 object NumberType : PrimitiveType()
+object BoolType : PrimitiveType()
 
 sealed class DataStructureType(
     open var internalType: Type,

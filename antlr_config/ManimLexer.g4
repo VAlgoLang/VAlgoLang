@@ -3,19 +3,37 @@ lexer grammar ManimLexer;
 WHITESPACE: [ \n\r\t] -> skip;
 SEMI: ';';
 COLON: ':';
+
+// boolean literals
+TRUE: 'true';
+FALSE: 'false';
+
+// operators
 ADD: '+';
 MINUS: '-';
 TIMES: '*';
 DOT: '.';
 EQUAL: '=';
 COMMA: ',';
-OPEN_GENERIC: '<' ;
-CLOSE_GENERIC: '>' ;
+LT: '<' ;
+GT: '>' ;
+GE: '>=' ;
+LE: '<=' ;
+EQ: '==';
+NEQ: '!=';
+AND: '&&';
+OR: '||';
+
+
 OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
+
+// Primitive types
 NUMBER_TYPE: 'number';
+BOOL_TYPE: 'boolean';
+
 NEW: 'new';
 COMMENT: 'comment';
 SLEEP: 'sleep';
@@ -26,3 +44,7 @@ NUMBER: (DIGIT+) (DOT DIGIT+)?;
 fragment ESCAPED_CHAR: ('0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\');
 fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR;
 STRING: '"' (CHARACTER)* '"';
+
+
+
+
