@@ -12,26 +12,32 @@ sealed class ExecValue {
     abstract val value: Any
 
     /** Extend when more types are added these are assuming semantic checks have passed **/
+
+    /** '+' **/
     operator fun plus(other: ExecValue): ExecValue = when (this) {
         is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value + other.value) else throwTypeError()
         else -> throwTypeError()
     }
 
+    /** '-' **/
     operator fun minus(other: ExecValue): ExecValue = when (this) {
         is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value - other.value) else throwTypeError()
         else -> throwTypeError()
     }
 
+    /** '*' **/
     operator fun times(other: ExecValue): ExecValue = when (this) {
         is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value * other.value) else throwTypeError()
         else -> throwTypeError()
     }
 
+    /** '!' **/
     operator fun not(): Boolean = when (this) {
         is BooleanValue -> !this.value()
         else -> throw UnsupportedOperationException("Wrong type")
     }
 
+    /** '==','!=', '<', '<=', '>', '>='  **/
     operator fun compareTo(other: Any): Int = when (this) {
         is DoubleValue -> if (other is DoubleValue) this.value.compareTo(other.value) else throwTypeError()
         is BoolValue -> if (other is BoolValue) this.value.compareTo(other.value) else throwTypeError()
@@ -46,7 +52,7 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
     override fun hashCode(): Int {
         var result = value.hashCode()
-        result = 31 * result + (manimObject?.hashCode() ?: 0)
+        result = 31 * result + manimObject.hashCode()
         return result
     }
 }
@@ -55,7 +61,7 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
     override fun equals(other: Any?): Boolean = other is BoolValue && this.value == other.value
     override fun hashCode(): Int {
         var result = value.hashCode()
-        result = 31 * result + (manimObject?.hashCode() ?: 0)
+        result = 31 * result + manimObject.hashCode()
         return result
     }
 }
