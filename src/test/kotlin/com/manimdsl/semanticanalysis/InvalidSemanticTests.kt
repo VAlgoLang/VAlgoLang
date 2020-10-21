@@ -122,6 +122,15 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun incompatibleOperatorTypeError() {
+        runSyntaxAndSemanticAnalysis("incompatibleOperatorTypeError.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Operator .* is not compatible with types .* and .*"))
+        )
+    }
+
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

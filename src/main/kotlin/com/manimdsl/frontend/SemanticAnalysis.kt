@@ -26,7 +26,7 @@ class SemanticAnalysis {
                 if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
-                if (expr1Type is BoolType && expr2Type is BoolType) NumberType else ErrorType
+                if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
             }
             is EqExpression, is NeqExpression, is GtExpression,
             is LtExpression, is GeExpression, is LeExpression -> {
@@ -133,7 +133,7 @@ class SemanticAnalysis {
     ) {
         if (inferType(currentSymbolTable, binaryOpExpr) is ErrorType) {
             incompatibleOperatorTypeError(
-                ctx.op.text,
+                ctx.binary_operator.text,
                 inferType(currentSymbolTable, binaryOpExpr.expr1),
                 inferType(currentSymbolTable, binaryOpExpr.expr2),
                 ctx

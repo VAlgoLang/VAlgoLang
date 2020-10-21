@@ -21,9 +21,9 @@ expr: NUMBER                                                        #NumberLiter
     | method_call                                                   #MethodCallExpression
     | unary_operator=(ADD | MINUS) expr                             #UnaryOperator
     | left=expr binary_operator=(ADD | MINUS | TIMES) right=expr    #BinaryExpression
-    | left=expr op=(GT | GE | LE | LT) right=expr                   #BinaryExpression
-    | left=expr op=(EQ | NEQ) right=expr                            #BinaryExpression
-    | left=expr op=(AND | OR) right=expr                            #BinaryExpression
+    | left=expr binary_operator=(GT | GE | LE | LT) right=expr      #BinaryExpression
+    | left=expr binary_operator=(EQ | NEQ) right=expr               #BinaryExpression
+    | left=expr binary_operator=(AND | OR) right=expr               #BinaryExpression
     ;
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall;

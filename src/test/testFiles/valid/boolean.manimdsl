@@ -1,0 +1,8 @@
+let x = true;
+let y = x && true;
+let z = y || true;
+let a = 3 < 5;
+let b = 3 > 5;
+let c = 3 >= 5;
+let d = 3 <= 5;
+let e = a || b || c || d;

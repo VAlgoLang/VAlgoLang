@@ -124,7 +124,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr2.identifier, ctx)
         }
 
-        val binaryOpExpr = when (ctx.op.type) {
+        val binaryOpExpr = when (ctx.binary_operator.type) {
             ADD -> AddExpression(ctx.start.line, expr1, expr2)
             MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
             TIMES -> MultiplyExpression(ctx.start.line, expr1, expr2)
