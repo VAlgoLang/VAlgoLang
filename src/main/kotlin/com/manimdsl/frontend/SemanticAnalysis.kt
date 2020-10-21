@@ -13,9 +13,18 @@ class SemanticAnalysis {
             is MethodCallNode -> expression.dataStructureMethod.returnType
             is ConstructorNode -> expression.type
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
-            is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
+            is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
             is BoolNode -> BoolType
         }
+
+    private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
+        val exprType = getExpressionType(expression.expr, currentSymbolTable)
+
+        return when (expression) {
+            is PlusExpression, is MinusExpression -> if (exprType is NumberType) NumberType else ErrorType
+            is NotExpression -> if (exprType is BoolType) BoolType else ErrorType
+        }
+    }
 
     private fun getBinaryExpressionType(expression: BinaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
         val expr1Type = getExpressionType(expression.expr1, currentSymbolTable)
@@ -127,18 +136,33 @@ class SemanticAnalysis {
     }
 
     fun incompatibleOperatorTypeCheck(
-        binaryOpExpr: BinaryExpression,
+        operator: String,
+        opExpr: ExpressionNode,
         currentSymbolTable: SymbolTableVisitor,
-        ctx: ManimParser.BinaryExpressionContext
+        ctx: ManimParser.ExprContext
     ) {
-        if (inferType(currentSymbolTable, binaryOpExpr) is ErrorType) {
-            incompatibleOperatorTypeError(
-                ctx.binary_operator.text,
-                inferType(currentSymbolTable, binaryOpExpr.expr1),
-                inferType(currentSymbolTable, binaryOpExpr.expr2),
-                ctx
-            )
+        when (opExpr) {
+            is BinaryExpression -> {
+                if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+                    incompatibleOperatorTypeError(
+                        operator,
+                        inferType(currentSymbolTable, opExpr.expr1),
+                        inferType(currentSymbolTable, opExpr.expr2),
+                        ctx
+                    )
+                }
+            }
+            is UnaryExpression -> {
+                if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+                    incompatibleOperatorTypeError(
+                        operator,
+                        inferType(currentSymbolTable, opExpr.expr),
+                        ctx = ctx
+                    )
+                }
+            }
         }
+
     }
 
 }

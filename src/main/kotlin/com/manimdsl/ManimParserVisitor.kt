@@ -139,7 +139,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             else -> throw UnsupportedOperationException("Operation not supported")
         }
 
-        semanticAnalyser.incompatibleOperatorTypeCheck(binaryOpExpr, symbolTable, ctx)
+        semanticAnalyser.incompatibleOperatorTypeCheck(ctx.binary_operator.text, binaryOpExpr, symbolTable, ctx)
 
         return binaryOpExpr
     }
@@ -149,10 +149,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         if (expr is IdentifierNode) {
             semanticAnalyser.undeclaredIdentifierCheck(symbolTable, expr.identifier, ctx)
         }
-        return when (ctx.unary_operator.type) {
+        val unaryOpExpr = when (ctx.unary_operator.type) {
             ADD -> PlusExpression(ctx.start.line, expr)
-            else -> MinusExpression(ctx.start.line, expr)
+            MINUS -> MinusExpression(ctx.start.line, expr)
+            NOT -> NotExpression(ctx.start.line, expr)
+            else -> throw UnsupportedOperationException("Operation not supported")
         }
+
+        semanticAnalyser.incompatibleOperatorTypeCheck(ctx.unary_operator.text, unaryOpExpr, symbolTable, ctx)
+
+        return unaryOpExpr
     }
 
 

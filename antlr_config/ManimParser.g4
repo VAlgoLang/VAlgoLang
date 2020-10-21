@@ -19,7 +19,7 @@ expr: NUMBER                                                        #NumberLiter
     | IDENT                                                         #Identifier
     | NEW data_structure_type                                       #DataStructureContructor
     | method_call                                                   #MethodCallExpression
-    | unary_operator=(ADD | MINUS) expr                             #UnaryOperator
+    | unary_operator=(ADD | MINUS | NOT) expr                       #UnaryOperator
     | left=expr binary_operator=(ADD | MINUS | TIMES) right=expr    #BinaryExpression
     | left=expr binary_operator=(GT | GE | LE | LT) right=expr      #BinaryExpression
     | left=expr binary_operator=(EQ | NEQ) right=expr               #BinaryExpression

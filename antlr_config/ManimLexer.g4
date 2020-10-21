@@ -3,6 +3,9 @@ lexer grammar ManimLexer;
 WHITESPACE: [ \n\r\t] -> skip;
 SEMI: ';';
 COLON: ':';
+DOT: '.';
+EQUAL: '=';
+COMMA: ',';
 
 // boolean literals
 TRUE: 'true';
@@ -12,9 +15,6 @@ FALSE: 'false';
 ADD: '+';
 MINUS: '-';
 TIMES: '*';
-DOT: '.';
-EQUAL: '=';
-COMMA: ',';
 LT: '<' ;
 GT: '>' ;
 GE: '>=' ;
@@ -23,6 +23,7 @@ EQ: '==';
 NEQ: '!=';
 AND: '&&';
 OR: '||';
+NOT: '!';
 
 
 OPEN_PARENTHESIS: '(' ;

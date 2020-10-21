@@ -34,7 +34,7 @@ fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext) {
 
 fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: Type? = null, ctx: ParserRuleContext) {
     val errorMessage =
-        "Operator \'$operator\' is not compatible with types $expr1Type${if (expr2Type != null) " and $expr2Type" else ""}"
+        "Operator \'$operator\' is not compatible with type $expr1Type${if (expr2Type != null) " and $expr2Type" else ""}"
 
     addSemanticError(errorMessage, getErrorLinePos(ctx))
 }

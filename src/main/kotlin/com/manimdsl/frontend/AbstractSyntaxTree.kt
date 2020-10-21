@@ -135,3 +135,6 @@ data class PlusExpression(override val lineNumber: Int, override val expr: Expre
 
 data class MinusExpression(override val lineNumber: Int, override val expr: ExpressionNode) :
     UnaryExpression(lineNumber, expr)
+
+data class NotExpression(override val lineNumber: Int, override val expr: ExpressionNode) :
+    UnaryExpression(lineNumber, expr)

@@ -126,7 +126,7 @@ class InvalidSemanticTests {
     fun incompatibleOperatorTypeError() {
         runSyntaxAndSemanticAnalysis("incompatibleOperatorTypeError.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Operator .* is not compatible with types .* and .*"))
+            outputStreamCaptor.toString().contains(Regex("Operator .* is not compatible with type .* and .*"))
         )
     }
 

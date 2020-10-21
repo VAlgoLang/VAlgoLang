@@ -6,3 +6,4 @@ let b = 3 > 5;
 let c = 3 >= 5;
 let d = 3 <= 5;
 let e = a || b || c || d;
+let f = !e;
