@@ -99,13 +99,13 @@ class DSLCommandLineArguments : Callable<Int> {
         }
     }
 
-    @Option(names = ["-f", "--open_file_manager_to_generated_files"], description = ["Show the output file in file manager (optional)."])
-    fun open_file_manager_to_generated_files(showFile: Boolean = false) {
+    @Option(names = ["-f", "--open_file"], description = ["Show the output file in file manager (optional)."])
+    fun open_file(showFile: Boolean = false) {
         if (showFile) manimArguments.add("-f")
     }
 
     @Option(names = ["--preview"], description = ["Automatically open the saved file once its done (optional)."])
-    fun open_file(open_file: Boolean = false) {
+    fun preview(open_file: Boolean = false) {
         if (open_file) manimArguments.add("-p")
     }
 
