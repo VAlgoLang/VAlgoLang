@@ -8,5 +8,6 @@ fun f(Stack<number> st): number{
 }
 
 let y = new Stack<number>;
+sleep(2.0);
 y.push(3);
 let x = f(y);

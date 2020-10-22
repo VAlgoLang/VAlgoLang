@@ -65,6 +65,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
                         is FunctionNode -> {
                             // just go onto next line, this is just a label
                         }
+                        is SleepNode -> executeSleep(statement)
                         is AssignmentNode -> executeAssignment(statement)
                         is DeclarationNode -> executeAssignment(statement)
                         is MethodCallNode -> executeMethodCall(statement, false)
@@ -75,6 +76,10 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
             }
 
             return EmptyValue
+        }
+
+        private fun executeSleep(statement: SleepNode) {
+            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
         }
 
         private fun moveToLine() {
