@@ -18,15 +18,13 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
     private val variableNameGenerator = VariableNameGenerator(symbolTableVisitor)
-    private val codeBlockVariable: String
-    private val codeTextVariable: String
-    private val pointerVariable: String
+    private val codeBlockVariable: String = variableNameGenerator.generateNameFromPrefix("code_block")
+    private val codeTextVariable: String = variableNameGenerator.generateNameFromPrefix("code_text")
+    private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
+
     init {
-        pointerVariable = variableNameGenerator.generateNameFromPrefix("pointer")
-        codeBlockVariable = variableNameGenerator.generateNameFromPrefix("code_block")
-        codeTextVariable = variableNameGenerator.generateNameFromPrefix("code_text")
         fileLines.indices.forEach {
             val presentableLine = fileLines[it] == "}" || fileLines[it] == "{" || fileLines[it] == "" || (statements.containsKey(it + 1) && statements[it + 1] is CodeNode)
             if (presentableLine) {
@@ -39,18 +37,17 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
     }
 
     fun runProgram(): List<ManimInstr> {
+        linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
-        val startLine = program.statements.first().lineNumber
-        Frame(startLine, fileLines.size, variables).execute()
-        linearRepresentation.add(0, CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
+        Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
         return linearRepresentation
     }
 
     private inner class Frame(private var pc: Int, private var finalLine: Int, private var variables: MutableMap<String, ExecValue>) {
 
-        // will be used for scoping changes e.g. recursion
+        // instantiate new Frame and execute on scoping changes e.g. recursion
 
-        fun execute(): ExecValue {
+        fun runFrame(): ExecValue {
 
             while (pc <= finalLine) {
 
@@ -87,12 +84,15 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
             // create new stack frame with argument variables
             val executedArguments = statement.arguments.map { executeExpression(it) }
-            val parameterNodes = (symbolTableVisitor.getData(statement.functionIdentifier) as FunctionData).parameters
-            val argumentVariables = (parameterNodes.map { it.identifier } zip executedArguments).toMap().toMutableMap()
+            val argumentNames = (symbolTableVisitor.getData(statement.functionIdentifier) as FunctionData).parameters.map { it.identifier }
+            val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            return Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).execute()
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
+            // to visualise popping back to assignment we can move pointer to the prior statement again
+            moveToLine()
+            return returnValue
         }
 
 
@@ -101,13 +101,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment) {
-            val rhsValue = executeExpression(node.expression, identifier = node.identifier)
-            variables[node.identifier] = rhsValue
-
-            // to visualise popping back to assignment we can move line to the prior assignment statement again
-            if (node.expression is FunctionCallNode) {
-                moveToLine()
-            }
+            variables[node.identifier] = executeExpression(node.expression, identifier = node.identifier)
         }
 
         private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: String = "") = when (node) {
