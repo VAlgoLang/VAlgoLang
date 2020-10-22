@@ -5,7 +5,11 @@ sealed class Type : ASTNode()
 
 // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType : Type()
-object NumberType : PrimitiveType()
+object NumberType : PrimitiveType() {
+    override fun toString(): String {
+        return "number"
+    }
+}
 
 sealed class DataStructureType(
     open var internalType: Type,
@@ -15,6 +19,9 @@ sealed class DataStructureType(
     abstract fun getMethodByName(method: String): DataStructureMethod
 
 }
+
+data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
+data class ParameterNode(val identifier: String, val type: Type) : ASTNode()
 
 interface DataStructureMethod {
     val returnType: Type
@@ -52,7 +59,16 @@ data class StackType(
     override fun getMethodByName(method: String): DataStructureMethod {
         return methods.getOrDefault(method, ErrorMethod)
     }
+
+    override fun toString(): String {
+        return "stack<$internalType>"
+    }
 }
 
 
 object ErrorType : Type()
+object VoidType: Type() {
+    override fun toString(): String {
+        return "void"
+    }
+}

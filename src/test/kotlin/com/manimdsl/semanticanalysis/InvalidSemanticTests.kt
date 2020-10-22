@@ -122,6 +122,110 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun globalReturn() {
+        runSyntaxAndSemanticAnalysis("globalReturn.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains("Cannot return from global scope")
+        )
+    }
+
+    @Test
+    fun incompatibleReturnType() {
+        runSyntaxAndSemanticAnalysis("incompatibleReturnType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot return expression of type .* in a function with return type .*"))
+        )
+    }
+
+    @Test
+    fun redeclaredParameters() {
+        runSyntaxAndSemanticAnalysis("redeclaredParameterInFunction.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+        )
+    }
+
+    @Test
+    fun undeclaredFunctionCall() {
+        runSyntaxAndSemanticAnalysis("undeclaredFunctionCall.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+        )
+    }
+
+    @Test
+    fun incorrectArgNumForFunctionCall() {
+        runSyntaxAndSemanticAnalysis("incorrectArgNumForFunctionCall.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* function does not accept .* arguments \\(expected: .*, actual: .*\\)"))
+        )
+    }
+
+    @Test
+    fun incorrectArgTypeForFunctionCall() {
+        runSyntaxAndSemanticAnalysis("incorrectArgTypeForFunctionCall.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
+        )
+    }
+
+    @Test
+    fun missingReturnInFunction() {
+        runSyntaxAndSemanticAnalysis("missingReturnInFunction.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Missing return statement in .* function that expects return type of .*"))
+        )
+    }
+
+    @Test
+    fun voidTypeDeclaration() {
+        runSyntaxAndSemanticAnalysis("voidTypeDeclaration.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot instantiate .* to function call that has void return type"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationFunctionType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationFunctionType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible .* function return type of .* to previous function call expecting type .*"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationParameterCount() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterCount.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible .* function with 0 parameter\\(s\\) to previous function call with 1 argument\\(s\\)"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationParameterType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible parameter .* of type .* to previous function call with argument of type .*"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationMultipleFunctionCallType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationMultipleFunctionCallType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Function .* called in different/incompatible ways"))
+        )
+    }
+
+    @Test
+    fun undeclaredFunctionForwardDeclaration() {
+        runSyntaxAndSemanticAnalysis("undeclaredFunctionForwardDeclaration.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

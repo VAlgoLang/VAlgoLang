@@ -1,0 +1,7 @@
+fun func1(number x) {
+    let y: number = func2(5);
+}
+
+fun func2(number x) {}
+
+func1(5);
