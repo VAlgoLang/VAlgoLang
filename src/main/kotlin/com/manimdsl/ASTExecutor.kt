@@ -43,7 +43,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
                     0
                 })
             }
-        }F
+        }
     }
 
     fun runProgram(): List<ManimInstr> {
