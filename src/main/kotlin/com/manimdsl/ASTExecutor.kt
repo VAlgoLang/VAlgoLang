@@ -21,7 +21,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
     private val codeBlockVariable: String
     private val codeTextVariable: String
     private val pointerVariable: String
-    private val realLine: MutableList<Int> = mutableListOf()
+    private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     init {
         pointerVariable = variableNameGenerator.generateNameFromPrefix("pointer")
@@ -31,12 +31,12 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
             if (it == 0) {
                 if (statements.containsKey(it+1) && statements[it+1] is CodeNode) {
                     displayCode.add(fileLines[it])
-                    realLine.add(1)
+                    displayLine.add(1)
                 } else {
-                    realLine.add(0)
+                    displayLine.add(0)
                 }
             } else {
-                realLine.add(realLine.last() + if (fileLines[it] == "}" || fileLines[it] == "{"  || (statements.containsKey(it+1) && statements[it+1] is CodeNode)) {
+                displayLine.add(displayLine.last() + if (fileLines[it] == "}" || fileLines[it] == "{"  || (statements.containsKey(it+1) && statements[it+1] is CodeNode)) {
                     displayCode.add(fileLines[it])
                     1
                 } else {
@@ -89,7 +89,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
         }
 
         private fun moveToLine() {
-            linearRepresentation.add(MoveToLine(realLine[pc-1], pointerVariable, codeBlockVariable))
+            linearRepresentation.add(MoveToLine(displayLine[pc-1], pointerVariable, codeBlockVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
@@ -99,9 +99,8 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
             val argumentVariables = (parameterNodes.map { it.identifier } zip executedArguments).toMap().toMutableMap()
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
-            val functionFrame = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables)
             // program counter will forward in loop, we have popped out of stack
-            return functionFrame.execute()
+            return Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).execute()
         }
 
 
@@ -110,10 +109,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment) {
-            val rhsValue = when (node.expression) {
-                is ConstructorNode -> executeConstructor(node.expression as ConstructorNode, node.identifier)
-                else -> executeExpression(node.expression)
-            }
+            val rhsValue = executeExpression(node.expression, identifier = node.identifier)
             variables[node.identifier] = rhsValue
 
             // to visualise popping back to assignment we can move line to the prior assignment statement again
@@ -122,22 +118,17 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
             }
         }
 
-
-
-
-        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false): ExecValue {
-            return when (node) {
-                is IdentifierNode -> variables[node.identifier]!!
-                is NumberNode -> DoubleValue(node.double)
-                is MethodCallNode -> executeMethodCall(node, insideMethodCall)
-                is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
-                is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
-                is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
-                is PlusExpression -> executeUnaryOp(node) { x -> x }
-                is MinusExpression -> executeUnaryOp(node) { x -> -x }
-                is ConstructorNode -> TODO()
-                is FunctionCallNode -> executeFunctionCall(node)
-            }
+        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: String = "") = when (node) {
+            is IdentifierNode -> variables[node.identifier]!!
+            is NumberNode -> DoubleValue(node.double)
+            is MethodCallNode -> executeMethodCall(node, insideMethodCall)
+            is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
+            is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
+            is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
+            is PlusExpression -> executeUnaryOp(node) { x -> x }
+            is MinusExpression -> executeUnaryOp(node) { x -> -x }
+            is ConstructorNode -> executeConstructor(node, identifier)
+            is FunctionCallNode -> executeFunctionCall(node)
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {

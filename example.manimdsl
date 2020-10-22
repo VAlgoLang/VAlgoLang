@@ -1,6 +1,11 @@
-def function(number x): number {
-    let z: number = x + x;
-    return z;}
+def g(number x): number{
+    return x*3;
+}
 
-let y = function(4);
+def f(number x): number{
+    let z: number = x + x;
+    return g(z);
+}
+
+let y = f(3);
 let x = 3;
