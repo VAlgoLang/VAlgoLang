@@ -1,12 +1,12 @@
 class Code_block:
-    def __init__(self, code):
+    def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         for c in code:
-            group.add(Text(c).scale(0.8))
-        self.group = group
+            group.add(Text(c, color=text_color, weight=text_weight, font=font))
+        self.all = group
 
     def build(self):
-        return self.group.arrange(DOWN, aligned_edge=LEFT)
+        return self.all.arrange(DOWN, aligned_edge=LEFT)
 
     def get_line_at(self, line_number):
-        return self.group[line_number - 1]
+        return self.all[line_number - 1]

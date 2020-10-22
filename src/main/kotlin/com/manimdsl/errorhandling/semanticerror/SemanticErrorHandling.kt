@@ -89,6 +89,22 @@ fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot instantiate $identifier to function call that has void return type", getErrorLinePos(ctx))
 }
 
+fun incompatibleFunctionType(identifier: String, declared: String, called: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible $identifier function return type of $declared to previous function call expecting type $called", getErrorLinePos(ctx))
+}
+
+fun incompatibleParameterCount(identifier: String, declared: Int, called: Int, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible $identifier function with $declared parameter(s) to previous function call with $called argument(s)", getErrorLinePos(ctx))
+}
+
+fun incompatibleParameterType(identifier: String, declared: String, argument: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible parameter $identifier of type $declared to previous function call with argument of type $argument", getErrorLinePos(ctx))
+}
+
+fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Function $identifier called in different/incompatible ways", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

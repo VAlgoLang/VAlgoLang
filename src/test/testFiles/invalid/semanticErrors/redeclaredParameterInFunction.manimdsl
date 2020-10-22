@@ -1,4 +1,4 @@
-def function(number x, number x): number {
+fun function(number x, number x): number {
     let z: number = x + x;
     return z;
 }

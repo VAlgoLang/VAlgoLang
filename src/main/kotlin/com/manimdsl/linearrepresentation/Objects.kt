@@ -1,14 +1,21 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.shapes.CodeBlockShape
+import com.manimdsl.shapes.InitStructureShape
+import com.manimdsl.shapes.NullShape
 import com.manimdsl.shapes.Shape
 
 /** Objects **/
 
 interface MObject : ManimInstr {
-    val ident: String
+    val shape: Shape
 }
 
-data class Coord(val x: Double, val y: Double) {
+/** Positioning **/
+interface Position
+object RelativeToMoveIdent : Position
+
+data class Coord(val x: Double, val y: Double) : Position {
     override fun toString(): String {
         return "$x, $y"
     }
@@ -32,16 +39,21 @@ enum class ObjectSide(var coord: Coord) {
     }
 }
 
+/** MObjects **/
 data class CodeBlock(
     val lines: List<String>,
-    override val ident: String,
+    val ident: String,
     val codeTextName: String,
-    val pointerName: String
+    val pointerName: String,
+    val textColor: String? = null,
+    val textWeight: String? = null,
+    val font: String? = null
 ) : MObject {
+    override val shape: Shape = CodeBlockShape(ident, lines, textColor, textWeight, font)
 
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = Code_block([\"${lines.joinToString("\",\"")}\"])",
+            shape.getConstructor(),
             "$codeTextName = $ident.build()",
             "self.place_at($codeTextName, -1, 0)",
             "self.play(FadeIn($codeTextName))",
@@ -51,42 +63,43 @@ data class CodeBlock(
 }
 
 data class InitStructure(
-    val x: Int, val y: Int, val alignment: Alignment, override val ident: String,
-    val text: String, val moveIdent: String? = null
+    val position: Position,
+    val alignment: Alignment,
+    val ident: String,
+    val text: String,
+    val moveToShape: Shape? = null,
+    val color: String? = null,
+    val textColor: String? = null,
+    val textWeight: String? = null,
+    val font: String? = null
 ) : MObject {
+    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor, textWeight, font)
+
     override fun toPython(): List<String> {
-        return listOf(
-            "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
-            "$ident.to_edge(np.array([$x, $y, 0]))",
-            "self.play(ShowCreation($ident))"
+        val python =
+            mutableListOf(shape.getConstructor())
+        python.add(
+            when (position) {
+                is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
+                else -> "self.place_relative_to_obj($shape, $moveToShape, ${ObjectSide.LEFT.addOffset(0)})"
+            }
         )
+        python.add("self.play(ShowCreation($shape))")
+        return python
     }
 }
 
-data class InitStructureRelative(
-    val alignment: Alignment, override val ident: String, val text: String,
-    val moveIdent: String? = null
-) : MObject {
+data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = Init_structure(\"${text}\", ${alignment.angle}).build()",
-            "self.place_relative_to_obj($ident, $moveIdent, ${ObjectSide.LEFT.addOffset(0)})",
-            "self.play(ShowCreation($ident))"
-        )
-    }
-}
-
-data class NewMObject(val shape: Shape, override val ident: String, val codeBlockVariable: String) : MObject {
-    override fun toPython(): List<String> {
-        return listOf(
-            "$ident = ${shape.className}(\"${shape.text}\").build()",
-            "self.place_relative_to_obj($ident, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
-            "self.play(FadeIn($ident))"
+            shape.getConstructor(),
+            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
+            "self.play(FadeIn($shape))"
         )
     }
 }
 
 object EmptyMObject : MObject {
-    override val ident: String = "null"
+    override val shape: Shape = NullShape
     override fun toPython(): List<String> = emptyList()
 }

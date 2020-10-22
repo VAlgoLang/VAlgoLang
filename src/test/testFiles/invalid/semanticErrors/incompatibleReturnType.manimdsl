@@ -1,4 +1,4 @@
-def func(number x) {
+fun func(number x) {
 return 5;
 }
 

@@ -8,7 +8,12 @@ open class IdentifierData(override val type: Type) : SymbolTableData
 
 object ErrorIdentifierData : IdentifierData(ErrorType)
 
-data class FunctionData(val parameters: List<ParameterNode>, override val type: Type) : SymbolTableData
+data class FunctionData(
+        val inferred : Boolean,
+        var firstTime: Boolean,
+        val parameters: List<ParameterNode>,
+        override var type: Type,
+) : SymbolTableData
 
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {
@@ -18,6 +23,10 @@ class SymbolTableVisitor {
     fun getTypeOf(identifier: String): Type = currentScope[identifier].type
 
     fun getData(identifier: String): SymbolTableData = currentScope[identifier]
+
+    fun getFunctions(): Map<String, SymbolTableData> {
+        return currentScope.getFunctions()
+    }
 
     fun addVariable(identifier: String, data: SymbolTableData) {
         currentScope[identifier] = data
@@ -46,6 +55,10 @@ class SymbolTableVisitor {
 
 sealed class SymbolTable(open val id: Int) {
     protected val table: MutableMap<String, SymbolTableData> = mutableMapOf()
+
+    fun getFunctions(): Map<String, SymbolTableData> {
+        return table.filterValues { it is FunctionData }
+    }
 
     abstract operator fun get(identifier: String): SymbolTableData
 

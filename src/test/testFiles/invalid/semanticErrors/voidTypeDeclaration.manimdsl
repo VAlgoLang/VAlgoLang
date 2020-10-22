@@ -1,4 +1,4 @@
-def func2(number x) {
+fun func2(number x) {
     let z: number = x + 1;
 }
 

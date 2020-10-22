@@ -1,12 +1,5 @@
 class Rectangle_block:
-    def __init__(self, text, height=0.75, width=1.5, color=BLUE):
-        self.text   = text
-        self.height = height
-        self.width  = width
-        self.color  = color
-
-    def build(self):
-        inside_text = TextMobject(self.text)
-        rectangle   = Rectangle(height=self.height, width=self.width, color=self.color)
-        group       = VGroup(inside_text, rectangle)
-        return group
+    def __init__(self, text, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+        self.text = Text(text, color=text_color, weight=text_weight, font=font)
+        self.shape = Rectangle(height=height, width=width, color=color)
+        self.all = VGroup(self.text, self.shape)

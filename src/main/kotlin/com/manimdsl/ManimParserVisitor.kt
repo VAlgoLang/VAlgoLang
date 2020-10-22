@@ -14,16 +14,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
+        val functions = ctx.function().map { visit(it) as FunctionNode }
+        semanticAnalyser.tooManyInferredFunctionsCheck(symbolTable, ctx)
         return ProgramNode(
-                ctx.function().map { visit(it) as FunctionNode },
+                functions,
                 ctx.stat().map { visit(it) as StatementNode })
     }
 
     override fun visitFunction(ctx: ManimParser.FunctionContext): FunctionNode {
         inFunction = true
         val identifier = ctx.IDENT().symbol.text
-        semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
-
         val type = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
@@ -37,18 +37,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val statements = ctx.stat().map { visit(it) as StatementNode }
         symbolTable.leaveScope()
 
+        semanticAnalyser.redeclaredFunctionCheck(symbolTable, identifier, type, parameters, ctx)
+
         if (functionReturnType !is VoidType) {
             semanticAnalyser.missingReturnCheck(identifier, statements, functionReturnType, ctx)
         }
 
-        symbolTable.addVariable(identifier, FunctionData(parameters, type))
+        symbolTable.addVariable(identifier, FunctionData(inferred = false, firstTime = false, parameters = parameters, type = type))
 
         inFunction = false
         functionReturnType = VoidType
 
-        val node = FunctionNode(scope, identifier, parameters, statements, ctx.start.line)
-        lineNumberNodeMap[ctx.start.line] = node
-        return node
+        lineNumberNodeMap[ctx.start.line] = FunctionNode(ctx.start.line, scope, identifier, parameters, statements)
+        return lineNumberNodeMap[ctx.start.line]
     }
 
     override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{
@@ -71,16 +72,14 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.globalReturnCheck(inFunction, ctx)
         val expression = visit(ctx.expr()) as ExpressionNode
         semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
-        val node = ReturnNode(ctx.start.line, expression)
-        lineNumberNodeMap[ctx.start.line] = node
-        return node
+        lineNumberNodeMap[ctx.start.line] = ReturnNode(ctx.start.line, expression)
+        return lineNumberNodeMap[ctx.start.line]
 
     }
 
     override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
-        val node = SleepNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
-        lineNumberNodeMap[ctx.start.line] = node
-        return node
+        lineNumberNodeMap[ctx.start.line] = SleepNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
+        return lineNumberNodeMap[ctx.start.line]
     }
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
@@ -89,27 +88,44 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         val rhs = visit(ctx.expr()) as ExpressionNode
 
-        val rhsType = semanticAnalyser.inferType(symbolTable, rhs)
+        var rhsType = semanticAnalyser.inferType(symbolTable, rhs)
         val lhsType = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
             rhsType
         }
 
+        if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
+            val functionData = symbolTable.getData(rhs.functionIdentifier) as FunctionData
+            semanticAnalyser.incompatibleMultipleFunctionCall(rhs.functionIdentifier, functionData, lhsType, ctx)
+            if (functionData.inferred && functionData.firstTime) {
+                functionData.type = lhsType
+                rhsType = lhsType
+                functionData.firstTime = false
+            }
+        }
+
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        val node = DeclarationNode(ctx.start.line, identifier, rhs)
-        lineNumberNodeMap[ctx.start.line] = node
-        return node
+        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, identifier, rhs)
+        return lineNumberNodeMap[ctx.start.line]
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
         val expression = visit(ctx.expr()) as ExpressionNode
         val identifier = ctx.IDENT().symbol.text
-        val rhsType = semanticAnalyser.inferType(symbolTable, expression)
+        var rhsType = semanticAnalyser.inferType(symbolTable, expression)
         val identifierType = symbolTable.getTypeOf(identifier)
+
+        if (expression is FunctionCallNode && symbolTable.getTypeOf(expression.functionIdentifier) != ErrorType) {
+            val functionData = symbolTable.getData(expression.functionIdentifier) as FunctionData
+            if (functionData.inferred) {
+                functionData.type = identifierType
+                rhsType = identifierType
+            }
+        }
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
@@ -181,6 +197,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.invalidNumberOfArgumentsForFunctionsCheck(identifier, symbolTable, arguments.size, ctx)
 
         val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
+        semanticAnalyser.incompatibleArgumentTypesForFunctionsCheck(identifier, symbolTable, argTypes, ctx)
+
+        return FunctionCallNode(ctx.start.line, ctx.IDENT().symbol.text, arguments)
+    }
+
+    override fun visitFunctionCall(ctx: ManimParser.FunctionCallContext): FunctionCallNode {
+        val identifier = ctx.IDENT().symbol.text
+        val arguments: List<ExpressionNode> =
+                visitArgumentList(ctx.arg_list() as ManimParser.ArgumentListContext?).arguments
+        val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
+
+        semanticAnalyser.undeclaredFunctionCheck(symbolTable, identifier, inFunction, argTypes, ctx)
+        semanticAnalyser.invalidNumberOfArgumentsForFunctionsCheck(identifier, symbolTable, arguments.size, ctx)
         semanticAnalyser.incompatibleArgumentTypesForFunctionsCheck(identifier, symbolTable, argTypes, ctx)
 
         return FunctionCallNode(ctx.start.line, ctx.IDENT().symbol.text, arguments)

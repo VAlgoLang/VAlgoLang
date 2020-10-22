@@ -166,7 +166,7 @@ class InvalidSemanticTests {
     fun incorrectArgTypeForFunctionCall() {
         runSyntaxAndSemanticAnalysis("incorrectArgTypeForFunctionCall.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
+            outputStreamCaptor.toString().contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
         )
     }
 
@@ -174,7 +174,7 @@ class InvalidSemanticTests {
     fun missingReturnInFunction() {
         runSyntaxAndSemanticAnalysis("missingReturnInFunction.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Missing return statement in .* function that expects return type of .*"))
+            outputStreamCaptor.toString().contains(Regex("Missing return statement in .* function that expects return type of .*"))
         )
     }
 
@@ -182,7 +182,47 @@ class InvalidSemanticTests {
     fun voidTypeDeclaration() {
         runSyntaxAndSemanticAnalysis("voidTypeDeclaration.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Cannot instantiate .* to function call that has void return type"))
+            outputStreamCaptor.toString().contains(Regex("Cannot instantiate .* to function call that has void return type"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationFunctionType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationFunctionType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible .* function return type of .* to previous function call expecting type .*"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationParameterCount() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterCount.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible .* function with 0 parameter\\(s\\) to previous function call with 1 argument\\(s\\)"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationParameterType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible parameter .* of type .* to previous function call with argument of type .*"))
+        )
+    }
+
+    @Test
+    fun incompatibleForwardDeclarationMultipleFunctionCallType() {
+        runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationMultipleFunctionCallType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Function .* called in different/incompatible ways"))
+        )
+    }
+
+    @Test
+    fun undeclaredFunctionForwardDeclaration() {
+        runSyntaxAndSemanticAnalysis("undeclaredFunctionForwardDeclaration.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
         )
     }
 
