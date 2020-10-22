@@ -77,29 +77,38 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitIfStatement(ctx: IfStatementContext): ASTNode {
         // if
+        val ifScope = symbolTable.enterScope()
         val ifCondition = visit(ctx.ifCond) as ExpressionNode
-        val ifStatements = flattenStatements(visit(ctx.ifStat) as StatementNode)
         semanticAnalyser.checkExpressionTypeWithExpectedType(ifCondition, BoolType, symbolTable, ctx)
+        val ifStatements = flattenStatements(visit(ctx.ifStat) as StatementNode)
+        symbolTable.leaveScope()
 
         // elif
         val elifs = ctx.elseIf().map { visit(it) as Elif }
 
         // else
-        val elseStatement = if (ctx.elseStat != null) {
-            flattenStatements(visit(ctx.elseStat) as StatementNode)
+        val (elseScope, elseStatement) = if (ctx.elseStat != null) {
+            val scope = symbolTable.enterScope()
+            val statements = flattenStatements(visit(ctx.elseStat) as StatementNode)
+            symbolTable.leaveScope()
+            Pair(scope, statements)
         } else {
-            emptyList()
+            Pair(0, emptyList())
         }
 
-        return IfStatement(ctx.start.line, ifCondition, ifStatements, elifs, elseStatement)
+        return IfStatement(ctx.start.line, ifScope, ifCondition, ifStatements, elifs, elseScope, elseStatement)
     }
 
     override fun visitElseIf(ctx: ElseIfContext): ASTNode {
+        val elifScope = symbolTable.enterScope()
+
         val elifCondition = visit(ctx.elifCond) as ExpressionNode
+        semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
         val elifStatements = flattenStatements(visit(ctx.elifStat) as StatementNode)
 
-        semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
-        return Elif(elifCondition, elifStatements)
+        symbolTable.leaveScope()
+
+        return Elif(elifScope, elifCondition, elifStatements)
     }
 
     /** Expressions **/

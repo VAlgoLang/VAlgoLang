@@ -39,13 +39,16 @@ data class AssignmentNode(
 
 data class IfStatement(
     override val lineNumber: Int,
+    val ifScope: Int,
     val ifCondition: ExpressionNode,
     val ifStatement: List<StatementNode>,
     val elifs: List<Elif> = emptyList(),
+    val elseScope: Int = 0,
     val elseStatement: List<StatementNode> = emptyList()
 ) : CodeNode(lineNumber)
 
 data class Elif(
+    val scope: Int,
     val condition: ExpressionNode,
     val statements: List<StatementNode>
 ) : StatementNode()

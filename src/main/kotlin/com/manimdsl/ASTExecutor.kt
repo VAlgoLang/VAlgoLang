@@ -168,6 +168,7 @@ class ASTExecutor(
         when (node) {
             is DeclarationOrAssignment -> visitAssignmentOrDeclaration(node)
             is ExpressionNode -> executeExpression(node)
+            is IfStatement -> executeIfStatement(node)
             is SleepNode -> linearRepresentation.add(Sleep((executeExpression(node.sleepTime) as DoubleValue).value))
         }
 
@@ -177,6 +178,10 @@ class ASTExecutor(
         }
 
         return Pair(endOfProgram, linearRepresentation)
+    }
+
+    private fun executeIfStatement(ifStatement: IfStatement) {
+        TODO("Not yet implemented")
     }
 
     private fun visitAssignmentOrDeclaration(node: DeclarationOrAssignment) {

@@ -130,6 +130,14 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun incorrectScopingInIfStatement() {
+        runSyntaxAndSemanticAnalysis("incorrectScopingInIfStatement.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+        )
+    }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
