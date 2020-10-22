@@ -13,6 +13,9 @@ data class SleepNode(val sleepTime: ExpressionNode) : AnimationNode()
 // Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(val content: String) : AnimationNode()
 
+// Used to more easily deal with blocks
+data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: StatementNode) : StatementNode()
+
 // Code Specific Nodes holding line number - todo: replace with composition
 sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 
@@ -33,6 +36,7 @@ data class AssignmentNode(
     override val identifier: String,
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
+
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)

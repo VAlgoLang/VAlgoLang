@@ -11,13 +11,25 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     /** Program **/
 
     override fun visitProgram(ctx: ProgramContext): ProgramNode {
-        return ProgramNode(ctx.stat().map { visit(it) as StatementNode })
+        val statements = mutableListOf<StatementNode>()
+        var statementNode = visit(ctx.stat()) as StatementNode
+        // Flatten consecutive statements
+        while (statementNode is ConsecutiveStatementNode) {
+            statements.add(statementNode.stat1)
+            statementNode = statementNode.stat2
+        }
+        statements.add(statementNode)
+        return ProgramNode(statements)
     }
 
     /** Statements **/
 
     override fun visitSleepStatement(ctx: SleepStatementContext): SleepNode {
         return SleepNode(visit(ctx.expr()) as ExpressionNode)
+    }
+
+    override fun visitConsecutiveStatement(ctx: ConsecutiveStatementContext): ASTNode {
+        return ConsecutiveStatementNode(visit(ctx.stat1) as StatementNode, visit(ctx.stat2) as StatementNode)
     }
 
     override fun visitDeclarationStatement(ctx: DeclarationStatementContext): DeclarationNode {

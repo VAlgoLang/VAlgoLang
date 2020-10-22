@@ -28,6 +28,8 @@ NOT: '!';
 
 OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
+OPEN_CURLY: '{';
+CLOSE_CURLY: '}';
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
 
@@ -35,10 +37,14 @@ LET: 'let';
 NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
 
+// Keywords
 NEW: 'new';
 COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
+IF: 'if';
+ELSE: 'else';
+
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;
 NUMBER: (DIGIT+) (DOT DIGIT+)?;

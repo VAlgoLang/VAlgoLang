@@ -4,13 +4,17 @@ options {
   tokenVocab=ManimLexer;
 }
 
-program: (stat SEMI)+ EOF;
+program: stat EOF;
 
-stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                 #SleepStatement
-    | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS             #CommentStatement // when string type defined we can adjust
-    | LET IDENT (COLON type)? EQUAL expr                            #DeclarationStatement
-    | IDENT EQUAL expr                                              #AssignmentStatement
-    | method_call                                                   #MethodCallStatement;
+stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS ';'                 #SleepStatement
+    | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS ';'             #CommentStatement // when string type defined we can adjust
+    | LET IDENT (COLON type)? EQUAL expr ';'                            #DeclarationStatement
+    | IDENT EQUAL expr ';'                                              #AssignmentStatement
+    | IF '(' ifCond=expr ')' '{' ifStat=stat? '}'
+    (ELSE IF '(' elifCond=expr ')' '{' elifStat=stat? '}')*
+    (ELSE '{' elseStat = stat? '}')?                                    #IfStatement
+    | stat1=stat stat2=stat                                               #ConsecutiveStatement
+    | method_call ';'                                                   #MethodCallStatement;
 
 arg_list: expr (COMMA expr)*                                        #ArgumentList;
 
