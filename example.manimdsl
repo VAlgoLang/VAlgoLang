@@ -1,5 +1,6 @@
-let stack1 = new Stack<number>;
-let stack2 = new Stack<number>;
-stack1.push(1);
-# aseuifdh
-let x = stack1.pop();
+def function(number x): number {
+    let z: number = x + x;
+    return z;}
+
+let y = function(4);
+let x = 3;
