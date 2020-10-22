@@ -11,8 +11,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ManimParser.ProgramContext): ProgramNode {
+        val functions = ctx.function().map { visit(it) as FunctionNode }
+        semanticAnalyser.tooManyInferredFunctionsCheck(symbolTable, ctx)
         return ProgramNode(
-                ctx.function().map { visit(it) as FunctionNode },
+                functions,
                 ctx.stat().map { visit(it) as StatementNode })
     }
 
@@ -109,7 +111,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         var rhsType = semanticAnalyser.inferType(symbolTable, expression)
         val identifierType = symbolTable.getTypeOf(identifier)
 
-        if (expression is FunctionCallNode) {
+        if (expression is FunctionCallNode && symbolTable.getTypeOf(expression.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(expression.functionIdentifier) as FunctionData
             if (functionData.inferred) {
                 functionData.type = identifierType

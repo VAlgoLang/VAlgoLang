@@ -215,4 +215,14 @@ class SemanticAnalysis {
             incompatibleTypeFromMultipleFunctionCall(identifier, ctx)
         }
     }
+
+    fun tooManyInferredFunctionsCheck(currentSymbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
+        val functions = currentSymbolTable.getFunctions()
+        functions.forEach { (identifier, data) ->
+            val functionData = data as FunctionData
+            if (functionData.inferred) {
+                undeclaredAssignError(identifier, ctx)
+            }
+        }
+    }
 }

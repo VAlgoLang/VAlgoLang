@@ -24,6 +24,10 @@ class SymbolTableVisitor {
 
     fun getData(identifier: String): SymbolTableData = currentScope[identifier]
 
+    fun getFunctions(): Map<String, SymbolTableData> {
+        return currentScope.getFunctions()
+    }
+
     fun addVariable(identifier: String, data: SymbolTableData) {
         currentScope[identifier] = data
     }
@@ -51,6 +55,10 @@ class SymbolTableVisitor {
 
 sealed class SymbolTable(open val id: Int) {
     protected val table: MutableMap<String, SymbolTableData> = mutableMapOf()
+
+    fun getFunctions(): Map<String, SymbolTableData> {
+        return table.filterValues { it is FunctionData }
+    }
 
     abstract operator fun get(identifier: String): SymbolTableData
 

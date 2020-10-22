@@ -214,7 +214,15 @@ class InvalidSemanticTests {
     fun incompatibleForwardDeclarationMultipleFunctionCallType() {
         runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationMultipleFunctionCallType.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex("Function .* called in different/incompatible ways"))
+            outputStreamCaptor.toString().contains(Regex("Function .* called in different/incompatible ways"))
+        )
+    }
+
+    @Test
+    fun undeclaredFunctionForwardDeclaration() {
+        runSyntaxAndSemanticAnalysis("undeclaredFunctionForwardDeclaration.manimdsl")
+        assertTrue(
+                outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
         )
     }
 
