@@ -2,10 +2,11 @@ def g(number x): number{
     return x*3;
 }
 
-def f(number x): number{
-    let z: number = x + x;
+def f(Stack<number> st): number{
+    let z: number = st.pop() + 3;
     return g(z);
 }
 
-let y = f(3);
-let x = 3;
+let y = new Stack<number>;
+y.push(3);
+let x = f(y);

@@ -36,7 +36,7 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
                     displayLine.add(0)
                 }
             } else {
-                displayLine.add(displayLine.last() + if (fileLines[it] == "}" || fileLines[it] == "{"  || (statements.containsKey(it+1) && statements[it+1] is CodeNode)) {
+                displayLine.add(displayLine.last() + if (fileLines[it] == "}" || fileLines[it] == "{" || fileLines[it] == "" || (statements.containsKey(it+1) && statements[it+1] is CodeNode)) {
                     displayCode.add(fileLines[it])
                     1
                 } else {
