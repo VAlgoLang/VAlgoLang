@@ -27,6 +27,9 @@ sealed class DataStructureType(
 
 }
 
+data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
+data class ParameterNode(val identifier: String, val type: Type) : ASTNode()
+
 interface DataStructureMethod {
     val returnType: Type
     val argumentTypes: List<Type>
@@ -71,3 +74,8 @@ data class StackType(
 
 
 object ErrorType : Type()
+object VoidType: Type() {
+    override fun toString(): String {
+        return "void"
+    }
+}

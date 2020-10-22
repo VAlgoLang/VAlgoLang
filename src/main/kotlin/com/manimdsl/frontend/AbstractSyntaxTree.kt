@@ -1,7 +1,18 @@
 package com.manimdsl.frontend
 
 open class ASTNode
-data class ProgramNode(val statements: List<StatementNode>) : ASTNode()
+data class ProgramNode(
+        val functions: List<FunctionNode>,
+        val statements: List<StatementNode>
+) : ASTNode()
+
+data class FunctionNode(
+        override val lineNumber: Int,
+        val scope: Int,
+        val identifier: String,
+        val parameters: List<ParameterNode>,
+        val statements: List<StatementNode>
+) : CodeNode(lineNumber)
 
 // All statements making up program
 sealed class StatementNode : ASTNode()
@@ -37,6 +48,11 @@ data class AssignmentNode(
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
+data class ReturnNode(
+    override val lineNumber: Int,
+    val expression: ExpressionNode
+) : CodeNode(lineNumber)
+
 data class IfStatement(
     override val lineNumber: Int,
     val ifScope: Int,
@@ -68,6 +84,12 @@ data class MethodCallNode(
 data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
+    val arguments: List<ExpressionNode>
+) : ExpressionNode(lineNumber)
+
+data class FunctionCallNode(
+    override val lineNumber: Int,
+    val functionIdentifier: String,
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 

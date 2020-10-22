@@ -69,6 +69,56 @@ fun typeOfArgsInMethodCallError(
     )
 }
 
+fun globalReturnError(ctx: ParserRuleContext) {
+    addSemanticError("Cannot return from global scope", getErrorLinePos(ctx))
+}
+
+fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
+}
+
+fun numOfArgsInFunctionCallError(function: String, numArgs: Int, expected:Int, ctx: ParserRuleContext) {
+    addSemanticError("$function function does not accept $numArgs arguments (expected: $expected, actual: $numArgs)", getErrorLinePos(ctx))
+}
+
+fun typeOfArgsInFunctionCallError(
+        function: String,
+        argType: String,
+        argName: String,
+        expected: String,
+        ctx: ParserRuleContext
+) {
+    // To modify once nex version is merged
+    addSemanticError(
+            "$function function does not accept argument $argName of type $argType (expected: $expected, actual: $argType)",
+            getErrorLinePos(ctx)
+    )
+}
+
+fun missingReturnError(function: String, type: String, ctx: ParserRuleContext) {
+    addSemanticError("Missing return statement in $function function that expects return type of $type", getErrorLinePos(ctx))
+}
+
+fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot instantiate $identifier to function call that has void return type", getErrorLinePos(ctx))
+}
+
+fun incompatibleFunctionType(identifier: String, declared: String, called: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible $identifier function return type of $declared to previous function call expecting type $called", getErrorLinePos(ctx))
+}
+
+fun incompatibleParameterCount(identifier: String, declared: Int, called: Int, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible $identifier function with $declared parameter(s) to previous function call with $called argument(s)", getErrorLinePos(ctx))
+}
+
+fun incompatibleParameterType(identifier: String, declared: String, argument: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible parameter $identifier of type $declared to previous function call with argument of type $argument", getErrorLinePos(ctx))
+}
+
+fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Function $identifier called in different/incompatible ways", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

@@ -11,7 +11,7 @@ class ValidASTTests {
     @Test
     fun variableDeclaration() {
         val declarationProgram = "let x: number = 1;"
-        val reference = ProgramNode(listOf(DeclarationNode(1, "x", NumberNode(1, 1.0))))
+        val reference = ProgramNode(listOf(), listOf(DeclarationNode(1, "x", NumberNode(1, 1.0))))
         val actual = buildAST(declarationProgram)
         assertEquals(reference, actual)
     }
@@ -19,7 +19,7 @@ class ValidASTTests {
     @Test
     fun sleepCommand() {
         val declarationProgram = "sleep(1.5);"
-        val reference = ProgramNode(listOf(SleepNode(NumberNode(1, 1.5))))
+        val reference = ProgramNode(listOf(), listOf(SleepNode(NumberNode(1, 1.5))))
         val actual = buildAST(declarationProgram)
         assertEquals(reference, actual)
     }
@@ -33,7 +33,7 @@ class ValidASTTests {
             DeclarationNode(1, "x", NumberNode(1, 1.5)),
             DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), listOf()))
         )
-        val reference = ProgramNode(statements)
+        val reference = ProgramNode(listOf(), statements)
 
         val actual = buildAST(multiLineProgram)
         assertEquals(reference, actual)
@@ -47,7 +47,7 @@ class ValidASTTests {
             DeclarationNode(1, "y", ConstructorNode(1, StackType(NumberType), listOf())),
             MethodCallNode(2, "y", StackType.PushMethod(argumentTypes = listOf(NumberType)), listOf(NumberNode(2, 1.0)))
         )
-        val reference = ProgramNode(statements)
+        val reference = ProgramNode(listOf(), statements)
 
         val actual = buildAST(methodProgram)
         assertEquals(reference, actual)

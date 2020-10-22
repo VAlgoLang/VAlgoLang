@@ -28,10 +28,12 @@ NOT: '!';
 
 OPEN_PARENTHESIS: '(' ;
 CLOSE_PARENTHESIS: ')' ;
-OPEN_CURLY: '{';
-CLOSE_CURLY: '}';
+OPEN_CURLY_BRACKET: '{';
+CLOSE_CURLY_BRACKET: '}';
 CODE_COMMENT: '#' ~('\n' | '\r')* ('\n' | '\r')? -> skip;
 LET: 'let';
+FUN: 'fun';
+RETURN: 'return';
 
 // Primitive types
 NUMBER_TYPE: 'number';

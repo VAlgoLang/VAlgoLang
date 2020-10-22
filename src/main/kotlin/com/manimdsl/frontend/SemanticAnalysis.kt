@@ -15,6 +15,7 @@ class SemanticAnalysis {
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
             is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
             is BoolNode -> BoolType
+            is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
         }
 
     private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
@@ -174,6 +175,115 @@ class SemanticAnalysis {
         val actual = inferType(currentSymbolTable, expression)
         if (actual != expected) {
             unexpectedExpressionTypeError(expected, actual, ctx)
+        }
+    }
+    fun globalReturnCheck(inFunction: Boolean, ctx: ManimParser.ReturnStatementContext) {
+        if (!inFunction) {
+            globalReturnError(ctx)
+        }
+    }
+
+    fun incompatibleReturnTypesCheck(currentSymbolTable: SymbolTableVisitor, functionReturnType: Type, expression: ExpressionNode, ctx: ManimParser.ReturnStatementContext) {
+        val type = inferType(currentSymbolTable, expression)
+        if (type != functionReturnType) {
+            returnTypeError(type.toString(), functionReturnType.toString(), ctx)
+        }
+    }
+
+    fun invalidNumberOfArgumentsForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, numArgs: Int, ctx: ManimParser.FunctionCallContext) {
+        val functionData = currentSymbolTable.getData(identifier)
+        if (functionData is FunctionData) {
+            val expected = functionData.parameters.size
+            if (numArgs != expected) {
+                numOfArgsInFunctionCallError(identifier, numArgs, expected, ctx)
+            }
+        }
+    }
+
+    fun incompatibleArgumentTypesForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, argTypes: List<Type>, ctx: ManimParser.FunctionCallContext) {
+        val functionData = currentSymbolTable.getData(identifier)
+        if (functionData is FunctionData) {
+            val parameters = functionData.parameters
+            argTypes.forEachIndexed { index, type ->
+                if (type != parameters[index].type) {
+                    val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
+                    val argName = ctx.arg_list().getChild(index).text
+                    typeOfArgsInFunctionCallError(
+                        identifier,
+                        type.toString(),
+                        argName,
+                        parameters[index].type.toString(),
+                        argCtx
+                    )
+                }
+            }
+        }
+    }
+
+    fun missingReturnCheck(identifier: String, statements: List<StatementNode>, type: Type, ctx: ManimParser.FunctionContext) {
+        if(!statements.any { it is ReturnNode }) {
+            missingReturnError(identifier, type.toString(), ctx)
+        }
+    }
+
+    fun voidTypeDeclarationCheck(rhsType: Type, identifier: String, ctx: ParserRuleContext) {
+        if (rhsType is VoidType) {
+            voidTypeDeclarationError(identifier, ctx)
+        }
+    }
+
+    fun undeclaredFunctionCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, inFunction: Boolean, argTypes: List<Type>, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
+            if (!inFunction) {
+                undeclaredAssignError(identifier, ctx)
+            } else {
+                val params = argTypes.mapIndexed { index, type ->
+                    ParameterNode("param$index", type)
+                }
+                val currentScope = currentSymbolTable.getCurrentScopeID()
+                currentSymbolTable.goToScope(0)
+                currentSymbolTable.addVariable(identifier, FunctionData(inferred = true, firstTime = true, parameters = params, type = VoidType))
+                currentSymbolTable.goToScope(currentScope)
+            }
+        }
+    }
+
+    fun redeclaredFunctionCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, returnType: Type, parameters: List<ParameterNode>, ctx: ParserRuleContext) {
+        if (currentSymbolTable.getTypeOf(identifier) != ErrorType) {
+            val functionData = currentSymbolTable.getData(identifier) as FunctionData
+            if (functionData.inferred) {
+                if (returnType != functionData.type) {
+                    incompatibleFunctionType(identifier, returnType.toString(), functionData.type.toString(), ctx)
+                }
+                if (functionData.parameters.size != parameters.size) {
+                    incompatibleParameterCount(identifier, parameters.size, functionData.parameters.size, ctx)
+                } else {
+                    functionData.parameters.forEachIndexed { index, parameter ->
+                        val declaredParameter = parameters[index]
+                        if (parameter.type != declaredParameter.type) {
+                            incompatibleParameterType(declaredParameter.identifier, declaredParameter.type.toString(), parameter.type.toString(), ctx)
+                        }
+                    }
+                }
+            } else {
+                redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
+            }
+        }
+    }
+
+    fun incompatibleMultipleFunctionCall(identifier: String, functionData: FunctionData, lhsType: Type, ctx: ParserRuleContext) {
+        if (functionData.inferred && !functionData.firstTime && functionData.type != lhsType) {
+            incompatibleTypeFromMultipleFunctionCall(identifier, ctx)
+        }
+    }
+
+    fun tooManyInferredFunctionsCheck(currentSymbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
+        val functions = currentSymbolTable.getFunctions()
+        functions.forEach { (identifier, data) ->
+            val functionData = data as FunctionData
+            if (functionData.inferred) {
+                undeclaredAssignError(identifier, ctx)
+            }
         }
     }
 }
