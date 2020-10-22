@@ -37,6 +37,18 @@ data class AssignmentNode(
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
+data class IfStatement(
+    override val lineNumber: Int,
+    val ifCondition: ExpressionNode,
+    val ifStatement: List<StatementNode>,
+    val elifs: List<Elif> = emptyList(),
+    val elseStatement: List<StatementNode> = emptyList()
+) : CodeNode(lineNumber)
+
+data class Elif(
+    val condition: ExpressionNode,
+    val statements: List<StatementNode>
+) : StatementNode()
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)

@@ -11,10 +11,12 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS ';'                 #SleepSt
     | LET IDENT (COLON type)? EQUAL expr ';'                            #DeclarationStatement
     | IDENT EQUAL expr ';'                                              #AssignmentStatement
     | IF '(' ifCond=expr ')' '{' ifStat=stat? '}'
-    (ELSE IF '(' elifCond=expr ')' '{' elifStat=stat? '}')*
+     elseIf*
     (ELSE '{' elseStat = stat? '}')?                                    #IfStatement
-    | stat1=stat stat2=stat                                               #ConsecutiveStatement
+    | stat1=stat stat2=stat                                             #ConsecutiveStatement
     | method_call ';'                                                   #MethodCallStatement;
+
+elseIf: ELSE IF '(' elifCond=expr ')' '{' elifStat=stat? '}'*;
 
 arg_list: expr (COMMA expr)*                                        #ArgumentList;
 

@@ -11,21 +11,25 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     /** Program **/
 
     override fun visitProgram(ctx: ProgramContext): ProgramNode {
-        val statements = mutableListOf<StatementNode>()
-        var statementNode = visit(ctx.stat()) as StatementNode
-        // Flatten consecutive statements
-        while (statementNode is ConsecutiveStatementNode) {
-            statements.add(statementNode.stat1)
-            statementNode = statementNode.stat2
-        }
-        statements.add(statementNode)
-        return ProgramNode(statements)
+        return ProgramNode(flattenStatements(visit(ctx.stat()) as StatementNode))
     }
 
     /** Statements **/
 
     override fun visitSleepStatement(ctx: SleepStatementContext): SleepNode {
         return SleepNode(visit(ctx.expr()) as ExpressionNode)
+    }
+
+    private fun flattenStatements(consecutiveStatementNode: StatementNode): List<StatementNode> {
+        val statements = mutableListOf<StatementNode>()
+        var statementNode = consecutiveStatementNode
+        // Flatten consecutive statements
+        while (statementNode is ConsecutiveStatementNode) {
+            statements.add(statementNode.stat1)
+            statementNode = statementNode.stat2
+        }
+        statements.add(statementNode)
+        return statements
     }
 
     override fun visitConsecutiveStatement(ctx: ConsecutiveStatementContext): ASTNode {
@@ -69,6 +73,33 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitCommentStatement(ctx: CommentStatementContext): CommentNode {
         // Command command given for render purposes
         return CommentNode(ctx.STRING().text)
+    }
+
+    override fun visitIfStatement(ctx: IfStatementContext): ASTNode {
+        // if
+        val ifCondition = visit(ctx.ifCond) as ExpressionNode
+        val ifStatements = flattenStatements(visit(ctx.ifStat) as StatementNode)
+        semanticAnalyser.checkExpressionTypeWithExpectedType(ifCondition, BoolType, symbolTable, ctx)
+
+        // elif
+        val elifs = ctx.elseIf().map { visit(it) as Elif }
+
+        // else
+        val elseStatement = if (ctx.elseStat != null) {
+            flattenStatements(visit(ctx.elseStat) as StatementNode)
+        } else {
+            emptyList()
+        }
+
+        return IfStatement(ctx.start.line, ifCondition, ifStatements, elifs, elseStatement)
+    }
+
+    override fun visitElseIf(ctx: ElseIfContext): ASTNode {
+        val elifCondition = visit(ctx.elifCond) as ExpressionNode
+        val elifStatements = flattenStatements(visit(ctx.elifStat) as StatementNode)
+
+        semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
+        return Elif(elifCondition, elifStatements)
     }
 
     /** Expressions **/
