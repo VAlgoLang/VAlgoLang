@@ -38,7 +38,7 @@ class Code_block:
     def __init__(self, code):
         group = VGroup()
         for c in code:
-            group.add(TextMobject(c))
+            group.add(Text(c).scale(0.8))
         self.group = group
     def build(self):
         return self.group.arrange(DOWN, aligned_edge=LEFT)
