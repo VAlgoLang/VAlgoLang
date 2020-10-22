@@ -7,9 +7,9 @@ import com.manimdsl.shapes.Rectangle
 import java.util.*
 
 class ASTExecutor(
-        private val program: ProgramNode,
-        private val symbolTableVisitor: SymbolTableVisitor,
-        private val fileLines: List<String>
+    private val program: ProgramNode,
+    private val symbolTableVisitor: SymbolTableVisitor,
+    private val fileLines: List<String>
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -160,17 +160,7 @@ class ASTExecutor(
         val node = program.statements[programCounter]
         programCounter++
 
-        if (node is CodeNode) {
-            finalDSLCode.add(fileLines[node.lineNumber - 1])
-            linearRepresentation.add(MoveToLine(finalDSLCode.size, pointerVariable, codeBlockVariable))
-        }
-
-        when (node) {
-            is DeclarationOrAssignment -> visitAssignmentOrDeclaration(node)
-            is ExpressionNode -> executeExpression(node)
-            is IfStatement -> executeIfStatement(node)
-            is SleepNode -> linearRepresentation.add(Sleep((executeExpression(node.sleepTime) as DoubleValue).value))
-        }
+        executeStatement(node)
 
         val endOfProgram = program.statements.size == programCounter
         if (endOfProgram) {
@@ -180,8 +170,64 @@ class ASTExecutor(
         return Pair(endOfProgram, linearRepresentation)
     }
 
+    private fun executeStatement(statement: StatementNode) {
+        if (statement is CodeNode) {
+            finalDSLCode.add(fileLines[statement.lineNumber - 1])
+            linearRepresentation.add(MoveToLine(finalDSLCode.size, pointerVariable, codeBlockVariable))
+        }
+
+        when (statement) {
+            is DeclarationOrAssignment -> visitAssignmentOrDeclaration(statement)
+            is ExpressionNode -> executeExpression(statement)
+            is IfStatement -> executeIfStatement(statement)
+            is SleepNode -> linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
+        }
+    }
+
+    private fun addCodeNodeToCodeBlock(statement: StatementNode) {
+        if (statement is CodeNode) {
+            finalDSLCode.add(fileLines[statement.lineNumber - 1])
+        }
+    }
+
     private fun executeIfStatement(ifStatement: IfStatement) {
-        TODO("Not yet implemented")
+        var conditionValue = executeExpression(ifStatement.ifCondition) as BoolValue
+        val currentScope = symbolTableVisitor.getCurrentScopeID()
+        var conditionMet = false;
+
+        //If
+        if (conditionValue.value) {
+            symbolTableVisitor.goToScope(ifStatement.ifScope)
+            ifStatement.ifStatement.forEach { executeStatement(it) }
+            symbolTableVisitor.goToScope(currentScope)
+            conditionMet = true
+        }
+
+        // Elif
+        for (elif in ifStatement.elifs) {
+            // Add statement to code
+            conditionValue = executeExpression(elif.condition) as BoolValue
+            if (conditionValue.value && !conditionMet) {
+                symbolTableVisitor.goToScope(elif.scope)
+                elif.statements.forEach { executeStatement(it) }
+                symbolTableVisitor.goToScope(currentScope)
+                conditionMet = true
+            } else {
+                // TODO Add to code block and don't execute when condition is not met
+                elif.statements.forEach { addCodeNodeToCodeBlock(it) }
+            }
+        }
+
+        // Else
+        if (!conditionMet) {
+            symbolTableVisitor.goToScope(ifStatement.elseScope)
+            ifStatement.elseStatement.forEach { executeStatement(it) }
+            symbolTableVisitor.goToScope(currentScope)
+        } else {
+            // TODO Add to code block and don't execute when condition is not met
+            ifStatement.elseStatement.forEach { addCodeNodeToCodeBlock(it) }
+        }
+
     }
 
     private fun visitAssignmentOrDeclaration(node: DeclarationOrAssignment) {

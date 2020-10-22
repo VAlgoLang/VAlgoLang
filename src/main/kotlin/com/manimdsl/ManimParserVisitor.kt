@@ -25,7 +25,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         var statementNode = consecutiveStatementNode
         // Flatten consecutive statements
         while (statementNode is ConsecutiveStatementNode) {
-            statements.add(statementNode.stat1)
+            statements.addAll(flattenStatements(statementNode.stat1))
             statementNode = statementNode.stat2
         }
         statements.add(statementNode)
