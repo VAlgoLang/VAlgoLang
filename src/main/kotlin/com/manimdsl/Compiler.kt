@@ -30,7 +30,7 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(semanticErrorStatus.code)
     }
-    val stylesheetMap = if(stylesheetPath != null) parseStylesheet(stylesheetPath) else null
+    val stylesheetMap = if(stylesheetPath != null) parseStylesheet(stylesheetPath) else emptyMap()
 
     val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines(), stylesheetMap)
 

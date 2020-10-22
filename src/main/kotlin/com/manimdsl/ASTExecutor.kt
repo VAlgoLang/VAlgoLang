@@ -4,6 +4,7 @@ import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.BasicStylesheet
+import com.manimdsl.stylesheet.getStyle
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -19,7 +20,7 @@ class ASTExecutor(
         private val program: ProgramNode,
         private val symbolTableVisitor: SymbolTableVisitor,
         private val fileLines: List<String>,
-        private val stylesheetMap: Map<String, BasicStylesheet>? = null
+        private val stylesheetMap: Map<String, BasicStylesheet> = emptyMap()
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -67,13 +68,23 @@ class ASTExecutor(
 
                         val hasOldMObject = doubleValue.manimObject != null
                         val oldMObject = doubleValue.manimObject ?: EmptyMObject
-                        val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                            Rectangle(
-                                variableNameGenerator.generateNameFromPrefix("rectangle"),
-                                doubleValue.value.toString()
-                            ),
-                            codeTextVariable
-                        )
+                        val rectangle = if (hasOldMObject) {
+                            oldMObject
+                        } else {
+                            val identifier = node.instanceIdentifier
+                            val type = symbolTableVisitor.getTypeOf(identifier)
+                            val style = getStyle(stylesheetMap, identifier, type)
+                            NewMObject(
+                                Rectangle(
+                                    variableNameGenerator.generateNameFromPrefix("rectangle"),
+                                    doubleValue.value.toString(),
+                                    color = style.borderColor,
+                                    textColor = style.textColor,
+                                    font = style.font
+                                ),
+                                codeTextVariable
+                            )
+                        }
 
                         val instructions =
                             mutableListOf<ManimInstr>(MoveObject(rectangle.shape, topOfStack.shape, ObjectSide.ABOVE))
@@ -113,13 +124,18 @@ class ASTExecutor(
     private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
         return when (node.type) {
             is StackType -> {
+                val type = symbolTableVisitor.getTypeOf(identifier)
+                val style = getStyle(stylesheetMap, identifier, type)
                 val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                 val (instructions, newObject) = if (numStack == null) {
                     val stackInit = InitStructure(
                         Coord(2.0, -1.0),
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
-                        identifier
+                        identifier,
+                        color = style.borderColor,
+                        textColor = style.textColor,
+                        font = style.font
                     )
                     // Add to stack of objects to keep track of identifier
                     Pair(listOf(stackInit), stackInit)
@@ -129,7 +145,10 @@ class ASTExecutor(
                         Alignment.HORIZONTAL,
                         variableNameGenerator.generateNameFromPrefix("empty"),
                         identifier,
-                        numStack.initObject.shape
+                        numStack.initObject.shape,
+                        color = style.borderColor,
+                        textColor = style.textColor,
+                        font = style.font
                     )
                     Pair(listOf(stackInit), stackInit)
                 }
