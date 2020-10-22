@@ -28,20 +28,12 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
         codeBlockVariable = variableNameGenerator.generateNameFromPrefix("code_block")
         codeTextVariable = variableNameGenerator.generateNameFromPrefix("code_text")
         fileLines.indices.forEach {
-            if (it == 0) {
-                if (statements.containsKey(it+1) && statements[it+1] is CodeNode) {
-                    displayCode.add(fileLines[it])
-                    displayLine.add(1)
-                } else {
-                    displayLine.add(0)
-                }
+            val presentableLine = fileLines[it] == "}" || fileLines[it] == "{" || fileLines[it] == "" || (statements.containsKey(it + 1) && statements[it + 1] is CodeNode)
+            if (presentableLine) {
+                displayCode.add(fileLines[it])
+                displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
-                displayLine.add(displayLine.last() + if (fileLines[it] == "}" || fileLines[it] == "{" || fileLines[it] == "" || (statements.containsKey(it+1) && statements[it+1] is CodeNode)) {
-                    displayCode.add(fileLines[it])
-                    1
-                } else {
-                    0
-                })
+                displayLine.add(displayLine.lastOrNull() ?: 0)
             }
         }
     }
