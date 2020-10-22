@@ -115,64 +115,6 @@ class ASTConstructionTests {
         assertEquals(reference, actual)
     }
 
-    @Test
-    fun functionDeclarationProgram() {
-        val functionDeclarationProgram = "def func(number x): number {\n" +
-            "\tlet z: number = 10;\n" +
-            "return z;\n" +
-            "}\n" +
-            "let z: number = 5;"
-        val functionStatements = listOf(
-            DeclarationNode(2, "z", NumberNode(2, 10.0)),
-            ReturnNode(3, IdentifierNode(3, "z"))
-        )
-        val functions = listOf(
-            FunctionNode(
-                1,
-                "func",
-                listOf(ParameterNode("x", NumberType)),
-                functionStatements,
-                    1
-            )
-        )
-        val statements = listOf(DeclarationNode(5, "z", NumberNode(5, 5.0)))
-        val reference = ProgramNode(functions, statements)
-        val actual = buildAST(functionDeclarationProgram)
-        assertEquals(reference, actual)
-    }
-
-    @Test
-    fun functionCallProgram() {
-        val functionCallProgram = "def func(number x, number y): number {\n" +
-                "\tlet z: number = x + y;\n" +
-                "return z;\n" +
-                "}\n" +
-                "let z: number = func(1,2);\n" +
-                "func(3,4);"
-        val functionStatements = listOf(
-                DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
-                ReturnNode(3, IdentifierNode(3, "z"))
-        )
-        val functions = listOf(
-                FunctionNode(
-                    1,
-                    "func",
-                    listOf(ParameterNode("x", NumberType), ParameterNode("y", NumberType)),
-                    functionStatements,
-                        1
-                )
-        )
-        val statements = listOf(
-            DeclarationNode(
-                5,
-                "z",
-                FunctionCallNode(5, "func", listOf(NumberNode(5, 1.0), NumberNode(5, 2.0)))),
-            FunctionCallNode(6, "func", listOf(NumberNode(6, 3.0), NumberNode(6, 4.0)))
-        )
-        val reference = ProgramNode(functions, statements)
-        val actual = buildAST(functionCallProgram)
-        assertEquals(reference, actual)
-    }
 
     // Assumes syntactically correct program
     private fun buildAST(program: String): ASTNode {

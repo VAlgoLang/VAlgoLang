@@ -15,14 +15,6 @@ data class FunctionNode(
         val statements: List<StatementNode>
 ) : CodeNode(lineNumber)
 
-data class FunctionNode(
-        val scope: Int,
-        val identifier: String,
-        val parameters: List<ParameterNode>,
-        val statements: List<StatementNode>,
-        override val lineNumber: Int
-) : CodeNode(lineNumber)
-
 // All statements making up program
 sealed class StatementNode(open val lineNumber: Int) : ASTNode()
 
