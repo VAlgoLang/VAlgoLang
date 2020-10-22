@@ -31,7 +31,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val scope = symbolTable.enterScope()
         val parameters: List<ParameterNode> =
             visitParameterList(ctx.param_list() as ParameterListContext?).parameters
-        val statements = ctx.stat().map { visit(it) as StatementNode }
+        val statements =
+            if (ctx.statements != null) flattenStatements(visit(ctx.statements) as StatementNode) else emptyList()
         symbolTable.leaveScope()
 
         semanticAnalyser.redeclaredFunctionCheck(symbolTable, identifier, type, parameters, ctx)
@@ -77,9 +78,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return SleepNode(visit(ctx.expr()) as ExpressionNode)
     }
 
-    private fun flattenStatements(consecutiveStatementNode: StatementNode): List<StatementNode> {
+    private fun flattenStatements(statement: StatementNode): List<StatementNode> {
         val statements = mutableListOf<StatementNode>()
-        var statementNode = consecutiveStatementNode
+        var statementNode = statement
         // Flatten consecutive statements
         while (statementNode is ConsecutiveStatementNode) {
             statements.addAll(flattenStatements(statementNode.stat1))
@@ -142,8 +143,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return AssignmentNode(ctx.start.line, identifier, expression)
     }
 
-    override fun visitMethodCallStatement(ctx: MethodCallStatementContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as MethodCallContext)
+    override fun visitMethodCallStatement(ctx: MethodCallStatementContext): ASTNode {
+        return visit(ctx.method_call())
     }
 
     override fun visitCommentStatement(ctx: CommentStatementContext): CommentNode {
@@ -156,7 +157,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val ifScope = symbolTable.enterScope()
         val ifCondition = visit(ctx.ifCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(ifCondition, BoolType, symbolTable, ctx)
-        val ifStatements = flattenStatements(visit(ctx.ifStat) as StatementNode)
+        val ifStatements =
+            if (ctx.ifStat != null) flattenStatements(visit(ctx.ifStat) as StatementNode) else emptyList()
         symbolTable.leaveScope()
 
         // elif
@@ -180,7 +182,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         val elifCondition = visit(ctx.elifCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
-        val elifStatements = flattenStatements(visit(ctx.elifStat) as StatementNode)
+        val elifStatements =
+            if (ctx.elifStat != null) flattenStatements(visit(ctx.elifStat) as StatementNode) else emptyList()
 
         symbolTable.leaveScope()
 
@@ -189,8 +192,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     /** Expressions **/
 
-    override fun visitMethodCallExpression(ctx: MethodCallExpressionContext): MethodCallNode {
-        return visitMethodCall(ctx.method_call() as MethodCallContext)
+    override fun visitMethodCallExpression(ctx: MethodCallExpressionContext): ASTNode {
+        return visit(ctx.method_call())
     }
 
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {

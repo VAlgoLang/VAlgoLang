@@ -6,7 +6,7 @@ options {
 
 program: function* stat EOF;
 
-function: FUN IDENT OPEN_PARENTHESIS param_list? CLOSE_PARENTHESIS (COLON type)? OPEN_CURLY_BRACKET (stat SEMI)* CLOSE_CURLY_BRACKET;
+function: FUN IDENT OPEN_PARENTHESIS param_list? CLOSE_PARENTHESIS (COLON type)? OPEN_CURLY_BRACKET statements=stat? CLOSE_CURLY_BRACKET;
 
 param_list: param (COMMA param)*                                    #ParameterList;
 
@@ -18,7 +18,7 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS ';'                 #SleepSt
     | IDENT EQUAL expr ';'                                              #AssignmentStatement
     | IF '(' ifCond=expr ')' '{' ifStat=stat? '}'
      elseIf*
-    (ELSE '{' elseStat = stat? '}')?                                    #IfStatement
+    (ELSE '{' elseStat=stat? '}')?                                      #IfStatement
     | stat1=stat stat2=stat                                             #ConsecutiveStatement
     | method_call ';'                                                   #MethodCallStatement
     | RETURN expr ';'                                                   #ReturnStatement;
