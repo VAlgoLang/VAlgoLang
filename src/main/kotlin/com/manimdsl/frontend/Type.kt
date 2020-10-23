@@ -20,8 +20,6 @@ sealed class DataStructureType(
 
 }
 
-data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
-data class ParameterNode(val identifier: String, val type: Type) : ASTNode()
 
 interface DataStructureMethod {
     val returnType: Type

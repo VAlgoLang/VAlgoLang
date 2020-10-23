@@ -8,6 +8,8 @@ object ErrorHandler {
 
     private val semanticErrors = arrayListOf<String>()
 
+    private val warnings = arrayListOf<String>()
+
     fun addSyntaxError(errorEvent: String, linePos: String) {
         syntaxErrors.add("Syntax error at $linePos: $errorEvent")
     }
@@ -16,7 +18,11 @@ object ErrorHandler {
         semanticErrors.add("Semantic error at $linePos: $errorEvent")
     }
 
-    fun checkErrors(): ExitStatus {
+    fun addWarning(warningEvent: String) {
+        warnings.add("Warning: $warningEvent")
+    }
+
+    fun checkErrorsAndWarnings(): ExitStatus {
         if (syntaxErrors.isNotEmpty()) {
             println(
                 "Errors detected during compilation \n" +
@@ -35,6 +41,11 @@ object ErrorHandler {
             semanticErrors.map { println(it) }
             semanticErrors.clear()
             return ExitStatus.SEMANTIC_ERROR
+        }
+
+        if (warnings.isNotEmpty()) {
+            warnings.map { println(it) }
+            warnings.clear()
         }
 
         return ExitStatus.EXIT_SUCCESS
