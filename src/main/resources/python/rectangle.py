@@ -3,8 +3,6 @@ class Rectangle_block:
         self.color = color
         self.shape_text = text
         self.text_color = text_color
-        self.text_weight = text_weight
-        self.font = font
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
         self.shape = Rectangle(height=height, width=width, color=color)
         self.all = VGroup(self.text, self.shape)

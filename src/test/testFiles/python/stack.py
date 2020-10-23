@@ -1,5 +1,4 @@
 from manimlib.imports import *
- 
 class Main(Scene):
     def construct(self):
         code_block = Code_block(["let y = new Stack;","y.push(2);","y.push(3);","y.pop();"])
@@ -26,34 +25,25 @@ class Main(Scene):
         self.play(FadeOut(testIdent1.all))
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
-    
     def move_relative_to_edge(self, group, x, y):
         self.play(ApplyMethod(group.to_edge, np.array([x, y, 0])))
-    
     def move_relative_to_obj(self, group, target, x, y):
         self.play(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
-    
     def place_relative_to_obj(self, group, target, x, y):
         group.next_to(target, np.array([x, y, 0]))
-    
     def move_arrow_to_line(self, line_number, pointer, code_block):
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
-    
-    
 class Code_block:
     def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         for c in code:
             group.add(Text(c, color=text_color, weight=text_weight, font=font))
         self.all = group
-
     def build(self):
         return self.all.arrange(DOWN, aligned_edge=LEFT)
-
     def get_line_at(self, line_number):
         return self.all[line_number - 1]
-
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.shape = Line(color=color)
@@ -62,9 +52,11 @@ class Init_structure:
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
         self.text.next_to(self.shape, DOWN, SMALL_BUFF)
         self.all = VGroup(self.text, self.shape)
-
 class Rectangle_block:
     def __init__(self, text, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+        self.color = color
+        self.shape_text = text
+        self.text_color = text_color
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
         self.shape = Rectangle(height=height, width=width, color=color)
         self.all = VGroup(self.text, self.shape)
