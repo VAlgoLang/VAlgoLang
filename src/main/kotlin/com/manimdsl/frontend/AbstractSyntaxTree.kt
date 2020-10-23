@@ -55,22 +55,28 @@ data class ReturnNode(
     val expression: ExpressionNode
 ) : CodeNode(lineNumber)
 
-data class IfStatement(
+data class IfStatementNode(
     override val lineNumber: Int,
+    val endLineNumber: Int,
     val ifScope: Int,
     val ifCondition: ExpressionNode,
     val ifStatement: List<StatementNode>,
-    val elifs: List<Elif> = emptyList(),
-    val elseScope: Int = 0,
-    val elseStatement: List<StatementNode> = emptyList()
+    val elifs: List<ElifNode> = emptyList(),
+    val elseBlock: ElseNode? = null
 ) : CodeNode(lineNumber)
 
-data class Elif(
+data class ElifNode(
     override val lineNumber: Int,
     val scope: Int,
     val condition: ExpressionNode,
     val statements: List<StatementNode>
-) : StatementNode(lineNumber)
+) : CodeNode(lineNumber)
+
+data class ElseNode(
+    override val lineNumber: Int,
+    val scope: Int,
+    val statements: List<StatementNode>
+) : CodeNode(lineNumber)
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)

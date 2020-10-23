@@ -177,19 +177,24 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         symbolTable.leaveScope()
 
         // elif
-        val elifs = ctx.elseIf().map { visit(it) as Elif }
+        val elifs = ctx.elseIf().map { visit(it) as ElifNode }
 
         // else
-        val (elseScope, elseStatement) = if (ctx.elseStat != null) {
+        val elseNode = if (ctx.elseStat != null) {
             val scope = symbolTable.enterScope()
             val statements = visitAndFlattenStatements(ctx.elseStat)
             symbolTable.leaveScope()
-            Pair(scope, statements)
+            ElseNode(ctx.elseStat.start.line - 1, scope, statements)
         } else {
-            Pair(0, emptyList())
+            ElseNode(ctx.stop.line - 1, 0, emptyList())
         }
 
-        return IfStatement(ctx.start.line, ifScope, ifCondition, ifStatements, elifs, elseScope, elseStatement)
+        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line] = elseNode }
+
+        val ifStatementNode =
+            IfStatementNode(ctx.start.line, ctx.stop.line - 1, ifScope, ifCondition, ifStatements, elifs, elseNode)
+        lineNumberNodeMap[ctx.start.line] = ifStatementNode
+        return ifStatementNode
     }
 
     override fun visitElseIf(ctx: ElseIfContext): ASTNode {
@@ -201,7 +206,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         symbolTable.leaveScope()
 
-        return Elif(ctx.start.line, elifScope, elifCondition, elifStatements)
+        val elifNode = ElifNode(ctx.start.line, elifScope, elifCondition, elifStatements)
+        lineNumberNodeMap[ctx.start.line] = elifNode
+        return elifNode
     }
 
     /** Expressions **/

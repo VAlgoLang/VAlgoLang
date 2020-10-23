@@ -59,7 +59,8 @@ class VirtualMachine(
                         moveToLine()
                     }
 
-                    executeStatement(statement)
+                    val value = executeStatement(statement)
+                    if (value !is EmptyValue) return value
 
                 }
                 fetchNextStatement()
@@ -68,10 +69,10 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun executeStatement(statement: ASTNode?) {
+        private fun executeStatement(statement: ASTNode?): ExecValue {
             when (statement) {
                 is ReturnNode -> {
-                    executeExpression(statement.expression)
+                    return executeExpression(statement.expression)
                 }
                 is FunctionNode -> {
                     // just go onto next line, this is just a label
@@ -81,16 +82,19 @@ class VirtualMachine(
                 is DeclarationNode -> executeAssignment(statement)
                 is MethodCallNode -> executeMethodCall(statement, false)
                 is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatement -> executeIfStatement(statement)
+                is IfStatementNode -> executeIfStatement(statement)
             }
+
+            return EmptyValue
         }
 
         private fun executeSleep(statement: SleepNode) {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
         }
 
-        private fun moveToLine() {
-            linearRepresentation.add(MoveToLine(displayLine[pc - 1], pointerVariable, codeBlockVariable))
+        private fun moveToLine(line: Int = pc - 1, updatePc: Boolean = false) {
+            if (updatePc) pc = line
+            linearRepresentation.add(MoveToLine(displayLine[line], pointerVariable, codeBlockVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
@@ -248,44 +252,43 @@ class VirtualMachine(
             )
         }
 
-        private fun executeIfStatement(ifStatement: IfStatement) {
+        private fun executeIfStatement(ifStatement: IfStatementNode) {
             var conditionValue = executeExpression(ifStatement.ifCondition) as BoolValue
             val currentScope = symbolTableVisitor.getCurrentScopeID()
-            var conditionMet = false;
-
-            //If
-            if (conditionValue.value) {
-                symbolTableVisitor.goToScope(ifStatement.ifScope)
-                ifStatement.ifStatement.forEach { executeStatement(it) }
-                symbolTableVisitor.goToScope(currentScope)
-                conditionMet = true
-            }
-
-            // Elif
-            for (elif in ifStatement.elifs) {
-                // Add statement to code
-                conditionValue = executeExpression(elif.condition) as BoolValue
-                if (conditionValue.value && !conditionMet) {
-                    symbolTableVisitor.goToScope(elif.scope)
-                    elif.statements.forEach { executeStatement(it) }
+            try {
+                //If
+                if (conditionValue.value) {
+                    moveToLine(ifStatement.lineNumber, true)
+                    symbolTableVisitor.goToScope(ifStatement.ifScope)
+                    ifStatement.ifStatement.forEach { executeStatement(it) }
                     symbolTableVisitor.goToScope(currentScope)
-                    conditionMet = true
-                } else {
-                    // TODO Add to code block and don't execute when condition is not met
-//                    elif.statements.forEach { addCodeNodeToCodeBlock(it) }
+                    return
                 }
-            }
 
-            // Else
-            if (!conditionMet) {
-                symbolTableVisitor.goToScope(ifStatement.elseScope)
-                ifStatement.elseStatement.forEach { executeStatement(it) }
-                symbolTableVisitor.goToScope(currentScope)
-            } else {
-                // TODO Add to code block and don't execute when condition is not met
-//                ifStatement.elseStatement.forEach { addCodeNodeToCodeBlock(it) }
-            }
+                // Elif
+                for (elif in ifStatement.elifs) {
+                    // Add statement to code
+                    conditionValue = executeExpression(elif.condition) as BoolValue
+                    if (conditionValue.value) {
+                        moveToLine(elif.lineNumber, true)
+                        symbolTableVisitor.goToScope(elif.scope)
+                        elif.statements.forEach { executeStatement(it) }
+                        symbolTableVisitor.goToScope(currentScope)
+                        return
+                    }
+                }
 
+                // Else
+                if (ifStatement.elseBlock != null) {
+                    moveToLine(ifStatement.elseBlock.lineNumber, true)
+                    symbolTableVisitor.goToScope(ifStatement.elseBlock.scope)
+                    ifStatement.elseBlock.statements.forEach { executeStatement(it) }
+                    symbolTableVisitor.goToScope(currentScope)
+                }
+
+            } finally {
+                moveToLine(ifStatement.endLineNumber, true)
+            }
         }
 
 
