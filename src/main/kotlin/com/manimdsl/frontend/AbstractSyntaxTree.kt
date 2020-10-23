@@ -29,7 +29,8 @@ data class CommentNode(override val lineNumber: Int, val content: String) : Anim
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
 
 // Used to more easily deal with blocks
-data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: StatementNode) : StatementNode()
+data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: StatementNode) :
+    StatementNode(stat1.lineNumber)
 
 interface DeclarationOrAssignment {
     val lineNumber: Int
@@ -65,10 +66,11 @@ data class IfStatement(
 ) : CodeNode(lineNumber)
 
 data class Elif(
+    override val lineNumber: Int,
     val scope: Int,
     val condition: ExpressionNode,
     val statements: List<StatementNode>
-) : StatementNode()
+) : StatementNode(lineNumber)
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)

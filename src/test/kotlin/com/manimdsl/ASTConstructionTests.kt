@@ -136,11 +136,13 @@ class ASTConstructionTests {
                 ifStatement = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
                 elifs = listOf(
                     Elif(
+                        4,
                         scope = 2,
                         condition = EqExpression(4, IdentifierNode(4, "x"), NumberNode(4, 1.0)),
                         statements = listOf(AssignmentNode(5, "x", NumberNode(5, 4.0)))
                     ),
                     Elif(
+                        6,
                         scope = 3,
                         condition = EqExpression(6, IdentifierNode(6, "x"), NumberNode(6, 0.0)),
                         statements = listOf(AssignmentNode(7, "x", NumberNode(7, 3.0)))
