@@ -6,6 +6,9 @@ import com.manimdsl.frontend.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
+
+    val lineNumberNodeMap = mutableMapOf<Int, ASTNode>()
+
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
     private var functionReturnType: Type = VoidType
@@ -44,8 +47,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         inFunction = false
         functionReturnType = VoidType
-
-        return FunctionNode(ctx.start.line, scope, identifier, parameters, statements)
+        lineNumberNodeMap[ctx.start.line] = FunctionNode(ctx.start.line, scope, identifier, parameters, statements)
+        return lineNumberNodeMap[ctx.start.line] as FunctionNode
     }
 
     override fun visitParameterList(ctx: ManimParser.ParameterListContext?): ParameterListNode{
@@ -68,11 +71,14 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.globalReturnCheck(inFunction, ctx)
         val expression = visit(ctx.expr()) as ExpressionNode
         semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
-        return ReturnNode(ctx.start.line, expression)
+        lineNumberNodeMap[ctx.start.line] = ReturnNode(ctx.start.line, expression)
+        return lineNumberNodeMap[ctx.start.line] as ReturnNode
+
     }
 
     override fun visitSleepStatement(ctx: ManimParser.SleepStatementContext): SleepNode {
-        return SleepNode(visit(ctx.expr()) as ExpressionNode)
+        lineNumberNodeMap[ctx.start.line] = SleepNode(ctx.start.line, visit(ctx.expr()) as ExpressionNode)
+        return lineNumberNodeMap[ctx.start.line] as SleepNode
     }
 
     override fun visitDeclarationStatement(ctx: ManimParser.DeclarationStatementContext): DeclarationNode {
@@ -102,7 +108,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        return DeclarationNode(ctx.start.line, identifier, rhs)
+        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, identifier, rhs)
+        return lineNumberNodeMap[ctx.start.line] as DeclarationNode
     }
 
     override fun visitAssignmentStatement(ctx: ManimParser.AssignmentStatementContext): AssignmentNode {
@@ -121,7 +128,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
-        return AssignmentNode(ctx.start.line, identifier, expression)
+        lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, identifier, expression)
+        return lineNumberNodeMap[ctx.start.line] as AssignmentNode
     }
 
     override fun visitMethodCallStatement(ctx: ManimParser.MethodCallStatementContext): ASTNode {
@@ -170,7 +178,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        return MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        val node = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+
+        if (dataStructureMethod.returnType is ErrorType) {
+            lineNumberNodeMap[ctx.start.line] = node
+        }
+        return node
     }
 
     override fun visitFunctionCall(ctx: ManimParser.FunctionCallContext): FunctionCallNode {
@@ -223,7 +236,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCommentStatement(ctx: ManimParser.CommentStatementContext): CommentNode {
         // Command command given for render purposes
-        return CommentNode(ctx.STRING().text)
+        lineNumberNodeMap[ctx.start.line] = CommentNode(ctx.start.line, ctx.STRING().text)
+        return lineNumberNodeMap[ctx.start.line] as CommentNode
     }
 
     override fun visitNumberLiteral(ctx: ManimParser.NumberLiteralContext): NumberNode {
