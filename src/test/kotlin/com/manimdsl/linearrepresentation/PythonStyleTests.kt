@@ -5,7 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 
 
-class StyleTests {
+class PythonStyleTests {
 
     @Test
     fun stylesAreMappedToPythonCorrectly() {

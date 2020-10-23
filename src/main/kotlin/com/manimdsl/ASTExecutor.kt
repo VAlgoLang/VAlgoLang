@@ -3,8 +3,7 @@ package com.manimdsl
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
-import com.manimdsl.stylesheet.BasicStylesheet
-import com.manimdsl.stylesheet.getStyle
+import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -17,10 +16,10 @@ data class StackValue(val initObject: MObject, val stack: Stack<Pair<Double, MOb
 object EmptyValue : ExecValue()
 
 class ASTExecutor(
-        private val program: ProgramNode,
-        private val symbolTableVisitor: SymbolTableVisitor,
-        private val fileLines: List<String>,
-        private val stylesheetMap: Map<String, BasicStylesheet> = emptyMap()
+    private val program: ProgramNode,
+    private val symbolTableVisitor: SymbolTableVisitor,
+    private val fileLines: List<String>,
+    private val stylesheet: Stylesheet
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -68,32 +67,32 @@ class ASTExecutor(
 
                         val hasOldMObject = doubleValue.manimObject != null
                         val oldMObject = doubleValue.manimObject ?: EmptyMObject
-                        val rectangle = if (hasOldMObject) {
+                        val mObject = if (hasOldMObject) {
                             oldMObject
                         } else {
-                            val identifier = node.instanceIdentifier
-                            val type = symbolTableVisitor.getTypeOf(identifier)
-                            val style = getStyle(stylesheetMap, identifier, type)
+                            val style = stylesheet.getStyle(node.instanceIdentifier)
+                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier) ?: style
                             NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                                     doubleValue.value.toString(),
-                                    color = style.borderColor,
-                                    textColor = style.textColor,
-                                    font = style.font
+                                    color = newObjectStyle.borderColor,
+                                    textColor = newObjectStyle.textColor,
                                 ),
                                 codeTextVariable
                             )
                         }
 
-                        val instructions =
-                            mutableListOf<ManimInstr>(MoveObject(rectangle.shape, topOfStack.shape, ObjectSide.ABOVE))
+                        val instructions = mutableListOf(
+                            MoveObject(mObject.shape, topOfStack.shape, ObjectSide.ABOVE),
+                            RestyleObject(mObject.shape, stylesheet.getStyle(node.instanceIdentifier))
+                        )
                         if (!hasOldMObject) {
-                            instructions.add(0, rectangle)
+                            instructions.add(0, mObject)
                         }
 
                         linearRepresentation.addAll(instructions)
-                        ds.stack.push(Pair(doubleValue.value, rectangle))
+                        ds.stack.push(Pair(doubleValue.value, mObject))
                         doubleValue
                     }
                     is StackType.PopMethod -> {
@@ -101,7 +100,7 @@ class ASTExecutor(
                         val newTopOfStack = if (ds.stack.empty()) ds.initObject else ds.stack.peek().second
 
                         val topOfStack = poppedValue.second
-                        val instructions = listOf(
+                        val instructions = mutableListOf<ManimInstr>(
                             MoveObject(
                                 topOfStack.shape,
                                 newTopOfStack.shape,
@@ -110,6 +109,8 @@ class ASTExecutor(
                                 !insideMethodCall
                             ),
                         )
+                        val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier)
+                        if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
 
                         linearRepresentation.addAll(instructions)
                         DoubleValue(poppedValue.first, poppedValue.second)
@@ -125,7 +126,7 @@ class ASTExecutor(
         return when (node.type) {
             is StackType -> {
                 val type = symbolTableVisitor.getTypeOf(identifier)
-                val style = getStyle(stylesheetMap, identifier, type)
+                val style = stylesheet.getStyle(identifier)
                 val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                 val (instructions, newObject) = if (numStack == null) {
                     val stackInit = InitStructure(
@@ -135,7 +136,6 @@ class ASTExecutor(
                         identifier,
                         color = style.borderColor,
                         textColor = style.textColor,
-                        font = style.font
                     )
                     // Add to stack of objects to keep track of identifier
                     Pair(listOf(stackInit), stackInit)
@@ -148,7 +148,6 @@ class ASTExecutor(
                         numStack.initObject.shape,
                         color = style.borderColor,
                         textColor = style.textColor,
-                        font = style.font
                     )
                     Pair(listOf(stackInit), stackInit)
                 }

@@ -1,6 +1,7 @@
 {
   "stack1": {
-    "textColor": "BLUE"
+    "textColor": "BLUE",
+    "borderColor": "ORANGE"
   },
   "Stack": {
     "borderColor": "YELLOW",

@@ -1,7 +1,7 @@
 package com.manimdsl
 
 import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.stylesheet.parseStylesheet
+import com.manimdsl.stylesheet.Stylesheet
 import picocli.CommandLine
 import picocli.CommandLine.*
 import java.io.File
@@ -30,9 +30,9 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(semanticErrorStatus.code)
     }
-    val stylesheetMap = if(stylesheetPath != null) parseStylesheet(stylesheetPath) else emptyMap()
+    val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines(), stylesheetMap)
+    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines(), stylesheet)
 
     var state: Pair<Boolean, List<ManimInstr>>
     do {
