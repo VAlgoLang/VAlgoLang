@@ -23,11 +23,11 @@ class VirtualMachine(private val program: ProgramNode, private val symbolTableVi
     private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
+    private val acceptableNonStatements = setOf("}", "{", "")
 
     init {
         fileLines.indices.forEach {
-            val presentableLine = fileLines[it] == "}" || fileLines[it] == "{" || fileLines[it] == "" || (statements.containsKey(it + 1) && statements[it + 1] is CodeNode)
-            if (presentableLine) {
+            if (acceptableNonStatements.contains(fileLines[it]) || statements[it + 1] is CodeNode) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
