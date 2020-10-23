@@ -1,13 +1,11 @@
-fun g(number x): number{
-    return x*3;
+fun factorial(number x, Stack<number> s): number {
+    if(x == 0) {
+        return 1;
+    }
+    let y = x * factorial(x - 1, s);
+    s.push(y);
+    return y;
 }
 
-fun f(Stack<number> st): number{
-    let z: number = st.pop() + 3;
-    return g(z);
-}
-
-let y = new Stack<number>;
-sleep(2.0);
-y.push(3);
-let x = f(y);
+let stack = new Stack<number>;
+let x = factorial(3, stack);

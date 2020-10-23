@@ -142,9 +142,9 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         ctx: ManimParser.ExprContext
     ) {
-        when (opExpr) {
-            is BinaryExpression -> {
-                if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+        if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+            when (opExpr) {
+                is BinaryExpression -> {
                     incompatibleOperatorTypeError(
                         operator,
                         inferType(currentSymbolTable, opExpr.expr1),
@@ -152,9 +152,7 @@ class SemanticAnalysis {
                         ctx
                     )
                 }
-            }
-            is UnaryExpression -> {
-                if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+                is UnaryExpression -> {
                     incompatibleOperatorTypeError(
                         operator,
                         inferType(currentSymbolTable, opExpr.expr),

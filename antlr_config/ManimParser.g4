@@ -12,16 +12,16 @@ param_list: param (COMMA param)*                                    #ParameterLi
 
 param: type IDENT                                                   #Parameter;
 
-stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS ';'                 #SleepStatement
-    | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS ';'             #CommentStatement // when string type defined we can adjust
-    | LET IDENT (COLON type)? EQUAL expr ';'                            #DeclarationStatement
-    | IDENT EQUAL expr ';'                                              #AssignmentStatement
+stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepStatement
+    | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS SEMI             #CommentStatement // when string type defined we can adjust
+    | LET IDENT (COLON type)? EQUAL expr SEMI                            #DeclarationStatement
+    | IDENT EQUAL expr SEMI                                              #AssignmentStatement
     | IF '(' ifCond=expr ')' '{' ifStat=stat? '}'
      elseIf*
-    (ELSE '{' elseStat=stat? '}')?                                      #IfStatement
-    | stat1=stat stat2=stat                                             #ConsecutiveStatement
-    | method_call ';'                                                   #MethodCallStatement
-    | RETURN expr ';'                                                   #ReturnStatement;
+    (ELSE '{' elseStat=stat? '}')?                                       #IfStatement
+    | stat1=stat stat2=stat                                              #ConsecutiveStatement
+    | method_call SEMI                                                   #MethodCallStatement
+    | RETURN expr SEMI                                                   #ReturnStatement;
 
 
 elseIf: ELSE IF '(' elifCond=expr ')' '{' elifStat=stat? '}'*;
