@@ -31,19 +31,30 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         }
         functionReturnType = type
 
+        val currentScope = symbolTable.getCurrentScopeID()
         val scope = symbolTable.enterScope()
         val parameters: List<ParameterNode> =
             visitParameterList(ctx.param_list() as ParameterListContext?).parameters
+
+        symbolTable.goToScope(currentScope)
+
+        // Define function symbol in parent scope
+        semanticAnalyser.redeclaredFunctionCheck(symbolTable, identifier, type, parameters, ctx)
+        symbolTable.addVariable(
+            identifier,
+            FunctionData(inferred = false, firstTime = false, parameters = parameters, type = type)
+        )
+
+        symbolTable.goToScope(scope)
+
         val statements = visitAndFlattenStatements(ctx.statements)
         symbolTable.leaveScope()
 
-        semanticAnalyser.redeclaredFunctionCheck(symbolTable, identifier, type, parameters, ctx)
 
         if (functionReturnType !is VoidType) {
             semanticAnalyser.missingReturnCheck(identifier, statements, functionReturnType, ctx)
         }
 
-        symbolTable.addVariable(identifier, FunctionData(inferred = false, firstTime = false, parameters = parameters, type = type))
 
         inFunction = false
         functionReturnType = VoidType

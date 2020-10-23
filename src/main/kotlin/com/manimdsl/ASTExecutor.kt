@@ -24,7 +24,7 @@ class VirtualMachine(
 
     init {
         fileLines.indices.forEach {
-            if (acceptableNonStatements.contains(fileLines[it]) || statements[it + 1] is CodeNode) {
+            if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
@@ -71,9 +71,7 @@ class VirtualMachine(
 
         private fun executeStatement(statement: ASTNode?): ExecValue {
             when (statement) {
-                is ReturnNode -> {
-                    return executeExpression(statement.expression)
-                }
+                is ReturnNode -> return executeExpression(statement.expression)
                 is FunctionNode -> {
                     // just go onto next line, this is just a label
                 }
@@ -82,7 +80,7 @@ class VirtualMachine(
                 is DeclarationNode -> executeAssignment(statement)
                 is MethodCallNode -> executeMethodCall(statement, false)
                 is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatementNode -> executeIfStatement(statement)
+                is IfStatementNode -> return executeIfStatement(statement)
             }
 
             return EmptyValue
@@ -252,43 +250,42 @@ class VirtualMachine(
             )
         }
 
-        private fun executeIfStatement(ifStatement: IfStatementNode) {
-            var conditionValue = executeExpression(ifStatement.ifCondition) as BoolValue
+        private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
+            var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             val currentScope = symbolTableVisitor.getCurrentScopeID()
             try {
                 //If
                 if (conditionValue.value) {
-                    moveToLine(ifStatement.lineNumber, true)
-                    symbolTableVisitor.goToScope(ifStatement.ifScope)
-                    ifStatement.ifStatement.forEach { executeStatement(it) }
-                    symbolTableVisitor.goToScope(currentScope)
-                    return
+                    return executeStatementBlock(ifStatementNode, currentScope)
                 }
 
                 // Elif
-                for (elif in ifStatement.elifs) {
+                for (elif in ifStatementNode.elifs) {
                     // Add statement to code
                     conditionValue = executeExpression(elif.condition) as BoolValue
                     if (conditionValue.value) {
-                        moveToLine(elif.lineNumber, true)
-                        symbolTableVisitor.goToScope(elif.scope)
-                        elif.statements.forEach { executeStatement(it) }
-                        symbolTableVisitor.goToScope(currentScope)
-                        return
+                        return executeStatementBlock(elif, currentScope)
                     }
                 }
 
                 // Else
-                if (ifStatement.elseBlock != null) {
-                    moveToLine(ifStatement.elseBlock.lineNumber, true)
-                    symbolTableVisitor.goToScope(ifStatement.elseBlock.scope)
-                    ifStatement.elseBlock.statements.forEach { executeStatement(it) }
-                    symbolTableVisitor.goToScope(currentScope)
-                }
-
+                return executeStatementBlock(ifStatementNode.elseBlock, currentScope)
             } finally {
-                moveToLine(ifStatement.endLineNumber, true)
+                moveToLine(ifStatementNode.endLineNumber, true)
             }
+        }
+
+        private fun executeStatementBlock(statementBlock: StatementBlock, currentScope: Int = 0): ExecValue {
+            moveToLine(statementBlock.lineNumber, true)
+            if (statementBlock.statements.isEmpty()) return EmptyValue
+            symbolTableVisitor.goToScope(statementBlock.scope)
+            val execValue = Frame(
+                statementBlock.statements.first().lineNumber,
+                statementBlock.statements.last().lineNumber,
+                variables
+            ).runFrame()
+            symbolTableVisitor.goToScope(currentScope)
+            return execValue
         }
 
 
