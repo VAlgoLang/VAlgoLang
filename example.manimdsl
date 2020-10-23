@@ -1,4 +1,13 @@
-let stack1 = new Stack<number>;
-let stack2 = new Stack<number>;
-stack1.push(1);
-stack2.push(stack1.pop());
+fun g(number x): number{
+    return x*3;
+}
+
+fun f(Stack<number> st): number{
+    let z: number = st.pop() + 3;
+    return g(z);
+}
+
+let y = new Stack<number>;
+sleep(2.0);
+y.push(3);
+let x = f(y);

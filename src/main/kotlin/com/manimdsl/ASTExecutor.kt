@@ -6,35 +6,102 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
 import java.util.*
 
-class ASTExecutor(
-    private val program: ProgramNode,
-    private val symbolTableVisitor: SymbolTableVisitor,
-    private val fileLines: List<String>
-) {
+class VirtualMachine(private val program: ProgramNode, private val symbolTableVisitor: SymbolTableVisitor, private val statements: Map<Int, ASTNode>, private val fileLines: List<String>) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
     private val variableNameGenerator = VariableNameGenerator(symbolTableVisitor)
-
-    private val codeBlockVariable: String
-    private val codeTextVariable: String
-    private val pointerVariable: String
+    private val codeBlockVariable: String = variableNameGenerator.generateNameFromPrefix("code_block")
+    private val codeTextVariable: String = variableNameGenerator.generateNameFromPrefix("code_text")
+    private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
+    private val displayLine: MutableList<Int> = mutableListOf()
+    private val displayCode: MutableList<String> = mutableListOf()
+    private val acceptableNonStatements = setOf("}", "{", "")
 
     init {
-        pointerVariable = variableNameGenerator.generateNameFromPrefix("pointer")
-        codeBlockVariable = variableNameGenerator.generateNameFromPrefix("code_block")
-        codeTextVariable = variableNameGenerator.generateNameFromPrefix("code_text")
+        fileLines.indices.forEach {
+            if (acceptableNonStatements.contains(fileLines[it]) || statements[it + 1] is CodeNode) {
+                displayCode.add(fileLines[it])
+                displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+            } else {
+                displayLine.add(displayLine.lastOrNull() ?: 0)
+            }
+        }
     }
 
-    // Map of all the variables and there current values
-    private val variables = mutableMapOf<String, ExecValue>()
+    fun runProgram(): List<ManimInstr> {
+        linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
+        val variables = mutableMapOf<String, ExecValue>()
+        Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
+        return linearRepresentation
+    }
 
-    // Keep track of next instruction to execute
-    private var programCounter = 0
+    private inner class Frame(private var pc: Int, private var finalLine: Int, private var variables: MutableMap<String, ExecValue>) {
 
-    private val finalDSLCode = mutableListOf<String>()
+        // instantiate new Frame and execute on scoping changes e.g. recursion
 
-    private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false): ExecValue {
-        return when (node) {
+        fun runFrame(): ExecValue {
+
+            while (pc <= finalLine) {
+
+                if (statements.containsKey(pc)) {
+                    val statement = statements[pc]
+
+                    if (statement is CodeNode) {
+                        moveToLine()
+                    }
+
+                    when (statement) {
+                        is ReturnNode -> {
+                            return executeExpression(statement.expression)
+                        }
+                        is FunctionNode -> {
+                            // just go onto next line, this is just a label
+                        }
+                        is SleepNode -> executeSleep(statement)
+                        is AssignmentNode -> executeAssignment(statement)
+                        is DeclarationNode -> executeAssignment(statement)
+                        is MethodCallNode -> executeMethodCall(statement, false)
+                        is FunctionCallNode -> executeFunctionCall(statement)
+                    }
+                }
+                fetchNextStatement()
+            }
+
+            return EmptyValue
+        }
+
+        private fun executeSleep(statement: SleepNode) {
+            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
+        }
+
+        private fun moveToLine() {
+            linearRepresentation.add(MoveToLine(displayLine[pc-1], pointerVariable, codeBlockVariable))
+        }
+
+        private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
+            // create new stack frame with argument variables
+            val executedArguments = statement.arguments.map { executeExpression(it) }
+            val argumentNames = (symbolTableVisitor.getData(statement.functionIdentifier) as FunctionData).parameters.map { it.identifier }
+            val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
+            val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
+            val finalStatementLine = functionNode.statements.last().lineNumber
+            // program counter will forward in loop, we have popped out of stack
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
+            // to visualise popping back to assignment we can move pointer to the prior statement again
+            moveToLine()
+            return returnValue
+        }
+
+
+        private fun fetchNextStatement() {
+            ++pc
+        }
+
+        private fun executeAssignment(node: DeclarationOrAssignment) {
+            variables[node.identifier] = executeExpression(node.expression, identifier = node.identifier)
+        }
+
+        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: String = "") = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall)
@@ -53,9 +120,10 @@ class ASTExecutor(
             is GeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x >= y) }
             is LeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x <= y) }
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
+            is ConstructorNode -> executeConstructor(node, identifier)
+            is FunctionCallNode -> executeFunctionCall(node)
             else -> EmptyValue
         }
-    }
 
     private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
         return when (val ds = variables[node.instanceIdentifier]) {
@@ -154,91 +222,49 @@ class ASTExecutor(
         )
     }
 
+        private fun executeIfStatement(ifStatement: IfStatement) {
+            var conditionValue = executeExpression(ifStatement.ifCondition) as BoolValue
+            val currentScope = symbolTableVisitor.getCurrentScopeID()
+            var conditionMet = false;
 
-    // Returns whether the program is complete and the state of all the variables after executing the statement
-    fun executeNextStatement(): Pair<Boolean, List<ManimInstr>> {
-        val node = program.statements[programCounter]
-        programCounter++
-
-        executeStatement(node)
-
-        val endOfProgram = program.statements.size == programCounter
-        if (endOfProgram) {
-            linearRepresentation.add(0, CodeBlock(finalDSLCode, codeBlockVariable, codeTextVariable, pointerVariable))
-        }
-
-        return Pair(endOfProgram, linearRepresentation)
-    }
-
-    private fun executeStatement(statement: StatementNode) {
-        if (statement is CodeNode) {
-            finalDSLCode.add(fileLines[statement.lineNumber - 1])
-            linearRepresentation.add(MoveToLine(finalDSLCode.size, pointerVariable, codeBlockVariable))
-        }
-
-        when (statement) {
-            is DeclarationOrAssignment -> visitAssignmentOrDeclaration(statement)
-            is ExpressionNode -> executeExpression(statement)
-            is IfStatement -> executeIfStatement(statement)
-            is SleepNode -> linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
-        }
-    }
-
-    private fun addCodeNodeToCodeBlock(statement: StatementNode) {
-        if (statement is CodeNode) {
-            finalDSLCode.add(fileLines[statement.lineNumber - 1])
-        }
-    }
-
-    private fun executeIfStatement(ifStatement: IfStatement) {
-        var conditionValue = executeExpression(ifStatement.ifCondition) as BoolValue
-        val currentScope = symbolTableVisitor.getCurrentScopeID()
-        var conditionMet = false;
-
-        //If
-        if (conditionValue.value) {
-            symbolTableVisitor.goToScope(ifStatement.ifScope)
-            ifStatement.ifStatement.forEach { executeStatement(it) }
-            symbolTableVisitor.goToScope(currentScope)
-            conditionMet = true
-        }
-
-        // Elif
-        for (elif in ifStatement.elifs) {
-            // Add statement to code
-            conditionValue = executeExpression(elif.condition) as BoolValue
-            if (conditionValue.value && !conditionMet) {
-                symbolTableVisitor.goToScope(elif.scope)
-                elif.statements.forEach { executeStatement(it) }
+            //If
+            if (conditionValue.value) {
+                symbolTableVisitor.goToScope(ifStatement.ifScope)
+                ifStatement.ifStatement.forEach { executeStatement(it) }
                 symbolTableVisitor.goToScope(currentScope)
                 conditionMet = true
+            }
+
+            // Elif
+            for (elif in ifStatement.elifs) {
+                // Add statement to code
+                conditionValue = executeExpression(elif.condition) as BoolValue
+                if (conditionValue.value && !conditionMet) {
+                    symbolTableVisitor.goToScope(elif.scope)
+                    elif.statements.forEach { executeStatement(it) }
+                    symbolTableVisitor.goToScope(currentScope)
+                    conditionMet = true
+                } else {
+                    // TODO Add to code block and don't execute when condition is not met
+                    elif.statements.forEach { addCodeNodeToCodeBlock(it) }
+                }
+            }
+
+            // Else
+            if (!conditionMet) {
+                symbolTableVisitor.goToScope(ifStatement.elseScope)
+                ifStatement.elseStatement.forEach { executeStatement(it) }
+                symbolTableVisitor.goToScope(currentScope)
             } else {
                 // TODO Add to code block and don't execute when condition is not met
-                elif.statements.forEach { addCodeNodeToCodeBlock(it) }
+                ifStatement.elseStatement.forEach { addCodeNodeToCodeBlock(it) }
             }
+
         }
 
-        // Else
-        if (!conditionMet) {
-            symbolTableVisitor.goToScope(ifStatement.elseScope)
-            ifStatement.elseStatement.forEach { executeStatement(it) }
-            symbolTableVisitor.goToScope(currentScope)
-        } else {
-            // TODO Add to code block and don't execute when condition is not met
-            ifStatement.elseStatement.forEach { addCodeNodeToCodeBlock(it) }
-        }
+
+
 
     }
 
-    private fun visitAssignmentOrDeclaration(node: DeclarationOrAssignment) {
-        variables[node.identifier] =
-            when (node.expression) {
-                is ConstructorNode -> executeConstructor(node.expression as ConstructorNode, node.identifier)
-                else -> executeExpression(node.expression)
-            }
-    }
-
-    fun getValue(identifier: String): ExecValue {
-        return this.variables.getOrDefault(identifier, EmptyValue)
-    }
 }

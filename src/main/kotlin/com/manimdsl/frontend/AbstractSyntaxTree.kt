@@ -1,6 +1,7 @@
 package com.manimdsl.frontend
 
 open class ASTNode
+
 data class ProgramNode(
         val functions: List<FunctionNode>,
         val statements: List<StatementNode>
@@ -15,20 +16,20 @@ data class FunctionNode(
 ) : CodeNode(lineNumber)
 
 // All statements making up program
-sealed class StatementNode : ASTNode()
+sealed class StatementNode(open val lineNumber: Int) : ASTNode()
 
 // Animation Command Specific type for easy detection
-sealed class AnimationNode : StatementNode()
-data class SleepNode(val sleepTime: ExpressionNode) : AnimationNode()
+sealed class AnimationNode(override val lineNumber: Int) : StatementNode(lineNumber)
+data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode) : AnimationNode(lineNumber)
 
 // Comments (not discarded so they can be rendered for educational purposes)
-data class CommentNode(val content: String) : AnimationNode()
+data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
+
+// Code Specific Nodes holding line number
+sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
 
 // Used to more easily deal with blocks
 data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: StatementNode) : StatementNode()
-
-// Code Specific Nodes holding line number - todo: replace with composition
-sealed class CodeNode(open val lineNumber: Int) : StatementNode()
 
 interface DeclarationOrAssignment {
     val lineNumber: Int
