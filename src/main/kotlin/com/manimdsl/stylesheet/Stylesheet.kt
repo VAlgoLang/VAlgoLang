@@ -54,14 +54,14 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String): StylesheetProperty {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString(), StyleProperties())
+            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
         return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString(), StyleProperties())
+            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
         return (style merge dataStructureStyle).animate
     }
