@@ -1,0 +1,9 @@
+fun func1(number x) {
+    let y: number = func2(5);
+}
+
+fun func2(Stack<number> x): number {
+    return 10;
+}
+
+func1(5);

@@ -1,6 +1,5 @@
 package com.manimdsl
 
-import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.stylesheet.Stylesheet
 import picocli.CommandLine
 import picocli.CommandLine.*
@@ -25,21 +24,16 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
         exitProcess(syntaxErrorStatus.code)
     }
 
-    val (semanticErrorStatus, abstractSyntaxTree, symbolTable) = parser.convertToAst(program)
+    val (semanticErrorStatus, abstractSyntaxTree, symbolTable, lineNodeMap) = parser.convertToAst(program)
     // Error handling
     if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(semanticErrorStatus.code)
     }
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val executor = ASTExecutor(abstractSyntaxTree, symbolTable, file.readLines(), stylesheet)
+    val manimInstructions = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
 
-    var state: Pair<Boolean, List<ManimInstr>>
-    do {
-        state = executor.executeNextStatement()
-    } while (!state.first)
-
-    val writer = ManimProjectWriter(ManimWriter(state.second).build())
+    val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
 
     if (generatePython) println("Writing file to ${outputVideoFile.removeSuffix(".mp4") + ".py"}")
     val outputFile = writer.createPythonFile(if (generatePython) outputVideoFile.removeSuffix(".mp4") + ".py" else null)

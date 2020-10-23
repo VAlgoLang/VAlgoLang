@@ -1,20 +1,32 @@
 package com.manimdsl.frontend
 
 open class ASTNode
-data class ProgramNode(val statements: List<StatementNode>) : ASTNode()
+
+data class ProgramNode(
+        val functions: List<FunctionNode>,
+        val statements: List<StatementNode>
+) : ASTNode()
+
+data class FunctionNode(
+        override val lineNumber: Int,
+        val scope: Int,
+        val identifier: String,
+        val parameters: List<ParameterNode>,
+        val statements: List<StatementNode>
+) : CodeNode(lineNumber)
 
 // All statements making up program
-sealed class StatementNode : ASTNode()
+sealed class StatementNode(open val lineNumber: Int) : ASTNode()
 
 // Animation Command Specific type for easy detection
-sealed class AnimationNode : StatementNode()
-data class SleepNode(val sleepTime: ExpressionNode) : AnimationNode()
+sealed class AnimationNode(override val lineNumber: Int) : StatementNode(lineNumber)
+data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode) : AnimationNode(lineNumber)
 
 // Comments (not discarded so they can be rendered for educational purposes)
-data class CommentNode(val content: String) : AnimationNode()
+data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
 
-// Code Specific Nodes holding line number - todo: replace with composition
-sealed class CodeNode(open val lineNumber: Int) : StatementNode()
+// Code Specific Nodes holding line number
+sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
 
 interface DeclarationOrAssignment {
     val lineNumber: Int
@@ -34,6 +46,11 @@ data class AssignmentNode(
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
+data class ReturnNode(
+    override val lineNumber: Int,
+    val expression: ExpressionNode
+) : CodeNode(lineNumber)
+
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String) : ExpressionNode(lineNumber)
@@ -48,6 +65,12 @@ data class MethodCallNode(
 data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
+    val arguments: List<ExpressionNode>
+) : ExpressionNode(lineNumber)
+
+data class FunctionCallNode(
+    override val lineNumber: Int,
+    val functionIdentifier: String,
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
