@@ -1,0 +1,15 @@
+{
+  "stack1": {
+    "textColor": "BLUE",
+    "animate": {
+      "borderColor": "BLUE"
+    }
+  },
+  "Stack": {
+    "borderColor": "YELLOW",
+    "animate": {
+      "borderColor": "RED",
+      "textColor": "RED"
+    }
+  }
+}
