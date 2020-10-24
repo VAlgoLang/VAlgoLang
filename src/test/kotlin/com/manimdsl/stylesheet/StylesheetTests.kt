@@ -1,5 +1,7 @@
 package com.manimdsl.stylesheet
 
+import com.manimdsl.ManimDSLParser
+import com.manimdsl.VirtualMachine
 import com.manimdsl.executor.StackValue
 import com.manimdsl.frontend.IdentifierData
 import com.manimdsl.frontend.NumberType
@@ -9,6 +11,7 @@ import com.manimdsl.linearrepresentation.EmptyMObject
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.Test
+import java.io.File
 import java.util.*
 
 class StylesheetTests {
@@ -44,6 +47,24 @@ class StylesheetTests {
         val stack1AnimationStyle = stack1Stylesheet.getAnimatedStyle("stack1", StackValue(EmptyMObject, Stack()))!!
         assertThat(stack1AnimationStyle.borderColor, `is`("BLUE"))
         assertThat(stack1AnimationStyle.textColor, `is`("RED"))
+    }
+
+    @Test
+    fun localVariableAssignedCorrectStyle() {
+        val stylesheet = getStylesheetAfterRunningVirtualMachine("stackFunction.manimdsl", "variableOverrideStylesheet.json")
+        val stack1Style = stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
+        assertThat(stack1Style.borderColor, `is`("ORANGE"))
+        assertThat(stack1Style.textColor, `is`("BLUE"))
+    }
+
+    private fun getStylesheetAfterRunningVirtualMachine(fileName: String, stylesheetName: String): Stylesheet {
+        val inputFile = File("src/test/testFiles/valid/$fileName")
+        val parser = ManimDSLParser(inputFile.inputStream())
+        val program = parser.parseFile().second
+        val parserResult = parser.convertToAst(program)
+        val stylesheet = Stylesheet("$stylesheetPath/$stylesheetName", parserResult.symbolTableVisitor)
+        VirtualMachine(parserResult.abstractSyntaxTree, parserResult.symbolTableVisitor, parserResult.lineNodeMap, inputFile.readLines(), stylesheet).runProgram()
+        return stylesheet
     }
 
 }
