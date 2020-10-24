@@ -28,7 +28,6 @@ class ASTExecutorTests {
                 MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
                 MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
                 MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
-                MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
         )
         val actual = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n")).runProgram()
 
