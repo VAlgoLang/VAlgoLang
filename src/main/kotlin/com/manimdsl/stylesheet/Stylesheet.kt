@@ -5,7 +5,6 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
-import com.manimdsl.frontend.ErrorType
 import com.manimdsl.frontend.SymbolTableVisitor
 import java.io.File
 import java.lang.reflect.Type
@@ -46,7 +45,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return try {
             val stylesheetMap: Map<String, StyleProperties> = gson.fromJson(File(stylesheetPath).readText(), type)
             stylesheetMap.keys.forEach {
-                if (!dataStructureStrings.contains(it) && symbolTableVisitor.getTypeOf(it) is ErrorType) {
+                if (!(dataStructureStrings.contains(it) || symbolTableVisitor.getVariableNames().contains(it))) {
                     undeclaredVariableStyleWarning(it)
                 }
             }
@@ -64,17 +63,20 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     }
 
     fun getStyle(identifier: String): StylesheetProperty {
-        val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
-        val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
+        val (style, dataStructureStyle) = getStylesForIdentifier(identifier)
         return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String): AnimationProperties {
+        val (style, dataStructureStyle) = getStylesForIdentifier(identifier)
+        return (style.animate merge dataStructureStyle.animate)
+    }
+
+    private fun getStylesForIdentifier(identifier: String): Pair<StyleProperties, StyleProperties> {
         val dataStructureStyle =
             stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
-        return (style.animate merge dataStructureStyle.animate)
+        return Pair(style, dataStructureStyle)
     }
 }
 

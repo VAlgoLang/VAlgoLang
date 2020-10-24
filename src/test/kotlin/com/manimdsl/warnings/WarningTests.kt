@@ -34,6 +34,15 @@ class WarningTests {
         )
     }
 
+    @Test
+    fun creatingStyleForUndeclaredVariableInAllScopesThrowsWarning() {
+        runErrorAndWarningHandling("function.manimdsl", "mixedStylesheet.json")
+        Assert.assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Created style for variable .* that has not been declared"))
+        )
+    }
+
+
     private fun runErrorAndWarningHandling(fileName: String, stylesheetName: String) {
         val inputFile = File("src/test/testFiles/valid/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

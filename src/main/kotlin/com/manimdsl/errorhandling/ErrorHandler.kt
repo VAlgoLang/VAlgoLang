@@ -28,7 +28,7 @@ object ErrorHandler {
                 "Errors detected during compilation \n" +
                         "Exit code: ${ExitStatus.SYNTAX_ERROR.code}"
             )
-            syntaxErrors.map { println(it) }
+            syntaxErrors.forEach { println(it) }
             syntaxErrors.clear()
             return ExitStatus.SYNTAX_ERROR
         }
@@ -38,7 +38,7 @@ object ErrorHandler {
                 "Errors detected during compilation \n" +
                         "Exit code: ${ExitStatus.SEMANTIC_ERROR.code}"
             )
-            semanticErrors.map { println(it) }
+            semanticErrors.forEach { println(it) }
             semanticErrors.clear()
             return ExitStatus.SEMANTIC_ERROR
         }
@@ -49,7 +49,7 @@ object ErrorHandler {
     }
 
     fun checkWarnings() {
-        warnings.map { println(it) }
+        warnings.forEach { println(it) }
         warnings.clear()
     }
 

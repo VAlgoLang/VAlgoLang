@@ -1,0 +1,5 @@
+fun function(number x): number {
+    let z: number = x*2;
+    return z;
+}
+let z = function(2);
