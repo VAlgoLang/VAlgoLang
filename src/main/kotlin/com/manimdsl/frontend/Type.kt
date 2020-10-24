@@ -5,9 +5,16 @@ sealed class Type : ASTNode()
 
 // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType : Type()
+
 object NumberType : PrimitiveType() {
     override fun toString(): String {
         return "number"
+    }
+}
+
+object BoolType : PrimitiveType() {
+    override fun toString(): String {
+        return "boolean"
     }
 }
 
@@ -36,11 +43,11 @@ object ErrorMethod : DataStructureMethod {
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class StackType(
-    override var internalType: Type = NumberType,
+    override var internalType: Type,
     override val methods: HashMap<String, DataStructureMethod> = hashMapOf(
         "push" to PushMethod(
             argumentTypes = listOf(
-                NumberType
+                internalType,
             )
         ), "pop" to PopMethod(internalType)
     )
@@ -61,7 +68,7 @@ data class StackType(
     }
 
     override fun toString(): String {
-        return "stack<$internalType>"
+        return "Stack<$internalType>"
     }
 }
 

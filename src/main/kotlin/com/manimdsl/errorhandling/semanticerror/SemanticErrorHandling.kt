@@ -32,6 +32,20 @@ fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("$identifier is not a data structure", getErrorLinePos(ctx))
 }
 
+fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: Type? = null, ctx: ParserRuleContext) {
+    val errorMessage =
+        "Operator \'$operator\' is not compatible with type $expr1Type${if (expr2Type != null) " and $expr2Type" else ""}"
+
+    addSemanticError(errorMessage, getErrorLinePos(ctx))
+}
+
+fun unexpectedExpressionTypeError(expected: Type, actual: Type, ctx: ParserRuleContext) {
+    val errorMessage =
+        "Expected expression of type $expected but found $actual"
+
+    addSemanticError(errorMessage, getErrorLinePos(ctx))
+}
+
 fun unsupportedMethodError(dataStructureType: String, method: String, ctx: ParserRuleContext) {
     addSemanticError("$dataStructureType does not support $method method", getErrorLinePos(ctx))
 }

@@ -12,18 +12,38 @@ class SemanticAnalysis {
             is NumberNode -> NumberType
             is MethodCallNode -> expression.dataStructureMethod.returnType
             is ConstructorNode -> expression.type
-            is BinaryExpression -> if (getExpressionType(
-                    expression.expr1,
-                    currentSymbolTable
-                ) is NumberType && getExpressionType(expression.expr2, currentSymbolTable) is NumberType
-            ) {
-                NumberType
-            } else {
-                ErrorType
-            }
-            is UnaryExpression -> getExpressionType(expression.expr, currentSymbolTable)
+            is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
+            is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
+            is BoolNode -> BoolType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
         }
+
+    private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
+        val exprType = getExpressionType(expression.expr, currentSymbolTable)
+
+        return when (expression) {
+            is PlusExpression, is MinusExpression -> if (exprType is NumberType) NumberType else ErrorType
+            is NotExpression -> if (exprType is BoolType) BoolType else ErrorType
+        }
+    }
+
+    private fun getBinaryExpressionType(expression: BinaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
+        val expr1Type = getExpressionType(expression.expr1, currentSymbolTable)
+        val expr2Type = getExpressionType(expression.expr2, currentSymbolTable)
+
+        return when (expression) {
+            is AddExpression, is SubtractExpression, is MultiplyExpression -> {
+                if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
+            }
+            is AndExpression, is OrExpression -> {
+                if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
+            }
+            is EqExpression, is NeqExpression, is GtExpression,
+            is LtExpression, is GeExpression, is LeExpression -> {
+                if (expr1Type == expr2Type) BoolType else ErrorType
+            }
+        }
+    }
 
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
@@ -116,6 +136,45 @@ class SemanticAnalysis {
         }
     }
 
+    fun incompatibleOperatorTypeCheck(
+        operator: String,
+        opExpr: ExpressionNode,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ManimParser.ExprContext
+    ) {
+        if (inferType(currentSymbolTable, opExpr) is ErrorType) {
+            when (opExpr) {
+                is BinaryExpression -> {
+                    incompatibleOperatorTypeError(
+                        operator,
+                        inferType(currentSymbolTable, opExpr.expr1),
+                        inferType(currentSymbolTable, opExpr.expr2),
+                        ctx
+                    )
+                }
+                is UnaryExpression -> {
+                    incompatibleOperatorTypeError(
+                        operator,
+                        inferType(currentSymbolTable, opExpr.expr),
+                        ctx = ctx
+                    )
+                }
+            }
+        }
+
+    }
+
+    fun checkExpressionTypeWithExpectedType(
+        expression: ExpressionNode,
+        expected: Type,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        val actual = inferType(currentSymbolTable, expression)
+        if (actual != expected) {
+            unexpectedExpressionTypeError(expected, actual, ctx)
+        }
+    }
     fun globalReturnCheck(inFunction: Boolean, ctx: ManimParser.ReturnStatementContext) {
         if (!inFunction) {
             globalReturnError(ctx)
