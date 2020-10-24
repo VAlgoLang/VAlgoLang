@@ -67,7 +67,7 @@ class SymbolTableVisitorTest {
         symbolTable.leaveScope()
 
         val secondScope = symbolTable.enterScope()
-        symbolTable.addVariable("x", IdentifierData(StackType()))
+        symbolTable.addVariable("x", IdentifierData(StackType(NumberType)))
         symbolTable.leaveScope()
 
         assertEquals(ErrorType, symbolTable.getTypeOf("x"))
@@ -76,7 +76,7 @@ class SymbolTableVisitorTest {
         assertEquals(NumberType, symbolTable.getTypeOf("x"))
 
         symbolTable.goToScope(secondScope)
-        assertEquals(StackType(), symbolTable.getTypeOf("x"))
+        assertEquals(StackType(NumberType), symbolTable.getTypeOf("x"))
     }
 
     @Test

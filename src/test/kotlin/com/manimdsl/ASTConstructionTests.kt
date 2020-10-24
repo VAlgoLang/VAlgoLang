@@ -115,6 +115,108 @@ class ASTConstructionTests {
         assertEquals(reference, actual)
     }
 
+    @Test
+    fun ifStatementProgram() {
+        val methodProgram = "let x = 3;\n" +
+                "if(x == 2) {\n" +
+                "    x = 2;\n" +
+                "} else if (x == 1) {\n" +
+                "    x = 4;\n" +
+                "} else if (x == 0) {\n" +
+                "    x = 3;\n" +
+                "} else {\n" +
+                "    x = 1;\n" +
+                "}"
+        val statements = listOf(
+            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            IfStatementNode(
+                lineNumber = 2,
+                endLineNumber = 9,
+                scope = 1,
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
+                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                elifs = listOf(
+                    ElifNode(
+                        4,
+                        scope = 2,
+                        condition = EqExpression(4, IdentifierNode(4, "x"), NumberNode(4, 1.0)),
+                        statements = listOf(AssignmentNode(5, "x", NumberNode(5, 4.0)))
+                    ),
+                    ElifNode(
+                        6,
+                        scope = 3,
+                        condition = EqExpression(6, IdentifierNode(6, "x"), NumberNode(6, 0.0)),
+                        statements = listOf(AssignmentNode(7, "x", NumberNode(7, 3.0)))
+                    )
+                ),
+                elseBlock = ElseNode(
+                    lineNumber = 8,
+                    scope = 4,
+                    statements = listOf(
+                        AssignmentNode(9, "x", NumberNode(9, 1.0))
+                    )
+                )
+
+            )
+        )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference, actual)
+    }
+
+    @Test
+    fun ifStatementWithoutElifProgram() {
+        val methodProgram = "let x = 3;\n" +
+                "if(x == 2) {\n" +
+                "    x = 2;\n" +
+                "} else {\n" +
+                "    x = 1;\n" +
+                "}"
+        val statements = listOf(
+            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            IfStatementNode(
+                lineNumber = 2,
+                endLineNumber = 5,
+                scope = 1,
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
+                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                elifs = emptyList(),
+                elseBlock = ElseNode(
+                    lineNumber = 4,
+                    scope = 2,
+                    statements = listOf(
+                        AssignmentNode(5, "x", NumberNode(5, 1.0))
+                    )
+                )
+            )
+        )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference, actual)
+    }
+
+    @Test
+    fun ifStatementJustIfProgram() {
+        val methodProgram = "let x = 3;\n" +
+                "if(x == 2) {\n" +
+                "    x = 2;\n" +
+                "}"
+        val statements = listOf(
+            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            IfStatementNode(
+                lineNumber = 2,
+                endLineNumber = 3,
+                scope = 1,
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
+                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                elifs = emptyList(),
+                elseBlock = ElseNode(3, 0, emptyList())
+            )
+        )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference, actual)
+    }
 
     // Assumes syntactically correct program
     private fun buildAST(program: String): ASTNode {

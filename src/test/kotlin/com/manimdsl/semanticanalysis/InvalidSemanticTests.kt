@@ -226,6 +226,23 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun incompatibleOperatorTypeError() {
+        runSyntaxAndSemanticAnalysis("incompatibleOperatorTypeError.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Operator .* is not compatible with type .* and .*"))
+        )
+    }
+
+    @Test
+    fun incorrectScopingInIfStatement() {
+        runSyntaxAndSemanticAnalysis("incorrectScopingInIfStatement.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+        )
+    }
+
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
