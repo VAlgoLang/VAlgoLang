@@ -146,7 +146,6 @@ class VirtualMachine(
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
-            else -> EmptyValue
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -219,7 +218,6 @@ class VirtualMachine(
         private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
             return when (node.type) {
                 is StackType -> {
-                    val type = symbolTableVisitor.getTypeOf(identifier)
                     val style = stylesheet.getStyle(identifier)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
