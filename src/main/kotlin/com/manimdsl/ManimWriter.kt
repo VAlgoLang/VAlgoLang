@@ -31,9 +31,9 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         }
         pythonCode += constructCodeBlock.joinToString("\n") + "\n"
 
-        pythonCode += printWithIndent(1, addUtilityFunctions()) + "\n"
+        pythonCode += "\n" + printWithIndent(1, addUtilityFunctions())
 
-        pythonCode += printWithIndent(
+        pythonCode += "\n" + printWithIndent(
             0,
             shapeClassPaths.map { getResourceAsText(it) })
 
