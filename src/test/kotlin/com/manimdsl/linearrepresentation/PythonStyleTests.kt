@@ -18,7 +18,7 @@ class PythonStyleTests {
 
         val expected =
             "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
-        assertEquals(expected, mobject.toPython()[0])
+        assertEquals(expected, mobject.toPython()[1])
     }
 
     @Test
@@ -44,6 +44,6 @@ class PythonStyleTests {
 
         val expected =
             "x = Rectangle_block(\"rectangle\")"
-        assertEquals(expected, mobject.toPython()[0])
+        assertEquals(expected, mobject.toPython()[1])
     }
 }
