@@ -3,6 +3,9 @@ package com.manimdsl.stylesheet
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
+import com.manimdsl.errorhandling.ErrorHandler
+import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
+import com.manimdsl.frontend.ErrorType
 import com.manimdsl.frontend.SymbolTableVisitor
 import java.io.File
 import java.lang.reflect.Type
@@ -20,13 +23,14 @@ data class AnimationProperties(override val borderColor: String? = null, overrid
 data class StyleProperties(
     override val borderColor: String? = null,
     override val textColor: String? = null,
-    val animate: AnimationProperties? = null
+    val animate: AnimationProperties = AnimationProperties(borderColor, textColor)
 ): StylesheetProperty
 
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
 
     private val stylesheet: Map<String, StyleProperties>
+    private val dataStructureStrings = setOf("Stack")
 
     init {
         stylesheet = if (stylesheetPath != null) {
@@ -40,7 +44,14 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val gson = Gson()
         val type: Type = object : TypeToken<Map<String, StyleProperties>>() {}.type
         return try {
-            gson.fromJson(File(stylesheetPath).readText(), type)
+            val stylesheetMap: Map<String, StyleProperties> = gson.fromJson(File(stylesheetPath).readText(), type)
+            stylesheetMap.keys.forEach {
+                if (!dataStructureStrings.contains(it) && symbolTableVisitor.getTypeOf(it) is ErrorType) {
+                    undeclaredVariableStyleWarning(it)
+                }
+            }
+            ErrorHandler.checkWarnings()
+            stylesheetMap
         } catch (e: JsonSyntaxException) {
             print("Invalid JSON stylesheet: ")
             if (e.message.let { it != null && it.startsWith("duplicate key") }) {
@@ -59,11 +70,11 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return style merge dataStructureStyle
     }
 
-    fun getAnimatedStyle(identifier: String): AnimationProperties? {
+    fun getAnimatedStyle(identifier: String): AnimationProperties {
         val dataStructureStyle =
             stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
-        return (style merge dataStructureStyle).animate
+        return (style.animate merge dataStructureStyle.animate)
     }
 }
 

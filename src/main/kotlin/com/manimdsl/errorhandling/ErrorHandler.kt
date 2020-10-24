@@ -43,12 +43,14 @@ object ErrorHandler {
             return ExitStatus.SEMANTIC_ERROR
         }
 
-        if (warnings.isNotEmpty()) {
-            warnings.map { println(it) }
-            warnings.clear()
-        }
+        checkWarnings()
 
         return ExitStatus.EXIT_SUCCESS
+    }
+
+    fun checkWarnings() {
+        warnings.map { println(it) }
+        warnings.clear()
     }
 
     fun printPathError(path: String, linePos: String = "") {

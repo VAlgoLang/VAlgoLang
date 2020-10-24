@@ -2,8 +2,6 @@ package com.manimdsl.errorhandling.warnings
 
 import com.manimdsl.errorhandling.ErrorHandler.addWarning
 
-class WarningHandling {
-    fun undeclaredVariableStyle() {
-        addWarning("Created style for a variable that has not been declared")
-    }
+fun undeclaredVariableStyleWarning(identifier: String) {
+    addWarning("Created style for variable $identifier that has not been declared")
 }
