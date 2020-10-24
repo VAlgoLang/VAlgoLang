@@ -45,8 +45,7 @@ class Rectangle(
         val instructions = mutableListOf<String>()
 
         styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${it})") }
-
-        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${styleProperties.textColor})") }
+        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${it})") }
 
         return listOf("self.play(${instructions.joinToString(", ")})")
     }
