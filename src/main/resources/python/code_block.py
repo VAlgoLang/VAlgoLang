@@ -1,3 +1,4 @@
+# Object representing the visualised code on the left hand side of the screen
 class Code_block:
     def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
