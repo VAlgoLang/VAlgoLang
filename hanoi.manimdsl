@@ -1,0 +1,19 @@
+fun buildTower(number n, Stack<number> tower) {
+    if(n > 0) {
+        tower.push(n);
+        buildTower(n - 1, tower);
+    }
+}
+fun move(number n, Stack<number> source, Stack<number> target, Stack<number> aux) {
+    if(n > 0) {
+        move(n - 1, source, aux, target);
+        target.push(source.pop());
+        move(n - 1, aux, target, source);
+    }
+}
+let C = new Stack<number>;
+let B = new Stack<number>;
+let A = new Stack<number>;
+
+buildTower(3, A);
+move(3, A, C, B);
