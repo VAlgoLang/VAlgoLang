@@ -35,32 +35,28 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     init {
         stylesheet = if (stylesheetPath != null) {
-            parseStylesheet(stylesheetPath)
+            val gson = Gson()
+            val type: Type = object : TypeToken<Map<String, StyleProperties>>() {}.type
+            try {
+                val stylesheetMap: Map<String, StyleProperties> = gson.fromJson(File(stylesheetPath).readText(), type)
+                stylesheetMap.keys.forEach {
+                    if (!(dataStructureStrings.contains(it) || symbolTableVisitor.getVariableNames().contains(it))) {
+                        undeclaredVariableStyleWarning(it)
+                    }
+                }
+                ErrorHandler.checkWarnings()
+                stylesheetMap
+            } catch (e: JsonSyntaxException) {
+                print("Invalid JSON stylesheet: ")
+                if (e.message.let { it != null && it.startsWith("duplicate key") }) {
+                    println(e.message)
+                } else {
+                    println("Could not parse JSON")
+                }
+                exitProcess(1)
+            }
         } else {
             emptyMap()
-        }
-    }
-
-    private fun parseStylesheet(stylesheetPath: String): Map<String, StyleProperties> {
-        val gson = Gson()
-        val type: Type = object : TypeToken<Map<String, StyleProperties>>() {}.type
-        return try {
-            val stylesheetMap: Map<String, StyleProperties> = gson.fromJson(File(stylesheetPath).readText(), type)
-            stylesheetMap.keys.forEach {
-                if (!(dataStructureStrings.contains(it) || symbolTableVisitor.getVariableNames().contains(it))) {
-                    undeclaredVariableStyleWarning(it)
-                }
-            }
-            ErrorHandler.checkWarnings()
-            stylesheetMap
-        } catch (e: JsonSyntaxException) {
-            print("Invalid JSON stylesheet: ")
-            if (e.message.let { it != null && it.startsWith("duplicate key") }) {
-                println(e.message)
-            } else {
-                println("Could not parse JSON")
-            }
-            exitProcess(1)
         }
     }
 
