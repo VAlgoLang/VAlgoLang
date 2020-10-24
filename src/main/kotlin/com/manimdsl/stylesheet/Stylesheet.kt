@@ -17,13 +17,14 @@ interface StylesheetProperty {
     val textColor: String?
 }
 
-data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null): StylesheetProperty
+data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null) :
+    StylesheetProperty
 
 data class StyleProperties(
     override val borderColor: String? = null,
     override val textColor: String? = null,
     val animate: AnimationProperties? = null
-): StylesheetProperty
+) : StylesheetProperty
 
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
@@ -64,18 +65,18 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String): StylesheetProperty {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
+            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }
+                .capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
         return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
+            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }
+                .capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
-        val dataStructureAnimateStyle = dataStructureStyle.animate ?: AnimationProperties()
-        val animateStyle = style.animate ?: AnimationProperties()
-        return (animateStyle merge dataStructureAnimateStyle)
+        return (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
     }
 }
 
