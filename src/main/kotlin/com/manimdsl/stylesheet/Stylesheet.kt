@@ -5,6 +5,7 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
+import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.SymbolTableVisitor
 import java.io.File
 import java.lang.reflect.Type
@@ -63,18 +64,16 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         }
     }
 
-    fun getStyle(identifier: String): StylesheetProperty {
+    fun getStyle(identifier: String, value: ExecValue): StylesheetProperty {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }
-                .capitalize(), StyleProperties())
+            stylesheet.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
         return style merge dataStructureStyle
     }
 
-    fun getAnimatedStyle(identifier: String): AnimationProperties? {
+    fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }
-                .capitalize(), StyleProperties())
+            stylesheet.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
         return (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
     }

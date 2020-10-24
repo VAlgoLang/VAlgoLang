@@ -67,6 +67,10 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
 
 data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>) : ExecValue() {
     override val value: Stack<ExecValue> = stack
+
+    override fun toString(): String {
+        return "Stack"
+    }
 }
 
 object EmptyValue : ExecValue() {

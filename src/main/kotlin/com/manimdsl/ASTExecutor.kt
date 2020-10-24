@@ -158,8 +158,8 @@ class VirtualMachine(
 
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
-                            val style = stylesheet.getStyle(node.instanceIdentifier)
-                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier) ?: style
+                            val style = stylesheet.getStyle(node.instanceIdentifier, ds)
+                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: style
                             val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
@@ -177,7 +177,7 @@ class VirtualMachine(
                                         topOfStack.shape,
                                         ObjectSide.ABOVE
                                     ),
-                                    RestyleObject(rectangle.shape, stylesheet.getStyle(node.instanceIdentifier))
+                                    RestyleObject(rectangle.shape, stylesheet.getStyle(node.instanceIdentifier, ds))
                                 )
                             if (!hasOldMObject) {
                                 instructions.add(0, rectangle)
@@ -202,7 +202,7 @@ class VirtualMachine(
                                             !insideMethodCall
                                     ),
                             )
-                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier)
+                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
                             if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
 
                             linearRepresentation.addAll(instructions)
@@ -218,7 +218,8 @@ class VirtualMachine(
         private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
             return when (node.type) {
                 is StackType -> {
-                    val style = stylesheet.getStyle(identifier)
+                    val stackValue = StackValue(EmptyMObject, Stack())
+                    val style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitStructure(
@@ -244,7 +245,8 @@ class VirtualMachine(
                         Pair(listOf(stackInit), stackInit)
                     }
                     linearRepresentation.addAll(instructions)
-                    StackValue(newObject, Stack())
+                    stackValue.manimObject = newObject
+                    stackValue
                 }
             }
         }
