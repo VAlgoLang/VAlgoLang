@@ -2,6 +2,8 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.ManimProjectWriter
 import com.manimdsl.ManimWriter
+import com.manimdsl.frontend.NumberType
+import com.manimdsl.frontend.StackType
 import com.manimdsl.shapes.Rectangle
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
@@ -16,7 +18,7 @@ class TestLinearRepresentation {
         val codeBlock = listOf("let y = new Stack;", "y.push(2);", "y.push(3);", "y.pop();")
         val testIdent = Rectangle("testIdent", "2")
         val testIdent1 = Rectangle("testIdent1", "3")
-        val stackIS = InitStructure(Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y")
+        val stackIS = InitStructure(StackType(NumberType), Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y")
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),

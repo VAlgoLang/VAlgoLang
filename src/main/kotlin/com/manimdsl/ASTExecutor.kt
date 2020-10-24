@@ -214,6 +214,7 @@ class VirtualMachine(
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitStructure(
+                            node.type,
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
@@ -223,6 +224,7 @@ class VirtualMachine(
                         Pair(listOf(stackInit), stackInit)
                     } else {
                         val stackInit = InitStructure(
+                            node.type,
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),

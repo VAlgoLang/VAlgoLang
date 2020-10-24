@@ -1,5 +1,6 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.shapes.CodeBlockShape
 import com.manimdsl.shapes.InitStructureShape
 import com.manimdsl.shapes.NullShape
@@ -63,6 +64,7 @@ data class CodeBlock(
 }
 
 data class InitStructure(
+    val type: DataStructureType,
     val position: Position,
     val alignment: Alignment,
     val ident: String,
@@ -77,7 +79,7 @@ data class InitStructure(
 
     override fun toPython(): List<String> {
         val python =
-            mutableListOf(shape.getConstructor())
+            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
         python.add(
             when (position) {
                 is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
