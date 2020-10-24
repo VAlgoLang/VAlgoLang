@@ -158,7 +158,8 @@ class VirtualMachine(
 
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
-                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier)
+                            val style = stylesheet.getStyle(node.instanceIdentifier)
+                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier) ?: style
                             val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
@@ -202,7 +203,7 @@ class VirtualMachine(
                                     ),
                             )
                             val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier)
-                            instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
+                            if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
 
                             linearRepresentation.addAll(instructions)
                             return poppedValue

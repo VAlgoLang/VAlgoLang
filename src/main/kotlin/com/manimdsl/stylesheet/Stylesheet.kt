@@ -22,7 +22,7 @@ data class AnimationProperties(override val borderColor: String? = null, overrid
 data class StyleProperties(
     override val borderColor: String? = null,
     override val textColor: String? = null,
-    val animate: AnimationProperties = AnimationProperties(borderColor, textColor)
+    val animate: AnimationProperties? = null
 ): StylesheetProperty
 
 
@@ -63,23 +63,21 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     }
 
     fun getStyle(identifier: String): StylesheetProperty {
-        val (style, dataStructureStyle) = getStylesForIdentifier(identifier)
-        return style merge dataStructureStyle
-    }
-
-    fun getAnimatedStyle(identifier: String): AnimationProperties {
-        val (style, dataStructureStyle) = getStylesForIdentifier(identifier)
-        return (style.animate merge dataStructureStyle.animate)
-    }
-
-    private fun getStylesForIdentifier(identifier: String): Pair<StyleProperties, StyleProperties> {
         val dataStructureStyle =
             stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
         val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
-        return Pair(style, dataStructureStyle)
+        return style merge dataStructureStyle
+    }
+
+    fun getAnimatedStyle(identifier: String): AnimationProperties? {
+        val dataStructureStyle =
+            stylesheet.getOrDefault(symbolTableVisitor.getTypeOf(identifier).toString().takeWhile { it != '<' }.capitalize(), StyleProperties())
+        val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
+        val dataStructureAnimateStyle = dataStructureStyle.animate ?: AnimationProperties()
+        val animateStyle = style.animate ?: AnimationProperties()
+        return (animateStyle merge dataStructureAnimateStyle)
     }
 }
-
 
 // Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679
 inline infix fun <reified T : Any> T.merge(other: T): T {
