@@ -2,6 +2,8 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.executor.ExecValue
 import com.manimdsl.shapes.Shape
+import com.manimdsl.shapes.StyleableShape
+import com.manimdsl.stylesheet.StylesheetProperty
 
 interface ManimInstr {
     fun toPython(): List<String>
@@ -41,6 +43,17 @@ data class MoveObject(
             instructions.add("self.play(FadeOut($shape))")
         }
         return instructions
+    }
+}
+
+data class RestyleObject(
+    val shape: Shape,
+    val newStyle: StylesheetProperty,
+): ManimInstr {
+    override fun toPython(): List<String> {
+        return if (shape is StyleableShape) {
+            shape.restyle(newStyle)
+        } else emptyList()
     }
 }
 

@@ -4,13 +4,15 @@ import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
 class VirtualMachine(
     private val program: ProgramNode,
     private val symbolTableVisitor: SymbolTableVisitor,
     private val statements: Map<Int, ASTNode>,
-    private val fileLines: List<String>
+    private val fileLines: List<String>,
+    private val stylesheet: Stylesheet
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -145,7 +147,6 @@ class VirtualMachine(
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
-            else -> EmptyValue
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -158,10 +159,14 @@ class VirtualMachine(
 
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
+                            val style = stylesheet.getStyle(node.instanceIdentifier, ds)
+                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: style
                             val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
-                                    value.value.toString()
+                                    value.value.toString(),
+                                    color = newObjectStyle.borderColor,
+                                    textColor = newObjectStyle.textColor
                                 ),
                                 codeTextVariable
                             )
@@ -172,7 +177,8 @@ class VirtualMachine(
                                         rectangle.shape,
                                         topOfStack.shape,
                                         ObjectSide.ABOVE
-                                    )
+                                    ),
+                                    RestyleObject(rectangle.shape, stylesheet.getStyle(node.instanceIdentifier, ds))
                                 )
                             if (!hasOldMObject) {
                                 instructions.add(0, rectangle)
@@ -188,15 +194,17 @@ class VirtualMachine(
                             val newTopOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
 
                             val topOfStack = poppedValue.manimObject
-                            val instructions = listOf(
-                                MoveObject(
-                                    topOfStack.shape,
-                                    newTopOfStack.shape,
-                                    ObjectSide.ABOVE,
-                                    20,
-                                    !insideMethodCall
-                                ),
+                            val instructions = mutableListOf<ManimInstr>(
+                                    MoveObject(
+                                            topOfStack.shape,
+                                            newTopOfStack.shape,
+                                            ObjectSide.ABOVE,
+                                            20,
+                                            !insideMethodCall
+                                    ),
                             )
+                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
+                            if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
 
                             linearRepresentation.addAll(instructions)
                             return poppedValue
@@ -211,6 +219,8 @@ class VirtualMachine(
         private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
             return when (node.type) {
                 is StackType -> {
+                    val stackValue = StackValue(EmptyMObject, Stack())
+                    val style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitStructure(
@@ -218,7 +228,9 @@ class VirtualMachine(
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
-                            identifier
+                            identifier,
+                            color = style.borderColor,
+                            textColor = style.textColor,
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -229,12 +241,15 @@ class VirtualMachine(
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
                             identifier,
-                            numStack.manimObject.shape
+                            numStack.manimObject.shape,
+                            color = style.borderColor,
+                            textColor = style.textColor,
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
                     linearRepresentation.addAll(instructions)
-                    StackValue(newObject, Stack())
+                    stackValue.manimObject = newObject
+                    stackValue
                 }
             }
         }

@@ -5,21 +5,19 @@ import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 
 
-class StyleTests {
+class PythonStyleTests {
 
     @Test
     fun stylesAreMappedToPythonCorrectly() {
 
         val color = "white"
         val textColor = "black"
-        val textWeight = "normal"
-        val font = "TestFont"
-        val rectangle = Rectangle("x", "rectangle", color, textColor, textWeight, font)
+        val rectangle = Rectangle("x", "rectangle", color, textColor)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()}, text_weight=${textWeight.toUpperCase()}, font=\"$font\")"
+            "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
         assertEquals(expected, mobject.toPython()[1])
     }
 
@@ -40,13 +38,12 @@ class StyleTests {
     @Test
     fun invalidTextWeightsAreReturnedToDefault() {
 
-        val textWeight = "invalid"
-        val rectangle = Rectangle("x", "rectangle", textWeight = textWeight)
+        val rectangle = Rectangle("x", "rectangle")
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", text_weight=NORMAL)"
+            "x = Rectangle_block(\"rectangle\")"
         assertEquals(expected, mobject.toPython()[1])
     }
 }

@@ -1,6 +1,7 @@
 package com.manimdsl.shapes
 
 import com.manimdsl.linearrepresentation.Alignment
+import com.manimdsl.stylesheet.StylesheetProperty
 
 sealed class Shape {
     abstract val ident: String
@@ -8,7 +9,7 @@ sealed class Shape {
     abstract val classPath: String
     abstract val className: String
     abstract val pythonVariablePrefix: String
-    val style = Style()
+    val style = PythonStyle()
 
     open fun getConstructor(): String {
         return "$ident = ${className}(\"${text}\"$style)"
@@ -19,16 +20,10 @@ sealed class Shape {
     }
 }
 
-sealed class ShapeWithText : Shape() {
-    // Python shape classes which has shape and text members to manipulate color
+sealed class ShapeWithText : Shape()
 
-    fun getTextMObject(): String {
-        return "$ident.text"
-    }
-
-    fun getShapeMObject(): String {
-        return "$ident.shape"
-    }
+interface StyleableShape {
+    fun restyle(styleProperties: StylesheetProperty): List<String>
 }
 
 class Rectangle(
@@ -36,9 +31,7 @@ class Rectangle(
     override val text: String,
     color: String? = null,
     textColor: String? = null,
-    textWeight: String? = null,
-    font: String? = null,
-) : ShapeWithText() {
+) : ShapeWithText(), StyleableShape {
     override val classPath: String = "python/rectangle.py"
     override val className: String = "Rectangle_block"
     override val pythonVariablePrefix: String = "rectangle"
@@ -46,17 +39,23 @@ class Rectangle(
     init {
         color?.let { style.addStyleAttribute(Color(it)) }
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
-        font?.let { style.addStyleAttribute(Font(it)) }
     }
+
+    override fun restyle(styleProperties: StylesheetProperty): List<String> {
+        val instructions = mutableListOf<String>()
+
+        styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${it})") }
+        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${it})") }
+
+        return listOf("self.play(${instructions.joinToString(", ")})")
+    }
+
 }
 
 class CodeBlockShape(
     override val ident: String,
     lines: List<String>,
     textColor: String? = null,
-    textWeight: String? = null,
-    font: String? = null
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -65,8 +64,6 @@ class CodeBlockShape(
 
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
-        font?.let { style.addStyleAttribute(Font(it)) }
     }
 
     override fun getConstructor(): String {
@@ -80,8 +77,6 @@ class InitStructureShape(
     private val alignment: Alignment,
     color: String? = null,
     textColor: String? = null,
-    textWeight: String? = null,
-    font: String? = null
 ) : ShapeWithText() {
     override val classPath: String = "python/init_structure.py"
     override val className: String = "Init_structure"
@@ -90,8 +85,6 @@ class InitStructureShape(
     init {
         color?.let { style.addStyleAttribute(Color(it)) }
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
-        textWeight?.let { style.addStyleAttribute(TextWeight(it)) }
-        font?.let { style.addStyleAttribute(Font(it)) }
     }
 
     override fun getConstructor(): String {
@@ -105,4 +98,5 @@ object NullShape : Shape() {
     override val classPath: String = ""
     override val className: String = ""
     override val pythonVariablePrefix: String = ""
+
 }

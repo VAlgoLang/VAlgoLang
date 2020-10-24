@@ -81,6 +81,10 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
     override fun clone(): ExecValue {
         return StackValue(manimObject, stack)
     }
+
+    override fun toString(): String {
+        return "Stack"
+    }
 }
 
 object EmptyValue : ExecValue() {

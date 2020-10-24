@@ -15,6 +15,9 @@ data class FunctionNode(
         val statements: List<StatementNode>
 ) : CodeNode(lineNumber)
 
+data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
+data class ParameterNode(val identifier: String, val type: Type) : ASTNode()
+
 // All statements making up program
 sealed class StatementNode(open val lineNumber: Int) : ASTNode()
 

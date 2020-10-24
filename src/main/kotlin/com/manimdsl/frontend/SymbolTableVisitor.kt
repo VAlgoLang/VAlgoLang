@@ -19,6 +19,7 @@ data class FunctionData(
 class SymbolTableVisitor {
     private val scopes = mutableListOf<SymbolTable>(GlobalScopeSymbolTable())
     private var currentScope: SymbolTable = scopes[0]
+    private val variableNames = hashSetOf<String>()
 
     fun getTypeOf(identifier: String): Type = currentScope[identifier].type
 
@@ -30,6 +31,7 @@ class SymbolTableVisitor {
 
     fun addVariable(identifier: String, data: SymbolTableData) {
         currentScope[identifier] = data
+        if (data is IdentifierData) variableNames.add(identifier)
     }
 
     fun enterScope(): Int {
@@ -51,6 +53,8 @@ class SymbolTableVisitor {
     }
 
     fun getCurrentScopeID(): Int = currentScope.id
+
+    fun getVariableNames(): Set<String> = variableNames
 }
 
 sealed class SymbolTable(open val id: Int) {

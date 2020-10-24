@@ -47,10 +47,8 @@ data class CodeBlock(
     val codeTextName: String,
     val pointerName: String,
     val textColor: String? = null,
-    val textWeight: String? = null,
-    val font: String? = null
 ) : MObject {
-    override val shape: Shape = CodeBlockShape(ident, lines, textColor, textWeight, font)
+    override val shape: Shape = CodeBlockShape(ident, lines, textColor)
 
     override fun toPython(): List<String> {
         return listOf(
@@ -74,10 +72,8 @@ data class InitStructure(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
-    val textWeight: String? = null,
-    val font: String? = null
 ) : MObject {
-    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor, textWeight, font)
+    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
 
     override fun toPython(): List<String> {
         val python =

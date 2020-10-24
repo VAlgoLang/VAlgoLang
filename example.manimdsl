@@ -1,17 +1,6 @@
-fun factorial(number x, Stack<number> s): number {
-    if(x == 0) {
-        return 1;
-    } else if (x == 1) {
-        return 1;
-    } else if (x == 2) {
-        return 2;
-    } else {
-        let y = x * factorial(x - 1, s);
-        s.push(y);
-        return y;
-    }
-    return 2;
-}
-
-let stack = new Stack<number>;
-let x = factorial(4, stack);
+let stack1 = new Stack<number>;
+let stack2 = new Stack<number>;
+stack1.push(1);
+stack1.push(2);
+stack1.push(3);
+stack2.push(stack1.pop());

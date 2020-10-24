@@ -1,0 +1,5 @@
+fun multiplyByTwo(number x): number {
+    let z: number = x*2;
+    return z;
+}
+let z = multiplyByTwo(2);
