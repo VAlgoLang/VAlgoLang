@@ -21,7 +21,8 @@ data class Sleep(val length: Double = 1.0) : ManimInstr {
 
 data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String) : ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)")
+        return listOf(
+                "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)")
     }
 }
 
