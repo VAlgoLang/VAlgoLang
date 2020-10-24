@@ -200,7 +200,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ElseNode(ctx.stop.line - 1, 0, emptyList())
         }
 
-        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line] = elseNode }
+        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line - 1] = elseNode }
 
         val ifStatementNode =
             IfStatementNode(ctx.start.line, ctx.stop.line - 1, ifScope, ifCondition, ifStatements, elifs, elseNode)
@@ -217,8 +217,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         symbolTable.leaveScope()
 
-        val elifNode = ElifNode(ctx.start.line, elifScope, elifCondition, elifStatements)
-        lineNumberNodeMap[ctx.start.line] = elifNode
+        val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
+        lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
         return elifNode
     }
 
@@ -277,14 +277,18 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitFunctionCall(ctx: FunctionCallContext): FunctionCallNode {
         val identifier = ctx.IDENT().symbol.text
         val arguments: List<ExpressionNode> =
-                visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
+            visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
         val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
 
         semanticAnalyser.undeclaredFunctionCheck(symbolTable, identifier, inFunction, argTypes, ctx)
         semanticAnalyser.invalidNumberOfArgumentsForFunctionsCheck(identifier, symbolTable, arguments.size, ctx)
         semanticAnalyser.incompatibleArgumentTypesForFunctionsCheck(identifier, symbolTable, argTypes, ctx)
 
-        return FunctionCallNode(ctx.start.line, ctx.IDENT().symbol.text, arguments)
+        val functionCallNode = FunctionCallNode(ctx.start.line, ctx.IDENT().symbol.text, arguments)
+
+        lineNumberNodeMap[ctx.start.line] = functionCallNode
+
+        return functionCallNode
     }
 
     override fun visitDataStructureContructor(ctx: DataStructureContructorContext): ASTNode {

@@ -83,6 +83,7 @@ class VirtualMachine(
                 is MethodCallNode -> executeMethodCall(statement, false)
                 is FunctionCallNode -> executeFunctionCall(statement)
                 is IfStatementNode -> return executeIfStatement(statement)
+                is ElseNode -> return EmptyValue
             }
 
             return EmptyValue
@@ -92,9 +93,9 @@ class VirtualMachine(
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
         }
 
-        private fun moveToLine(line: Int = pc - 1, updatePc: Boolean = false) {
+        private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
             if (updatePc) pc = line
-            linearRepresentation.add(MoveToLine(displayLine[line], pointerVariable, codeBlockVariable))
+            linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
@@ -186,7 +187,7 @@ class VirtualMachine(
                             linearRepresentation.addAll(instructions)
                             value.manimObject = rectangle
                             ds.stack.push(value)
-                            value
+                            EmptyValue
                         }
                         is StackType.PopMethod -> {
                             val poppedValue = ds.stack.pop()
@@ -267,39 +268,37 @@ class VirtualMachine(
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
-            val currentScope = symbolTableVisitor.getCurrentScopeID()
-            try {
-                //If
-                if (conditionValue.value) {
-                    return executeStatementBlock(ifStatementNode, currentScope)
-                }
-
-                // Elif
-                for (elif in ifStatementNode.elifs) {
-                    // Add statement to code
-                    conditionValue = executeExpression(elif.condition) as BoolValue
-                    if (conditionValue.value) {
-                        return executeStatementBlock(elif, currentScope)
-                    }
-                }
-
-                // Else
-                return executeStatementBlock(ifStatementNode.elseBlock, currentScope)
-            } finally {
-                moveToLine(ifStatementNode.endLineNumber, true)
+            //If
+            if (conditionValue.value) {
+                return executeStatementBlock(ifStatementNode)
             }
+
+            // Elif
+            for (elif in ifStatementNode.elifs) {
+                moveToLine(elif.lineNumber)
+                // Add statement to code
+                conditionValue = executeExpression(elif.condition) as BoolValue
+                if (conditionValue.value) {
+                    return executeStatementBlock(elif)
+                }
+            }
+
+            // Else
+            moveToLine(ifStatementNode.elseBlock.lineNumber)
+            return executeStatementBlock(ifStatementNode.elseBlock)
+
         }
 
-        private fun executeStatementBlock(statementBlock: StatementBlock, currentScope: Int = 0): ExecValue {
-            moveToLine(statementBlock.lineNumber, true)
+        private fun executeStatementBlock(statementBlock: StatementBlock): ExecValue {
             if (statementBlock.statements.isEmpty()) return EmptyValue
-            symbolTableVisitor.goToScope(statementBlock.scope)
-            val execValue = Frame(
-                statementBlock.statements.first().lineNumber,
-                statementBlock.statements.last().lineNumber,
-                variables
-            ).runFrame()
-            symbolTableVisitor.goToScope(currentScope)
+            var execValue: ExecValue = EmptyValue
+            statementBlock.statements.forEach {
+                moveToLine(it.lineNumber)
+                execValue = executeStatement(it)
+                if (it is ReturnNode) {
+                    return execValue;
+                }
+            }
             return execValue
         }
 

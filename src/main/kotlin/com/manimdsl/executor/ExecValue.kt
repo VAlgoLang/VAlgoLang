@@ -44,6 +44,8 @@ sealed class ExecValue {
     }
 
     private fun throwTypeError(): Nothing = throw UnsupportedOperationException("Unsupported type")
+
+    abstract fun clone(): ExecValue
 }
 
 
@@ -54,6 +56,10 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
         result = 31 * result + manimObject.hashCode()
         return result
     }
+
+    override fun clone(): ExecValue {
+        return DoubleValue(value, manimObject)
+    }
 }
 
 data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : ExecValue() {
@@ -63,10 +69,18 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
         result = 31 * result + manimObject.hashCode()
         return result
     }
+
+    override fun clone(): ExecValue {
+        return BoolValue(value, manimObject)
+    }
 }
 
 data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>) : ExecValue() {
     override val value: Stack<ExecValue> = stack
+
+    override fun clone(): ExecValue {
+        return StackValue(manimObject, stack)
+    }
 
     override fun toString(): String {
         return "Stack"
@@ -76,6 +90,10 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
 object EmptyValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
+
+    override fun clone(): ExecValue {
+        return this
+    }
 }
 
 
