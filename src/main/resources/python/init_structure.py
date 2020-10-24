@@ -1,3 +1,4 @@
+# Object representing a stack instantiation.
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.shape = Line(color=color)

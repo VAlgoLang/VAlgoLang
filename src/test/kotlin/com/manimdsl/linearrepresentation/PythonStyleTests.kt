@@ -32,7 +32,7 @@ class PythonStyleTests {
 
         val expected =
             "x = Rectangle_block(\"rectangle\", color=\"$color\", text_color=\"$textColor\")"
-        assertEquals(expected, mobject.toPython()[0])
+        assertEquals(expected, mobject.toPython()[1])
     }
 
     @Test

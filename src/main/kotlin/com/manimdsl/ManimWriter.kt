@@ -1,9 +1,6 @@
 package com.manimdsl
 
-import com.manimdsl.linearrepresentation.CodeBlock
-import com.manimdsl.linearrepresentation.InitStructure
-import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.linearrepresentation.NewMObject
+import com.manimdsl.linearrepresentation.*
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -13,7 +10,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         val constructCodeBlock = mutableListOf<String>()
 
         val shapeClassPaths = mutableSetOf<String>()
-
+        var executed = false
         linearRepresentation.forEach {
             when (it) {
                 is NewMObject -> {
@@ -26,14 +23,17 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.add("python/init_structure.py")
                 }
             }
+            if (it is MoveToLine && !executed) {
+                constructCodeBlock.add(printWithIndent(2, listOf("# Moves the current line pointer to line ${it.lineNumber}")))
+                executed = true
+            }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
         }
-
         pythonCode += constructCodeBlock.joinToString("\n") + "\n"
 
-        pythonCode += printWithIndent(1, addUtilityFunctions()) + "\n"
+        pythonCode += "\n" + printWithIndent(1, addUtilityFunctions())
 
-        pythonCode += printWithIndent(
+        pythonCode += "\n" + printWithIndent(
             0,
             shapeClassPaths.map { getResourceAsText(it) })
 
