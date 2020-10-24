@@ -81,6 +81,7 @@ class VirtualMachine(
                 is MethodCallNode -> executeMethodCall(statement, false)
                 is FunctionCallNode -> executeFunctionCall(statement)
                 is IfStatementNode -> return executeIfStatement(statement)
+                is ElseNode -> return EmptyValue
             }
 
             return EmptyValue
@@ -106,6 +107,7 @@ class VirtualMachine(
             // program counter will forward in loop, we have popped out of stack
             val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
+            moveToLine()
             return returnValue
         }
 
@@ -274,11 +276,14 @@ class VirtualMachine(
 
         private fun executeStatementBlock(statementBlock: StatementBlock): ExecValue {
             if (statementBlock.statements.isEmpty()) return EmptyValue
-            val execValue = Frame(
-                statementBlock.statements.first().lineNumber,
-                statementBlock.statements.last().lineNumber,
-                variables
-            ).runFrame()
+            var execValue: ExecValue = EmptyValue
+            statementBlock.statements.forEach {
+                moveToLine(it.lineNumber)
+                execValue = executeStatement(it)
+                if (it is ReturnNode) {
+                    return execValue;
+                }
+            }
             return execValue
         }
 

@@ -143,7 +143,7 @@ class ASTConstructionTests {
                         statements = listOf(AssignmentNode(5, "x", NumberNode(5, 4.0)))
                     ),
                     ElifNode(
-                        5,
+                        6,
                         scope = 3,
                         condition = EqExpression(6, IdentifierNode(6, "x"), NumberNode(6, 0.0)),
                         statements = listOf(AssignmentNode(7, "x", NumberNode(7, 3.0)))

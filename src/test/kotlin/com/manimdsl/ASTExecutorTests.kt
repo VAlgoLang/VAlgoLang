@@ -19,15 +19,16 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-                CodeBlock(
-                        lines = listOf("fun f(number x): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
-                        ident = "code_block",
-                        codeTextName = "code_text",
-                        pointerName = "pointer"
-                ),
-                MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
-                MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
-                MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
+            CodeBlock(
+                lines = listOf("fun f(number x): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
+                ident = "code_block",
+                codeTextName = "code_text",
+                pointerName = "pointer"
+            ),
+            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
+            MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
+            MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
+            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
         )
         val actual = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n")).runProgram()
 
