@@ -2,7 +2,7 @@ class Code_block:
     def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         for c in code:
-            group.add(Text(c, color=text_color, weight=text_weight, font=font))
+            group.add(Text(c, color=text_color, weight=text_weight, font=font).scale(0.6))
         self.all = group
 
     def build(self):

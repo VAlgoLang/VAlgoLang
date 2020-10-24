@@ -69,39 +69,36 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun executeStatement(statement: ASTNode?): ExecValue {
-            when (statement) {
-                is ReturnNode -> return executeExpression(statement.expression)
-                is FunctionNode -> {
-                    // just go onto next line, this is just a label
-                }
-                is SleepNode -> executeSleep(statement)
-                is AssignmentNode -> executeAssignment(statement)
-                is DeclarationNode -> executeAssignment(statement)
-                is MethodCallNode -> executeMethodCall(statement, false)
-                is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatementNode -> return executeIfStatement(statement)
+        private fun executeStatement(statement: ASTNode?): ExecValue = when (statement) {
+            is ReturnNode -> executeExpression(statement.expression)
+            is FunctionNode -> {
+                // just go onto next line, this is just a label
+                EmptyValue
             }
+            is SleepNode -> executeSleep(statement)
+            is AssignmentNode -> executeAssignment(statement)
+            is DeclarationNode -> executeAssignment(statement)
+            is MethodCallNode -> executeMethodCall(statement, false)
+            is FunctionCallNode -> executeFunctionCall(statement)
+            is IfStatementNode -> executeIfStatement(statement)
+            else -> EmptyValue
+        }
 
+        private fun executeSleep(statement: SleepNode): ExecValue {
+            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
             return EmptyValue
         }
 
-        private fun executeSleep(statement: SleepNode) {
-            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
-        }
-
-        private fun moveToLine(line: Int = pc - 1, updatePc: Boolean = false) {
-            if (updatePc) pc = line
-            linearRepresentation.add(MoveToLine(displayLine[line], pointerVariable, codeBlockVariable))
+        private fun moveToLine() {
+            linearRepresentation.add(MoveToLine(displayLine[pc-1], pointerVariable, codeBlockVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
             // create new stack frame with argument variables
             val executedArguments = statement.arguments.map { executeExpression(it) }
-            val argumentNames =
-                (symbolTableVisitor.getData(statement.functionIdentifier) as FunctionData).parameters.map { it.identifier }
-            val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
+            val argumentNames = functionNode.parameters.map { it.identifier }
+            val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
             val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
@@ -115,8 +112,9 @@ class VirtualMachine(
             ++pc
         }
 
-        private fun executeAssignment(node: DeclarationOrAssignment) {
+        private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
             variables[node.identifier] = executeExpression(node.expression, identifier = node.identifier)
+            return EmptyValue
         }
 
         private fun executeExpression(
@@ -144,7 +142,6 @@ class VirtualMachine(
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
-            else -> EmptyValue
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -253,30 +250,25 @@ class VirtualMachine(
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             val currentScope = symbolTableVisitor.getCurrentScopeID()
-            try {
-                //If
-                if (conditionValue.value) {
-                    return executeStatementBlock(ifStatementNode, currentScope)
-                }
-
-                // Elif
-                for (elif in ifStatementNode.elifs) {
-                    // Add statement to code
-                    conditionValue = executeExpression(elif.condition) as BoolValue
-                    if (conditionValue.value) {
-                        return executeStatementBlock(elif, currentScope)
-                    }
-                }
-
-                // Else
-                return executeStatementBlock(ifStatementNode.elseBlock, currentScope)
-            } finally {
-                moveToLine(ifStatementNode.endLineNumber, true)
+            //If
+            if (conditionValue.value) {
+                return executeStatementBlock(ifStatementNode, currentScope)
             }
+
+            // Elif
+            for (elif in ifStatementNode.elifs) {
+                // Add statement to code
+                conditionValue = executeExpression(elif.condition) as BoolValue
+                if (conditionValue.value) {
+                    return executeStatementBlock(elif, currentScope)
+                }
+            }
+
+            // Else
+            return executeStatementBlock(ifStatementNode.elseBlock, currentScope)
         }
 
         private fun executeStatementBlock(statementBlock: StatementBlock, currentScope: Int = 0): ExecValue {
-            moveToLine(statementBlock.lineNumber, true)
             if (statementBlock.statements.isEmpty()) return EmptyValue
             symbolTableVisitor.goToScope(statementBlock.scope)
             val execValue = Frame(
