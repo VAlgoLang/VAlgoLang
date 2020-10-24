@@ -29,7 +29,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
             }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
         }
-
         pythonCode += constructCodeBlock.joinToString("\n") + "\n"
 
         pythonCode += printWithIndent(1, addUtilityFunctions()) + "\n"
