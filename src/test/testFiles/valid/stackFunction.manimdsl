@@ -1,0 +1,6 @@
+fun function(number x): Stack<number> {
+    let stack1 = new Stack<number>;
+    stack1.push(x);
+    return stack1;
+}
+let stack2 = function(2);

@@ -36,7 +36,7 @@ class WarningTests {
 
     @Test
     fun creatingStyleForUndeclaredVariableInAllScopesThrowsWarning() {
-        runErrorAndWarningHandling("function.manimdsl", "mixedStylesheet.json")
+        runErrorAndWarningHandling("multiplyByTwo.manimdsl", "mixedStylesheet.json")
         Assert.assertTrue(
             outputStreamCaptor.toString().contains(Regex("Created style for variable .* that has not been declared"))
         )
