@@ -84,15 +84,15 @@ class ASTConstructionTests {
 
     @Test
     fun functionCallProgram() {
-        val functionCallProgram = "fun func(number x, number y): number {\n" +
+        val functionCallProgram = "fun func(x: number, y: number): number {\n" +
                 "\tlet z: number = x + y;\n" +
                 "return z;\n" +
                 "}\n" +
                 "let z: number = func(1,2);\n" +
                 "func(3,4);"
         val functionStatements = listOf(
-                DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
-                ReturnNode(3, IdentifierNode(3, "z"))
+            DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
+            ReturnNode(3, IdentifierNode(3, "z"))
         )
         val functions = listOf(
                 FunctionNode(

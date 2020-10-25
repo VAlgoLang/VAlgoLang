@@ -1,8 +1,8 @@
-fun func1(number x) {
+fun func1(x: number) {
     let y: number = func2(5);
 }
 
-fun func2(Stack<number> x): number {
+fun func2(x: Stack<number>): number {
     return 10;
 }
 

@@ -80,11 +80,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitReturnStatement(ctx: ReturnStatementContext): ReturnNode {
         semanticAnalyser.globalReturnCheck(inFunction, ctx)
-        val expression = visit(ctx.expr()) as ExpressionNode
+        val expression = if (ctx.expr() != null) visit(ctx.expr()) as ExpressionNode else VoidNode(ctx.start.line)
         semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
         lineNumberNodeMap[ctx.start.line] = ReturnNode(ctx.start.line, expression)
         return lineNumberNodeMap[ctx.start.line] as ReturnNode
-
     }
 
     /** Statements **/

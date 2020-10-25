@@ -15,6 +15,7 @@ class SemanticAnalysis {
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
             is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
             is BoolNode -> BoolType
+            is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
         }
 
@@ -218,9 +219,26 @@ class SemanticAnalysis {
         }
     }
 
-    fun missingReturnCheck(identifier: String, statements: List<StatementNode>, type: Type, ctx: ManimParser.FunctionContext) {
-        if(!statements.any { it is ReturnNode }) {
+    fun missingReturnCheck(
+        identifier: String,
+        statements: List<StatementNode>,
+        type: Type,
+        ctx: ManimParser.FunctionContext
+    ) {
+        if (!checkStatementsHaveReturn(statements)) {
             missingReturnError(identifier, type.toString(), ctx)
+        }
+    }
+
+    private fun checkStatementsHaveReturn(statements: List<StatementNode>): Boolean {
+        return statements.any {
+            when (it) {
+                is ReturnNode -> true
+                is IfStatementNode -> checkStatementsHaveReturn(it.statements)
+                        && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
+                        && checkStatementsHaveReturn(it.elseBlock.statements)
+                else -> false
+            }
         }
     }
 
@@ -230,7 +248,13 @@ class SemanticAnalysis {
         }
     }
 
-    fun undeclaredFunctionCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, inFunction: Boolean, argTypes: List<Type>, ctx: ParserRuleContext) {
+    fun undeclaredFunctionCheck(
+        currentSymbolTable: SymbolTableVisitor,
+        identifier: String,
+        inFunction: Boolean,
+        argTypes: List<Type>,
+        ctx: ParserRuleContext
+    ) {
         if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
             if (!inFunction) {
                 undeclaredAssignError(identifier, ctx)
