@@ -93,8 +93,7 @@ class VirtualMachine(
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
         }
 
-        private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
-            if (updatePc) pc = line
+        private fun moveToLine(line: Int = pc) {
             linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
         }
 
