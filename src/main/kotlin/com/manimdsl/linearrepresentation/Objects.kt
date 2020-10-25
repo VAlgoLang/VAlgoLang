@@ -1,6 +1,7 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
+import com.manimdsl.shapes.*
 import com.manimdsl.shapes.CodeBlockShape
 import com.manimdsl.shapes.InitManimStackShape
 import com.manimdsl.shapes.NullShape
@@ -59,6 +60,24 @@ data class CodeBlock(
             "self.play(FadeIn($codeTextName))",
             "# Constructing current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
+        )
+    }
+}
+
+data class VariableBlock(
+    val variables: List<String>,
+    val ident: String,
+    val variableGroupName: String,
+    val textColor: String? = null,
+) : MObject {
+    override val shape: Shape = VariableBlockShape(ident, variables, textColor)
+
+    override fun toPython(): List<String> {
+        return listOf(
+            "# Building variable visualisation pane",
+            shape.getConstructor(),
+            "$variableGroupName = $ident.build()",
+            "self.play(FadeIn($variableGroupName))",
         )
     }
 }
