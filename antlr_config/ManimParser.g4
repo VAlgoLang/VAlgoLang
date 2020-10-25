@@ -10,7 +10,7 @@ function: FUN IDENT OPEN_PARENTHESIS param_list? CLOSE_PARENTHESIS (COLON type)?
 
 param_list: param (COMMA param)*                                    #ParameterList;
 
-param: type IDENT                                                   #Parameter;
+param: IDENT COLON type                                                  #Parameter;
 
 stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepStatement
     | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS SEMI             #CommentStatement // when string type defined we can adjust
