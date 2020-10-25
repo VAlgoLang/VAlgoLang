@@ -71,6 +71,25 @@ class CodeBlockShape(
     }
 }
 
+class VariableBlockShape(
+    override val ident: String,
+    variables: List<String>,
+    textColor: String? = null,
+) : Shape() {
+    override val classPath: String = "python/variable_block.py"
+    override val className: String = "Variable_block"
+    override val pythonVariablePrefix: String = "variable_block"
+    override val text: String = "[\"${variables.joinToString("\",\"")}\"]"
+
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        return "$ident = ${className}($text$style)"
+    }
+}
+
 class InitStructureShape(
     override val ident: String,
     override val text: String,
