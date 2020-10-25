@@ -96,4 +96,12 @@ object EmptyValue : ExecValue() {
     }
 }
 
+// For use to terminate a void function with a return of no expression.
+object VoidValue : ExecValue() {
+    override var manimObject: MObject = EmptyMObject
+    override val value: Any = ErrorType
 
+    override fun clone(): ExecValue {
+        return this
+    }
+}

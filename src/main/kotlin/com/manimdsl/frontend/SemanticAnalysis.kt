@@ -15,6 +15,7 @@ class SemanticAnalysis {
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
             is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
             is BoolNode -> BoolType
+            is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
         }
 

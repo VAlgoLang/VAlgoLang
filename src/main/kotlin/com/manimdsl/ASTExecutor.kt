@@ -147,6 +147,7 @@ class VirtualMachine(
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
+            is VoidNode -> VoidValue
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
