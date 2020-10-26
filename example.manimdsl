@@ -3,4 +3,8 @@ let stack2 = new Stack<number>;
 if (false == false) {
     stack1.push(1);
 }
-stack2.push(stack1.pop());
+
+
+if(stack1.size() == 2) {
+    stack2.push(stack1.pop());
+}

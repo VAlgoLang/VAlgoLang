@@ -216,6 +216,11 @@ class VirtualMachine(
                         is StackType.SizeMethod -> {
                             return DoubleValue(ds.stack.size.toDouble())
                         }
+                        is StackType.PeekMethod -> {
+                            val clonedPeekValue = ds.stack.peek().clone()
+                            clonedPeekValue.manimObject = EmptyMObject
+                            return clonedPeekValue
+                        }
                         else -> EmptyValue
                     }
                 }

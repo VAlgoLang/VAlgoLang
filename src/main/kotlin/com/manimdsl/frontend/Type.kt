@@ -47,7 +47,7 @@ data class StackType(
             argumentTypes = listOf(
                 internalType,
             )
-        ), "pop" to PopMethod(internalType), "isEmpty" to IsEmptyMethod(), "size" to SizeMethod()
+        ), "pop" to PopMethod(internalType), "isEmpty" to IsEmptyMethod(), "size" to SizeMethod(),  "peek" to PeekMethod(internalType)
     )
 ) : DataStructureType(internalType, methods) {
 
@@ -60,13 +60,14 @@ data class StackType(
     data class IsEmptyMethod(
         override val returnType: Type = BoolType,
         override var argumentTypes: List<Type> = listOf()
-    ) :
-        DataStructureMethod
+    ) : DataStructureMethod
 
     data class SizeMethod(
         override val returnType: Type = NumberType,
         override var argumentTypes: List<Type> = listOf()
-    ) :
+    ) : DataStructureMethod
+
+    data class PeekMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
         DataStructureMethod
 
     override fun containsMethod(method: String): Boolean {
