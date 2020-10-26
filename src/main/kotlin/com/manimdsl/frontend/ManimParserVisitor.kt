@@ -195,13 +195,13 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             symbolTable.leaveScope()
             ElseNode(ctx.elseStat.start.line - 1, scope, statements)
         } else {
-            ElseNode(ctx.stop.line - 1, 0, emptyList())
+            ElseNode(ctx.stop.line, 0, emptyList())
         }
 
         ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line - 1] = elseNode }
 
         val ifStatementNode =
-            IfStatementNode(ctx.start.line, ctx.stop.line - 1, ifScope, ifCondition, ifStatements, elifs, elseNode)
+            IfStatementNode(ctx.start.line, ctx.stop.line, ifScope, ifCondition, ifStatements, elifs, elseNode)
         lineNumberNodeMap[ctx.start.line] = ifStatementNode
         return ifStatementNode
     }
