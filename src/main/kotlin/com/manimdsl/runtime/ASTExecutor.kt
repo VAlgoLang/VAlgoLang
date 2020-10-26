@@ -105,7 +105,14 @@ class VirtualMachine(
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
             // create new stack frame with argument variables
-            val executedArguments = statement.arguments.map { executeExpression(it) }
+            val executedArguments = mutableListOf<ExecValue>()
+            statement.arguments.forEach {
+                val executed = executeExpression(it)
+                if (executed is RuntimeError)
+                    return executed
+                else
+                    executedArguments.add(executed)
+            }
             val argumentNames =
                 (symbolTableVisitor.getData(statement.functionIdentifier) as FunctionData).parameters.map { it.identifier }
             val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
@@ -163,6 +170,9 @@ class VirtualMachine(
                     return when (node.dataStructureMethod) {
                         is StackType.PushMethod -> {
                             val value = executeExpression(node.arguments[0], true)
+                            if (value is RuntimeError) {
+                                return value
+                            }
                             val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
 
                             val hasOldMObject = value.manimObject !is EmptyMObject
