@@ -74,12 +74,13 @@ class CodeBlockShape(
 class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
+    variable_frame : String,
     textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/variable_block.py"
     override val className: String = "Variable_block"
     override val pythonVariablePrefix: String = "variable_block"
-    override val text: String = "[\"${variables.joinToString("\",\"")}\"]"
+    override val text: String = "[\"${variables.joinToString("\",\"")}\"], variable_frame"
 
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }

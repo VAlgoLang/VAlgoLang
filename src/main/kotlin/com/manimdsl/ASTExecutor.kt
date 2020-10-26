@@ -36,6 +36,8 @@ class VirtualMachine(
     }
 
     fun runProgram(): List<ManimInstr> {
+        linearRepresentation.add(PartitionBlock("1/3", "2/3"))
+        linearRepresentation.add(VariableBlock(listOf("x = 1"), "variable_block", "variable_vg", "variable_frame"))
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
