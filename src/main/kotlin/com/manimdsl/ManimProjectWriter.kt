@@ -23,6 +23,7 @@ class ManimProjectWriter(private val pythonCode: String) {
         val uid = UUID.randomUUID().toString()
         val commandOptions = options.joinToString(" ")
         val manimExitCode = ProcessBuilder("manim $fileName Main $commandOptions --media_dir $uid --video_output_dir $uid".split(" "))
+            .redirectError(ProcessBuilder.Redirect.INHERIT)
             .start().waitFor()
         val copyExitCode = ProcessBuilder("cp -f $uid/Main.mp4 $outputFile".split(" "))
             .start().waitFor()
