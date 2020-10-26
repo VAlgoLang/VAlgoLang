@@ -230,6 +230,17 @@ class VirtualMachine(
                             linearRepresentation.addAll(instructions)
                             return poppedValue
                         }
+                        is StackType.IsEmptyMethod -> {
+                            return BoolValue(ds.stack.isEmpty())
+                        }
+                        is StackType.SizeMethod -> {
+                            return DoubleValue(ds.stack.size.toDouble())
+                        }
+                        is StackType.PeekMethod -> {
+                            val clonedPeekValue = ds.stack.peek().clone()
+                            clonedPeekValue.manimObject = EmptyMObject
+                            return clonedPeekValue
+                        }
                         else -> EmptyValue
                     }
                 }
@@ -290,6 +301,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
+            addSleep(1.0)
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             //If
             if (conditionValue.value) {
@@ -299,6 +311,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
+                addSleep(1.0)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -308,7 +321,8 @@ class VirtualMachine(
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
-            return executeStatementBlock(ifStatementNode.elseBlock.statements)
+            addSleep(1.0)
+            return executeStatementBlock(ifStatementNode.elseBlock)
 
         }
 

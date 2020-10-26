@@ -51,10 +51,9 @@ sealed class ExecValue {
 
 data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : ExecValue() {
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
+
     override fun hashCode(): Int {
-        var result = value.hashCode()
-        result = 31 * result + manimObject.hashCode()
-        return result
+        return value.hashCode()
     }
 
     override fun clone(): ExecValue {
