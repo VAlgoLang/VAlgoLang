@@ -37,7 +37,7 @@ class ValidRuntimeTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("data")
-    fun testFileIsSemanticallyValid(fileName: String) {
+    fun testFileExecutesProperlyAtRuntime(fileName: String) {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
         val (_, program) = parser.parseFile()
