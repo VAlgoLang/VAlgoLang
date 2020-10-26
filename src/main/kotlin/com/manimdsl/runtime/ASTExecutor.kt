@@ -98,6 +98,10 @@ class VirtualMachine(
             return EmptyValue
         }
 
+        private fun addSleep(length: Double) {
+            linearRepresentation.add(Sleep(length))
+        }
+
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
             if (updatePc) pc = line
             linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
@@ -322,7 +326,7 @@ class VirtualMachine(
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
             addSleep(1.0)
-            return executeStatementBlock(ifStatementNode.elseBlock)
+            return executeStatementBlock(ifStatementNode.elseBlock.statements)
 
         }
 
