@@ -1,7 +1,11 @@
 package com.manimdsl.stylesheet
 
+import com.manimdsl.ManimDSLParser
 import com.manimdsl.executor.StackValue
-import com.manimdsl.frontend.*
+import com.manimdsl.frontend.IdentifierData
+import com.manimdsl.frontend.NumberType
+import com.manimdsl.frontend.StackType
+import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.runtime.VirtualMachine
 import org.hamcrest.CoreMatchers.`is`

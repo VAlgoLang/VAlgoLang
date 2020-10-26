@@ -1,6 +1,6 @@
 package com.manimdsl.errorhandling
 
-import com.manimdsl.frontend.ExitStatus
+import com.manimdsl.ExitStatus
 
 /* Error handler object which stores errors */
 object ErrorHandler {

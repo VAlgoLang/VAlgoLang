@@ -1,5 +1,6 @@
 package com.manimdsl.runtime
 
+import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*

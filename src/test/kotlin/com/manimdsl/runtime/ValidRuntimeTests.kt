@@ -1,7 +1,7 @@
 package com.manimdsl.semanticanalysis
 
-import com.manimdsl.frontend.ExitStatus
-import com.manimdsl.frontend.ManimDSLParser
+import com.manimdsl.ExitStatus
+import com.manimdsl.ManimDSLParser
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import org.junit.Assert.assertEquals

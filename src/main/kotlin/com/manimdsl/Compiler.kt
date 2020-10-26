@@ -2,8 +2,6 @@ package com.manimdsl
 
 import com.manimdsl.animation.ManimProjectWriter
 import com.manimdsl.animation.ManimWriter
-import com.manimdsl.frontend.ExitStatus
-import com.manimdsl.frontend.ManimDSLParser
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import picocli.CommandLine

@@ -1,10 +1,14 @@
-package com.manimdsl.frontend
+package com.manimdsl
 
 import antlr.ManimLexer
 import antlr.ManimParser
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
+import com.manimdsl.frontend.ManimParserVisitor
+import com.manimdsl.frontend.ProgramNode
+import com.manimdsl.frontend.StatementNode
+import com.manimdsl.frontend.SymbolTableVisitor
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode

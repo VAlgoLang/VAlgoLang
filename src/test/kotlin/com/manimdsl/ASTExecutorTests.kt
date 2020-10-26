@@ -1,6 +1,4 @@
 package com.manimdsl
-import com.manimdsl.frontend.ManimDSLParser
-import com.manimdsl.frontend.ParserResult
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
 import com.manimdsl.runtime.VirtualMachine
