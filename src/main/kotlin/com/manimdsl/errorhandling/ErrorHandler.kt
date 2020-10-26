@@ -19,12 +19,9 @@ object ErrorHandler {
     }
 
     fun addRuntimeError(errorEvent: String, lineNumber: Int) {
-        println(
-                "Error detected during program execution. Animation could not be generated. \n" +
-                        "Exit code: ${ExitStatus.RUNTIME_ERROR.code}"
-        )
-        println("Your program failed at line $lineNumber: $errorEvent"
-        )
+        println("Error detected during program execution. Animation could not be generated")
+        println("Exit code: ${ExitStatus.RUNTIME_ERROR.code}")
+        println("Your program failed at line $lineNumber: $errorEvent")
     }
 
     fun addWarning(warningEvent: String) {
