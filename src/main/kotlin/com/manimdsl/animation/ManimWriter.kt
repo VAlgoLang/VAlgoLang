@@ -1,9 +1,6 @@
 package com.manimdsl.animation
 
-import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.MObject
-import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.linearrepresentation.*
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -20,6 +17,9 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.addAll(listOf("python/data_structure.py", it.shape.classPath))
                 }
                 is MObject -> {
+                    shapeClassPaths.add(it.shape.classPath)
+                }
+                is VariableBlock -> {
                     shapeClassPaths.add(it.shape.classPath)
                 }
             }

@@ -1,6 +1,7 @@
 package com.manimdsl
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.linearrepresentation.VariableBlock
 import com.manimdsl.linearrepresentation.Sleep
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
@@ -22,6 +23,16 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
+            PartitionBlock(
+                    scaleLeft = "1/3",
+                    scaleRight = "2/3"
+            ),
+            VariableBlock(
+                    variables = listOf("x = 1"),
+                    ident = "variable_block",
+                    variableGroupName = "variable_vg",
+                    textColor = null
+            ),
             CodeBlock(
                 lines = listOf("fun f(x: number): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
                 ident = "code_block",
