@@ -1,13 +1,10 @@
-package com.manimdsl
+package com.manimdsl.frontend
 
 import antlr.ManimLexer
 import antlr.ManimParser
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorListener
 import com.manimdsl.errorhandling.syntaxerror.SyntaxErrorStrategy
-import com.manimdsl.frontend.ASTNode
-import com.manimdsl.frontend.ProgramNode
-import com.manimdsl.frontend.SymbolTableVisitor
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
@@ -18,6 +15,7 @@ enum class ExitStatus(val code: Int) {
     EXIT_SUCCESS(0),
     SYNTAX_ERROR(100),
     SEMANTIC_ERROR(200),
+    RUNTIME_ERROR(300),
     PATH_ERROR(101)
 }
 
@@ -49,4 +47,4 @@ class ManimDSLParser(private val input: InputStream) {
     }
 }
 
-data class ParserResult(val exitStatus: ExitStatus, val abstractSyntaxTree: ProgramNode, val symbolTableVisitor: SymbolTableVisitor, val lineNodeMap: Map<Int, ASTNode>)
+data class ParserResult(val exitStatus: ExitStatus, val abstractSyntaxTree: ProgramNode, val symbolTableVisitor: SymbolTableVisitor, val lineNodeMap: Map<Int, StatementNode>)

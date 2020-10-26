@@ -1,5 +1,10 @@
 package com.manimdsl
 
+import com.manimdsl.animation.ManimProjectWriter
+import com.manimdsl.animation.ManimWriter
+import com.manimdsl.frontend.ExitStatus
+import com.manimdsl.frontend.ManimDSLParser
+import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import picocli.CommandLine
 import picocli.CommandLine.*
@@ -31,7 +36,11 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     }
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val manimInstructions = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+    val (exitStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
 
     val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
 

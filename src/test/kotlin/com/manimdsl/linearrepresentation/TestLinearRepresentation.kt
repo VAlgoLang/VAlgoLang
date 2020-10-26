@@ -1,7 +1,7 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.ManimProjectWriter
-import com.manimdsl.ManimWriter
+import com.manimdsl.animation.ManimProjectWriter
+import com.manimdsl.animation.ManimWriter
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
 import com.manimdsl.shapes.Rectangle

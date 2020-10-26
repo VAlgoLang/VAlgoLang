@@ -1,6 +1,9 @@
 package com.manimdsl
+import com.manimdsl.frontend.ManimDSLParser
+import com.manimdsl.frontend.ParserResult
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
@@ -31,7 +34,7 @@ class ASTExecutorTests {
             MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
         )
-        val actual = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n"), Stylesheet(null, symbolTable)).runProgram()
+        val (_, actual) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n"), Stylesheet(null, symbolTable)).runProgram()
 
         assertEquals(expected, actual)
 

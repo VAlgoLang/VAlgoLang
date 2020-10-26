@@ -1,7 +1,9 @@
-package com.manimdsl.syntaxanalysis
+package com.manimdsl.semanticanalysis
 
 import com.manimdsl.frontend.ExitStatus
 import com.manimdsl.frontend.ManimDSLParser
+import com.manimdsl.runtime.VirtualMachine
+import com.manimdsl.stylesheet.Stylesheet
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -12,7 +14,7 @@ import java.io.File
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-class ValidSyntaxTests {
+class ValidRuntimeTests {
     companion object {
         @JvmStatic
         fun data(): Stream<Arguments> {
@@ -35,11 +37,13 @@ class ValidSyntaxTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("data")
-    fun testFileIsSyntacticallyValid(fileName: String) {
+    fun testFileIsSemanticallyValid(fileName: String) {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
-        val (syntaxErrorStatus, _) = parser.parseFile()
-        assertEquals(ExitStatus.EXIT_SUCCESS, syntaxErrorStatus)
+        val (_, program) = parser.parseFile()
+        val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = parser.convertToAst(program)
+        val (exitStatus, _) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, inputFile.readLines(), Stylesheet(null, symbolTable)).runProgram()
+        assertEquals(ExitStatus.EXIT_SUCCESS, exitStatus)
     }
 
 }

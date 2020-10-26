@@ -1,5 +1,6 @@
-package com.manimdsl
+package com.manimdsl.runtime
 
+import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
@@ -10,7 +11,7 @@ import java.util.*
 class VirtualMachine(
     private val program: ProgramNode,
     private val symbolTableVisitor: SymbolTableVisitor,
-    private val statements: Map<Int, ASTNode>,
+    private val statements: Map<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet
 ) {
@@ -35,11 +36,16 @@ class VirtualMachine(
         }
     }
 
-    fun runProgram(): List<ManimInstr> {
+    fun runProgram(): Pair<ExitStatus, MutableList<ManimInstr>> {
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
-        Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
-        return linearRepresentation
+        val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
+        return if (result is RuntimeError) {
+            addRuntimeError(result.value, result.lineNumber)
+            Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
+        } else {
+            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
+        }
     }
 
     private inner class Frame(
@@ -55,14 +61,14 @@ class VirtualMachine(
             while (pc <= finalLine) {
 
                 if (statements.containsKey(pc)) {
-                    val statement = statements[pc]
+                    val statement = statements[pc]!!
 
                     if (statement is CodeNode) {
                         moveToLine()
                     }
 
                     val value = executeStatement(statement)
-                    if (value !is EmptyValue) return value
+                    if (statement is ReturnNode || statement is IfStatementNode || value is RuntimeError) return value
 
                 }
                 fetchNextStatement()
@@ -71,26 +77,24 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun executeStatement(statement: ASTNode?): ExecValue {
-            when (statement) {
-                is ReturnNode -> return executeExpression(statement.expression)
-                is FunctionNode -> {
-                    // just go onto next line, this is just a label
-                }
-                is SleepNode -> executeSleep(statement)
-                is AssignmentNode -> executeAssignment(statement)
-                is DeclarationNode -> executeAssignment(statement)
-                is MethodCallNode -> executeMethodCall(statement, false)
-                is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatementNode -> return executeIfStatement(statement)
-                is ElseNode -> return EmptyValue
+        private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
+            is ReturnNode -> executeExpression(statement.expression)
+            is FunctionNode -> {
+                // just go onto next line, this is just a label
+                EmptyValue
             }
-
-            return EmptyValue
+            is SleepNode -> executeSleep(statement)
+            is AssignmentNode -> executeAssignment(statement)
+            is DeclarationNode -> executeAssignment(statement)
+            is MethodCallNode -> executeMethodCall(statement, false)
+            is FunctionCallNode -> executeFunctionCall(statement)
+            is IfStatementNode -> executeIfStatement(statement)
+            else -> EmptyValue
         }
 
-        private fun executeSleep(statement: SleepNode) {
+        private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
+            return EmptyValue
         }
 
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
@@ -118,15 +122,17 @@ class VirtualMachine(
             ++pc
         }
 
-        private fun executeAssignment(node: DeclarationOrAssignment) {
-            variables[node.identifier] = executeExpression(node.expression, identifier = node.identifier)
+        private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
+            val assignedValue = executeExpression(node.expression, identifier = node.identifier)
+            variables[node.identifier] = assignedValue
+            return if (assignedValue is RuntimeError) {
+                assignedValue
+            } else {
+                EmptyValue
+            }
         }
 
-        private fun executeExpression(
-            node: ExpressionNode,
-            insideMethodCall: Boolean = false,
-            identifier: String = ""
-        ) = when (node) {
+        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: String = ""): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall)
@@ -191,6 +197,9 @@ class VirtualMachine(
                             EmptyValue
                         }
                         is StackType.PopMethod -> {
+                            if (ds.stack.empty()) {
+                                return RuntimeError(value = "Attempted to pop from empty stack ${node.instanceIdentifier}", lineNumber = pc)
+                            }
                             val poppedValue = ds.stack.pop()
                             val newTopOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
 
@@ -298,8 +307,8 @@ class VirtualMachine(
             statementBlock.statements.forEach {
                 moveToLine(it.lineNumber)
                 execValue = executeStatement(it)
-                if (it is ReturnNode) {
-                    return execValue;
+                if (execValue !is EmptyValue) {
+                    return execValue
                 }
             }
             return execValue

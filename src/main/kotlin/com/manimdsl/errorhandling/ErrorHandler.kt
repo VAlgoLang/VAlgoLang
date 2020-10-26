@@ -1,6 +1,6 @@
 package com.manimdsl.errorhandling
 
-import com.manimdsl.ExitStatus
+import com.manimdsl.frontend.ExitStatus
 
 /* Error handler object which stores errors */
 object ErrorHandler {
@@ -16,6 +16,15 @@ object ErrorHandler {
 
     fun addSemanticError(errorEvent: String, linePos: String) {
         semanticErrors.add("Semantic error at $linePos: $errorEvent")
+    }
+
+    fun addRuntimeError(errorEvent: String, lineNumber: Int) {
+        println(
+                "Error detected during program execution. Animation could not be generated. \n" +
+                        "Exit code: ${ExitStatus.RUNTIME_ERROR.code}"
+        )
+        println("Your program failed at line $lineNumber: $errorEvent"
+        )
     }
 
     fun addWarning(warningEvent: String) {

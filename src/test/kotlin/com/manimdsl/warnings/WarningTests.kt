@@ -1,6 +1,6 @@
 package com.manimdsl.warnings
 
-import com.manimdsl.ManimDSLParser
+import com.manimdsl.frontend.ManimDSLParser
 import com.manimdsl.stylesheet.Stylesheet
 import org.junit.After
 import org.junit.Assert

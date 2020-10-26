@@ -1,7 +1,7 @@
 package com.manimdsl.syntaxanalysis
 
-import com.manimdsl.ExitStatus
-import com.manimdsl.ManimDSLParser
+import com.manimdsl.frontend.ExitStatus
+import com.manimdsl.frontend.ManimDSLParser
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.*
