@@ -90,7 +90,11 @@ class VirtualMachine(
         }
 
         private fun executeSleep(statement: SleepNode) {
-            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
+            addSleep((executeExpression(statement.sleepTime) as DoubleValue).value)
+        }
+
+        private fun addSleep(length: Double) {
+            linearRepresentation.add(Sleep(length))
         }
 
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
@@ -270,6 +274,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
+            addSleep(1.0)
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             //If
             if (conditionValue.value) {
@@ -279,6 +284,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
+                addSleep(1.0)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -288,6 +294,7 @@ class VirtualMachine(
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
+            addSleep(1.0)
             return executeStatementBlock(ifStatementNode.elseBlock)
 
         }
