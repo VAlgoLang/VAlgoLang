@@ -1,5 +1,7 @@
 package com.manimdsl.executor
 
+import com.manimdsl.ExitStatus
+
 sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
 
     abstract var width: Int
@@ -28,7 +30,7 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
         return width * height
     }
 
-    fun shapeOverlapsShape(boundaryShape: BoundaryShape): Boolean {
+    fun overlapsShape(boundaryShape: BoundaryShape): Boolean {
         val l1 = Pair(x1, y1 + height)
         val r1 = Pair(x1 + width, y1)
         val l2 = Pair(boundaryShape.x1, boundaryShape.y1 + boundaryShape.height)
@@ -162,20 +164,27 @@ object Scene {
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
 
-    fun compute(shapes: List<Pair<String, BoundaryShape>>): Map<String, BoundaryShape> {
-        val sortedShapes = shapes.sortedBy { -it.second.maxSize }
-        sortedShapes.forEach {
-            when (it.second) {
-                is WideBoundary -> addToScene(Corner.BL, it.second)
-                is SquareBoundary -> addToScene(Corner.TR, it.second)
-                is TallBoundary -> addToScene(Corner.TR, it.second)
+    fun compute(shapes: List<Pair<String, BoundaryShape>>): Pair<ExitStatus, Map<String, BoundaryShape>> {
+        val total = shapes.sumBy { it.second.area() }
+        if (total > sceneShape.area()) {
+            println("Error: Too many datastructures. Could not fit on animation")
+            return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
+        } else {
+            val sortedShapes = shapes.sortedBy { -it.second.maxSize }
+            sortedShapes.forEach {
+                val didAddToScene = when (it.second) {
+                    is WideBoundary -> addToScene(Corner.BL, it.second)
+                    is SquareBoundary -> addToScene(Corner.TR, it.second)
+                    is TallBoundary -> addToScene(Corner.TR, it.second)
+                }
+                if(!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
             }
+            sortedShapes.forEach { maximise(it.second) }
+            return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
         }
-        sortedShapes.forEach { maximise(it.second) }
-        return sortedShapes.toMap()
     }
 
-    private fun addToScene(corner: Corner, boundaryShape: BoundaryShape, secondScan: Boolean = false) {
+    private fun addToScene(corner: Corner, boundaryShape: BoundaryShape, secondScan: Boolean = false): Boolean {
         return when (corner) {
             Corner.BL -> addOnSide(
                 corner,
@@ -215,8 +224,8 @@ object Scene {
         }
     }
 
-    private fun addOnSide(corner: Corner, boundaryShape: BoundaryShape, secondScan: Boolean) {
-        if (sceneShapes.any { it.shapeOverlapsShape(boundaryShape) }) {
+    private fun addOnSide(corner: Corner, boundaryShape: BoundaryShape, secondScan: Boolean): Boolean {
+        if (sceneShapes.any { it.overlapsShape(boundaryShape) }) {
             return addOnSide(
                 corner,
                 moveShapeInDirection(corner.direction(secondScan), boundaryShape),
@@ -224,11 +233,14 @@ object Scene {
             )
         } else if (!withinScene(boundaryShape)) {
             if (secondScan) {
-                error("Coudl not fit")
+                // Could not fit on anywhere on the scene
+                println("Error: Too many datastructures. Could not fit on animation")
+                return false
             }
             return addToScene(corner.next(), boundaryShape, true)
         } else {
             sceneShapes.add(boundaryShape)
+            return true
         }
     }
 
@@ -243,7 +255,7 @@ object Scene {
 
     private fun isValidMaximisedShape(boundaryShape: BoundaryShape): Boolean {
         return withinScene(boundaryShape) && sceneShapes
-            .count { it.shapeOverlapsShape(boundaryShape) } == 1
+            .count { it.overlapsShape(boundaryShape) } == 1
     }
 
     private fun withinScene(boundaryShape: BoundaryShape): Boolean {

@@ -46,7 +46,10 @@ class VirtualMachine(
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else {
-            val computedBoundaries = Scene.compute(dataStructureBoundaries.toList())
+            val (exitStatus, computedBoundaries) = Scene.compute(dataStructureBoundaries.toList())
+            if(exitStatus != ExitStatus.EXIT_SUCCESS) {
+                return Pair(exitStatus, linearRepresentation)
+            }
             linearRepresentation.forEach {
                 if (it is InitStructure) {
                     val boundaryShape = computedBoundaries[it.ident]!!
