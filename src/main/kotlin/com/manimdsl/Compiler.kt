@@ -42,9 +42,15 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
 
     val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
 
-    if (generatePython) println("Writing file to ${outputVideoFile.removeSuffix(".mp4") + ".py"}")
-    val outputFile = writer.createPythonFile(if (generatePython) outputVideoFile.removeSuffix(".mp4") + ".py" else null)
-    println("File written successfully!")
+    val outputFile = if (generatePython) {
+        val pythonOutputFile = outputVideoFile.removeSuffix(".mp4") + ".py"
+        println("Writing file to $pythonOutputFile")
+        val output = writer.createPythonFile(if (generatePython) pythonOutputFile else null)
+        println("File written successfully!")
+        output
+    } else {
+        writer.createPythonFile()
+    }
 
     if (!onlyGenerateManim) {
         println("Generating animation...")
