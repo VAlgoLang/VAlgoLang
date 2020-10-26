@@ -49,7 +49,9 @@ class VirtualMachine(
             val computedBoundaries = Scene.compute(dataStructureBoundaries.toList())
             linearRepresentation.forEach {
                 if (it is InitStructure) {
-                    it.boundary = computedBoundaries[it.text]!!.corners()
+                    val boundaryShape = computedBoundaries[it.ident]!!
+                    it.boundary = boundaryShape.corners()
+                    it.maxSize = boundaryShape.maxSize
                 }
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
@@ -182,9 +184,10 @@ class VirtualMachine(
                             if (value is RuntimeError) {
                                 return value
                             }
-                            val boundaryShape = dataStructureBoundaries[node.instanceIdentifier]!!
+                            val initStructureIdent = (ds.manimObject as InitStructure).ident
+                            val boundaryShape = dataStructureBoundaries[initStructureIdent]!!
                             boundaryShape.maxSize++
-                            dataStructureBoundaries[node.instanceIdentifier] = boundaryShape
+                            dataStructureBoundaries[initStructureIdent] = boundaryShape
                             val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
@@ -266,7 +269,8 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
-                    dataStructureBoundaries[identifier] = TallBoundary()
+                    val initStructureIdent = variableNameGenerator.generateNameFromPrefix("empty")
+                    dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     val style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
@@ -274,7 +278,7 @@ class VirtualMachine(
                             node.type,
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
-                            variableNameGenerator.generateNameFromPrefix("empty"),
+                            initStructureIdent,
                             identifier,
                             color = style.borderColor,
                             textColor = style.textColor,
@@ -286,7 +290,7 @@ class VirtualMachine(
                             node.type,
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
-                            variableNameGenerator.generateNameFromPrefix("empty"),
+                            initStructureIdent,
                             identifier,
                             numStack.manimObject.shape,
                             color = style.borderColor,
