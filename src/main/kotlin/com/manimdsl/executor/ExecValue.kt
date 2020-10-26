@@ -104,3 +104,10 @@ object VoidValue : ExecValue() {
         return this
     }
 }
+
+// Used to propagate runtime error up scope
+data class RuntimeError(override val value: String, override var manimObject: MObject = EmptyMObject, val lineNumber: Int) : ExecValue() {
+    override fun clone(): ExecValue {
+        return RuntimeError(value, manimObject, lineNumber)
+    }
+}

@@ -1,4 +1,4 @@
-package com.manimdsl
+package com.manimdsl.animation
 
 import com.manimdsl.linearrepresentation.*
 

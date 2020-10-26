@@ -1,13 +1,12 @@
-package com.manimdsl
+package com.manimdsl.frontend
 
 import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
-import com.manimdsl.frontend.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
 
-    val lineNumberNodeMap = mutableMapOf<Int, ASTNode>()
+    val lineNumberNodeMap = mutableMapOf<Int, StatementNode>()
 
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
@@ -265,12 +264,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        val node = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
-
-        if (dataStructureMethod.returnType is ErrorType) {
-            lineNumberNodeMap[ctx.start.line] = node
-        }
-        return node
+        lineNumberNodeMap[ctx.start.line] = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        return lineNumberNodeMap[ctx.start.line] as MethodCallNode
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): FunctionCallNode {

@@ -18,6 +18,12 @@ object ErrorHandler {
         semanticErrors.add("Semantic error at $linePos: $errorEvent")
     }
 
+    fun addRuntimeError(errorEvent: String, lineNumber: Int) {
+        println("Error detected during program execution. Animation could not be generated")
+        println("Exit code: ${ExitStatus.RUNTIME_ERROR.code}")
+        println("Your program failed at line $lineNumber: $errorEvent")
+    }
+
     fun addWarning(warningEvent: String) {
         warnings.add("Warning: $warningEvent")
     }
