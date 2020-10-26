@@ -293,9 +293,7 @@ class VirtualMachine(
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             //If
             if (conditionValue.value) {
-                val execValue = executeStatementBlock(ifStatementNode.statements)
-                pc = ifStatementNode.endLineNumber
-                return execValue
+                return executeStatementBlock(ifStatementNode.statements)
             }
 
             // Elif
