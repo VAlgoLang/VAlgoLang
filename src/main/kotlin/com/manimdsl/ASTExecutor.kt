@@ -289,7 +289,7 @@ class VirtualMachine(
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             //If
             if (conditionValue.value) {
-                return executeStatementBlock(ifStatementNode)
+                return executeStatementBlock(ifStatementNode, ifStatementNode.endLineNumber)
             }
 
             // Elif
@@ -299,18 +299,19 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    return executeStatementBlock(elif)
+                    return executeStatementBlock(elif, ifStatementNode.endLineNumber)
                 }
             }
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
             addSleep(1.0)
-            return executeStatementBlock(ifStatementNode.elseBlock)
+            return executeStatementBlock(ifStatementNode.elseBlock, ifStatementNode.endLineNumber)
 
         }
 
-        private fun executeStatementBlock(statementBlock: StatementBlock): ExecValue {
+        private fun executeStatementBlock(statementBlock: StatementBlock, end: Int): ExecValue {
+            pc = end
             if (statementBlock.statements.isEmpty()) return EmptyValue
             var execValue: ExecValue = EmptyValue
             statementBlock.statements.forEach {
