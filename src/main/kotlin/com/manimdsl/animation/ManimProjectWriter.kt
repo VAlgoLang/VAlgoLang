@@ -1,4 +1,4 @@
-package com.manimdsl
+package com.manimdsl.animation
 
 import java.io.File
 import java.nio.file.Files
