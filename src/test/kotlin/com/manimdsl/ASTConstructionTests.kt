@@ -131,7 +131,7 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 9,
+                endLineNumber = 10,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
@@ -176,7 +176,7 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 5,
+                endLineNumber = 6,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
@@ -205,12 +205,12 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 3,
+                endLineNumber = 4,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
                 elifs = emptyList(),
-                elseBlock = ElseNode(3, 0, emptyList())
+                elseBlock = ElseNode(4, 0, emptyList())
             )
         )
         val reference = ProgramNode(listOf(), statements)
