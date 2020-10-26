@@ -1,6 +1,7 @@
 package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
+import com.manimdsl.errorhandling.ErrorHandler
 
 sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
 
@@ -167,7 +168,7 @@ object Scene {
     fun compute(shapes: List<Pair<String, BoundaryShape>>): Pair<ExitStatus, Map<String, BoundaryShape>> {
         val total = shapes.sumBy { it.second.area() }
         if (total > sceneShape.area()) {
-            println("Error: Too many datastructures. Could not fit on animation")
+            ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
             val sortedShapes = shapes.sortedBy { -it.second.maxSize }
@@ -234,7 +235,7 @@ object Scene {
         } else if (!withinScene(boundaryShape)) {
             if (secondScan) {
                 // Could not fit on anywhere on the scene
-                println("Error: Too many datastructures. Could not fit on animation")
+                ErrorHandler.addTooManyDatastructuresError()
                 return false
             }
             return addToScene(corner.next(), boundaryShape, true)
