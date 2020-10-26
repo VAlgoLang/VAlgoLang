@@ -69,7 +69,7 @@ class VirtualMachine(
                     }
 
                     val value = executeStatement(statement)
-                    if (statement is ReturnNode || statement is IfStatementNode || value is RuntimeError) return value
+                    if (statement is ReturnNode || value is RuntimeError) return value
 
                 }
                 fetchNextStatement()
@@ -293,7 +293,9 @@ class VirtualMachine(
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             //If
             if (conditionValue.value) {
-                return executeStatementBlock(ifStatementNode)
+                val execValue = executeStatementBlock(ifStatementNode.statements)
+                pc = ifStatementNode.endLineNumber
+                return execValue
             }
 
             // Elif
@@ -302,20 +304,20 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    return executeStatementBlock(elif)
+                    return executeStatementBlock(elif.statements)
                 }
             }
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
-            return executeStatementBlock(ifStatementNode.elseBlock)
+            return executeStatementBlock(ifStatementNode.elseBlock.statements)
 
         }
 
-        private fun executeStatementBlock(statementBlock: StatementBlock): ExecValue {
-            if (statementBlock.statements.isEmpty()) return EmptyValue
+        private fun executeStatementBlock(statements: List<StatementNode>): ExecValue {
+            if (statements.isEmpty()) return EmptyValue
             var execValue: ExecValue = EmptyValue
-            statementBlock.statements.forEach {
+            statements.forEach {
                 moveToLine(it.lineNumber)
                 execValue = executeStatement(it)
                 if (execValue !is EmptyValue) {
