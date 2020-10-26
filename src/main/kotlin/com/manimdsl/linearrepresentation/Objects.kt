@@ -72,6 +72,7 @@ data class InitStructure(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
+    var boundary: List<Pair<Int, Int>> = emptyList()
 ) : MObject {
     override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
 

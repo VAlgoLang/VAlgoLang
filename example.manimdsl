@@ -1,2 +1,12 @@
-let x = new Stack<number>;
-x.pop();
+let stack1 = new Stack<number>;
+let stack2 = new Stack<number>;
+if (stack1.isEmpty()) {
+    stack1.push(1);
+}
+stack1.push(1);
+stack1.push(1);
+
+
+if(stack1.size() == 1) {
+    stack2.push(stack1.peek());
+}
