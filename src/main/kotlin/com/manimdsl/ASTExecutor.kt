@@ -210,6 +210,12 @@ class VirtualMachine(
                             linearRepresentation.addAll(instructions)
                             return poppedValue
                         }
+                        is StackType.IsEmptyMethod -> {
+                            return BoolValue(ds.stack.isEmpty())
+                        }
+                        is StackType.SizeMethod -> {
+                            return DoubleValue(ds.stack.size.toDouble())
+                        }
                         else -> EmptyValue
                     }
                 }
