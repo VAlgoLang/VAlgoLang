@@ -47,7 +47,11 @@ class Rectangle(
         styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${it})") }
         styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${it})") }
 
-        return listOf("self.play(${instructions.joinToString(", ")})")
+        return if (instructions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("self.play(${instructions.joinToString(", ")})")
+        }
     }
 
 }
