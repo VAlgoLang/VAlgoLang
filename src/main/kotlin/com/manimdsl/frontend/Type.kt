@@ -52,7 +52,9 @@ data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 
 data class ArrayType(
     override var internalType: Type,
-    override val methods: Map<String, DataStructureMethod> = emptyMap()
+    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+        "length" to Length()
+    )
 ) : DataStructureType(internalType, methods) {
     object ArrayConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
@@ -63,12 +65,18 @@ data class ArrayType(
         override fun toString(): String = "constructor"
     }
 
+    data class Length(
+        override val returnType: Type = NumberType,
+        override var argumentTypes: List<Type> = emptyList(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
     override fun containsMethod(method: String): Boolean {
-        return false;
+        return methods.containsKey(method)
     }
 
     override fun getMethodByName(method: String): DataStructureMethod {
-        return ErrorMethod
+        return methods.getOrDefault(method, ErrorMethod)
     }
 
     override fun getConstructor(): ConstructorMethod {
