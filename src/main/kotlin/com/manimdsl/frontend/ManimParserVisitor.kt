@@ -149,22 +149,40 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitAssignmentStatement(ctx: AssignmentStatementContext): AssignmentNode {
         val expression = visit(ctx.expr()) as ExpressionNode
-        val identifier = ctx.IDENT().symbol.text
+        val lhs = ctx.assignment_lhs().text
+        val lhsType = (visit(ctx.assignment_lhs()) as Type)
         var rhsType = semanticAnalyser.inferType(symbolTable, expression)
-        val identifierType = symbolTable.getTypeOf(identifier)
 
         if (expression is FunctionCallNode && symbolTable.getTypeOf(expression.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(expression.functionIdentifier) as FunctionData
             if (functionData.inferred) {
-                functionData.type = identifierType
-                rhsType = identifierType
+                functionData.type = lhsType
+                rhsType = lhsType
             }
         }
 
-        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
-        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
-        lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, identifier, expression)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs, ctx)
+        lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
+    }
+
+    override fun visitIdentifierAssignment(ctx: IdentifierAssignmentContext): Type {
+        val identifier = ctx.IDENT().symbol.text
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        return symbolTable.getTypeOf(identifier)
+    }
+
+    override fun visitArrayAccessAssignment(ctx: ArrayAccessAssignmentContext): Type {
+        val arrayAccessNode = visit(ctx.array_access()) as ArrayAccessNode
+        val arrayType = symbolTable.getTypeOf(arrayAccessNode.arrayIdentifier)
+
+        // Return element type
+        return if (arrayType is ArrayType) {
+            arrayType.internalType
+        } else {
+            ErrorType
+        }
     }
 
     override fun visitMethodCallStatement(ctx: MethodCallStatementContext): ASTNode {
@@ -340,6 +358,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return unaryOpExpr
     }
 
+    override fun visitArrayAccessExpr(ctx: ArrayAccessExprContext?): ASTNode {
+        // TODO
+        return super.visitArrayAccessExpr(ctx)
+    }
+
 
     /** Literals **/
 
@@ -373,5 +396,29 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         // Stack only contains primitives as per grammar
         val containerType = visit(ctx.primitive_type()) as PrimitiveType
         return StackType(containerType)
+    }
+
+    override fun visitArrayType(ctx: ArrayTypeContext?): ASTNode {
+        // TODO
+        return super.visitArrayType(ctx)
+    }
+
+    override fun visitArray_initialiser(ctx: Array_initialiserContext?): ASTNode {
+        // TODO
+        return super.visitArray_initialiser(ctx)
+    }
+
+    override fun visitArray_access(ctx: Array_accessContext): ArrayAccessNode {
+        val arrayIdentifier = ctx.IDENT().symbol.text
+
+        val index = visit(ctx.expr()) as ExpressionNode
+        val indexType = semanticAnalyser.inferType(symbolTable, index)
+
+        if (indexType !is NumberType) {
+            // throw error
+        }
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
+        return ArrayAccessNode(ctx.start.line, arrayIdentifier, index)
     }
 }

@@ -20,11 +20,23 @@ object BoolType : PrimitiveType() {
 
 sealed class DataStructureType(
     open var internalType: Type,
-    open val methods: HashMap<String, DataStructureMethod>
+    open val methods: Map<String, DataStructureMethod>
 ) : Type() {
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
+}
 
+data class ArrayType(
+    override var internalType: Type,
+    override val methods: Map<String, DataStructureMethod> = emptyMap()
+) : DataStructureType(internalType, methods) {
+    override fun containsMethod(method: String): Boolean {
+        return false;
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return ErrorMethod
+    }
 }
 
 
@@ -42,12 +54,16 @@ object ErrorMethod : DataStructureMethod {
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class StackType(
     override var internalType: Type,
-    override val methods: HashMap<String, DataStructureMethod> = hashMapOf(
+    override val methods: Map<String, DataStructureMethod> = hashMapOf(
         "push" to PushMethod(
             argumentTypes = listOf(
                 internalType,
             )
-        ), "pop" to PopMethod(internalType), "isEmpty" to IsEmptyMethod(), "size" to SizeMethod(),  "peek" to PeekMethod(internalType)
+        ),
+        "pop" to PopMethod(internalType),
+        "isEmpty" to IsEmptyMethod(),
+        "size" to SizeMethod(),
+        "peek" to PeekMethod(internalType)
     )
 ) : DataStructureType(internalType, methods) {
 

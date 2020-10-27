@@ -17,6 +17,7 @@ class SemanticAnalysis {
             is BoolNode -> BoolType
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
+            is ArrayAccessNode -> TODO()
         }
 
     private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {

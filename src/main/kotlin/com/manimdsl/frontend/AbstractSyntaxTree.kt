@@ -91,6 +91,9 @@ data class ElseNode(
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, val identifier: String) : ExpressionNode(lineNumber)
+data class ArrayAccessNode(override val lineNumber: Int, val arrayIdentifier: String, val index: ExpressionNode) :
+    ExpressionNode(lineNumber)
+
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
