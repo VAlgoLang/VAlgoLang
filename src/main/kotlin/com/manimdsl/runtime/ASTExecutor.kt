@@ -290,16 +290,31 @@ class VirtualMachine(
         }
 
         private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
-            return op(executeExpression(node.expr))
+            val subExpression = executeExpression(node.expr)
+            return if (subExpression is RuntimeError) {
+                subExpression
+            } else {
+                op(subExpression)
+            }
         }
 
         private fun executeBinaryOp(
             node: BinaryExpression,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
         ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
             return op(
-                executeExpression(node.expr1),
-                executeExpression(node.expr2)
+                    leftExpression,
+                    rightExpression
             )
         }
 
