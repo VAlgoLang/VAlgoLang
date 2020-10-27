@@ -20,7 +20,7 @@ fun inconsistentTypeError(
     ctx: ParserRuleContext
 ) {
     addSemanticError(
-        "All elements must be of type $expected",
+        "All values must be of type $expected",
         getErrorLinePos(ctx)
     )
 }

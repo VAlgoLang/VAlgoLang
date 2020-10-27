@@ -1,0 +1,4 @@
+let a = new Array<number>(3);
+let b = new Array<number>(3){1,2,3};
+let c = new Array<number>(){1,2,3};
+

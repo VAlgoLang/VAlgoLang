@@ -1,0 +1,1 @@
+let x = new Array<number>(){true, false, true}
