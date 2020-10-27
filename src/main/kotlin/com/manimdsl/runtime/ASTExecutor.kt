@@ -304,7 +304,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            addSleep(1.0)
+            addSleep(0.5)
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
@@ -317,7 +317,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                addSleep(1.0)
+                addSleep(0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -327,7 +327,7 @@ class VirtualMachine(
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
-            addSleep(1.0)
+            addSleep(0.5)
             return executeStatementBlock(ifStatementNode.elseBlock.statements)
 
         }
