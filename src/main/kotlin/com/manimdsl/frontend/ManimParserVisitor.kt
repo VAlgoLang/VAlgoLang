@@ -16,8 +16,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val functions = ctx.function().map { visit(it) as FunctionNode }
         semanticAnalyser.tooManyInferredFunctionsCheck(symbolTable, ctx)
         return ProgramNode(
-                functions,
-                flattenStatements(visit(ctx.stat()) as StatementNode))
+            functions,
+            flattenStatements(visit(ctx.stat()) as StatementNode)
+        )
     }
 
     override fun visitFunction(ctx: FunctionContext): FunctionNode {
@@ -61,7 +62,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return lineNumberNodeMap[ctx.start.line] as FunctionNode
     }
 
-    override fun visitParameterList(ctx: ParameterListContext?): ParameterListNode{
+    override fun visitParameterList(ctx: ParameterListContext?): ParameterListNode {
         if (ctx == null) {
             return ParameterListNode(listOf())
         }
@@ -265,6 +266,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
 
+
             // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
             semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
@@ -272,7 +274,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                 dataStructureType,
                 argTypes,
                 method,
-                ctx.arg_list()
+                ctx
             )
             method
 
@@ -280,7 +282,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        lineNumberNodeMap[ctx.start.line] = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        lineNumberNodeMap[ctx.start.line] =
+            MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
         return lineNumberNodeMap[ctx.start.line] as MethodCallNode
     }
 
@@ -305,36 +308,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
 
         // Check arguments
-        val arguments = if (ctx.arg_list() != null) {
-            val expressions = (visit(ctx.arg_list()) as ArgumentNode).arguments
-            val argumentTypes = expressions.map {
-                semanticAnalyser.inferType(symbolTable, it)
-            }
-            semanticAnalyser.incompatibleArgumentTypesCheck(
-                dataStructureType,
-                argumentTypes,
-                dataStructureType.getConstructor(),
-                ctx.arg_list()
-            )
-            expressions
+        val (arguments, argumentTypes) = if (ctx.arg_list() != null) {
+            val argExpressions = (visit(ctx.arg_list()) as ArgumentNode).arguments
+            Pair(argExpressions, argExpressions.map { semanticAnalyser.inferType(symbolTable, it) })
         } else {
-            emptyList()
+            Pair(emptyList(), emptyList())
         }
 
         // Check intial values
         val initialValue = if (ctx.data_structure_initialiser() != null) {
-            val initialiser = visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode
-            semanticAnalyser.allExpressionsAreSameTypeCheck(
-                dataStructureType.internalType,
-                initialiser.expressions,
-                symbolTable,
-                ctx
-            )
-            initialiser.expressions
+            (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
         } else {
             emptyList()
         }
 
+        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValue, symbolTable, ctx)
+        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValue, argumentTypes, ctx)
         return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialValue)
     }
 

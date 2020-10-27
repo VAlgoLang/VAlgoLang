@@ -135,18 +135,13 @@ class SemanticAnalysis {
         }
     }
 
-    fun incompatibleArgumentTypesCheck(
+    private fun incompatibleArgumentTypesCheck(
         dataStructureType: DataStructureType,
         argumentTypes: List<Type>,
         dataStructureMethod: DataStructureMethod,
         ctx: ManimParser.Arg_listContext
     ) {
         val expectedTypes = dataStructureMethod.argumentTypes
-
-        if (!dataStructureMethod.varargs) {
-            invalidNumberOfArgumentsCheck(dataStructureType, dataStructureMethod, argumentTypes.size, ctx)
-        }
-
         if (dataStructureMethod != ErrorMethod &&
             (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size)
         ) {
@@ -165,6 +160,34 @@ class SemanticAnalysis {
                         argCtx
                     )
                 }
+            }
+        }
+    }
+
+    fun incompatibleArgumentTypesCheck(
+        dataStructureType: DataStructureType,
+        argumentTypes: List<Type>,
+        dataStructureMethod: DataStructureMethod,
+        ctx: ParserRuleContext
+    ) {
+        if (!dataStructureMethod.varargs) {
+            invalidNumberOfArgumentsCheck(dataStructureType, dataStructureMethod, argumentTypes.size, ctx)
+        }
+
+        if (argumentTypes.isNotEmpty()) {
+            when (ctx) {
+                is ManimParser.MethodCallContext -> incompatibleArgumentTypesCheck(
+                    dataStructureType,
+                    argumentTypes,
+                    dataStructureMethod,
+                    ctx.arg_list()
+                )
+                is ManimParser.DataStructureContructorContext -> incompatibleArgumentTypesCheck(
+                    dataStructureType,
+                    argumentTypes,
+                    dataStructureMethod,
+                    ctx.arg_list()
+                )
             }
         }
     }
@@ -350,5 +373,23 @@ class SemanticAnalysis {
         if (expressions.any { inferType(currentSymbolTable, it) != expected }) {
             inconsistentTypeError(expected, ctx)
         }
+    }
+
+    fun datastructureConstructorCheck(
+        dataStructureType: DataStructureType,
+        initialValue: List<ExpressionNode>,
+        argumentTypes: List<Type>,
+        ctx: ManimParser.DataStructureContructorContext
+    ) {
+        val constructor = dataStructureType.getConstructor()
+        if (initialValue.isEmpty() && argumentTypes.size < constructor.minRequiredArgsWithoutInitialValue) {
+            missingConstructorArgumentsError(
+                dataStructureType,
+                constructor.minRequiredArgsWithoutInitialValue,
+                argumentTypes.size,
+                ctx
+            )
+        }
+        incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
     }
 }

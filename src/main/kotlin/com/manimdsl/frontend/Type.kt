@@ -24,7 +24,7 @@ sealed class DataStructureType(
 ) : Type() {
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
-    abstract fun getConstructor(): DataStructureMethod
+    abstract fun getConstructor(): ConstructorMethod
 }
 
 
@@ -32,8 +32,12 @@ interface DataStructureMethod {
     val returnType: Type
     val argumentTypes: List<Type>
 
-    // When true last type in argumentTypes will be for a variable number of arguments
+    // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
+}
+
+interface ConstructorMethod : DataStructureMethod {
+    val minRequiredArgsWithoutInitialValue: Int
 }
 
 object ErrorMethod : DataStructureMethod {
@@ -50,7 +54,8 @@ data class ArrayType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = emptyMap()
 ) : DataStructureType(internalType, methods) {
-    object ArrayConstructor : DataStructureMethod {
+    object ArrayConstructor : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
         override val argumentTypes: List<Type> = listOf(NumberType)
         override val varargs: Boolean = true
@@ -66,7 +71,7 @@ data class ArrayType(
         return ErrorMethod
     }
 
-    override fun getConstructor(): DataStructureMethod {
+    override fun getConstructor(): ConstructorMethod {
         return ArrayConstructor
     }
 
@@ -87,7 +92,8 @@ data class StackType(
         "peek" to PeekMethod(internalType)
     )
 ) : DataStructureType(internalType, methods) {
-    object StackConstructor : DataStructureMethod {
+    object StackConstructor : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 0
         override val returnType: Type = VoidType
         override val argumentTypes: List<Type> = emptyList()
         override val varargs: Boolean = false
@@ -133,7 +139,7 @@ data class StackType(
         return methods.getOrDefault(method, ErrorMethod)
     }
 
-    override fun getConstructor(): DataStructureMethod {
+    override fun getConstructor(): ConstructorMethod {
         return StackConstructor
     }
 

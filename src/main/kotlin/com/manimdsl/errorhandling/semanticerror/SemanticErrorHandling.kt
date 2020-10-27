@@ -1,6 +1,7 @@
 package com.manimdsl.errorhandling.semanticerror
 
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
+import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 
@@ -23,6 +24,19 @@ fun inconsistentTypeError(
         getErrorLinePos(ctx)
     )
 }
+
+fun missingConstructorArgumentsError(
+    dataStructureType: DataStructureType,
+    expected: Int,
+    actual: Int,
+    ctx: ParserRuleContext
+) {
+    addSemanticError(
+        "$dataStructureType constructor expects $expected arguments but only found $actual",
+        getErrorLinePos(ctx)
+    )
+}
+
 
 fun redeclarationError(
     variable: String, variableType: Type,
