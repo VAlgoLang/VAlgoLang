@@ -1,3 +1,3 @@
-let x = new Stack<number>;
-let y = new Stack<number>;
+let x = new Stack<number>();
+let y = new Stack<number>();
 x.push(y);

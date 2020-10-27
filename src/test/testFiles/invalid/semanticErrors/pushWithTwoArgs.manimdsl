@@ -1,2 +1,2 @@
-let x = new Stack<number>;
+let x = new Stack<number>();
 x.push(1, 2);
