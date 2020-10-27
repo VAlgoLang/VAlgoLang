@@ -25,11 +25,12 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = 1000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
     private val MAX_DISPLAYED_VARIABLES = 4
 
     init {
         fileLines.indices.forEach {
+            println(ALLOCATED_STACKS)
             if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
