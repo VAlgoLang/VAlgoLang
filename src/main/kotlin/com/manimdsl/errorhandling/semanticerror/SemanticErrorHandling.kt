@@ -14,6 +14,16 @@ fun declareAssignError(
     )
 }
 
+fun inconsistentTypeError(
+    expected: Type,
+    ctx: ParserRuleContext
+) {
+    addSemanticError(
+        "All elements must be of type $expected",
+        getErrorLinePos(ctx)
+    )
+}
+
 fun redeclarationError(
     variable: String, variableType: Type,
     ctx: ParserRuleContext

@@ -17,8 +17,18 @@ class SemanticAnalysis {
             is BoolNode -> BoolType
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
-            is ArrayAccessNode -> TODO()
+            is ArrayElemNode -> getArrayAccessType(expression, currentSymbolTable)
         }
+
+    private fun getArrayAccessType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+        // To extend to multiple dimensions perform below recursively
+        val arrayType = currentSymbolTable.getTypeOf(expression.arrayIdentifier)
+        return if (arrayType is ArrayType) {
+            arrayType.internalType
+        } else {
+            ErrorType
+        }
+    }
 
     private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
         val exprType = getExpressionType(expression.expr, currentSymbolTable)
@@ -64,6 +74,7 @@ class SemanticAnalysis {
         }
     }
 
+
     fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
             undeclaredAssignError(identifier, ctx)
@@ -95,8 +106,17 @@ class SemanticAnalysis {
         ctx: ParserRuleContext
     ) {
         val method = dataStructureType.getMethodByName(methodName)
+        invalidNumberOfArgumentsCheck(dataStructureType, method, numArgs, ctx)
+    }
+
+    fun invalidNumberOfArgumentsCheck(
+        dataStructureType: DataStructureType,
+        method: DataStructureMethod,
+        numArgs: Int,
+        ctx: ParserRuleContext
+    ) {
         if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
-            numOfArgsInMethodCallError(dataStructureType.toString(), methodName, numArgs, ctx)
+            numOfArgsInMethodCallError(dataStructureType.toString(), method.toString(), numArgs, ctx)
         }
     }
 
@@ -119,13 +139,24 @@ class SemanticAnalysis {
         dataStructureType: DataStructureType,
         argumentTypes: List<Type>,
         dataStructureMethod: DataStructureMethod,
-        ctx: ManimParser.MethodCallContext
+        ctx: ManimParser.Arg_listContext
     ) {
-        if (dataStructureMethod != ErrorMethod && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
+        val expectedTypes = dataStructureMethod.argumentTypes
+
+        if (!dataStructureMethod.varargs) {
+            invalidNumberOfArgumentsCheck(dataStructureType, dataStructureMethod, argumentTypes.size, ctx)
+        }
+
+        if (dataStructureMethod != ErrorMethod &&
+            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size)
+        ) {
+
             argumentTypes.forEachIndexed { index, type ->
-                if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
-                    val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
-                    val argName = ctx.arg_list().getChild(index).text
+                // Sets expected type. When varargs is enabled then set to last if index greater than size of given types
+                val expectedType = if (index in expectedTypes.indices) expectedTypes[index] else expectedTypes.last()
+                if (type != expectedType && type is PrimitiveType) {
+                    val argCtx = ctx.getRuleContext(ManimParser.ExprContext::class.java, index)
+                    val argName = ctx.getChild(index).text
                     typeOfArgsInMethodCallError(
                         dataStructureType.toString(),
                         dataStructureMethod.toString(),
@@ -307,6 +338,17 @@ class SemanticAnalysis {
             if (functionData.inferred) {
                 undeclaredAssignError(identifier, ctx)
             }
+        }
+    }
+
+    fun allExpressionsAreSameTypeCheck(
+        expected: Type,
+        expressions: List<ExpressionNode>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        if (expressions.any { inferType(currentSymbolTable, it) != expected }) {
+            inconsistentTypeError(expected, ctx)
         }
     }
 }

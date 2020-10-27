@@ -166,7 +166,7 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
-            is ArrayAccessNode -> EmptyValue
+            is ArrayElemNode -> TODO()
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
