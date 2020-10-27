@@ -25,6 +25,7 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val acceptableNonStatements = setOf("}", "{", "")
+    private val ALLOCATED_STACKS = 1000
 
     init {
         fileLines.indices.forEach {
@@ -50,14 +51,18 @@ class VirtualMachine(
     }
 
     private inner class Frame(
-        private var pc: Int,
-        private var finalLine: Int,
-        private var variables: MutableMap<String, ExecValue>
+            private var pc: Int,
+            private var finalLine: Int,
+            private var variables: MutableMap<String, ExecValue>,
+            val depth: Int = 1
     ) {
 
         // instantiate new Frame and execute on scoping changes e.g. recursion
 
         fun runFrame(): ExecValue {
+            if (depth > ALLOCATED_STACKS) {
+                return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
+            }
 
             while (pc <= finalLine) {
 
@@ -123,7 +128,7 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth+1).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             moveToLine()
             return returnValue
@@ -241,6 +246,9 @@ class VirtualMachine(
                             return DoubleValue(ds.stack.size.toDouble())
                         }
                         is StackType.PeekMethod -> {
+                            if (ds.stack.empty()) {
+                                return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
+                            }
                             val clonedPeekValue = ds.stack.peek().clone()
                             clonedPeekValue.manimObject = EmptyMObject
                             return clonedPeekValue
@@ -295,16 +303,31 @@ class VirtualMachine(
         }
 
         private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
-            return op(executeExpression(node.expr))
+            val subExpression = executeExpression(node.expr)
+            return if (subExpression is RuntimeError) {
+                subExpression
+            } else {
+                op(subExpression)
+            }
         }
 
         private fun executeBinaryOp(
             node: BinaryExpression,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
         ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
             return op(
-                executeExpression(node.expr1),
-                executeExpression(node.expr2)
+                    leftExpression,
+                    rightExpression
             )
         }
 
