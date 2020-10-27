@@ -79,9 +79,9 @@ data class PartitionBlock(
                 "rhs_width = width * $scaleRight",
                 "variable_height = (height - SMALL_BUFF) * $scaleLeft",
                 "code_height = (height - SMALL_BUFF) * $scaleRight",
-                "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=YELLOW)",
+                "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
                 "variable_frame.to_corner(UL, buff=SMALL_BUFF)",
-                "code_frame = Rectangle(height=code_height, width=lhs_width, color=GREEN)",
+                "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
                 "code_frame.next_to(variable_frame, DOWN, buff=SMALL_BUFF)",
                 "self.play(FadeIn(variable_frame), FadeIn(code_frame)) \n"
         )
