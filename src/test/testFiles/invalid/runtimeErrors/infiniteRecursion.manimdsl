@@ -1,0 +1,5 @@
+fun f(x : number): number {
+    return f(x-1);
+}
+
+let y = f(1);
