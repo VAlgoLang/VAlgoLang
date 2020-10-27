@@ -47,7 +47,7 @@ class VirtualMachine(
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
-        linearRepresentation.add(Sleep(0.5))
+        linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
@@ -67,19 +67,54 @@ class VirtualMachine(
         }
     }
 
+
     private inner class Frame(
-        private var pc: Int,
-        private var finalLine: Int,
-        private var variables: MutableMap<String, ExecValue>,
-        val depth: Int = 1,
-        private val showMoveToLine: Boolean = true,
-        private var stepInto: Boolean = false
-    ) {
+            private var pc: Int,
+            private var finalLine: Int,
+            private var variables: MutableMap<String, ExecValue>,
+            val depth: Int = 1,
+            private val showMoveToLine: Boolean = true,
+            private var stepInto: Boolean = false,
+            private var oldestQueue: LinkedList<Int> = LinkedList(),
+            private var indexToData: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+
+
+            ) {
+
+        fun insertVariable(identifier: String, value: ExecValue) {
+            if (value is PrimitiveValue) {
+                val index = indexToData.filterValues { it.first == identifier }.keys
+                if (index.isEmpty()) {
+                    // not been visualised
+                    // if there is space
+                    if (indexToData.size < 4) {
+                        val newIndex = indexToData.size
+                        oldestQueue.addLast(newIndex)
+                        indexToData[newIndex] = Pair(identifier, value)
+                    } else {
+                        // if there is no space
+                        val oldest = oldestQueue.removeFirst()
+                        indexToData[oldest] = Pair(identifier, value)
+                        oldestQueue.addLast(oldest)
+                    }
+                } else {
+                    // being visualised
+                    oldestQueue.remove(index.first())
+                    oldestQueue.addLast(index.first())
+                    indexToData[index.first()] = Pair(identifier, value)
+                }
+            }
+        }
+
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
                 return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
             }
+
+            variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
+
+            linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
 
             while (pc <= finalLine) {
                 if (statements.containsKey(pc)) {
@@ -93,34 +128,39 @@ class VirtualMachine(
                     if (statement is ReturnNode || value !is EmptyValue) return value
 
                 }
+                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+
                 fetchNextStatement()
             }
             return EmptyValue
         }
 
-        private fun executeStatement(statement: StatementNode): ExecValue =
-            when (statement) {
-                is ReturnNode -> executeExpression(statement.expression)
-                is FunctionNode -> {
-                    // just go onto next line, this is just a label
-                    EmptyValue
-                }
-                is SleepNode -> executeSleep(statement)
-                is AssignmentNode -> executeAssignment(statement)
-                is DeclarationNode -> executeAssignment(statement)
-                is MethodCallNode -> executeMethodCall(statement, false)
-                is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatementNode -> executeIfStatement(statement)
-                is StartStepIntoNode -> {
-                    stepInto = true
-                    EmptyValue
-                }
-                is StopStepIntoNode -> {
-                    stepInto = false
-                    EmptyValue
-                }
-                else -> EmptyValue
+        private fun getVariableState(): List<String>  {
+            return (0 until indexToData.size).map { "\"${indexToData[it]!!.first} = ${indexToData[it]!!.second}\"" }
+        }
+
+        private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
+            is ReturnNode -> executeExpression(statement.expression)
+            is FunctionNode -> {
+                // just go onto next line, this is just a label
+                EmptyValue
             }
+            is SleepNode -> executeSleep(statement)
+            is AssignmentNode -> executeAssignment(statement)
+            is DeclarationNode -> executeAssignment(statement)
+            is MethodCallNode -> executeMethodCall(statement, false)
+            is FunctionCallNode -> executeFunctionCall(statement)
+            is IfStatementNode -> executeIfStatement(statement)
+            is StartStepIntoNode -> {
+                stepInto = true
+                EmptyValue
+            }
+            is StopStepIntoNode -> {
+                stepInto = false
+                EmptyValue
+            }
+            else -> EmptyValue
+        }
 
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
@@ -170,6 +210,7 @@ class VirtualMachine(
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
+                insertVariable(node.identifier, assignedValue)
                 EmptyValue
             }
         }
