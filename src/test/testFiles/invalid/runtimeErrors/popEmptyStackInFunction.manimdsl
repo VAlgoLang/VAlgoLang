@@ -1,6 +1,6 @@
 fun function(x: number): Stack<number> {
     let stack1 = new Stack<number>;
-    stack1.push(x);
+    let y = stack1.pop();
     return stack1;
 }
 let stack2 = function(2);

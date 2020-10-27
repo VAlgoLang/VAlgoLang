@@ -1,0 +1,9 @@
+fun function(st: Stack<number>): Stack<number> {
+    st.pop();
+    function(st);
+    return st;
+}
+Stack<number> st = new Stack<number>;
+st.push(2);
+st.push(3);
+let stack2 = function(st);

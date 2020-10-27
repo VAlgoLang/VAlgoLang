@@ -1,4 +1,4 @@
-fun func(number x) {
+fun func(x: number) {
 return 5;
 }
 

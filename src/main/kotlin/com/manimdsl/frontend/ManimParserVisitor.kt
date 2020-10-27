@@ -1,13 +1,12 @@
-package com.manimdsl
+package com.manimdsl.frontend
 
 import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
-import com.manimdsl.frontend.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
 
-    val lineNumberNodeMap = mutableMapOf<Int, ASTNode>()
+    val lineNumberNodeMap = mutableMapOf<Int, StatementNode>()
 
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
@@ -80,11 +79,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitReturnStatement(ctx: ReturnStatementContext): ReturnNode {
         semanticAnalyser.globalReturnCheck(inFunction, ctx)
-        val expression = visit(ctx.expr()) as ExpressionNode
+        val expression = if (ctx.expr() != null) visit(ctx.expr()) as ExpressionNode else VoidNode(ctx.start.line)
         semanticAnalyser.incompatibleReturnTypesCheck(symbolTable, functionReturnType, expression, ctx)
         lineNumberNodeMap[ctx.start.line] = ReturnNode(ctx.start.line, expression)
         return lineNumberNodeMap[ctx.start.line] as ReturnNode
-
     }
 
     /** Statements **/
@@ -197,13 +195,13 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             symbolTable.leaveScope()
             ElseNode(ctx.elseStat.start.line - 1, scope, statements)
         } else {
-            ElseNode(ctx.stop.line - 1, 0, emptyList())
+            ElseNode(ctx.stop.line, 0, emptyList())
         }
 
         ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line - 1] = elseNode }
 
         val ifStatementNode =
-            IfStatementNode(ctx.start.line, ctx.stop.line - 1, ifScope, ifCondition, ifStatements, elifs, elseNode)
+            IfStatementNode(ctx.start.line, ctx.stop.line, ifScope, ifCondition, ifStatements, elifs, elseNode)
         lineNumberNodeMap[ctx.start.line] = ifStatementNode
         return ifStatementNode
     }
@@ -266,12 +264,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        val node = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
-
-        if (dataStructureMethod.returnType is ErrorType) {
-            lineNumberNodeMap[ctx.start.line] = node
-        }
-        return node
+        lineNumberNodeMap[ctx.start.line] = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        return lineNumberNodeMap[ctx.start.line] as MethodCallNode
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): FunctionCallNode {

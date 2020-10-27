@@ -3,6 +3,7 @@ package com.manimdsl.executor
 import com.manimdsl.frontend.ErrorType
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.MObject
+import com.manimdsl.stylesheet.StyleProperties
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -51,10 +52,9 @@ sealed class ExecValue {
 
 data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : ExecValue() {
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
+
     override fun hashCode(): Int {
-        var result = value.hashCode()
-        result = 31 * result + manimObject.hashCode()
-        return result
+        return value.hashCode()
     }
 
     override fun clone(): ExecValue {
@@ -75,11 +75,11 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
     }
 }
 
-data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>) : ExecValue() {
+data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>, var style: StyleProperties = StyleProperties()) : ExecValue() {
     override val value: Stack<ExecValue> = stack
 
     override fun clone(): ExecValue {
-        return StackValue(manimObject, stack)
+        return StackValue(manimObject, stack, style)
     }
 
     override fun toString(): String {
@@ -96,4 +96,19 @@ object EmptyValue : ExecValue() {
     }
 }
 
+// For use to terminate a void function with a return of no expression.
+object VoidValue : ExecValue() {
+    override var manimObject: MObject = EmptyMObject
+    override val value: Any = ErrorType
 
+    override fun clone(): ExecValue {
+        return this
+    }
+}
+
+// Used to propagate runtime error up scope
+data class RuntimeError(override val value: String, override var manimObject: MObject = EmptyMObject, val lineNumber: Int) : ExecValue() {
+    override fun clone(): ExecValue {
+        return RuntimeError(value, manimObject, lineNumber)
+    }
+}

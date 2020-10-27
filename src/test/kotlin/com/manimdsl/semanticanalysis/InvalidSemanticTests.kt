@@ -242,6 +242,24 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun ifStatementsBranchesMustAllHaveReturns() {
+        runSyntaxAndSemanticAnalysis("ifStatementsBranchesMustAllHaveReturns.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("Missing return statement in .* function that expects return type of .*"))
+        )
+    }
+
+    @Test
+    fun ifStatementsBranchesMustAllHaveReturns2() {
+        runSyntaxAndSemanticAnalysis("ifStatementsBranchesMustAllHaveReturns2.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("Missing return statement in .* function that expects return type of .*"))
+        )
+    }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

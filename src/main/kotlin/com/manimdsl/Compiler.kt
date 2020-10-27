@@ -1,5 +1,8 @@
 package com.manimdsl
 
+import com.manimdsl.animation.ManimProjectWriter
+import com.manimdsl.animation.ManimWriter
+import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import picocli.CommandLine
 import picocli.CommandLine.*
@@ -12,6 +15,12 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     if (!file.isFile) {
         // File argument was not valid
         println("Please enter a valid file name: $filename not found")
+        exitProcess(1)
+    }
+
+    if (stylesheetPath != null && !File(stylesheetPath).isFile) {
+        // Stylesheet argument was not valid
+        println("Please enter a valid stylesheet file: $stylesheetPath not found")
         exitProcess(1)
     }
 
@@ -31,13 +40,23 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     }
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val manimInstructions = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+    val (exitStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+
+    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(exitStatus.code)
+    }
 
     val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
 
-    if (generatePython) println("Writing file to ${outputVideoFile.removeSuffix(".mp4") + ".py"}")
-    val outputFile = writer.createPythonFile(if (generatePython) outputVideoFile.removeSuffix(".mp4") + ".py" else null)
-    println("File written successfully!")
+    val outputFile = if (generatePython) {
+        val pythonOutputFile = outputVideoFile.removeSuffix(".mp4") + ".py"
+        println("Writing file to $pythonOutputFile")
+        val output = writer.createPythonFile(if (generatePython) pythonOutputFile else null)
+        println("File written successfully!")
+        output
+    } else {
+        writer.createPythonFile()
+    }
 
     if (!onlyGenerateManim) {
         println("Generating animation...")

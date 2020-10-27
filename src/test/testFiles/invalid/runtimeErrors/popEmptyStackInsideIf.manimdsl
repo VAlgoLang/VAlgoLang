@@ -1,0 +1,4 @@
+if (true) {
+    let stack1 = new Stack<number>;
+    let x = stack1.pop();
+}

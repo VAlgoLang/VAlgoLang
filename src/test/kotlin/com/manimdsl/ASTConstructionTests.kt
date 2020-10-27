@@ -84,15 +84,15 @@ class ASTConstructionTests {
 
     @Test
     fun functionCallProgram() {
-        val functionCallProgram = "fun func(number x, number y): number {\n" +
+        val functionCallProgram = "fun func(x: number, y: number): number {\n" +
                 "\tlet z: number = x + y;\n" +
                 "return z;\n" +
                 "}\n" +
                 "let z: number = func(1,2);\n" +
                 "func(3,4);"
         val functionStatements = listOf(
-                DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
-                ReturnNode(3, IdentifierNode(3, "z"))
+            DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
+            ReturnNode(3, IdentifierNode(3, "z"))
         )
         val functions = listOf(
                 FunctionNode(
@@ -131,7 +131,7 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 9,
+                endLineNumber = 10,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
@@ -176,7 +176,7 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 5,
+                endLineNumber = 6,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
@@ -205,12 +205,12 @@ class ASTConstructionTests {
             DeclarationNode(1, "x", NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
-                endLineNumber = 3,
+                endLineNumber = 4,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
                 statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
                 elifs = emptyList(),
-                elseBlock = ElseNode(3, 0, emptyList())
+                elseBlock = ElseNode(4, 0, emptyList())
             )
         )
         val reference = ProgramNode(listOf(), statements)

@@ -3,6 +3,7 @@ import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
 import com.manimdsl.linearrepresentation.PartitionBlock
 import com.manimdsl.linearrepresentation.VariableBlock
+import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
