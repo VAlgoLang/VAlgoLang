@@ -51,8 +51,9 @@ data class CodeBlock(
         val list = mutableListOf("# Building code visualisation pane")
         list.addAll(shape.getConstructor())
         list.addAll(listOf("$codeTextName = $ident.build()",
-        "self.place_at($codeTextName, -1, 0)",
+        "$codeTextName.move_to(code_frame)",
         "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
+        "$codeTextName.scale(min(code_height / $codeTextName.get_height(), lhs_width / $codeTextName.get_width()))",
         "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
         "# Constructing current line pointer",
         "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"))
@@ -93,12 +94,12 @@ data class VariableBlock(
     override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
 
     override fun toPython(): List<String> {
-        return listOf(
-            "# Building variable visualisation pane",
-            shape.getConstructor(),
-            "$variableGroupName = $ident.build()",
-            "self.play(FadeIn($variableGroupName))",
-        )
+        val list = mutableListOf("# Building variable visualisation pane")
+        list.addAll(shape.getConstructor())
+        list.addAll(listOf("$variableGroupName = $ident.build()",
+            "$variableGroupName.move_to($variableFrame)",
+            "self.play(FadeIn($variableGroupName))"))
+        return list
     }
 }
 

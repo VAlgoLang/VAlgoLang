@@ -92,8 +92,8 @@ class VariableBlockShape(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun getConstructor(): String {
-        return "$ident = ${className}($text$style)"
+    override fun getConstructor(): List<String> {
+        return listOf("$ident = ${className}($text$style)")
     }
 }
 

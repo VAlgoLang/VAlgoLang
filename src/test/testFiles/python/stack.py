@@ -7,8 +7,9 @@ class Main(Scene):
         code_lines = ["let y = new Stack;","y.push(2);","y.push(3);","y.pop();"]
         code_block = Code_block(code_lines)
         code_text = code_block.build()
-        self.place_at(code_text, -1, 0)
+        code_text.move_to(code_frame)
         self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end
+        code_text.scale(min(code_height / code_text.get_height(), lhs_width / code_text.get_width()))
         self.play(FadeIn(code_text[self.code_start:self.code_end]))
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
