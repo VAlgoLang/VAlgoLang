@@ -181,8 +181,7 @@ class VirtualMachine(
 
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
-                            val style = stylesheet.getStyle(node.instanceIdentifier, ds)
-                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: style
+                            val newObjectStyle = ds.style.animate ?: ds.style
                             val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
@@ -200,7 +199,7 @@ class VirtualMachine(
                                         topOfStack.shape,
                                         ObjectSide.ABOVE
                                     ),
-                                    RestyleObject(rectangle.shape, stylesheet.getStyle(node.instanceIdentifier, ds))
+                                    RestyleObject(rectangle.shape, ds.style)
                                 )
                             if (!hasOldMObject) {
                                 instructions.add(0, rectangle)
@@ -256,7 +255,7 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
-                    val style = stylesheet.getStyle(identifier, stackValue)
+                    stackValue.style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitStructure(
@@ -265,8 +264,8 @@ class VirtualMachine(
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
                             identifier,
-                            color = style.borderColor,
-                            textColor = style.textColor,
+                            color = stackValue.style.borderColor,
+                            textColor = stackValue.style.textColor,
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -278,8 +277,8 @@ class VirtualMachine(
                             variableNameGenerator.generateNameFromPrefix("empty"),
                             identifier,
                             numStack.manimObject.shape,
-                            color = style.borderColor,
-                            textColor = style.textColor,
+                            color = stackValue.style.borderColor,
+                            textColor = stackValue.style.textColor,
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
