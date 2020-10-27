@@ -40,10 +40,11 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, MutableList<ManimInstr>> {
         linearRepresentation.add(PartitionBlock("1/3", "2/3"))
-        linearRepresentation.add(VariableBlock(listOf("x = 1"), "variable_block", "variable_vg", "variable_frame"))
+        linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
+        linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
@@ -52,12 +53,43 @@ class VirtualMachine(
         }
     }
 
+
     private inner class Frame(
             private var pc: Int,
             private var finalLine: Int,
             private var variables: MutableMap<String, ExecValue>,
-            val depth: Int = 1
-    ) {
+            val depth: Int = 1,
+
+            private var oldestQueue: LinkedList<Int> = LinkedList(),
+            private var indexToData: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+
+
+            ) {
+
+        fun insertVariable(identifier: String, value: ExecValue) {
+            if (value is PrimitiveValue) {
+                val index = indexToData.filterValues { it.first == identifier }.keys
+                if (index.isEmpty()) {
+                    // not been visualised
+                    // if there is space
+                    if (indexToData.size < 4) {
+                        val newIndex = indexToData.size
+                        oldestQueue.addLast(newIndex)
+                        indexToData[newIndex] = Pair(identifier, value)
+                    } else {
+                        // if there is no space
+                        val oldest = oldestQueue.removeFirst()
+                        indexToData[oldest] = Pair(identifier, value)
+                        oldestQueue.addLast(oldest)
+                    }
+                } else {
+                    // being visualised
+                    oldestQueue.remove(index.first())
+                    oldestQueue.addLast(index.first())
+                    indexToData[index.first()] = Pair(identifier, value)
+                }
+            }
+        }
 
         // instantiate new Frame and execute on scoping changes e.g. recursion
 
@@ -65,6 +97,10 @@ class VirtualMachine(
             if (depth > ALLOCATED_STACKS) {
                 return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
             }
+
+            variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
+
+            linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
 
             while (pc <= finalLine) {
 
@@ -79,10 +115,17 @@ class VirtualMachine(
                     if (statement is ReturnNode || value is RuntimeError) return value
 
                 }
+                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+
                 fetchNextStatement()
             }
 
+
             return EmptyValue
+        }
+
+        private fun getVariableState(): List<String>  {
+            return (0 until indexToData.size).map { "\"${indexToData[it]!!.first} = ${indexToData[it]!!.second}\"" }
         }
 
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
@@ -146,6 +189,7 @@ class VirtualMachine(
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
+                insertVariable(node.identifier, assignedValue)
                 EmptyValue
             }
         }

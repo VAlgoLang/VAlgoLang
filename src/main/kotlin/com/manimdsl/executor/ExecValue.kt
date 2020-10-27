@@ -49,12 +49,17 @@ sealed class ExecValue {
     abstract fun clone(): ExecValue
 }
 
+sealed class PrimitiveValue : ExecValue()
 
-data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : ExecValue() {
+data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
 
     override fun hashCode(): Int {
         return value.hashCode()
+    }
+
+    override fun toString(): String {
+        return value.toString()
     }
 
     override fun clone(): ExecValue {
@@ -62,12 +67,16 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
     }
 }
 
-data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : ExecValue() {
+data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
     override fun equals(other: Any?): Boolean = other is BoolValue && this.value == other.value
     override fun hashCode(): Int {
         var result = value.hashCode()
         result = 31 * result + manimObject.hashCode()
         return result
+    }
+
+    override fun toString(): String {
+        return value.toString()
     }
 
     override fun clone(): ExecValue {
