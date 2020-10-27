@@ -17,10 +17,10 @@ class SemanticAnalysis {
             is BoolNode -> BoolType
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
-            is ArrayElemNode -> getArrayAccessType(expression, currentSymbolTable)
+            is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
         }
 
-    private fun getArrayAccessType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+    private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         // To extend to multiple dimensions perform below recursively
         val arrayType = currentSymbolTable.getTypeOf(expression.arrayIdentifier)
         return if (arrayType is ArrayType) {

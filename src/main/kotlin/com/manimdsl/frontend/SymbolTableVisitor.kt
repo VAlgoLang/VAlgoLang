@@ -15,12 +15,6 @@ data class FunctionData(
     override var type: Type,
 ) : SymbolTableData
 
-data class ArrayData(
-    val dimensions: List<Int>,
-    val elementType: Type,
-    override val type: Type
-) : SymbolTableData
-
 /* Visitor for symbol table used when creating and traversing AST */
 class SymbolTableVisitor {
     private val scopes = mutableListOf<SymbolTable>(GlobalScopeSymbolTable())

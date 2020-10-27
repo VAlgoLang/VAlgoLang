@@ -175,8 +175,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArrayElemAssignment(ctx: ArrayElemAssignmentContext): Type {
-        val arrayAccessNode = visit(ctx.array_elem()) as ArrayElemNode
-        val arrayType = symbolTable.getTypeOf(arrayAccessNode.arrayIdentifier)
+        val arrayElem = visit(ctx.array_elem()) as ArrayElemNode
+        val arrayType = symbolTable.getTypeOf(arrayElem.arrayIdentifier)
 
         // Return element type
         return if (arrayType is ArrayType) {
