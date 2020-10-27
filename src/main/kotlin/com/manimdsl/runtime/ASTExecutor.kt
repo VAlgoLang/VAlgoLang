@@ -245,6 +245,9 @@ class VirtualMachine(
                             return DoubleValue(ds.stack.size.toDouble())
                         }
                         is StackType.PeekMethod -> {
+                            if (ds.stack.empty()) {
+                                return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
+                            }
                             val clonedPeekValue = ds.stack.peek().clone()
                             clonedPeekValue.manimObject = EmptyMObject
                             return clonedPeekValue
