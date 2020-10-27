@@ -19,7 +19,7 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     }
 
     if (stylesheetPath != null && !File(stylesheetPath).isFile) {
-        // File argument was not valid
+        // Stylesheet argument was not valid
         println("Please enter a valid stylesheet file: $stylesheetPath not found")
         exitProcess(1)
     }
