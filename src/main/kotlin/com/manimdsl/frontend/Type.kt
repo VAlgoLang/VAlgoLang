@@ -24,12 +24,40 @@ sealed class DataStructureType(
 ) : Type() {
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
+    abstract fun getConstructor(): DataStructureMethod
 }
+
+
+interface DataStructureMethod {
+    val returnType: Type
+    val argumentTypes: List<Type>
+
+    // When true last type in argumentTypes will be for a variable number of arguments
+    val varargs: Boolean
+}
+
+object ErrorMethod : DataStructureMethod {
+    override val returnType: Type = ErrorType
+    override val argumentTypes: List<Type> = emptyList()
+    override val varargs: Boolean = false
+}
+
+// This is used to collect arguments up into method call node
+data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
+
 
 data class ArrayType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = emptyMap()
 ) : DataStructureType(internalType, methods) {
+    object ArrayConstructor : DataStructureMethod {
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Type> = listOf(NumberType)
+        override val varargs: Boolean = true
+
+        override fun toString(): String = "constructor"
+    }
+
     override fun containsMethod(method: String): Boolean {
         return false;
     }
@@ -37,21 +65,14 @@ data class ArrayType(
     override fun getMethodByName(method: String): DataStructureMethod {
         return ErrorMethod
     }
+
+    override fun getConstructor(): DataStructureMethod {
+        return ArrayConstructor
+    }
+
+    override fun toString(): String = "Array<$internalType>"
 }
 
-
-interface DataStructureMethod {
-    val returnType: Type
-    val argumentTypes: List<Type>
-}
-
-object ErrorMethod : DataStructureMethod {
-    override val returnType: Type = ErrorType
-    override val argumentTypes: List<Type> = emptyList()
-}
-
-// This is used to collect arguments up into method call node
-data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class StackType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
@@ -66,25 +87,43 @@ data class StackType(
         "peek" to PeekMethod(internalType)
     )
 ) : DataStructureType(internalType, methods) {
+    object StackConstructor : DataStructureMethod {
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Type> = emptyList()
+        override val varargs: Boolean = false
 
-    data class PushMethod(override val returnType: Type = ErrorType, override var argumentTypes: List<Type>) :
-        DataStructureMethod
+        override fun toString(): String = "constructor"
+    }
 
-    data class PopMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
-        DataStructureMethod
+    data class PushMethod(
+        override val returnType: Type = ErrorType,
+        override var argumentTypes: List<Type>,
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    data class PopMethod(
+        override val returnType: Type,
+        override var argumentTypes: List<Type> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
 
     data class IsEmptyMethod(
         override val returnType: Type = BoolType,
-        override var argumentTypes: List<Type> = listOf()
+        override var argumentTypes: List<Type> = listOf(),
+        override val varargs: Boolean = false
     ) : DataStructureMethod
 
     data class SizeMethod(
         override val returnType: Type = NumberType,
-        override var argumentTypes: List<Type> = listOf()
+        override var argumentTypes: List<Type> = listOf(),
+        override val varargs: Boolean = false
     ) : DataStructureMethod
 
-    data class PeekMethod(override val returnType: Type, override var argumentTypes: List<Type> = listOf()) :
-        DataStructureMethod
+    data class PeekMethod(
+        override val returnType: Type,
+        override var argumentTypes: List<Type> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
 
     override fun containsMethod(method: String): Boolean {
         return methods.containsKey(method)
@@ -94,9 +133,11 @@ data class StackType(
         return methods.getOrDefault(method, ErrorMethod)
     }
 
-    override fun toString(): String {
-        return "Stack<$internalType>"
+    override fun getConstructor(): DataStructureMethod {
+        return StackConstructor
     }
+
+    override fun toString(): String = "Stack<$internalType>"
 }
 
 
