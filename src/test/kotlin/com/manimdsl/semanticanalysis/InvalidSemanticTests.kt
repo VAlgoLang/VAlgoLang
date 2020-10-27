@@ -296,6 +296,15 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun stackTooManyArgumentsInConstructor() {
+        runSyntaxAndSemanticAnalysis("stackTooManyArgumentsInConstructor.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("constructor method on Stack<.*> does not accept .* arguments, expects 0"))
+        )
+    }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

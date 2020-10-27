@@ -74,9 +74,18 @@ fun unsupportedMethodError(dataStructureType: String, method: String, ctx: Parse
     addSemanticError("$dataStructureType does not support $method method", getErrorLinePos(ctx))
 }
 
-fun numOfArgsInMethodCallError(dataStructureType: String, method: String, numArgs: Int, ctx: ParserRuleContext) {
+fun numOfArgsInMethodCallError(
+    dataStructureType: String,
+    method: String,
+    numArgs: Int,
+    expected: Int,
+    ctx: ParserRuleContext
+) {
     // To modify once nex version is merged
-    addSemanticError("$method method on $dataStructureType does not accept $numArgs arguments", getErrorLinePos(ctx))
+    addSemanticError(
+        "$method method on $dataStructureType does not accept $numArgs arguments, expects $expected",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun typeOfArgsInMethodCallError(

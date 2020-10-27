@@ -116,7 +116,13 @@ class SemanticAnalysis {
         ctx: ParserRuleContext
     ) {
         if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
-            numOfArgsInMethodCallError(dataStructureType.toString(), method.toString(), numArgs, ctx)
+            numOfArgsInMethodCallError(
+                dataStructureType.toString(),
+                method.toString(),
+                numArgs,
+                method.argumentTypes.size,
+                ctx
+            )
         }
     }
 
