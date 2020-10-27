@@ -51,15 +51,15 @@ data class CodeBlock(
     override val shape: Shape = CodeBlockShape(ident, lines, textColor)
 
     override fun toPython(): List<String> {
-        return listOf(
-            "# Building code visualisation pane",
-            shape.getConstructor(),
-            "$codeTextName = $ident.build()",
-            "self.place_at($codeTextName, -1, 0)",
-            "self.play(FadeIn($codeTextName))",
-            "# Constructing current line pointer",
-            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
-        )
+        val list = mutableListOf("# Building code visualisation pane")
+        list.addAll(shape.getConstructor())
+        list.addAll(listOf("$codeTextName = $ident.build()",
+        "self.place_at($codeTextName, -1, 0)",
+        "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
+        "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
+        "# Constructing current line pointer",
+        "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"))
+        return list
     }
 }
 
@@ -77,7 +77,8 @@ data class InitStructure(
 
     override fun toPython(): List<String> {
         val python =
-            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
+            mutableListOf("# Constructing new ${type} \"${text}\"")
+        python.addAll(shape.getConstructor())
         python.add(
             when (position) {
                 is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
@@ -91,12 +92,12 @@ data class InitStructure(
 
 data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
-        return listOf(
-            "# Constructs a new ${shape.className} with value ${shape.text}",
-            shape.getConstructor(),
-            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
+        val list = mutableListOf("# Constructs a new ${shape.className} with value ${shape.text}")
+        list.addAll(shape.getConstructor())
+        list.addAll(listOf("self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
             "self.play(FadeIn($shape))"
-        )
+        ))
+        return list
     }
 }
 

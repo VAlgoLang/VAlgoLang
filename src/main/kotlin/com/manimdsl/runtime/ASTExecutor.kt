@@ -109,7 +109,7 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
             if (updatePc) pc = line
-            linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+            linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable, codeTextVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {

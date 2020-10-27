@@ -27,10 +27,10 @@ class ASTExecutorTests {
                 codeTextName = "code_text",
                 pointerName = "pointer"
             ),
-            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
-            MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
-            MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
-            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
+            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text"),
+            MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text"),
+            MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text"),
+            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text"),
         )
         val (_, actual) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n"), Stylesheet(null, symbolTable)).runProgram()
 
