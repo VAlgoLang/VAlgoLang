@@ -1,5 +1,5 @@
 fun function(x: number, st: Stack<number>): Stack<number> {
-    x = st.pop();
+    st.pop();
     return st;
 }
 Stack<number> st = new Stack<number>;
