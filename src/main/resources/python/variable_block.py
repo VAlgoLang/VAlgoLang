@@ -12,7 +12,7 @@ class Variable_block:
 
     def build(self):
         self.group.arrange(DOWN, aligned_edge=LEFT)
-        return self.group.move_to(self.variable_frame, aligned_edge=LEFT)
+        return self.group.move_to(self.variable_frame)
 
     def update_variable(self, variables):
         group = VGroup()
@@ -22,7 +22,7 @@ class Variable_block:
         old_group = self.group
         self.group = group
         self.group.arrange(DOWN, aligned_edge=LEFT)
-        self.group.move_to(self.variable_frame, aligned_edge=LEFT)
+        self.group.move_to(self.variable_frame)
         return [
             ReplacementTransform(old_group, group)
         ]

@@ -58,7 +58,7 @@ class ASTConstructionTests {
 
     @Test
     fun functionDeclarationProgram() {
-        val functionDeclarationProgram = "fun func(number x): number {\n" +
+        val functionDeclarationProgram = "fun func(x : number): number {\n" +
             "\tlet z: number = 10;\n" +
             "return z;\n" +
             "}\n" +

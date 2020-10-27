@@ -1,4 +1,5 @@
 package com.manimdsl
+import com.manimdsl.linearrepresentation.*
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
 import com.manimdsl.linearrepresentation.VariableBlock
