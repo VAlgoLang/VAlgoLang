@@ -52,15 +52,15 @@ data class CodeBlock(
     override val shape: Shape = CodeBlockShape(ident, lines, textColor)
 
     override fun toPython(): List<String> {
-        return listOf(
-            "# Building code visualisation pane",
-            shape.getConstructor(),
-            "$codeTextName = $ident.build()",
-            "self.place_at($codeTextName, -1, 0)",
-            "self.play(FadeIn($codeTextName))",
-            "# Constructing current line pointer",
-            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
-        )
+        val list = mutableListOf("# Building code visualisation pane")
+        list.addAll(shape.getConstructor())
+        list.addAll(listOf("$codeTextName = $ident.build()",
+        "self.place_at($codeTextName, -1, 0)",
+        "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
+        "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
+        "# Constructing current line pointer",
+        "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"))
+        return list
     }
 }
 

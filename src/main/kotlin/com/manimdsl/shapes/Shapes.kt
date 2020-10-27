@@ -2,6 +2,8 @@ package com.manimdsl.shapes
 
 import com.manimdsl.linearrepresentation.Alignment
 import com.manimdsl.stylesheet.StylesheetProperty
+import java.util.*
+
 
 sealed class Shape {
     abstract val ident: String
@@ -11,8 +13,8 @@ sealed class Shape {
     abstract val pythonVariablePrefix: String
     val style = PythonStyle()
 
-    open fun getConstructor(): String {
-        return "$ident = ${className}(\"${text}\"$style)"
+    open fun getConstructor(): List<String> {
+        return listOf("$ident = ${className}(\"${text}\"$style)")
     }
 
     override fun toString(): String {
@@ -64,21 +66,21 @@ class Rectangle(
 }
 
 class CodeBlockShape(
-    override val ident: String,
-    lines: List<String>,
-    textColor: String? = null,
+        override val ident: String,
+        lines: List<String>,
+        textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
     override val pythonVariablePrefix: String = "code_block"
     override val text: String = "[\"${lines.joinToString("\",\"")}\"]"
-
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun getConstructor(): String {
-        return "$ident = ${className}($text$style)"
+    override fun getConstructor(): List<String> {
+        return listOf("code_lines = $text$style",
+               "$ident = ${className}(code_lines)")
     }
 }
 

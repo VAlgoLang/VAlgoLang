@@ -54,6 +54,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
             from abc import ABC, abstractmethod
              
             class Main(Scene):
+                code_start = 0
+                code_end = 5
                 def construct(self):
 
         """.trimIndent()

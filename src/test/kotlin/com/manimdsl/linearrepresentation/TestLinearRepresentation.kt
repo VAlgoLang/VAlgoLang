@@ -30,7 +30,7 @@ class TestLinearRepresentation {
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
-            MoveToLine(1, "pointer", "code_block"),
+            MoveToLine(1, "pointer", "code_block", "code_text"),
             stackIS,
             MoveToLine(2, "pointer", "code_block"),
             NewMObject(rectangle, "code_text"),
