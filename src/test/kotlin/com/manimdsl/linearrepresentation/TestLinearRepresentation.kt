@@ -22,15 +22,15 @@ class TestLinearRepresentation {
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
-            MoveToLine(1, "pointer", "code_block"),
+            MoveToLine(1, "pointer", "code_block", "code_text"),
             stackIS,
             NewMObject(testIdent, "code_text"),
-            MoveToLine(2, "pointer", "code_block"),
+            MoveToLine(2, "pointer", "code_block", "code_text"),
             MoveObject(testIdent, stackIS.shape, ObjectSide.ABOVE),
-            MoveToLine(3, "pointer", "code_block"),
+            MoveToLine(3, "pointer", "code_block", "code_text"),
             NewMObject(testIdent1, "code_text"),
             MoveObject(testIdent1, testIdent, ObjectSide.ABOVE),
-            MoveToLine(4, "pointer", "code_block"),
+            MoveToLine(4, "pointer", "code_block", "code_text"),
             MoveObject(testIdent1, testIdent, ObjectSide.ABOVE, 20, true),
         )
 

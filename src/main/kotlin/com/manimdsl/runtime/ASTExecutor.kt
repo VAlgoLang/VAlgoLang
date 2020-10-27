@@ -53,7 +53,6 @@ class VirtualMachine(
         }
     }
 
-
     private inner class Frame(
             private var pc: Int,
             private var finalLine: Int,
@@ -120,7 +119,6 @@ class VirtualMachine(
                 fetchNextStatement()
             }
 
-
             return EmptyValue
         }
 
@@ -154,6 +152,10 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc) {
             linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+        }
+        private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
+            if (updatePc) pc = line
+            linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable, codeTextVariable))
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
