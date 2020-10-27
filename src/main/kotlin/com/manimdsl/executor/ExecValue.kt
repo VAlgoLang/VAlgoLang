@@ -3,6 +3,7 @@ package com.manimdsl.executor
 import com.manimdsl.frontend.ErrorType
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.MObject
+import com.manimdsl.stylesheet.StyleProperties
 import java.util.*
 
 // Wrapper classes for values of variables while executing code
@@ -74,11 +75,11 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
     }
 }
 
-data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>) : ExecValue() {
+data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>, var style: StyleProperties = StyleProperties()) : ExecValue() {
     override val value: Stack<ExecValue> = stack
 
     override fun clone(): ExecValue {
-        return StackValue(manimObject, stack)
+        return StackValue(manimObject, stack, style)
     }
 
     override fun toString(): String {
