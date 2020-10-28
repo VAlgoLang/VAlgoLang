@@ -13,8 +13,8 @@ sealed class Shape {
     abstract val pythonVariablePrefix: String
     val style = PythonStyle()
 
-    open fun getConstructor(): List<String> {
-        return listOf("$ident = ${className}(\"${text}\"$style)")
+    open fun getConstructor(): String {
+        return "$ident = ${className}(\"${text}\"$style)"
     }
 
     override fun toString(): String {
@@ -71,9 +71,8 @@ class CodeBlockShape(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun getConstructor(): List<String> {
-        return listOf("code_lines = $text$style",
-               "$ident = ${className}(code_lines)")
+    override fun getConstructor(): String {
+        return "$ident = ${className}(code_lines$style)"
     }
 }
 
@@ -92,8 +91,8 @@ class VariableBlockShape(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun getConstructor(): List<String> {
-        return listOf("$ident = ${className}($text$style)")
+    override fun getConstructor(): String {
+        return "$ident = ${className}($text$style)"
     }
 }
 
@@ -113,8 +112,8 @@ class InitStructureShape(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun getConstructor(): List<String> {
-        return listOf("$ident = ${className}(\"$text\", ${alignment.angle}$style)")
+    override fun getConstructor(): String {
+        return "$ident = ${className}(\"$text\", ${alignment.angle}$style)"
     }
 }
 

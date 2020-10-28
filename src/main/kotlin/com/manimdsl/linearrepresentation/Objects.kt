@@ -48,16 +48,16 @@ data class CodeBlock(
     override val shape: Shape = CodeBlockShape(ident, lines, textColor)
 
     override fun toPython(): List<String> {
-        val list = mutableListOf("# Building code visualisation pane")
-        list.addAll(shape.getConstructor())
-        list.addAll(listOf("$codeTextName = $ident.build()",
-        "$codeTextName.move_to(code_frame)",
-        "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
-        "$codeTextName.scale(min(code_height / $codeTextName.get_height(), lhs_width / $codeTextName.get_width()))",
-        "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
-        "# Constructing current line pointer",
-        "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"))
-        return list
+        return listOf("# Building code visualisation pane",
+                        "code_lines = [\"${lines.joinToString("\",\"")}\"]",
+                        shape.getConstructor(),
+                        "$codeTextName = $ident.build()",
+                        "$codeTextName.move_to(code_frame)",
+                        "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
+                        "$codeTextName.scale(min(code_height / $codeTextName.get_height(), lhs_width / $codeTextName.get_width()))",
+                        "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
+                        "# Constructing current line pointer",
+                        "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)")
     }
 }
 
@@ -94,12 +94,11 @@ data class VariableBlock(
     override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
 
     override fun toPython(): List<String> {
-        val list = mutableListOf("# Building variable visualisation pane")
-        list.addAll(shape.getConstructor())
-        list.addAll(listOf("$variableGroupName = $ident.build()",
-            "$variableGroupName.move_to($variableFrame)",
-            "self.play(FadeIn($variableGroupName))"))
-        return list
+        return listOf("# Building variable visualisation pane",
+                            shape.getConstructor(),
+                            "$variableGroupName = $ident.build()",
+                            "$variableGroupName.move_to($variableFrame)",
+                            "self.play(FadeIn($variableGroupName))")
     }
 }
 
@@ -116,9 +115,8 @@ data class InitStructure(
     override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
 
     override fun toPython(): List<String> {
-        val python =
-            mutableListOf("# Constructing new ${type} \"${text}\"")
-        python.addAll(shape.getConstructor())
+        val python = mutableListOf("# Constructing new ${type} \"${text}\"",
+                            shape.getConstructor())
         python.add(
             when (position) {
                 is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
@@ -132,12 +130,10 @@ data class InitStructure(
 
 data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
-        val list = mutableListOf("# Constructs a new ${shape.className} with value ${shape.text}")
-        list.addAll(shape.getConstructor())
-        list.addAll(listOf("self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
-            "self.play(FadeIn($shape))"
-        ))
-        return list
+        return listOf("# Constructs a new ${shape.className} with value ${shape.text}",
+                            shape.getConstructor(),
+                            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
+                            "self.play(FadeIn($shape))")
     }
 }
 
