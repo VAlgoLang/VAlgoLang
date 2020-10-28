@@ -20,7 +20,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.add("python/code_block.py")
                 }
                 is InitManimStack -> {
-                    shapeClassPaths.add("python/init_structure.py")
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/stack.py"))
                 }
             }
             if (it is MoveToLine && !executed) {
@@ -51,6 +51,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
     private fun initialPythonSetup(): String {
         return """
             from manimlib.imports import *
+            from abc import ABC, abstractmethod
              
             class Main(Scene):
                 def construct(self):
