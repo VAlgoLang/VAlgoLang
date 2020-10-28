@@ -28,10 +28,10 @@ class ASTConstructionTests {
     fun multiLineProgram() {
         val multiLineProgram = "let x: number = 1.5;\n" +
                 "# code comment\n" +
-                "let y: Stack<number> = new Stack<number>;\n"
+                "let y: Stack<number> = Stack<number>();\n"
         val statements = listOf(
             DeclarationNode(1, "x", NumberNode(1, 1.5)),
-            DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), listOf()))
+            DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), emptyList(), emptyList()))
         )
         val reference = ProgramNode(listOf(), statements)
         val actual = buildAST(multiLineProgram)
@@ -40,10 +40,10 @@ class ASTConstructionTests {
 
     @Test
     fun methodCallProgram() {
-        val methodProgram = "let y: Stack<number> = new Stack<number>;\n" +
+        val methodProgram = "let y: Stack<number> = Stack<number>();\n" +
                 "y.push(1);\n"
         val statements = listOf(
-            DeclarationNode(1, "y", ConstructorNode(1, StackType(NumberType), listOf())),
+            DeclarationNode(1, "y", ConstructorNode(1, StackType(NumberType), emptyList(), emptyList())),
             MethodCallNode(
                 2,
                 "y",

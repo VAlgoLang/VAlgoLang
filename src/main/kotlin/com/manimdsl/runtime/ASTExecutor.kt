@@ -27,6 +27,7 @@ class VirtualMachine(
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private val acceptableNonStatements = setOf("}", "{", "")
+    private val ALLOCATED_STACKS = 1000
 
     init {
         fileLines.indices.forEach {
@@ -63,12 +64,17 @@ class VirtualMachine(
     }
 
     private inner class Frame(
-        private var pc: Int,
-        private var finalLine: Int,
-        private var variables: MutableMap<String, ExecValue>
+            private var pc: Int,
+            private var finalLine: Int,
+            private var variables: MutableMap<String, ExecValue>,
+            val depth: Int = 1
     ) {
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
+            if (depth > ALLOCATED_STACKS) {
+                return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
+            }
+
             while (pc <= finalLine) {
                 if (statements.containsKey(pc)) {
                     val statement = statements[pc]!!
@@ -130,7 +136,7 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables).runFrame()
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth+1).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             moveToLine()
             return returnValue
@@ -177,6 +183,7 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
+            is ArrayElemNode -> TODO()
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -194,8 +201,7 @@ class VirtualMachine(
                             dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
-                            val style = stylesheet.getStyle(node.instanceIdentifier, ds)
-                            val newObjectStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: style
+                            val newObjectStyle = ds.style.animate ?: ds.style
                             val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
@@ -254,6 +260,9 @@ class VirtualMachine(
                             return DoubleValue(ds.stack.size.toDouble())
                         }
                         is StackType.PeekMethod -> {
+                            if (ds.stack.empty()) {
+                                return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
+                            }
                             val clonedPeekValue = ds.stack.peek().clone()
                             clonedPeekValue.manimObject = EmptyMObject
                             return clonedPeekValue
@@ -280,8 +289,8 @@ class VirtualMachine(
                             Alignment.HORIZONTAL,
                             initStructureIdent,
                             identifier,
-                            color = style.borderColor,
-                            textColor = style.textColor,
+                            color = stackValue.style.borderColor,
+                            textColor = stackValue.style.textColor,
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -293,8 +302,8 @@ class VirtualMachine(
                             initStructureIdent,
                             identifier,
                             numStack.manimObject.shape,
-                            color = style.borderColor,
-                            textColor = style.textColor,
+                            color = stackValue.style.borderColor,
+                            textColor = stackValue.style.textColor,
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -302,25 +311,44 @@ class VirtualMachine(
                     stackValue.manimObject = newObject
                     stackValue
                 }
+                is ArrayType -> {
+                    // TODO()
+                    EmptyValue
+                }
             }
         }
 
         private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
-            return op(executeExpression(node.expr))
+            val subExpression = executeExpression(node.expr)
+            return if (subExpression is RuntimeError) {
+                subExpression
+            } else {
+                op(subExpression)
+            }
         }
 
         private fun executeBinaryOp(
             node: BinaryExpression,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
         ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
             return op(
-                executeExpression(node.expr1),
-                executeExpression(node.expr2)
+                    leftExpression,
+                    rightExpression
             )
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            addSleep(1.0)
+            addSleep(0.5)
             var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
@@ -333,7 +361,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                addSleep(1.0)
+                addSleep(0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -343,7 +371,7 @@ class VirtualMachine(
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
-            addSleep(1.0)
+            addSleep(0.5)
             return executeStatementBlock(ifStatementNode.elseBlock.statements)
 
         }

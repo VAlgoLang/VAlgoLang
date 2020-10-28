@@ -1,1 +1,1 @@
-let x: Stack = new Weird;
+let x: Stack = Weird();

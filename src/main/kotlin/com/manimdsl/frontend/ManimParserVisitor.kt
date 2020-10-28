@@ -16,8 +16,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val functions = ctx.function().map { visit(it) as FunctionNode }
         semanticAnalyser.tooManyInferredFunctionsCheck(symbolTable, ctx)
         return ProgramNode(
-                functions,
-                flattenStatements(visit(ctx.stat()) as StatementNode))
+            functions,
+            flattenStatements(visit(ctx.stat()) as StatementNode)
+        )
     }
 
     override fun visitFunction(ctx: FunctionContext): FunctionNode {
@@ -61,7 +62,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return lineNumberNodeMap[ctx.start.line] as FunctionNode
     }
 
-    override fun visitParameterList(ctx: ParameterListContext?): ParameterListNode{
+    override fun visitParameterList(ctx: ParameterListContext?): ParameterListNode {
         if (ctx == null) {
             return ParameterListNode(listOf())
         }
@@ -149,22 +150,40 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitAssignmentStatement(ctx: AssignmentStatementContext): AssignmentNode {
         val expression = visit(ctx.expr()) as ExpressionNode
-        val identifier = ctx.IDENT().symbol.text
+        val lhs = ctx.assignment_lhs().text
+        val lhsType = (visit(ctx.assignment_lhs()) as Type)
         var rhsType = semanticAnalyser.inferType(symbolTable, expression)
-        val identifierType = symbolTable.getTypeOf(identifier)
 
         if (expression is FunctionCallNode && symbolTable.getTypeOf(expression.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(expression.functionIdentifier) as FunctionData
             if (functionData.inferred) {
-                functionData.type = identifierType
-                rhsType = identifierType
+                functionData.type = lhsType
+                rhsType = lhsType
             }
         }
 
-        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
-        semanticAnalyser.incompatibleTypesCheck(identifierType, rhsType, identifier, ctx)
-        lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, identifier, expression)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs, ctx)
+        lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
+    }
+
+    override fun visitIdentifierAssignment(ctx: IdentifierAssignmentContext): Type {
+        val identifier = ctx.IDENT().symbol.text
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        return symbolTable.getTypeOf(identifier)
+    }
+
+    override fun visitArrayElemAssignment(ctx: ArrayElemAssignmentContext): Type {
+        val arrayElem = visit(ctx.array_elem()) as ArrayElemNode
+        val arrayType = symbolTable.getTypeOf(arrayElem.arrayIdentifier)
+
+        // Return element type
+        return if (arrayType is ArrayType) {
+            arrayType.internalType
+        } else {
+            ErrorType
+        }
     }
 
     override fun visitMethodCallStatement(ctx: MethodCallStatementContext): ASTNode {
@@ -245,10 +264,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val dataStructureType = symbolTable.getTypeOf(identifier)
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
-            semanticAnalyser.invalidNumberOfArgumentsCheck(dataStructureType, methodName, arguments.size, ctx)
-
             val method = dataStructureType.getMethodByName(methodName)
-
             // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
             semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
@@ -264,7 +280,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        lineNumberNodeMap[ctx.start.line] = MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        lineNumberNodeMap[ctx.start.line] =
+            MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
         return lineNumberNodeMap[ctx.start.line] as MethodCallNode
     }
 
@@ -285,8 +302,27 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return functionCallNode
     }
 
-    override fun visitDataStructureContructor(ctx: DataStructureContructorContext): ASTNode {
-        return ConstructorNode(ctx.start.line, visit(ctx.data_structure_type()) as DataStructureType, listOf())
+    override fun visitDataStructureConstructor(ctx: DataStructureConstructorContext): ASTNode {
+        val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
+
+        // Check arguments
+        val (arguments, argumentTypes) = if (ctx.arg_list() != null) {
+            val argExpressions = (visit(ctx.arg_list()) as ArgumentNode).arguments
+            Pair(argExpressions, argExpressions.map { semanticAnalyser.inferType(symbolTable, it) })
+        } else {
+            Pair(emptyList(), emptyList())
+        }
+
+        // Check intial values
+        val initialValue = if (ctx.data_structure_initialiser() != null) {
+            (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
+        } else {
+            emptyList()
+        }
+
+        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValue, symbolTable, ctx)
+        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValue, argumentTypes, ctx)
+        return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialValue)
     }
 
     override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
@@ -340,7 +376,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return unaryOpExpr
     }
 
-
     /** Literals **/
 
     override fun visitNumberLiteral(ctx: NumberLiteralContext): NumberNode {
@@ -373,5 +408,23 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         // Stack only contains primitives as per grammar
         val containerType = visit(ctx.primitive_type()) as PrimitiveType
         return StackType(containerType)
+    }
+
+    override fun visitArrayType(ctx: ArrayTypeContext): ArrayType {
+        val elementType = visit(ctx.primitive_type()) as Type
+        return ArrayType(elementType)
+    }
+
+    override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): ASTNode {
+        return DataStructureInitialiserNode(ctx.expr().map { visit(it) as ExpressionNode })
+    }
+
+    override fun visitArray_elem(ctx: Array_elemContext): ArrayElemNode {
+        val arrayIdentifier = ctx.IDENT().symbol.text
+        val index = visit(ctx.expr()) as ExpressionNode
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
+        semanticAnalyser.checkExpressionTypeWithExpectedType(index, NumberType, symbolTable, ctx)
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
     }
 }

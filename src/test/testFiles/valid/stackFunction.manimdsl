@@ -1,5 +1,5 @@
 fun function(x: number): Stack<number> {
-    let stack1 = new Stack<number>;
+    let stack1 = Stack<number>();
     stack1.push(x);
     return stack1;
 }

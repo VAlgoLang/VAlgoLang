@@ -1,2 +1,2 @@
-let stack1 = new Stack<number>;
+let stack1 = Stack<number>();
 let x = stack1.pop();

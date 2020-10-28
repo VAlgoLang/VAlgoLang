@@ -17,7 +17,18 @@ class SemanticAnalysis {
             is BoolNode -> BoolType
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
+            is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
         }
+
+    private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+        // To extend to multiple dimensions perform below recursively
+        val arrayType = currentSymbolTable.getTypeOf(expression.arrayIdentifier)
+        return if (arrayType is ArrayType) {
+            arrayType.internalType
+        } else {
+            ErrorType
+        }
+    }
 
     private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
         val exprType = getExpressionType(expression.expr, currentSymbolTable)
@@ -63,6 +74,7 @@ class SemanticAnalysis {
         }
     }
 
+
     fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
             undeclaredAssignError(identifier, ctx)
@@ -76,10 +88,10 @@ class SemanticAnalysis {
     }
 
     fun notValidMethodNameForDataStructureCheck(
-            currentSymbolTable: SymbolTableVisitor,
-            identifier: String,
-            method: String,
-            ctx: ParserRuleContext
+        currentSymbolTable: SymbolTableVisitor,
+        identifier: String,
+        method: String,
+        ctx: ParserRuleContext
     ) {
         val dataStructureType = currentSymbolTable.getTypeOf(identifier)
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
@@ -89,13 +101,18 @@ class SemanticAnalysis {
 
     fun invalidNumberOfArgumentsCheck(
         dataStructureType: DataStructureType,
-        methodName: String,
+        method: DataStructureMethod,
         numArgs: Int,
         ctx: ParserRuleContext
     ) {
-        val method = dataStructureType.getMethodByName(methodName)
         if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
-            numOfArgsInMethodCallError(dataStructureType.toString(), methodName, numArgs, ctx)
+            numOfArgsInMethodCallError(
+                dataStructureType.toString(),
+                method.toString(),
+                numArgs,
+                method.argumentTypes.size,
+                ctx
+            )
         }
     }
 
@@ -118,13 +135,29 @@ class SemanticAnalysis {
         dataStructureType: DataStructureType,
         argumentTypes: List<Type>,
         dataStructureMethod: DataStructureMethod,
-        ctx: ManimParser.MethodCallContext
+        ctx: ParserRuleContext
     ) {
-        if (dataStructureMethod != ErrorMethod && dataStructureMethod.argumentTypes.size == argumentTypes.size) {
+        if (!dataStructureMethod.varargs) {
+            invalidNumberOfArgumentsCheck(dataStructureType, dataStructureMethod, argumentTypes.size, ctx)
+        }
+
+        val argumentCtx = when (ctx) {
+            is ManimParser.MethodCallContext -> ctx.arg_list()
+            is ManimParser.DataStructureConstructorContext -> ctx.arg_list()
+            else -> null
+        } ?: return
+
+        val expectedTypes = dataStructureMethod.argumentTypes
+        if (dataStructureMethod != ErrorMethod &&
+            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size)
+        ) {
+
             argumentTypes.forEachIndexed { index, type ->
-                if (type != dataStructureMethod.argumentTypes[index] && type is PrimitiveType) {
-                    val argCtx = ctx.arg_list().getRuleContext(ManimParser.ExprContext::class.java, index)
-                    val argName = ctx.arg_list().getChild(index).text
+                // Sets expected type. When varargs is enabled then set to last if index greater than size of given types
+                val expectedType = if (index in expectedTypes.indices) expectedTypes[index] else expectedTypes.last()
+                if (type != expectedType && type is PrimitiveType) {
+                    val argCtx = argumentCtx.getRuleContext(ManimParser.ExprContext::class.java, index)
+                    val argName = argumentCtx.getChild(index).text
                     typeOfArgsInMethodCallError(
                         dataStructureType.toString(),
                         dataStructureMethod.toString(),
@@ -176,20 +209,31 @@ class SemanticAnalysis {
             unexpectedExpressionTypeError(expected, actual, ctx)
         }
     }
+
     fun globalReturnCheck(inFunction: Boolean, ctx: ManimParser.ReturnStatementContext) {
         if (!inFunction) {
             globalReturnError(ctx)
         }
     }
 
-    fun incompatibleReturnTypesCheck(currentSymbolTable: SymbolTableVisitor, functionReturnType: Type, expression: ExpressionNode, ctx: ManimParser.ReturnStatementContext) {
+    fun incompatibleReturnTypesCheck(
+        currentSymbolTable: SymbolTableVisitor,
+        functionReturnType: Type,
+        expression: ExpressionNode,
+        ctx: ManimParser.ReturnStatementContext
+    ) {
         val type = inferType(currentSymbolTable, expression)
         if (type != functionReturnType) {
             returnTypeError(type.toString(), functionReturnType.toString(), ctx)
         }
     }
 
-    fun invalidNumberOfArgumentsForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, numArgs: Int, ctx: ManimParser.FunctionCallContext) {
+    fun invalidNumberOfArgumentsForFunctionsCheck(
+        identifier: String,
+        currentSymbolTable: SymbolTableVisitor,
+        numArgs: Int,
+        ctx: ManimParser.FunctionCallContext
+    ) {
         val functionData = currentSymbolTable.getData(identifier)
         if (functionData is FunctionData) {
             val expected = functionData.parameters.size
@@ -199,7 +243,12 @@ class SemanticAnalysis {
         }
     }
 
-    fun incompatibleArgumentTypesForFunctionsCheck(identifier: String, currentSymbolTable: SymbolTableVisitor, argTypes: List<Type>, ctx: ManimParser.FunctionCallContext) {
+    fun incompatibleArgumentTypesForFunctionsCheck(
+        identifier: String,
+        currentSymbolTable: SymbolTableVisitor,
+        argTypes: List<Type>,
+        ctx: ManimParser.FunctionCallContext
+    ) {
         val functionData = currentSymbolTable.getData(identifier)
         if (functionData is FunctionData) {
             val parameters = functionData.parameters
@@ -264,13 +313,22 @@ class SemanticAnalysis {
                 }
                 val currentScope = currentSymbolTable.getCurrentScopeID()
                 currentSymbolTable.goToScope(0)
-                currentSymbolTable.addVariable(identifier, FunctionData(inferred = true, firstTime = true, parameters = params, type = VoidType))
+                currentSymbolTable.addVariable(
+                    identifier,
+                    FunctionData(inferred = true, firstTime = true, parameters = params, type = VoidType)
+                )
                 currentSymbolTable.goToScope(currentScope)
             }
         }
     }
 
-    fun redeclaredFunctionCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, returnType: Type, parameters: List<ParameterNode>, ctx: ParserRuleContext) {
+    fun redeclaredFunctionCheck(
+        currentSymbolTable: SymbolTableVisitor,
+        identifier: String,
+        returnType: Type,
+        parameters: List<ParameterNode>,
+        ctx: ParserRuleContext
+    ) {
         if (currentSymbolTable.getTypeOf(identifier) != ErrorType) {
             val functionData = currentSymbolTable.getData(identifier) as FunctionData
             if (functionData.inferred) {
@@ -283,7 +341,12 @@ class SemanticAnalysis {
                     functionData.parameters.forEachIndexed { index, parameter ->
                         val declaredParameter = parameters[index]
                         if (parameter.type != declaredParameter.type) {
-                            incompatibleParameterType(declaredParameter.identifier, declaredParameter.type.toString(), parameter.type.toString(), ctx)
+                            incompatibleParameterType(
+                                declaredParameter.identifier,
+                                declaredParameter.type.toString(),
+                                parameter.type.toString(),
+                                ctx
+                            )
                         }
                     }
                 }
@@ -293,7 +356,12 @@ class SemanticAnalysis {
         }
     }
 
-    fun incompatibleMultipleFunctionCall(identifier: String, functionData: FunctionData, lhsType: Type, ctx: ParserRuleContext) {
+    fun incompatibleMultipleFunctionCall(
+        identifier: String,
+        functionData: FunctionData,
+        lhsType: Type,
+        ctx: ParserRuleContext
+    ) {
         if (functionData.inferred && !functionData.firstTime && functionData.type != lhsType) {
             incompatibleTypeFromMultipleFunctionCall(identifier, ctx)
         }
@@ -307,5 +375,34 @@ class SemanticAnalysis {
                 undeclaredAssignError(identifier, ctx)
             }
         }
+    }
+
+    fun allExpressionsAreSameTypeCheck(
+        expected: Type,
+        expressions: List<ExpressionNode>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        if (expressions.any { inferType(currentSymbolTable, it) != expected }) {
+            inconsistentTypeError(expected, ctx)
+        }
+    }
+
+    fun datastructureConstructorCheck(
+        dataStructureType: DataStructureType,
+        initialValue: List<ExpressionNode>,
+        argumentTypes: List<Type>,
+        ctx: ManimParser.DataStructureConstructorContext
+    ) {
+        val constructor = dataStructureType.getConstructor()
+        if (initialValue.isEmpty() && argumentTypes.size < constructor.minRequiredArgsWithoutInitialValue) {
+            missingConstructorArgumentsError(
+                dataStructureType,
+                constructor.minRequiredArgsWithoutInitialValue,
+                argumentTypes.size,
+                ctx
+            )
+        }
+        incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
     }
 }

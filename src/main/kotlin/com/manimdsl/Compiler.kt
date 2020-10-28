@@ -18,6 +18,12 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
         exitProcess(1)
     }
 
+    if (stylesheetPath != null && !File(stylesheetPath).isFile) {
+        // Stylesheet argument was not valid
+        println("Please enter a valid stylesheet file: $stylesheetPath not found")
+        exitProcess(1)
+    }
+
     println("Compiling...")
     val parser = ManimDSLParser(file.inputStream())
     val (syntaxErrorStatus, program) = parser.parseFile()
