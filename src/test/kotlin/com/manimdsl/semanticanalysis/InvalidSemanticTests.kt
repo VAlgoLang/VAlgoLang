@@ -260,6 +260,51 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun arrayMissingConstructorArguments() {
+        runSyntaxAndSemanticAnalysis("arrayMissingConstructorArguments.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex(".* constructor expects .* arguments but only found .*"))
+        )
+    }
+
+    @Test
+    fun arrayInvalidTypesInInitialiserCheck() {
+        runSyntaxAndSemanticAnalysis("arrayInvalidTypesInInitialiserCheck.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("All values must be of type .*"))
+        )
+    }
+
+    @Test
+    fun arrayInvalidTypesInConstructorCheck() {
+        runSyntaxAndSemanticAnalysis("arrayInvalidTypesInConstructorCheck.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("constructor method on .* does not accept argument .* of type .*"))
+        )
+    }
+
+    @Test
+    fun arrayAccessIncorrectIndexType() {
+        runSyntaxAndSemanticAnalysis("arrayAccessIncorrectIndexType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("Expected expression of type number but found .*"))
+        )
+    }
+
+    @Test
+    fun stackTooManyArgumentsInConstructor() {
+        runSyntaxAndSemanticAnalysis("stackTooManyArgumentsInConstructor.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString()
+                .contains(Regex("constructor method on Stack<.*> does not accept .* arguments, expects 0"))
+        )
+    }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

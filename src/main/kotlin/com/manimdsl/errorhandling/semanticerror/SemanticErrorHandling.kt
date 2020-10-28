@@ -1,6 +1,7 @@
 package com.manimdsl.errorhandling.semanticerror
 
 import com.manimdsl.errorhandling.ErrorHandler.addSemanticError
+import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 
@@ -13,6 +14,29 @@ fun declareAssignError(
         getErrorLinePos(ctx)
     )
 }
+
+fun inconsistentTypeError(
+    expected: Type,
+    ctx: ParserRuleContext
+) {
+    addSemanticError(
+        "All values must be of type $expected",
+        getErrorLinePos(ctx)
+    )
+}
+
+fun missingConstructorArgumentsError(
+    dataStructureType: DataStructureType,
+    expected: Int,
+    actual: Int,
+    ctx: ParserRuleContext
+) {
+    addSemanticError(
+        "$dataStructureType constructor expects $expected arguments but only found $actual",
+        getErrorLinePos(ctx)
+    )
+}
+
 
 fun redeclarationError(
     variable: String, variableType: Type,
@@ -50,9 +74,18 @@ fun unsupportedMethodError(dataStructureType: String, method: String, ctx: Parse
     addSemanticError("$dataStructureType does not support $method method", getErrorLinePos(ctx))
 }
 
-fun numOfArgsInMethodCallError(dataStructureType: String, method: String, numArgs: Int, ctx: ParserRuleContext) {
+fun numOfArgsInMethodCallError(
+    dataStructureType: String,
+    method: String,
+    numArgs: Int,
+    expected: Int,
+    ctx: ParserRuleContext
+) {
     // To modify once nex version is merged
-    addSemanticError("$method method on $dataStructureType does not accept $numArgs arguments", getErrorLinePos(ctx))
+    addSemanticError(
+        "$method method on $dataStructureType does not accept $numArgs arguments, expects $expected",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun typeOfArgsInMethodCallError(

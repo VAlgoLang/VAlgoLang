@@ -1,0 +1,1 @@
+let x = Stack<number>(1);

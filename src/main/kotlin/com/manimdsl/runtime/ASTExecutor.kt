@@ -171,6 +171,7 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
+            is ArrayElemNode -> TODO()
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -293,6 +294,10 @@ class VirtualMachine(
                     linearRepresentation.addAll(instructions)
                     stackValue.manimObject = newObject
                     stackValue
+                }
+                is ArrayType -> {
+                    // TODO()
+                    EmptyValue
                 }
             }
         }

@@ -1,1 +1,1 @@
-let a: Stack = new Stack<asd>;
+let a: Stack = Stack<asd>();
