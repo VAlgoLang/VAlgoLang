@@ -26,7 +26,7 @@ class VirtualMachine(
     private val acceptableNonStatements = setOf("}", "{", "")
     private val ALLOCATED_STACKS = 1000
     private val MAX_DISPLAYED_VARIABLES = 4
-    private val WRAP_LINE_LENGTH = 40
+    private val WRAP_LINE_LENGTH = 70
 
     init {
         fileLines.indices.forEach {
