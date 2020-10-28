@@ -25,10 +25,12 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = 1000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
+    private val MAX_DISPLAYED_VARIABLES = 4
 
     init {
         fileLines.indices.forEach {
+            println(ALLOCATED_STACKS)
             if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
@@ -59,33 +61,33 @@ class VirtualMachine(
             private var variables: MutableMap<String, ExecValue>,
             val depth: Int = 1,
 
-            private var oldestQueue: LinkedList<Int> = LinkedList(),
-            private var indexToData: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+            private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
+            private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
 
 
             ) {
 
         fun insertVariable(identifier: String, value: ExecValue) {
             if (value is PrimitiveValue) {
-                val index = indexToData.filterValues { it.first == identifier }.keys
+                val index = displayedDataMap.filterValues { it.first == identifier }.keys
                 if (index.isEmpty()) {
                     // not been visualised
                     // if there is space
-                    if (indexToData.size < 4) {
-                        val newIndex = indexToData.size
-                        oldestQueue.addLast(newIndex)
-                        indexToData[newIndex] = Pair(identifier, value)
+                    if (displayedDataMap.size < MAX_DISPLAYED_VARIABLES) {
+                        val newIndex = displayedDataMap.size
+                        leastRecentlyUpdatedQueue.addLast(newIndex)
+                        displayedDataMap[newIndex] = Pair(identifier, value)
                     } else {
                         // if there is no space
-                        val oldest = oldestQueue.removeFirst()
-                        indexToData[oldest] = Pair(identifier, value)
-                        oldestQueue.addLast(oldest)
+                        val oldest = leastRecentlyUpdatedQueue.removeFirst()
+                        displayedDataMap[oldest] = Pair(identifier, value)
+                        leastRecentlyUpdatedQueue.addLast(oldest)
                     }
                 } else {
                     // being visualised
-                    oldestQueue.remove(index.first())
-                    oldestQueue.addLast(index.first())
-                    indexToData[index.first()] = Pair(identifier, value)
+                    leastRecentlyUpdatedQueue.remove(index.first())
+                    leastRecentlyUpdatedQueue.addLast(index.first())
+                    displayedDataMap[index.first()] = Pair(identifier, value)
                 }
             }
         }
@@ -123,7 +125,7 @@ class VirtualMachine(
         }
 
         private fun getVariableState(): List<String>  {
-            return (0 until indexToData.size).map { "\"${indexToData[it]!!.first} = ${indexToData[it]!!.second}\"" }
+            return (0 until displayedDataMap.size).map { "\"${displayedDataMap[it]!!.first} = ${displayedDataMap[it]!!.second}\"" }
         }
 
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
