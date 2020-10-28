@@ -17,7 +17,7 @@ class Stack(DataStructure, ABC):
         if text_color is None:
             text_color = self.text_color
         animations = []
-        obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)
+        obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)
         shrink, scale_factor = self.shrink_if_cross_border(obj.all)
         if shrink:
             animations.append([shrink])
@@ -35,7 +35,7 @@ class Stack(DataStructure, ABC):
             text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)],
+                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)],
                      [FadeOut(obj.all)]]
         enlarge, scale_factor = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
         if enlarge:
@@ -55,8 +55,8 @@ class Stack(DataStructure, ABC):
             text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)],
-                     [ApplyMethod(obj.all.move_to, np.array([target.width_center, target.ul[1] - 0.1, 0]), UP)]]
+                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)],
+                     [ApplyMethod(obj.all.move_to, np.array([target.width_center, target.ul[1] - 0.5, 0]), UP)]]
         enlarge, _ = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
         if enlarge:
             animation[-1].append(enlarge)
@@ -66,14 +66,3 @@ class Stack(DataStructure, ABC):
         animation.append([ApplyMethod(obj.all.next_to, target.all, np.array([0, 0.25, 0]))])
         return animation
 
-
-
-# Object representing a stack instantiation.
-class Init_structure:
-    def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
-        self.shape = Line(color=color)
-        self.shape.set_length(length)
-        self.shape.set_angle(angle)
-        self.text = Text(text, color=text_color, weight=text_weight, font=font)
-        self.text.next_to(self.shape, DOWN, SMALL_BUFF)
-        self.all = VGroup(self.text, self.shape)

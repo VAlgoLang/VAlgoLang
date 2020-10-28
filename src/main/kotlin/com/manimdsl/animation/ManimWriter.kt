@@ -20,7 +20,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.add("python/code_block.py")
                 }
                 is InitManimStack -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/stack.py"))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/stack.py", "python/init_structure.py"))
                 }
             }
             if (it is MoveToLine && !executed) {
