@@ -29,7 +29,9 @@ class VirtualMachine(
 
     init {
         fileLines.indices.forEach {
-            if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
+            if (statements[it + 1] !is NoRenderAnimationNode &&
+                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
+            ) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
