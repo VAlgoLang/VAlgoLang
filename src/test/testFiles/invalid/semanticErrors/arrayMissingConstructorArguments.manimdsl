@@ -1,1 +1,1 @@
-let x = new Array<number>();
+let x = Array<number>();

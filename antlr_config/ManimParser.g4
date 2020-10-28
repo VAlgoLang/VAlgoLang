@@ -35,9 +35,9 @@ expr: NUMBER                                                        #NumberLiter
     | bool                                                          #BooleanLiteral
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
-    | NEW data_structure_type
+    | data_structure_type
     OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS
-    data_structure_initialiser?                                     #DataStructureContructor
+    data_structure_initialiser?                                     #DataStructureConstructor
     | method_call                                                   #MethodCallExpression
     | unary_operator=(ADD | MINUS | NOT) expr                       #UnaryOperator
     | left=expr binary_operator=(ADD | MINUS | TIMES) right=expr    #BinaryExpression

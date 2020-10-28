@@ -1,2 +1,2 @@
-let x = new Stack<number>();
+let x = Stack<number>();
 x.hello(5);

@@ -1,1 +1,1 @@
-let x = new Stack<number>(1);
+let x = Stack<number>(1);

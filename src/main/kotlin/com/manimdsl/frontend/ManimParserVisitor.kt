@@ -265,8 +265,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
-
-
             // Assume for now we only have one type inside the data structure and data structure functions only deal with this type
             val argTypes = arguments.map { semanticAnalyser.inferType(symbolTable, it) }.toList()
             semanticAnalyser.primitiveArgTypesCheck(argTypes, methodName, dataStructureType, ctx)
@@ -304,7 +302,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return functionCallNode
     }
 
-    override fun visitDataStructureContructor(ctx: DataStructureContructorContext): ASTNode {
+    override fun visitDataStructureConstructor(ctx: DataStructureConstructorContext): ASTNode {
         val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
 
         // Check arguments

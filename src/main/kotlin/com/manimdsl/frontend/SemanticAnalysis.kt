@@ -188,7 +188,7 @@ class SemanticAnalysis {
                     dataStructureMethod,
                     ctx.arg_list()
                 )
-                is ManimParser.DataStructureContructorContext -> incompatibleArgumentTypesCheck(
+                is ManimParser.DataStructureConstructorContext -> incompatibleArgumentTypesCheck(
                     dataStructureType,
                     argumentTypes,
                     dataStructureMethod,
@@ -385,7 +385,7 @@ class SemanticAnalysis {
         dataStructureType: DataStructureType,
         initialValue: List<ExpressionNode>,
         argumentTypes: List<Type>,
-        ctx: ManimParser.DataStructureContructorContext
+        ctx: ManimParser.DataStructureConstructorContext
     ) {
         val constructor = dataStructureType.getConstructor()
         if (initialValue.isEmpty() && argumentTypes.size < constructor.minRequiredArgsWithoutInitialValue) {

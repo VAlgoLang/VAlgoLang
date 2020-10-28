@@ -6,5 +6,5 @@ fun get(x: number, stack: Stack<number>): number {
     }
 }
 
-let stack = new Stack<number>();
+let stack = Stack<number>();
 get(4, stack);

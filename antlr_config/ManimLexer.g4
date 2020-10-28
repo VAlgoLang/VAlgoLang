@@ -43,7 +43,6 @@ NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
 
 // Keywords
-NEW: 'new';
 COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';

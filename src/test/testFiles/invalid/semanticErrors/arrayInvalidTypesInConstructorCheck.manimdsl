@@ -1,1 +1,1 @@
-let x = new Array<number>(false);
+let x = Array<number>(false);

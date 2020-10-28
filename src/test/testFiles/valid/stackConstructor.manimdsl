@@ -1,2 +1,2 @@
-let x = new Stack<number>() {1, 2, 3};
-let y = new Stack<number>();
+let x = Stack<number>() {1, 2, 3};
+let y = Stack<number>();
