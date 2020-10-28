@@ -144,14 +144,13 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, identifier, rhs)
+        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
         return lineNumberNodeMap[ctx.start.line] as DeclarationNode
     }
 
     override fun visitAssignmentStatement(ctx: AssignmentStatementContext): AssignmentNode {
         val expression = visit(ctx.expr()) as ExpressionNode
-        val lhs = ctx.assignment_lhs().text
-        val lhsType = (visit(ctx.assignment_lhs()) as Type)
+        val (lhsType, lhs) = visitAssignLHS(ctx.assignment_lhs())
         var rhsType = semanticAnalyser.inferType(symbolTable, expression)
 
         if (expression is FunctionCallNode && symbolTable.getTypeOf(expression.functionIdentifier) != ErrorType) {
@@ -162,27 +161,35 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs, ctx)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.identifier, ctx)
         lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
     }
 
-    override fun visitIdentifierAssignment(ctx: IdentifierAssignmentContext): Type {
+    private fun visitAssignLHS(ctx: Assignment_lhsContext): Pair<Type, AssignLHS> {
+        return when (ctx) {
+            is IdentifierAssignmentContext -> visitIdentifierAssignmentLHS(ctx)
+            is ArrayElemAssignmentContext -> visitArrayAssignmentLHS(ctx)
+            else -> Pair(ErrorType, EmptyLHS)
+        }
+    }
+
+    private fun visitIdentifierAssignmentLHS(ctx: IdentifierAssignmentContext): Pair<Type, AssignLHS> {
         val identifier = ctx.IDENT().symbol.text
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
-        return symbolTable.getTypeOf(identifier)
+        return Pair(symbolTable.getTypeOf(identifier), IdentifierNode(ctx.start.line, identifier))
     }
 
-    override fun visitArrayElemAssignment(ctx: ArrayElemAssignmentContext): Type {
+    private fun visitArrayAssignmentLHS(ctx: ArrayElemAssignmentContext): Pair<Type, AssignLHS> {
         val arrayElem = visit(ctx.array_elem()) as ArrayElemNode
-        val arrayType = symbolTable.getTypeOf(arrayElem.arrayIdentifier)
+        val arrayType = symbolTable.getTypeOf(arrayElem.identifier)
 
         // Return element type
         return if (arrayType is ArrayType) {
-            arrayType.internalType
+            Pair(arrayType.internalType, arrayElem)
         } else {
-            ErrorType
+            Pair(ErrorType, EmptyLHS)
         }
     }
 

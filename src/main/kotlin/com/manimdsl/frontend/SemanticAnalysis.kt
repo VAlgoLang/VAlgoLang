@@ -22,7 +22,7 @@ class SemanticAnalysis {
 
     private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         // To extend to multiple dimensions perform below recursively
-        val arrayType = currentSymbolTable.getTypeOf(expression.arrayIdentifier)
+        val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
             arrayType.internalType
         } else {

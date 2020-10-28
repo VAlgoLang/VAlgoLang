@@ -11,7 +11,7 @@ class ASTConstructionTests {
     @Test
     fun variableDeclaration() {
         val declarationProgram = "let x: number = 1;"
-        val reference = ProgramNode(listOf(), listOf(DeclarationNode(1, "x", NumberNode(1, 1.0))))
+        val reference = ProgramNode(listOf(), listOf(DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 1.0))))
         val actual = buildAST(declarationProgram)
         assertEquals(reference, actual)
     }
@@ -30,8 +30,8 @@ class ASTConstructionTests {
                 "# code comment\n" +
                 "let y: Stack<number> = Stack<number>();\n"
         val statements = listOf(
-            DeclarationNode(1, "x", NumberNode(1, 1.5)),
-            DeclarationNode(3, "y", ConstructorNode(3, StackType(NumberType), emptyList(), emptyList()))
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 1.5)),
+            DeclarationNode(3, IdentifierNode(3, "y"), ConstructorNode(3, StackType(NumberType), emptyList(), emptyList()))
         )
         val reference = ProgramNode(listOf(), statements)
         val actual = buildAST(multiLineProgram)
@@ -43,7 +43,7 @@ class ASTConstructionTests {
         val methodProgram = "let y: Stack<number> = Stack<number>();\n" +
                 "y.push(1);\n"
         val statements = listOf(
-            DeclarationNode(1, "y", ConstructorNode(1, StackType(NumberType), emptyList(), emptyList())),
+            DeclarationNode(1, IdentifierNode(1, "y"), ConstructorNode(1, StackType(NumberType), emptyList(), emptyList())),
             MethodCallNode(
                 2,
                 "y",
@@ -64,7 +64,7 @@ class ASTConstructionTests {
             "}\n" +
             "let z: number = 5;"
         val functionStatements = listOf(
-            DeclarationNode(2, "z", NumberNode(2, 10.0)),
+            DeclarationNode(2, IdentifierNode(2, "z"), NumberNode(2, 10.0)),
             ReturnNode(3, IdentifierNode(3, "z"))
         )
         val functions = listOf(
@@ -76,7 +76,7 @@ class ASTConstructionTests {
                 functionStatements
             )
         )
-        val statements = listOf(DeclarationNode(5, "z", NumberNode(5, 5.0)))
+        val statements = listOf(DeclarationNode(5, IdentifierNode(5, "z"), NumberNode(5, 5.0)))
         val reference = ProgramNode(functions, statements)
         val actual = buildAST(functionDeclarationProgram)
         assertEquals(reference, actual)
@@ -91,7 +91,7 @@ class ASTConstructionTests {
                 "let z: number = func(1,2);\n" +
                 "func(3,4);"
         val functionStatements = listOf(
-            DeclarationNode(2, "z", AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
+            DeclarationNode(2, IdentifierNode(2, "z"), AddExpression(2, IdentifierNode(2, "x"), IdentifierNode(2, "y"))),
             ReturnNode(3, IdentifierNode(3, "z"))
         )
         val functions = listOf(
@@ -106,7 +106,7 @@ class ASTConstructionTests {
         val statements = listOf(
             DeclarationNode(
                 5,
-                "z",
+                IdentifierNode(5, "z"),
                 FunctionCallNode(5, "func", listOf(NumberNode(5, 1.0), NumberNode(5, 2.0)))),
             FunctionCallNode(6, "func", listOf(NumberNode(6, 3.0), NumberNode(6, 4.0)))
         )
@@ -128,32 +128,32 @@ class ASTConstructionTests {
                 "    x = 1;\n" +
                 "}"
         val statements = listOf(
-            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
                 endLineNumber = 10,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
-                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                statements = listOf(AssignmentNode(3, IdentifierNode(3, "x"), NumberNode(3, 2.0))),
                 elifs = listOf(
                     ElifNode(
                         4,
                         scope = 2,
                         condition = EqExpression(4, IdentifierNode(4, "x"), NumberNode(4, 1.0)),
-                        statements = listOf(AssignmentNode(5, "x", NumberNode(5, 4.0)))
+                        statements = listOf(AssignmentNode(5, IdentifierNode(5, "x"), NumberNode(5, 4.0)))
                     ),
                     ElifNode(
                         6,
                         scope = 3,
                         condition = EqExpression(6, IdentifierNode(6, "x"), NumberNode(6, 0.0)),
-                        statements = listOf(AssignmentNode(7, "x", NumberNode(7, 3.0)))
+                        statements = listOf(AssignmentNode(7, IdentifierNode(7, "x"), NumberNode(7, 3.0)))
                     )
                 ),
                 elseBlock = ElseNode(
                     lineNumber = 8,
                     scope = 4,
                     statements = listOf(
-                        AssignmentNode(9, "x", NumberNode(9, 1.0))
+                        AssignmentNode(9, IdentifierNode(9, "x"), NumberNode(9, 1.0))
                     )
                 )
 
@@ -173,19 +173,19 @@ class ASTConstructionTests {
                 "    x = 1;\n" +
                 "}"
         val statements = listOf(
-            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
                 endLineNumber = 6,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
-                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                statements = listOf(AssignmentNode(3, IdentifierNode(3, "x"), NumberNode(3, 2.0))),
                 elifs = emptyList(),
                 elseBlock = ElseNode(
                     lineNumber = 4,
                     scope = 2,
                     statements = listOf(
-                        AssignmentNode(5, "x", NumberNode(5, 1.0))
+                        AssignmentNode(5, IdentifierNode(5, "x"), NumberNode(5, 1.0))
                     )
                 )
             )
@@ -202,13 +202,13 @@ class ASTConstructionTests {
                 "    x = 2;\n" +
                 "}"
         val statements = listOf(
-            DeclarationNode(1, "x", NumberNode(1, 3.0)),
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
                 lineNumber = 2,
                 endLineNumber = 4,
                 scope = 1,
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 2.0)),
-                statements = listOf(AssignmentNode(3, "x", NumberNode(3, 2.0))),
+                statements = listOf(AssignmentNode(3, IdentifierNode(3, "x"), NumberNode(3, 2.0))),
                 elifs = emptyList(),
                 elseBlock = ElseNode(4, 0, emptyList())
             )

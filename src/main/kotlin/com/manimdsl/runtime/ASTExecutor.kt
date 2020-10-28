@@ -141,7 +141,15 @@ class VirtualMachine(
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
-            variables[node.identifier] = assignedValue
+            with(node.identifier) {
+                when (this) {
+                    is IdentifierNode ->  variables[node.identifier.identifier] = assignedValue
+                    is ArrayElemNode ->  {
+                        val index = executeExpression(this.index) as DoubleValue
+                        (variables[this.identifier] as ArrayValue).array[index.value.toInt()] = assignedValue
+                    }
+                }
+            }
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
@@ -149,7 +157,7 @@ class VirtualMachine(
             }
         }
 
-        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: String = ""): ExecValue = when (node) {
+        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: AssignLHS = EmptyLHS): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall)
@@ -171,7 +179,13 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
-            is ArrayElemNode -> TODO()
+            is ArrayElemNode -> executeArrayElem(node)
+        }
+
+        private fun executeArrayElem(node: ArrayElemNode): ExecValue {
+            val array = variables[node.identifier] as ArrayValue
+            val index = executeExpression(node.index) as DoubleValue
+            return array.value[index.value.toInt()]
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -260,11 +274,11 @@ class VirtualMachine(
             }
         }
 
-        private fun executeConstructor(node: ConstructorNode, identifier: String): ExecValue {
+        private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
-                    stackValue.style = stylesheet.getStyle(identifier, stackValue)
+                    stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitStructure(
@@ -272,7 +286,7 @@ class VirtualMachine(
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
-                            identifier,
+                            assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                         )
@@ -284,7 +298,7 @@ class VirtualMachine(
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
                             variableNameGenerator.generateNameFromPrefix("empty"),
-                            identifier,
+                            assignLHS.identifier,
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
@@ -296,9 +310,26 @@ class VirtualMachine(
                     stackValue
                 }
                 is ArrayType -> {
-                    // TODO()
-                    EmptyValue
+                    val arraySize = if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(node.initialValue.size.toDouble())
+                    val defaultValue = if (node.initialValue.isEmpty()) {
+                        ArrayValue(EmptyMObject, Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType) })
+                    } else {
+                        if(node.initialValue.size != arraySize.value.toInt()) {
+                            RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
+                        }
+                        ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
+                    }
+                    defaultValue
                 }
+            }
+        }
+
+        private fun getDefaultValueForType(type: Type): ExecValue {
+            return when (type) {
+                NumberType -> DoubleValue(0.0)
+                BoolType -> BoolValue(false)
+                is ArrayType -> getDefaultValueForType(type.internalType)
+                else -> TODO("")
             }
         }
 

@@ -1,2 +1,5 @@
-let x = new Stack<number>;
-x.pop();
+let a = Array<number>(3) { 1 + 4, 9, 110};
+let y = a[2];
+
+let stack = Stack<number>();
+stack.push(y);
