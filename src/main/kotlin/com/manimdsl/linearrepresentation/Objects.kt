@@ -69,20 +69,25 @@ data class InitManimStack(
     val alignment: Alignment,
     val ident: String,
     val text: String,
-    val boundaryCoordinates: List<Pair<Int, Int>>,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
-    var boundary: List<Pair<Int, Int>> = emptyList(),
-    var maxSize: Int = -1
+    private var boundary: List<Pair<Int, Int>> = emptyList(),
+    private var maxSize: Int = -1
 ) : MObject {
-    override val shape: Shape = InitManimStackShape(ident, text, boundaryCoordinates, alignment, color, textColor)
+    override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
         python.add("self.play($ident.create_init(\"$text\"))")
         return python
+    }
+
+    fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundary = corners
+        shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
     }
 }
 

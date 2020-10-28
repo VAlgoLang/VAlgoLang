@@ -85,7 +85,7 @@ class CodeBlockShape(
 class InitManimStackShape(
     override val ident: String,
     override val text: String,
-    private val coordinates: List<Pair<Int, Int>>,
+    private val boundary: List<Pair<Int, Int>>,
     private val alignment: Alignment,
     val color: String? = null,
     val textColor: String? = null,
@@ -100,7 +100,7 @@ class InitManimStackShape(
     }
 
     override fun getConstructor(): String {
-        val coordinatesString = coordinates.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
         return "$ident = ${className}(${coordinatesString}, DOWN${style})"
     }
 }

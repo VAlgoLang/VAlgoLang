@@ -39,7 +39,7 @@ class VirtualMachine(
         }
     }
 
-    fun runProgram(): Pair<ExitStatus, MutableList<ManimInstr>> {
+    fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
@@ -51,14 +51,14 @@ class VirtualMachine(
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }
-            linearRepresentation.forEach {
+            val linearRepresentationWithBoundaries = linearRepresentation.map {
                 if (it is InitManimStack) {
                     val boundaryShape = computedBoundaries[it.ident]!!
-                    it.boundary = boundaryShape.corners()
-                    it.maxSize = boundaryShape.maxSize
+                    it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
+                it
             }
-            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
+            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         }
     }
 
@@ -271,7 +271,6 @@ class VirtualMachine(
                     val stackValue = StackValue(EmptyMObject, Stack())
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
-                    val boundaryCorners = dataStructureBoundaries[initStructureIdent]!!.corners()
                     val style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
@@ -281,7 +280,6 @@ class VirtualMachine(
                             Alignment.HORIZONTAL,
                             initStructureIdent,
                             identifier,
-                            boundaryCorners,
                             color = style.borderColor,
                             textColor = style.textColor,
                         )
@@ -294,7 +292,6 @@ class VirtualMachine(
                             Alignment.HORIZONTAL,
                             initStructureIdent,
                             identifier,
-                            boundaryCorners,
                             numStack.manimObject.shape,
                             color = style.borderColor,
                             textColor = style.textColor,

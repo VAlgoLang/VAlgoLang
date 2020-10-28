@@ -72,9 +72,12 @@ data class StackPopObject(
     override fun toPython(): List<String> {
         val colorString = if (newStyle.borderColor != null) ", color=${newStyle.borderColor}" else ""
         val textColorString = if (newStyle.textColor != null) ", text_color=${newStyle.textColor}" else ""
-        return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}$colorString$textColorString)]"
-        )
+        return if (insideMethodCall) {
+            listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pushpop(${shape.ident}$colorString$textColorString)]")
+        } else {
+            listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}$colorString$textColorString)]")
+        }
+
     }
 }
 

@@ -17,7 +17,7 @@ class Stack(DataStructure, ABC):
         if text_color is None:
             text_color = self.text_color
         animations = []
-        obj.all.move_to(np.array([self.width_center, self.ul[1], 0]), UP)
+        obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)
         shrink, scale_factor = self.shrink_if_cross_border(obj.all)
         if shrink:
             animations.append([shrink])
@@ -35,7 +35,7 @@ class Stack(DataStructure, ABC):
             text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1], 0]), UP)],
+                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)],
                      [FadeOut(obj.all)]]
         enlarge, scale_factor = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
         if enlarge:
@@ -45,7 +45,7 @@ class Stack(DataStructure, ABC):
     def shrink_if_cross_border(self, new_obj):
         height = new_obj.get_height()
         if self.will_cross_boundary(height, "TOP"):
-            return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.35)
+            return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.5)
         return 0, 1
 
     def poppush(self, obj, target, color=None, text_color=None):
@@ -55,8 +55,8 @@ class Stack(DataStructure, ABC):
             text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1], 0]), UP)],
-                     [ApplyMethod(obj.all.move_to, np.array([target.width_center, target.ul[1], 0]), UP)]]
+                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)],
+                     [ApplyMethod(obj.all.move_to, np.array([target.width_center, target.ul[1] - 0.1, 0]), UP)]]
         enlarge, _ = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
         if enlarge:
             animation[-1].append(enlarge)

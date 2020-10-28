@@ -23,7 +23,7 @@ class TestLinearRepresentation {
             Alignment.HORIZONTAL,
             "stack1",
             "y",
-            listOf(Pair(4, 0), Pair(6, 0), Pair(4, -4), Pair(6, -4))
+            boundary = listOf(Pair(4, 0), Pair(6, 0), Pair(4, -4), Pair(6, -4))
         )
 
         val stackIR = listOf(
