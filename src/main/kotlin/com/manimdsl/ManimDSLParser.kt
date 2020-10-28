@@ -51,4 +51,4 @@ class ManimDSLParser(private val input: InputStream) {
     }
 }
 
-data class ParserResult(val exitStatus: ExitStatus, val abstractSyntaxTree: ProgramNode, val symbolTableVisitor: SymbolTableVisitor, val lineNodeMap: Map<Int, StatementNode>)
+data class ParserResult(val exitStatus: ExitStatus, val abstractSyntaxTree: ProgramNode, val symbolTableVisitor: SymbolTableVisitor, val lineNodeMap: MutableMap<Int, StatementNode>)

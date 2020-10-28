@@ -2,7 +2,6 @@ package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
-import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
@@ -12,7 +11,7 @@ import java.util.*
 class VirtualMachine(
     private val program: ProgramNode,
     private val symbolTableVisitor: SymbolTableVisitor,
-    private val statements: Map<Int, StatementNode>,
+    private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet
 ) {
@@ -27,11 +26,12 @@ class VirtualMachine(
     private val acceptableNonStatements = setOf("}", "{", "")
     private val ALLOCATED_STACKS = 1000
     private val MAX_DISPLAYED_VARIABLES = 4
+    private val WRAP_LINE_LENGTH = 40
 
     init {
         fileLines.indices.forEach {
             if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
-                displayCode.add(fileLines[it])
+                displayCode.add(wrapString(fileLines[it]))
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
@@ -52,6 +52,13 @@ class VirtualMachine(
         } else {
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
         }
+    }
+
+    private fun wrapString(text: String): String {
+        val sb = StringBuilder(text)
+        for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
+            sb.insert(index, "\\n")
+        return sb.toString()
     }
 
     private inner class Frame(
@@ -124,7 +131,7 @@ class VirtualMachine(
         }
 
         private fun getVariableState(): List<String>  {
-            return (0 until displayedDataMap.size).map { "\"${displayedDataMap[it]!!.first} = ${displayedDataMap[it]!!.second}\"" }
+            return (0 until displayedDataMap.size).map { wrapString("\"${displayedDataMap[it]!!.first} = ${displayedDataMap[it]!!.second}\"") }
         }
 
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {

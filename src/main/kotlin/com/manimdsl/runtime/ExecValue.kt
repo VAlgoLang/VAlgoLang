@@ -1,4 +1,4 @@
-package com.manimdsl.executor
+package com.manimdsl.runtime
 
 import com.manimdsl.frontend.ErrorType
 import com.manimdsl.linearrepresentation.EmptyMObject
