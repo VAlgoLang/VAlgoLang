@@ -14,11 +14,17 @@ class TestLinearRepresentation {
 
     @Test
     fun mockStackLinearRepresentation() {
-
         val codeBlock = listOf("let y = new Stack;", "y.push(2);", "y.push(3);", "y.pop();")
-        val testIdent = Rectangle("testIdent", "2")
-        val testIdent1 = Rectangle("testIdent1", "3")
-        val stackIS = InitStructure(StackType(NumberType), Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y")
+        val testIdent = Rectangle("testIdent", "2", "stack1")
+        val testIdent1 = Rectangle("testIdent1", "3", "stack1")
+        val stackIS = InitManimStack(
+            StackType(NumberType),
+            Coord(2.0, -1.0),
+            Alignment.HORIZONTAL,
+            "stack1",
+            "y",
+            listOf(Pair(4, 0), Pair(6, 0), Pair(4, -4), Pair(6, -4))
+        )
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),

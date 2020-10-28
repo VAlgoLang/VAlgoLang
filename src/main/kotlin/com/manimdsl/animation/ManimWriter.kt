@@ -19,7 +19,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                 is CodeBlock -> {
                     shapeClassPaths.add("python/code_block.py")
                 }
-                is InitStructure -> {
+                is InitManimStack -> {
                     shapeClassPaths.add("python/init_structure.py")
                 }
             }

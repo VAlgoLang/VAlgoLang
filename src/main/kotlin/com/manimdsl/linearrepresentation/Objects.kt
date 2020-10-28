@@ -2,7 +2,7 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.shapes.CodeBlockShape
-import com.manimdsl.shapes.InitStructureShape
+import com.manimdsl.shapes.InitManimStackShape
 import com.manimdsl.shapes.NullShape
 import com.manimdsl.shapes.Shape
 
@@ -63,30 +63,25 @@ data class CodeBlock(
     }
 }
 
-data class InitStructure(
+data class InitManimStack(
     val type: DataStructureType,
     val position: Position,
     val alignment: Alignment,
     val ident: String,
     val text: String,
+    val boundaryCoordinates: List<Pair<Int, Int>>,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
     var boundary: List<Pair<Int, Int>> = emptyList(),
     var maxSize: Int = -1
 ) : MObject {
-    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
+    override val shape: Shape = InitManimStackShape(ident, text, boundaryCoordinates, alignment, color, textColor)
 
     override fun toPython(): List<String> {
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add(
-            when (position) {
-                is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
-                else -> "self.place_relative_to_obj($shape, $moveToShape, ${ObjectSide.LEFT.addOffset(0)})"
-            }
-        )
-        python.add("self.play(ShowCreation($shape))")
+        python.add("self.play($ident.create_init(\"$text\"))")
         return python
     }
 }
@@ -96,8 +91,6 @@ data class NewMObject(override val shape: Shape, val codeBlockVariable: String) 
         return listOf(
             "# Constructs a new ${shape.className} with value ${shape.text}",
             shape.getConstructor(),
-            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
-            "self.play(FadeIn($shape))"
         )
     }
 }

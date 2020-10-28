@@ -3,6 +3,7 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.executor.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
+import com.manimdsl.shapes.TextColor
 import com.manimdsl.stylesheet.StylesheetProperty
 
 interface ManimInstr {
@@ -24,7 +25,8 @@ data class Sleep(val length: Double = 1.0) : ManimInstr {
 data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-                "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)")
+            "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)"
+        )
     }
 }
 
@@ -46,10 +48,24 @@ data class MoveObject(
     }
 }
 
+data class StackPushObject(
+    val shape: Shape,
+    val dataStructureIdentifier: String,
+    val newStyle: StylesheetProperty
+) : ManimInstr {
+    override fun toPython(): List<String> {
+        val newStyleString = newStyle.let { ", ${newStyle.borderColor}, ${newStyle.textColor}" }
+        return listOf(
+            "[self.play(*animation) for animation in $dataStructureIdentifier.push(${shape.ident}$newStyleString)]",
+            "$dataStructureIdentifier.add($shape)"
+        )
+    }
+}
+
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
-): ManimInstr {
+) : ManimInstr {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
             shape.restyle(newStyle)

@@ -38,7 +38,7 @@ class PythonStyleTests {
     @Test
     fun invalidTextWeightsAreReturnedToDefault() {
 
-        val rectangle = Rectangle("x", "rectangle")
+        val rectangle = Rectangle("x", "rectangle", "stack1")
 
         val mobject = NewMObject(rectangle, "codeBlock")
 

@@ -47,11 +47,11 @@ class VirtualMachine(
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else {
             val (exitStatus, computedBoundaries) = Scene.compute(dataStructureBoundaries.toList())
-            if(exitStatus != ExitStatus.EXIT_SUCCESS) {
+            if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }
             linearRepresentation.forEach {
-                if (it is InitStructure) {
+                if (it is InitManimStack) {
                     val boundaryShape = computedBoundaries[it.ident]!!
                     it.boundary = boundaryShape.corners()
                     it.maxSize = boundaryShape.maxSize
@@ -187,10 +187,10 @@ class VirtualMachine(
                             if (value is RuntimeError) {
                                 return value
                             }
-                            val initStructureIdent = (ds.manimObject as InitStructure).ident
-                            val boundaryShape = dataStructureBoundaries[initStructureIdent]!!
+                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
+                            val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
                             boundaryShape.maxSize++
-                            dataStructureBoundaries[initStructureIdent] = boundaryShape
+                            dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
                             val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
@@ -200,20 +200,20 @@ class VirtualMachine(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                                     value.value.toString(),
+                                    dataStructureIdentifier,
                                     color = newObjectStyle.borderColor,
                                     textColor = newObjectStyle.textColor
                                 ),
                                 codeTextVariable
                             )
 
-                            val instructions =
+                            val instructions: MutableList<ManimInstr> =
                                 mutableListOf(
-                                    MoveObject(
+                                    StackPushObject(
                                         rectangle.shape,
-                                        topOfStack.shape,
-                                        ObjectSide.ABOVE
-                                    ),
-                                    RestyleObject(rectangle.shape, stylesheet.getStyle(node.instanceIdentifier, ds))
+                                        dataStructureIdentifier,
+                                        stylesheet.getStyle(node.instanceIdentifier, ds)
+                                    )
                                 )
                             if (!hasOldMObject) {
                                 instructions.add(0, rectangle)
@@ -272,29 +272,32 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
-                    val initStructureIdent = variableNameGenerator.generateNameFromPrefix("empty")
+                    val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
+                    val boundaryCorners = dataStructureBoundaries[initStructureIdent]!!.corners()
                     val style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
-                        val stackInit = InitStructure(
+                        val stackInit = InitManimStack(
                             node.type,
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
                             initStructureIdent,
                             identifier,
+                            boundaryCorners,
                             color = style.borderColor,
                             textColor = style.textColor,
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
                     } else {
-                        val stackInit = InitStructure(
+                        val stackInit = InitManimStack(
                             node.type,
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
                             initStructureIdent,
                             identifier,
+                            boundaryCorners,
                             numStack.manimObject.shape,
                             color = style.borderColor,
                             textColor = style.textColor,

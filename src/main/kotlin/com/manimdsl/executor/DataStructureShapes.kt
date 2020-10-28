@@ -24,7 +24,8 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
     }
 
     fun corners(): List<Pair<Int, Int>> {
-        return listOf(Pair(x1, y1), Pair(x1, y1 + height), Pair(x1 + width, y1), Pair(x1 + width, y1 + height))
+        // UL, UR, LL, LR
+        return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1) , Pair(x1 + width, y1))
     }
 
     fun area(): Int {
