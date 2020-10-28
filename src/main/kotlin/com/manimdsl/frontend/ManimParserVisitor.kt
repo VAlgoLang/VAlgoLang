@@ -244,11 +244,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitStepIntoStatement(ctx: StepIntoStatementContext): ASTNode {
-        val statements = visitAndFlattenStatements(ctx.stat())
-        val node = StepIntoNode(ctx.start.line, ctx.stop.line, statements)
-        lineNumberNodeMap[ctx.start.line] = StartStepIntoNode(ctx.start.line)
-        lineNumberNodeMap[ctx.stop.line] = StopStepIntoNode(ctx.stop.line)
-        return node
+        val statements = mutableListOf<StatementNode>()
+        val start = StartStepIntoNode(ctx.start.line)
+        val end = StopStepIntoNode(ctx.stop.line)
+        statements.add(start)
+        statements.addAll(visitAndFlattenStatements(ctx.stat()))
+        statements.add(end)
+        lineNumberNodeMap[ctx.start.line] = start
+        lineNumberNodeMap[ctx.stop.line] = end
+        return StepIntoNode(ctx.start.line, ctx.stop.line, statements)
     }
 
     /** Expressions **/
