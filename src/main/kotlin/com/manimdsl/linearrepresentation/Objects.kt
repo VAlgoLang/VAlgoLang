@@ -1,10 +1,8 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.shapes.CodeBlockShape
-import com.manimdsl.shapes.InitStructureShape
-import com.manimdsl.shapes.NullShape
-import com.manimdsl.shapes.Shape
+import com.manimdsl.shapes.*
 
 /** Objects **/
 
@@ -86,6 +84,25 @@ data class InitStructure(
         )
         python.add("self.play(ShowCreation($shape))")
         return python
+    }
+}
+
+data class ArrayStructure(
+        val type: DataStructureType,
+        val boundaries: List<Pair<Int, Int>>,
+        val ident: String,
+        val text: String,
+        val values: Array<ExecValue>,
+        val color: String? = null,
+        val textColor: String? = null,
+) : MObject {
+    override val shape: Shape = ArrayShape(ident, values, text, boundaries, color, textColor)
+
+    override fun toPython(): List<String> {
+        return listOf("# Constructing new $type \"$text\"",
+                        shape.getConstructor(),
+                        "self.play(ShowCreation($ident.title))",
+                        "self.play(*[ShowCreation(array_elem.group) for array_elem in $ident.array_elements])")
     }
 }
 

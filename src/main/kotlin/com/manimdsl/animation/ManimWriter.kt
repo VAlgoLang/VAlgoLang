@@ -17,10 +17,13 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.add(it.shape.classPath)
                 }
                 is CodeBlock -> {
-                    shapeClassPaths.add("python/code_block.py")
+                    shapeClassPaths.add(it.shape.classPath)
                 }
                 is InitStructure -> {
-                    shapeClassPaths.add("python/init_structure.py")
+                    shapeClassPaths.add(it.shape.classPath)
+                }
+                is ArrayStructure -> {
+                    shapeClassPaths.add(it.shape.classPath)
                 }
             }
             if (it is MoveToLine && !executed) {

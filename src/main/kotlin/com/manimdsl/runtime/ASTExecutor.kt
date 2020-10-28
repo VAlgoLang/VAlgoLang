@@ -311,7 +311,7 @@ class VirtualMachine(
                 }
                 is ArrayType -> {
                     val arraySize = if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(node.initialValue.size.toDouble())
-                    val defaultValue = if (node.initialValue.isEmpty()) {
+                    val arrayValue = if (node.initialValue.isEmpty()) {
                         ArrayValue(EmptyMObject, Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType) })
                     } else {
                         if(node.initialValue.size != arraySize.value.toInt()) {
@@ -319,7 +319,10 @@ class VirtualMachine(
                         }
                         ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
                     }
-                    defaultValue
+                    val ident = variableNameGenerator.generateNameFromPrefix("array")
+                    linearRepresentation.add(ArrayStructure(node.type, listOf(Pair(-2,-2), Pair(2,-2), Pair(-2,-4), Pair(2,-4)),
+                            ident, assignLHS.identifier, arrayValue.array))
+                    arrayValue
                 }
             }
         }
