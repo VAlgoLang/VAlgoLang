@@ -121,13 +121,9 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
             if (updatePc) pc = line
-            if (showMoveToLine) linearRepresentation.add(
-                MoveToLine(
-                    displayLine[line - 1],
-                    pointerVariable,
-                    codeBlockVariable
-                )
-            )
+            if (showMoveToLine) {
+                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+            }
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
@@ -146,14 +142,7 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            val returnValue =
-                Frame(
-                    functionNode.lineNumber,
-                    finalStatementLine,
-                    argumentVariables,
-                    depth + 1,
-                    showMoveToLine = stepInto
-                ).runFrame()
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth + 1, showMoveToLine = stepInto).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
             return returnValue
