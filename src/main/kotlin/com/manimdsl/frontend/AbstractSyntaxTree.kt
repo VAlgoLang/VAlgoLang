@@ -28,6 +28,16 @@ data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode
 // Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
 
+// Step over to step over code and avoid additional animations
+data class StepIntoNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
+    AnimationNode(lineNumber)
+
+// Step over to step over code and avoid additional animations
+data class StartStepIntoNode(override val lineNumber: Int) : AnimationNode(lineNumber)
+
+// Step over to step over code and avoid additional animations
+data class StopStepIntoNode(override val lineNumber: Int) : AnimationNode(lineNumber)
+
 // Code Specific Nodes holding line number
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
 

@@ -49,6 +49,7 @@ STACK: 'Stack';
 ARRAY: 'Array';
 IF: 'if';
 ELSE: 'else';
+STEP_INTO: 'stepinto';
 
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;
