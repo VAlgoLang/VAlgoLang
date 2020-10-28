@@ -6,6 +6,7 @@ import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
@@ -191,7 +192,6 @@ class VirtualMachine(
                             val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
                             boundaryShape.maxSize++
                             dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
-                            val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
                             val style = stylesheet.getStyle(node.instanceIdentifier, ds)
@@ -232,20 +232,17 @@ class VirtualMachine(
                                 )
                             }
                             val poppedValue = ds.stack.pop()
-                            val newTopOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
+                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
 
                             val topOfStack = poppedValue.manimObject
                             val instructions = mutableListOf<ManimInstr>(
-                                MoveObject(
-                                    topOfStack.shape,
-                                    newTopOfStack.shape,
-                                    ObjectSide.ABOVE,
-                                    20,
-                                    !insideMethodCall
-                                ),
+                                // TODO: use !insideMethodCall to check if pushing something that has been popped
+                                StackPopObject(topOfStack.shape,
+                                    dataStructureIdentifier,
+                                    stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: AnimationProperties(),
+                                    insideMethodCall
+                                )
                             )
-                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
-                            if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
 
                             linearRepresentation.addAll(instructions)
                             return poppedValue

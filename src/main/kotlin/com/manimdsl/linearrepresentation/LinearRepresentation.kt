@@ -63,6 +63,21 @@ data class StackPushObject(
     }
 }
 
+data class StackPopObject(
+    val shape: Shape,
+    val dataStructureIdentifier: String,
+    val newStyle: StylesheetProperty,
+    val insideMethodCall: Boolean
+) : ManimInstr {
+    override fun toPython(): List<String> {
+        val colorString = if (newStyle.borderColor != null) ", color=${newStyle.borderColor}" else ""
+        val textColorString = if (newStyle.textColor != null) ", text_color=${newStyle.textColor}" else ""
+        return listOf(
+            "[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}$colorString$textColorString)]"
+        )
+    }
+}
+
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
