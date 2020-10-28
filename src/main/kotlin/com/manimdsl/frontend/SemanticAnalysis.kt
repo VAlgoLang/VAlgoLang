@@ -101,16 +101,6 @@ class SemanticAnalysis {
 
     fun invalidNumberOfArgumentsCheck(
         dataStructureType: DataStructureType,
-        methodName: String,
-        numArgs: Int,
-        ctx: ParserRuleContext
-    ) {
-        val method = dataStructureType.getMethodByName(methodName)
-        invalidNumberOfArgumentsCheck(dataStructureType, method, numArgs, ctx)
-    }
-
-    fun invalidNumberOfArgumentsCheck(
-        dataStructureType: DataStructureType,
         method: DataStructureMethod,
         numArgs: Int,
         ctx: ParserRuleContext
