@@ -101,7 +101,7 @@ class InitManimStackShape(
 
     override fun getConstructor(): String {
         val coordinatesString = coordinates.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = ${className}(${coordinatesString}, \"DOWN\"${style})"
+        return "$ident = ${className}(${coordinatesString}, DOWN${style})"
     }
 }
 

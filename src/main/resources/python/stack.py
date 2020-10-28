@@ -11,7 +11,11 @@ class Stack(DataStructure, ABC):
         self.all.add(empty.all)
         return ShowCreation(empty.all)
 
-    def push(self, obj, color, text_color):
+    def push(self, obj, color=None, text_color=None):
+        if color is None:
+            color = self.color
+        if text_color is None:
+            text_color = self.text_color
         animations = []
         obj.all.move_to(np.array([self.width_center, self.ul[1], 0]), UP)
         shrink, scale_factor = self.shrink_if_cross_border(obj.all)
@@ -24,7 +28,11 @@ class Stack(DataStructure, ABC):
         animations.append([FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)])
         return animations
 
-    def pop(self, obj, color, text_color):
+    def pop(self, obj, color=None, text_color=None):
+        if color is None:
+            color = self.color
+        if text_color is None:
+            text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
                      [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1], 0]), UP)],
@@ -40,7 +48,11 @@ class Stack(DataStructure, ABC):
             return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.35)
         return 0, 1
 
-    def poppush(self, obj, target, color, text_color):
+    def poppush(self, obj, target, color=None, text_color=None):
+        if color is None:
+            color = self.color
+        if text_color is None:
+            text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
                      [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1], 0]), UP)],
@@ -53,6 +65,7 @@ class Stack(DataStructure, ABC):
             animation.append([ApplyMethod(obj.all.scale, scale_factor, {"about_edge": UP})])
         animation.append([ApplyMethod(obj.all.next_to, target.all, np.array([0, 0.25, 0]))])
         return animation
+
 
 
 # Object representing a stack instantiation.

@@ -54,9 +54,10 @@ data class StackPushObject(
     val newStyle: StylesheetProperty
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        val newStyleString = newStyle.let { ", ${newStyle.borderColor}, ${newStyle.textColor}" }
+        val colorString = if (newStyle.borderColor != null) ", color=${newStyle.borderColor}" else ""
+        val textColorString = if (newStyle.textColor != null) ", text_color=${newStyle.textColor}" else ""
         return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.push(${shape.ident}$newStyleString)]",
+            "[self.play(*animation) for animation in $dataStructureIdentifier.push(${shape.ident}$colorString$textColorString)]",
             "$dataStructureIdentifier.add($shape)"
         )
     }
