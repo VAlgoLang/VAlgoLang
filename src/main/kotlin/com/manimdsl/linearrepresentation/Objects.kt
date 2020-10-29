@@ -1,8 +1,8 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
-import java.lang.StringBuilder
 
 /** Objects **/
 
@@ -66,7 +66,7 @@ data class CodeBlock(
                         "code_lines = $codeLines",
                         shape.getConstructor(),
                         "$codeTextName = $ident.build()",
-                        "$codeTextName.move_to(code_frame)",
+                        "$codeTextName.move_to(np.array([-4.5, 0, 0]))",
                         "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
                         "$codeTextName.scale(min(code_height / $codeTextName.get_height(), lhs_width / $codeTextName.get_width()))",
                         "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
@@ -116,38 +116,78 @@ data class VariableBlock(
     }
 }
 
-data class InitStructure(
-    val type: DataStructureType,
+sealed class DataStructureMObject(
+    open val type: DataStructureType,
+    open val ident: String,
+    private var boundaries: List<Pair<Int, Int>> = emptyList()
+) : MObject {
+
+    abstract fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int)
+
+}
+
+data class InitManimStack(
+    override val type: DataStructureType,
+    override val ident: String,
     val position: Position,
     val alignment: Alignment,
-    val ident: String,
     val text: String,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
-) : MObject {
-    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
+    private var boundary: List<Pair<Int, Int>> = emptyList(),
+    private var maxSize: Int = -1
+) : DataStructureMObject(type, ident, boundary) {
+    override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
-        val python = mutableListOf("# Constructing new ${type} \"${text}\"",
-                            shape.getConstructor())
-        python.add(
-            when (position) {
-                is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
-                else -> "self.place_relative_to_obj($shape, $moveToShape, ${ObjectSide.LEFT.addOffset(0)})"
-            }
-        )
-        python.add("self.play(ShowCreation($shape))")
+        val python =
+            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
+        python.add("self.play($ident.create_init(\"$text\"))")
         return python
+    }
+
+    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundary = corners
+        shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
+    }
+}
+
+data class ArrayStructure(
+    override val type: DataStructureType,
+    override val ident: String,
+    val text: String,
+    val values: Array<ExecValue>,
+    val color: String? = null,
+    val textColor: String? = null,
+    var maxSize: Int = -1,
+    private var boundaries: List<Pair<Int, Int>> = emptyList()
+) : DataStructureMObject(type, ident, boundaries) {
+    override var shape: Shape = NullShape
+
+    override fun toPython(): List<String> {
+        return listOf(
+            "# Constructing new $type \"$text\"",
+            shape.getConstructor(),
+            "self.play(ShowCreation($ident.title))",
+            "self.play(*[ShowCreation(array_elem.all) for array_elem in $ident.array_elements])"
+        )
+    }
+
+    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundaries = corners
+        shape = ArrayShape(ident, values, text, boundaries, color, textColor)
     }
 }
 
 data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
-        return listOf("# Constructs a new ${shape.className} with value ${shape.text}",
-                            shape.getConstructor(),
-                            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
-                            "self.play(FadeIn($shape))")
+        return listOf(
+            "# Constructs a new ${shape.className} with value ${shape.text}",
+            shape.getConstructor(),
+        )
     }
 }
 

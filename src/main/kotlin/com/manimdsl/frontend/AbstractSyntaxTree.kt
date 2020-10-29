@@ -50,19 +50,19 @@ data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: Stateme
 
 interface DeclarationOrAssignment {
     val lineNumber: Int
-    val identifier: String
+    val identifier: AssignLHS
     val expression: ExpressionNode
 }
 
 data class DeclarationNode(
     override val lineNumber: Int,
-    override val identifier: String,
+    override val identifier: AssignLHS,
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
 data class AssignmentNode(
     override val lineNumber: Int,
-    override val identifier: String,
+    override val identifier: AssignLHS,
     override val expression: ExpressionNode
 ) : CodeNode(lineNumber), DeclarationOrAssignment
 
@@ -101,11 +101,19 @@ data class ElseNode(
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
 
+interface AssignLHS {
+    val identifier: String
+}
+
+object EmptyLHS: AssignLHS {
+    override val identifier: String = ""
+}
+
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
-data class IdentifierNode(override val lineNumber: Int, val identifier: String) : ExpressionNode(lineNumber)
-data class ArrayElemNode(override val lineNumber: Int, val arrayIdentifier: String, val index: ExpressionNode) :
-    ExpressionNode(lineNumber)
+data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber), AssignLHS
+data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
+    ExpressionNode(lineNumber), AssignLHS
 
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)

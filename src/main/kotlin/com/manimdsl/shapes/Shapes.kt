@@ -1,8 +1,8 @@
 package com.manimdsl.shapes
 
 import com.manimdsl.linearrepresentation.Alignment
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
-import java.util.*
 
 
 sealed class Shape {
@@ -113,6 +113,28 @@ class InitStructureShape(
 
     override fun getConstructor(): String {
         return "$ident = ${className}(\"$text\", ${alignment.angle}$style)"
+    }
+}
+
+class ArrayShape(
+    override val ident: String,
+    private val values: Array<ExecValue>,
+    override val text: String,
+    private val boundaries : List<Pair<Int, Int>>,
+    color: String? = null,
+    textColor: String? = null,
+) : ShapeWithText() {
+    override val classPath: String = "python/array.py"
+    override val className: String = "Array"
+    override val pythonVariablePrefix: String = ""
+
+    init {
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$text\", [${boundaries.joinToString(",")}]$style).build()"
     }
 }
 

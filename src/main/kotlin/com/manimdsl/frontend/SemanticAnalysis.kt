@@ -22,7 +22,7 @@ class SemanticAnalysis {
 
     private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         // To extend to multiple dimensions perform below recursively
-        val arrayType = currentSymbolTable.getTypeOf(expression.arrayIdentifier)
+        val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
             arrayType.internalType
         } else {
@@ -99,16 +99,17 @@ class SemanticAnalysis {
         }
     }
 
-    fun invalidNumberOfArgumentsCheck(
+    private fun invalidNumberOfArgumentsCheck(
         dataStructureType: DataStructureType,
         method: DataStructureMethod,
         numArgs: Int,
         ctx: ParserRuleContext
     ) {
-        if (method != ErrorMethod && method.argumentTypes.size != numArgs) {
+        val correctNumberOfArgs = numArgs >= method.argumentTypes.filter { it.second }.size && numArgs <= method.argumentTypes.size
+        if (method != ErrorMethod && !correctNumberOfArgs) {
             numOfArgsInMethodCallError(
                 dataStructureType.toString(),
-                method.toString(),
+                dataStructureType.getMethodNameByMethod(method),
                 numArgs,
                 method.argumentTypes.size,
                 ctx
@@ -154,7 +155,17 @@ class SemanticAnalysis {
 
             argumentTypes.forEachIndexed { index, type ->
                 // Sets expected type. When varargs is enabled then set to last if index greater than size of given types
-                val expectedType = if (index in expectedTypes.indices) expectedTypes[index] else expectedTypes.last()
+                val expectedType = when {
+                    index in expectedTypes.indices -> {
+                        expectedTypes[index].first
+                    }
+                    dataStructureMethod.varargs -> {
+                        expectedTypes.last().first
+                    }
+                    else -> {
+                        ErrorType
+                    }
+                }
                 if (type != expectedType && type is PrimitiveType) {
                     val argCtx = argumentCtx.getRuleContext(ManimParser.ExprContext::class.java, index)
                     val argName = argumentCtx.getChild(index).text

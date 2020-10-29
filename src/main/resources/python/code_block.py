@@ -5,7 +5,7 @@ class Code_block:
             for sc in c:
                 text = Text(sc, color=text_color, weight=text_weight, font=font)
                 group.add(text)
-        group.set_width(5)
+        group.set_width(4.2)
         self.all = group
         self.code = code
 

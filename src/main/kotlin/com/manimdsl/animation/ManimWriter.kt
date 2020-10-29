@@ -18,7 +18,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         linearRepresentation.forEach {
             when (it) {
                 is DataStructureMObject -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", it.shape.classPath))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
                 }
                 is MObject -> {
                     if (it.shape !is NullShape) {
@@ -58,8 +58,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
     private fun initialPythonSetup(): String {
         return """
-            from manimlib.imports import *
             from abc import ABC, abstractmethod
+            from manimlib.imports import *
              
             class Main(Scene):
                 code_start = 0

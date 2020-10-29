@@ -14,24 +14,33 @@ class TestLinearRepresentation {
 
     @Test
     fun mockStackLinearRepresentation() {
+        val rectangle = Rectangle("rectangle", "2.0", "stack")
+        val rectangle1 = Rectangle("rectangle1", "3.0", "stack")
+        val stackIS = InitManimStack(
+            StackType(NumberType),
+            "stack",
+            Coord(2.0, -1.0),
+            Alignment.HORIZONTAL,
+            "y",
+            boundary = emptyList()
+        )
+
+        stackIS.setNewBoundary(listOf(Pair(5, 4), Pair(7, 4), Pair(5, -4), Pair(7, -4)), 5)
 
         val codeBlock = listOf(listOf("let y = new Stack;"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
-        val testIdent = Rectangle("testIdent", "2")
-        val testIdent1 = Rectangle("testIdent1", "3")
-        val stackIS = InitStructure(StackType(NumberType), Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y")
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
             MoveToLine(1, "pointer", "code_block", "code_text"),
             stackIS,
-            NewMObject(testIdent, "code_text"),
             MoveToLine(2, "pointer", "code_block", "code_text"),
-            MoveObject(testIdent, stackIS.shape, ObjectSide.ABOVE),
+            NewMObject(rectangle, "code_text"),
+            StackPushObject(rectangle, "stack"),
             MoveToLine(3, "pointer", "code_block", "code_text"),
-            NewMObject(testIdent1, "code_text"),
-            MoveObject(testIdent1, testIdent, ObjectSide.ABOVE),
+            NewMObject(rectangle1, "code_text"),
+            StackPushObject(rectangle1, "stack"),
             MoveToLine(4, "pointer", "code_block", "code_text"),
-            MoveObject(testIdent1, testIdent, ObjectSide.ABOVE, 20, true),
+            StackPopObject(rectangle1, "stack", false)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())
