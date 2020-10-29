@@ -1,10 +1,17 @@
-fun fib(n: number): number {
-    if (n <= 1) {
-        return n;
-    } else {
-        return fib(n-1) + fib(n-2);
-    }
-}
-stepinto {
-let ans = fib(6);
-}
+let stack1 = Stack<number>();
+let stack2 = Stack<number>();
+
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack2.push(stack1.pop());
+

@@ -24,6 +24,7 @@ class VirtualMachine(
     private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
+    private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private val acceptableNonStatements = setOf("}", "{", "")
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
 
@@ -40,7 +41,7 @@ class VirtualMachine(
         }
     }
 
-    fun runProgram(): Pair<ExitStatus, MutableList<ManimInstr>> {
+    fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
@@ -49,7 +50,18 @@ class VirtualMachine(
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else {
-            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
+            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList())
+            if (exitStatus != ExitStatus.EXIT_SUCCESS) {
+                return Pair(exitStatus, linearRepresentation)
+            }
+            val linearRepresentationWithBoundaries = linearRepresentation.map {
+                if (it is InitManimStack) {
+                    val boundaryShape = computedBoundaries[it.ident]!!
+                    it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
+                }
+                it
+            }
+            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         }
     }
 
@@ -61,16 +73,13 @@ class VirtualMachine(
         private val showMoveToLine: Boolean = true,
         private var stepInto: Boolean = false
     ) {
-
         // instantiate new Frame and execute on scoping changes e.g. recursion
-
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
                 return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
             }
 
             while (pc <= finalLine) {
-
                 if (statements.containsKey(pc)) {
                     val statement = statements[pc]!!
 
@@ -84,7 +93,6 @@ class VirtualMachine(
                 }
                 fetchNextStatement()
             }
-
             return EmptyValue
         }
 
@@ -167,7 +175,7 @@ class VirtualMachine(
         private fun executeExpression(
             node: ExpressionNode,
             insideMethodCall: Boolean = false,
-            identifier: String = "",
+            identifier: String = ""
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
@@ -202,8 +210,10 @@ class VirtualMachine(
                             if (value is RuntimeError) {
                                 return value
                             }
-                            val topOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
-
+                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
+                            val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
+                            boundaryShape.maxSize++
+                            dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
                             val hasOldMObject = value.manimObject !is EmptyMObject
                             val oldMObject = value.manimObject
                             val newObjectStyle = ds.style.animate ?: ds.style
@@ -211,18 +221,19 @@ class VirtualMachine(
                                 Rectangle(
                                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                                     value.value.toString(),
+                                    dataStructureIdentifier,
                                     color = newObjectStyle.borderColor,
                                     textColor = newObjectStyle.textColor
                                 ),
                                 codeTextVariable
                             )
 
-                            val instructions =
-                                mutableListOf<ManimInstr>(
-                                    MoveObject(
+                            val instructions: MutableList<ManimInstr> =
+                                mutableListOf(
+                                    StackPushObject(
                                         rectangle.shape,
-                                        topOfStack.shape,
-                                        ObjectSide.ABOVE
+                                        dataStructureIdentifier,
+                                        hasOldMObject
                                     ),
                                     RestyleObject(rectangle.shape, ds.style)
                                 )
@@ -237,24 +248,23 @@ class VirtualMachine(
                         }
                         is StackType.PopMethod -> {
                             if (ds.stack.empty()) {
-                                return RuntimeError(value = "Attempted to pop from empty stack ${node.instanceIdentifier}", lineNumber = pc)
+                                return RuntimeError(
+                                    value = "Attempted to pop from empty stack ${node.instanceIdentifier}",
+                                    lineNumber = pc
+                                )
                             }
                             val poppedValue = ds.stack.pop()
-                            val newTopOfStack = if (ds.stack.empty()) ds.manimObject else ds.stack.peek().manimObject
+                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
 
                             val topOfStack = poppedValue.manimObject
                             val instructions = mutableListOf<ManimInstr>(
-                                    MoveObject(
-                                            topOfStack.shape,
-                                            newTopOfStack.shape,
-                                            ObjectSide.ABOVE,
-                                            20,
-                                            !insideMethodCall
-                                    ),
+                                StackPopObject(topOfStack.shape,
+                                    dataStructureIdentifier,
+                                    insideMethodCall
+                                )
                             )
                             val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
                             if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
-
                             linearRepresentation.addAll(instructions)
                             return poppedValue
                         }
@@ -283,14 +293,16 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
+                    val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
+                    dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
-                        val stackInit = InitStructure(
+                        val stackInit = InitManimStack(
                             node.type,
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
-                            variableNameGenerator.generateNameFromPrefix("empty"),
+                            initStructureIdent,
                             identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
@@ -298,11 +310,11 @@ class VirtualMachine(
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
                     } else {
-                        val stackInit = InitStructure(
+                        val stackInit = InitManimStack(
                             node.type,
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
-                            variableNameGenerator.generateNameFromPrefix("empty"),
+                            initStructureIdent,
                             identifier,
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,

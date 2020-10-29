@@ -24,7 +24,8 @@ data class Sleep(val length: Double = 1.0) : ManimInstr {
 data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-                "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)")
+            "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)"
+        )
     }
 }
 
@@ -46,10 +47,36 @@ data class MoveObject(
     }
 }
 
+data class StackPushObject(
+    val shape: Shape,
+    val dataStructureIdentifier: String,
+    val isPushPop: Boolean = false
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if(isPushPop) "push_existing" else "push"
+        return listOf(
+            "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident})]",
+            "$dataStructureIdentifier.add($shape)"
+        )
+    }
+}
+
+data class StackPopObject(
+    val shape: Shape,
+    val dataStructureIdentifier: String,
+    val insideMethodCall: Boolean
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        return listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString().capitalize()})]")
+    }
+}
+
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
-): ManimInstr {
+) : ManimInstr {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
             shape.restyle(newStyle)
