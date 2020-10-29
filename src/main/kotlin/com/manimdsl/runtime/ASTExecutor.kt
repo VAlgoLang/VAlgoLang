@@ -31,7 +31,7 @@ class VirtualMachine(
     init {
         fileLines.indices.forEach {
             if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
-                displayCode.add(wrapString(fileLines[it]))
+                displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
