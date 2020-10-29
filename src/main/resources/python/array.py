@@ -8,12 +8,12 @@ class ArrayElem:
 class Array:
     def __init__(self, values, title, boundaries, init_color=BLUE):
         self.values = values
-        max = 2
-        length = (boundaries[1][0] - boundaries[0][0] - 1) / len(values)
-        square_width = min(2, length)
+        max = 1.5
+        size_of_square = (boundaries[1][0] - boundaries[0][0] - 1) / len(values)
+        square_width = min(max, size_of_square)
         self.array_elements = [ArrayElem(val, 1, init_color, square_width) for val in self.values]
         self.title = VGroup(Text(title).set_width(0.7))
-        self.title.move_to(np.array([(boundaries[1][0] + boundaries[0][0]) / 2, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
+        self.title.move_to(np.array([boundaries[0][0] + 0.35, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
         self.init_color = init_color
 
     def build(self):

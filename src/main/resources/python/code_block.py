@@ -4,7 +4,7 @@ class Code_block:
         group = VGroup()
         for c in code:
             group.add(Text(c, color=text_color, weight=text_weight, font=font))
-        group.set_width(5)
+        group.set_width(4.2)
         self.all = group
 
     def build(self):

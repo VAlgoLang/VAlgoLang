@@ -7,7 +7,7 @@ class Main(Scene):
         # Building code visualisation pane
         code_block = Code_block(["let y = new Stack<number>;","y.push(2);","y.push(3);","y.pop();"])
         code_text = code_block.build()
-        self.place_at(code_text, -1, 0)
+        code_text.move_to(np.array([-4.5, 0, 0]))
         self.play(FadeIn(code_text))
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
@@ -45,7 +45,7 @@ class Code_block:
         group = VGroup()
         for c in code:
             group.add(Text(c, color=text_color, weight=text_weight, font=font))
-        group.set_width(5)
+        group.set_width(4.2)
         self.all = group
     def build(self):
         return self.all.arrange(DOWN, aligned_edge=LEFT)

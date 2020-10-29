@@ -26,7 +26,7 @@ class VirtualMachine(
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
 
     init {
         fileLines.indices.forEach {
@@ -55,7 +55,7 @@ class VirtualMachine(
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
-                if (it is InitManimStack) {
+                if (it is DataStructureMObject) {
                     val boundaryShape = computedBoundaries[it.ident]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
@@ -151,7 +151,13 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth + 1, showMoveToLine = stepInto).runFrame()
+            val returnValue = Frame(
+                functionNode.lineNumber,
+                finalStatementLine,
+                argumentVariables,
+                depth + 1,
+                showMoveToLine = stepInto
+            ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
             return returnValue
@@ -166,8 +172,8 @@ class VirtualMachine(
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             with(node.identifier) {
                 when (this) {
-                    is IdentifierNode ->  variables[node.identifier.identifier] = assignedValue
-                    is ArrayElemNode ->  {
+                    is IdentifierNode -> variables[node.identifier.identifier] = assignedValue
+                    is ArrayElemNode -> {
                         val index = executeExpression(this.index) as DoubleValue
                         (variables[this.identifier] as ArrayValue).array[index.value.toInt()] = assignedValue
                     }
@@ -180,7 +186,11 @@ class VirtualMachine(
             }
         }
 
-        private fun executeExpression(node: ExpressionNode, insideMethodCall: Boolean = false, identifier: AssignLHS = EmptyLHS): ExecValue = when (node) {
+        private fun executeExpression(
+            node: ExpressionNode,
+            insideMethodCall: Boolean = false,
+            identifier: AssignLHS = EmptyLHS
+        ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall)
@@ -252,8 +262,9 @@ class VirtualMachine(
                             }
 
                             linearRepresentation.addAll(instructions)
-                            value.manimObject = rectangle
-                            ds.stack.push(value)
+                            val clonedValue = value.clone()
+                            clonedValue.manimObject = rectangle
+                            ds.stack.push(clonedValue)
                             EmptyValue
                         }
                         is StackType.PopMethod -> {
@@ -268,7 +279,8 @@ class VirtualMachine(
 
                             val topOfStack = poppedValue.manimObject
                             val instructions = mutableListOf<ManimInstr>(
-                                StackPopObject(topOfStack.shape,
+                                StackPopObject(
+                                    topOfStack.shape,
                                     dataStructureIdentifier,
                                     insideMethodCall
                                 )
@@ -311,9 +323,9 @@ class VirtualMachine(
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(
                             node.type,
+                            initStructureIdent,
                             Coord(2.0, -1.0),
                             Alignment.HORIZONTAL,
-                            initStructureIdent,
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
@@ -323,9 +335,9 @@ class VirtualMachine(
                     } else {
                         val stackInit = InitManimStack(
                             node.type,
+                            initStructureIdent,
                             RelativeToMoveIdent,
                             Alignment.HORIZONTAL,
-                            initStructureIdent,
                             assignLHS.identifier,
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,
@@ -338,18 +350,26 @@ class VirtualMachine(
                     stackValue
                 }
                 is ArrayType -> {
-                    val arraySize = if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(node.initialValue.size.toDouble())
+                    val arraySize =
+                        if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
+                            node.initialValue.size.toDouble()
+                        )
                     val arrayValue = if (node.initialValue.isEmpty()) {
-                        ArrayValue(EmptyMObject, Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType) })
+                        ArrayValue(
+                            EmptyMObject,
+                            Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType) })
                     } else {
-                        if(node.initialValue.size != arraySize.value.toInt()) {
+                        if (node.initialValue.size != arraySize.value.toInt()) {
                             RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
+                        } else {
+                            ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
                         }
-                        ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
                     }
                     val ident = variableNameGenerator.generateNameFromPrefix("array")
-                    linearRepresentation.add(ArrayStructure(node.type, listOf(Pair(-2,-2), Pair(2,-2), Pair(-2,-4), Pair(2,-4)),
-                            ident, assignLHS.identifier, arrayValue.array))
+                    dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
+                    if(arrayValue is ArrayValue) {
+                        linearRepresentation.add(ArrayStructure(node.type, ident, assignLHS.identifier, arrayValue.array))
+                    }
                     arrayValue
                 }
             }
@@ -388,8 +408,8 @@ class VirtualMachine(
                 return rightExpression
             }
             return op(
-                    leftExpression,
-                    rightExpression
+                leftExpression,
+                rightExpression
             )
         }
 
@@ -401,7 +421,14 @@ class VirtualMachine(
 
             //If
             if (conditionValue.value) {
-                val execValue = Frame(ifStatementNode.statements.first().lineNumber, ifStatementNode.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine, stepInto = stepInto).runFrame()
+                val execValue = Frame(
+                    ifStatementNode.statements.first().lineNumber,
+                    ifStatementNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto
+                ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
                 }
@@ -415,7 +442,14 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    val execValue = Frame(elif.statements.first().lineNumber, elif.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine, stepInto = stepInto).runFrame()
+                    val execValue = Frame(
+                        elif.statements.first().lineNumber,
+                        elif.statements.last().lineNumber,
+                        variables,
+                        depth,
+                        showMoveToLine = showMoveToLine,
+                        stepInto = stepInto
+                    ).runFrame()
                     if (execValue is EmptyValue) {
                         pc = ifStatementNode.endLineNumber
                     }
@@ -427,7 +461,14 @@ class VirtualMachine(
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
                 addSleep(0.5)
-                val execValue = Frame(ifStatementNode.elseBlock.statements.first().lineNumber, ifStatementNode.elseBlock.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine, stepInto = stepInto).runFrame()
+                val execValue = Frame(
+                    ifStatementNode.elseBlock.statements.first().lineNumber,
+                    ifStatementNode.elseBlock.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto
+                ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
                 }
