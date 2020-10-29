@@ -2,6 +2,9 @@ package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
+import com.manimdsl.executor.BoundaryShape
+import com.manimdsl.executor.Scene
+import com.manimdsl.executor.TallBoundary
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
@@ -42,7 +45,7 @@ class VirtualMachine(
         }
     }
 
-    fun runProgram(): List<ManimInstr> {
+    fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         linearRepresentation.add(PartitionBlock("1/3", "2/3"))
         linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
         linearRepresentation.add(CodeBlock(displayCode.map { it.chunked(WRAP_LINE_LENGTH) }, codeBlockVariable, codeTextVariable, pointerVariable))
@@ -136,7 +139,6 @@ class VirtualMachine(
                     if (statement is ReturnNode || value !is EmptyValue) return value
 
                 }
-                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
 
                 fetchNextStatement()
             }
@@ -144,7 +146,7 @@ class VirtualMachine(
         }
 
         private fun getVariableState(): List<String>  {
-            return (0 until displayedDataMap.size).map { wrapString("\"${displayedDataMap[it]!!.first} = ${displayedDataMap[it]!!.second}\"") }
+            return (0 until displayedDataMap.size).map { wrapString("${displayedDataMap[it]!!.first} = ${displayedDataMap[it]!!.second}") }
         }
 
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
@@ -181,7 +183,7 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc) {
             if (showMoveToLine) {
-                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable, codeTextVariable))
             }
         }
 
@@ -219,6 +221,7 @@ class VirtualMachine(
                 assignedValue
             } else {
                 insertVariable(node.identifier, assignedValue)
+                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
                 EmptyValue
             }
         }

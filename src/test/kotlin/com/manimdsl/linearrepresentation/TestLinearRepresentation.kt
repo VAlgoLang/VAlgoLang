@@ -33,13 +33,13 @@ class TestLinearRepresentation {
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
             MoveToLine(1, "pointer", "code_block", "code_text"),
             stackIS,
-            MoveToLine(2, "pointer", "code_block"),
+            MoveToLine(2, "pointer", "code_block", "code_text"),
             NewMObject(rectangle, "code_text"),
             StackPushObject(rectangle, "stack"),
-            MoveToLine(3, "pointer", "code_block"),
+            MoveToLine(3, "pointer", "code_block", "code_text"),
             NewMObject(rectangle1, "code_text"),
             StackPushObject(rectangle1, "stack"),
-            MoveToLine(4, "pointer", "code_block"),
+            MoveToLine(4, "pointer", "code_block", "code_text"),
             StackPopObject(rectangle1, "stack", false)
         )
 

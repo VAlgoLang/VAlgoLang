@@ -88,7 +88,7 @@ data class UpdateVariableState(
         val textColor: String? = null) : ManimInstr {
     override fun toPython(): List<String> =
         if(variables.isNotEmpty()) {
-            listOf("self.play(*${ident}.update_variable(${variables}))")
+            listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }}))")
         } else {
             emptyList()
         }
