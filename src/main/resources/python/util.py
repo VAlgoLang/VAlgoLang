@@ -22,7 +22,7 @@ def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
         # code_text.move_to(code_frame)
     elif idx - 1 < self.code_start:
         self.play(FadeOut(pointer), runtime=0.1)
-        self.scroll_up(code_text, (self.code_start - idx+1))
+        self.scroll_up(code_text, (self.code_start - idx+len(code_block.code[line_number-1])))
 
     line_object = code_block.get_line_at(line_number)
     self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
