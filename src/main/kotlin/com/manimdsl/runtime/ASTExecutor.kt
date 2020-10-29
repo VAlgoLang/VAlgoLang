@@ -344,7 +344,8 @@ class VirtualMachine(
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
                 }
-                return execValue            }
+                return execValue
+            }
 
             // Elif
             for (elif in ifStatementNode.elifs) {
@@ -373,20 +374,6 @@ class VirtualMachine(
             }
             return EmptyValue
         }
-
-        private fun executeStatementBlock(statements: List<StatementNode>): ExecValue {
-            if (statements.isEmpty()) return EmptyValue
-            var execValue: ExecValue = EmptyValue
-            statements.forEach {
-                moveToLine(it.lineNumber)
-                execValue = executeStatement(it)
-                if (execValue !is EmptyValue) {
-                    return execValue
-                }
-            }
-            return execValue
-        }
-
 
     }
 
