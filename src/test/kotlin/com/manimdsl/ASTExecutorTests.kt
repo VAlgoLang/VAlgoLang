@@ -14,8 +14,8 @@ class ASTExecutorTests {
     @Test
     fun checkBasicFunction() {
         val program =
-                "fun f(number x): number{\n" +
-                "    return x * 3;\n" +
+                "fun f(x: number): number{\n" +
+                        "    return x * 3;\n" +
                 "}\n" +
                 "let ans = f(3);\n"
 
@@ -23,7 +23,38 @@ class ASTExecutorTests {
 
         val expected = listOf(
             CodeBlock(
-                lines = listOf("fun f(number x): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
+                lines = listOf("fun f(x: number): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
+                ident = "code_block",
+                codeTextName = "code_text",
+                pointerName = "pointer"
+            ),
+            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
+        )
+        val (_, actual) = VirtualMachine(
+            abstractSyntaxTree,
+            symbolTable,
+            lineNodeMap,
+            program.split("\n"),
+            Stylesheet(null, symbolTable)
+        ).runProgram()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun checkStepInBlock() {
+        val program =
+            "fun f(x: number): number{\n" +
+                    "    return x * 3;\n" +
+                    "}\n" +
+                    "stepinto { \n" +
+                    "let ans = f(3);\n" +
+                    "}\n"
+
+        val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
+
+        val expected = listOf(
+            CodeBlock(
+                lines = listOf("fun f(x: number): number{", "    return x * 3;", "}", "let ans = f(3);", ""),
                 ident = "code_block",
                 codeTextName = "code_text",
                 pointerName = "pointer"
@@ -34,12 +65,17 @@ class ASTExecutorTests {
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
             Sleep(0.5)
         )
-        val (_, actual) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n"), Stylesheet(null, symbolTable)).runProgram()
+        val (_, actual) = VirtualMachine(
+            abstractSyntaxTree,
+            symbolTable,
+            lineNodeMap,
+            program.split("\n"),
+            Stylesheet(null, symbolTable)
+        ).runProgram()
 
         assertEquals(expected, actual)
 
     }
-
 
     // Assumes syntactically correct program
     private fun buildAST(program: String): ParserResult {
