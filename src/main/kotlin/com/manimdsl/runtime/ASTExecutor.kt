@@ -306,7 +306,7 @@ class VirtualMachine(
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
-                    stackValue.style = stylesheet.getStyle(identifier, stackValue)
+                    stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(

@@ -2,10 +2,7 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.shapes.CodeBlockShape
-import com.manimdsl.shapes.InitManimStackShape
-import com.manimdsl.shapes.NullShape
-import com.manimdsl.shapes.Shape
+import com.manimdsl.shapes.*
 
 /** Objects **/
 
