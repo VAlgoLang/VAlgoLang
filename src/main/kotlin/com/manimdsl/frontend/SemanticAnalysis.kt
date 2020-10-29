@@ -109,7 +109,7 @@ class SemanticAnalysis {
         if (method != ErrorMethod && !correctNumberOfArgs) {
             numOfArgsInMethodCallError(
                 dataStructureType.toString(),
-                dataStructureType.methods.toList().find { it.second == method }!!.first,
+                dataStructureType.methods.toList().find { it.second == method }?.first ?: method.toString(),
                 numArgs,
                 method.argumentTypes.size,
                 ctx
