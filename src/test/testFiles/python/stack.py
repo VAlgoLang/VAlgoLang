@@ -94,6 +94,15 @@ class DataStructure(ABC):
     @abstractmethod
     def shrink_if_cross_border(self, obj):
         pass
+class Rectangle_block:
+    def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+        self.text = Text(text, color=text_color, weight=text_weight, font=font)
+        self.shape = Rectangle(height=height, width=width, color=color)
+        self.all = VGroup(self.text, self.shape)
+        self.text.set_width(7/10 * width)
+        if target:
+            self.owner = target
+            self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
 class Stack(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
@@ -151,12 +160,3 @@ class Init_structure:
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
         self.text.next_to(self.shape, DOWN, SMALL_BUFF)
         self.all = VGroup(self.text, self.shape)
-class Rectangle_block:
-    def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
-        self.text = Text(text, color=text_color, weight=text_weight, font=font)
-        self.shape = Rectangle(height=height, width=width, color=color)
-        self.all = VGroup(self.text, self.shape)
-        self.text.set_width(7/10 * width)
-        if target:
-            self.owner = target
-            self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
