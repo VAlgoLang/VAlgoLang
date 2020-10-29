@@ -1,19 +1,18 @@
-let stack1 = new Stack<number>;
-let stack2 = new Stack<number>;
-let stack3 = new Stack<number>;
-let stack4 = new Stack<number>;
-let stack5 = new Stack<number>;
-let stack6 = new Stack<number>;
-let stack7 = new Stack<number>;
-let stack8 = new Stack<number>;
-let stack9 = new Stack<number>;
-if (stack1.isEmpty()) {
-    stack1.push(1);
-}
+let stack1 = Stack<number>();
+let stack2 = Stack<number>();
+
 stack1.push(1);
 stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack1.push(1);
+stack2.push(stack1.pop());
 
 
-if(stack1.size() == 1) {
-    stack2.push(stack1.peek());
-}

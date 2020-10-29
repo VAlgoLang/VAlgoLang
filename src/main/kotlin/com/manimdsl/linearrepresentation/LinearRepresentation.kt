@@ -3,7 +3,6 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.executor.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
-import com.manimdsl.shapes.TextColor
 import com.manimdsl.stylesheet.StylesheetProperty
 
 interface ManimInstr {
@@ -51,13 +50,15 @@ data class MoveObject(
 data class StackPushObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
-    val newStyle: StylesheetProperty
+    val newStyle: StylesheetProperty,
+    val isPushPop: Boolean = false
 ) : ManimInstr {
     override fun toPython(): List<String> {
         val colorString = if (newStyle.borderColor != null) ", color=${newStyle.borderColor}" else ""
         val textColorString = if (newStyle.textColor != null) ", text_color=${newStyle.textColor}" else ""
+        val methodName = if(isPushPop) "push_existing" else "push"
         return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.push(${shape.ident}$colorString$textColorString)]",
+            "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$colorString$textColorString)]",
             "$dataStructureIdentifier.add($shape)"
         )
     }
@@ -72,11 +73,8 @@ data class StackPopObject(
     override fun toPython(): List<String> {
         val colorString = if (newStyle.borderColor != null) ", color=${newStyle.borderColor}" else ""
         val textColorString = if (newStyle.textColor != null) ", text_color=${newStyle.textColor}" else ""
-        return if (insideMethodCall) {
-            listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pushpop(${shape.ident}$colorString$textColorString)]")
-        } else {
-            listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}$colorString$textColorString)]")
-        }
+        return listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}$colorString$textColorString, fade_out=${(!insideMethodCall).toString().capitalize()})]")
+
 
     }
 }

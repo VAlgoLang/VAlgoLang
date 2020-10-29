@@ -17,7 +17,7 @@ class PythonStyleTests {
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1.empty, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
+            "x = Rectangle_block(\"rectangle\", stack1, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
         assertEquals(expected, mobject.toPython()[1])
     }
 
@@ -31,7 +31,7 @@ class PythonStyleTests {
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1.empty, color=\"$color\", text_color=\"$textColor\")"
+            "x = Rectangle_block(\"rectangle\", stack1, color=\"$color\", text_color=\"$textColor\")"
         assertEquals(expected, mobject.toPython()[1])
     }
 
@@ -43,7 +43,7 @@ class PythonStyleTests {
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1.empty)"
+            "x = Rectangle_block(\"rectangle\", stack1)"
         assertEquals(expected, mobject.toPython()[1])
     }
 }

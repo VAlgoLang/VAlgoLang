@@ -12,12 +12,12 @@ class Stack(DataStructure, ABC):
         return ShowCreation(empty.all)
 
     def push(self, obj, color=None, text_color=None):
-        if color is None:
+        if not color:
             color = self.color
-        if text_color is None:
+        if not text_color:
             text_color = self.text_color
         animations = []
-        obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)
+        obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)
         shrink, scale_factor = self.shrink_if_cross_border(obj.all)
         if shrink:
             animations.append([shrink])
@@ -28,41 +28,42 @@ class Stack(DataStructure, ABC):
         animations.append([FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)])
         return animations
 
-    def pop(self, obj, color=None, text_color=None):
-        if color is None:
+    def pop(self, obj, color=None, text_color=None, fade_out=True):
+        if not color:
             color = self.color
-        if text_color is None:
+        if not text_color:
             text_color = self.text_color
         self.all.remove(obj.all)
         animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)],
-                     [FadeOut(obj.all)]]
-        enlarge, scale_factor = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
-        if enlarge:
-            animation[2].append(enlarge)
+                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)]]
+        if fade_out:
+            animation.append([FadeOut(obj.all)])
+            enlarge, scale_factor = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
+            if enlarge:
+                animation.append([enlarge])
         return animation
 
     def shrink_if_cross_border(self, new_obj):
         height = new_obj.get_height()
         if self.will_cross_boundary(height, "TOP"):
-            return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.5)
+            return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.4)
         return 0, 1
 
-    def poppush(self, obj, target, color=None, text_color=None):
-        if color is None:
+    def push_existing(self, obj, color=None, text_color=None):
+        if not color:
             color = self.color
-        if text_color is None:
+        if not text_color:
             text_color = self.text_color
-        self.all.remove(obj.all)
-        animation = [[FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)],
-                     [ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.5, 0]), UP)],
-                     [ApplyMethod(obj.all.move_to, np.array([target.width_center, target.ul[1] - 0.5, 0]), UP)]]
-        enlarge, _ = self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + 0.25)
+        animation = [[ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)]]
+        enlarge, scale_factor = obj.owner.shrink(new_width=obj.owner.all.get_width(), new_height=obj.owner.all.get_height() + 0.25)
+        sim_list = list()
         if enlarge:
-            animation[-1].append(enlarge)
-        scale_factor = target.all.get_width() / obj.all.get_width()
+            sim_list.append(enlarge)
+        scale_factor = self.all.get_width() / obj.all.get_width()
         if scale_factor != 1:
-            animation.append([ApplyMethod(obj.all.scale, scale_factor, {"about_edge": UP})])
-        animation.append([ApplyMethod(obj.all.next_to, target.all, np.array([0, 0.25, 0]))])
+            sim_list.append(ApplyMethod(obj.all.scale, scale_factor, {"about_edge": UP}))
+        if len(sim_list) != 0:
+            animation.append(sim_list)
+        animation.append([ApplyMethod(obj.all.next_to, self.all, np.array([0, 0.25, 0]))])
+        animation.append([FadeToColor(obj.shape, color), FadeToColor(obj.text, text_color)])
         return animation
-

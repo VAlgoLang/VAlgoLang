@@ -233,7 +233,8 @@ class VirtualMachine(
                                     StackPushObject(
                                         rectangle.shape,
                                         dataStructureIdentifier,
-                                        stylesheet.getStyle(node.instanceIdentifier, ds)
+                                        stylesheet.getStyle(node.instanceIdentifier, ds),
+                                        hasOldMObject
                                     )
                                 )
                             if (!hasOldMObject) {
@@ -257,7 +258,6 @@ class VirtualMachine(
 
                             val topOfStack = poppedValue.manimObject
                             val instructions = mutableListOf<ManimInstr>(
-                                // TODO: use !insideMethodCall to check if pushing something that has been popped
                                 StackPopObject(topOfStack.shape,
                                     dataStructureIdentifier,
                                     stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: AnimationProperties(),

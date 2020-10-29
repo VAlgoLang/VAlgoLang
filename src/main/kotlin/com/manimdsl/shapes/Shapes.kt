@@ -56,7 +56,7 @@ class Rectangle(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}(\"${text}\", ${dataStructureIdentifier}.empty$style)"
+        return "$ident = ${className}(\"${text}\", ${dataStructureIdentifier}$style)"
     }
 
 
