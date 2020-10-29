@@ -15,5 +15,5 @@ let C = new Stack<number>;
 let B = new Stack<number>;
 let A = new Stack<number>;
 
-buildTower(3, A);
-move(3, A, B, C);
+buildTower(2, A);
+move(2, A, B, C);
