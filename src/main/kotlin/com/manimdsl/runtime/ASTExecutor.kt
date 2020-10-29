@@ -175,7 +175,6 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                println(arrayValue.manimObject)
                 linearRepresentation.add(
                     ArrayElemAssignObject(
                         (arrayValue.manimObject as ArrayStructure).ident,
@@ -394,10 +393,10 @@ class VirtualMachine(
                             node.type,
                             ident,
                             assignLHS.identifier,
-                            arrayValue.array
+                            arrayValue.array.clone()
                         )
-                        arrayValue.manimObject = arrayStructure
                         linearRepresentation.add(arrayStructure)
+                        arrayValue.manimObject = arrayStructure
                     }
                     arrayValue
                 }

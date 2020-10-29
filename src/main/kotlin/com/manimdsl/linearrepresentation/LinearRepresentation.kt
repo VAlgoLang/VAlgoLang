@@ -78,7 +78,7 @@ data class StackPopObject(
 
 data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue) : ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.play(Transform($arrayIdent.array_elements[$index].text, Text(str(${newElemValue.value}), color=$arrayIdent.init_color).move_to($arrayIdent.array_elements[$index].group.get_center())))")
+        return listOf("self.play(Transform($arrayIdent.array_elements[$index].text, Text(\"${newElemValue.value}\", color=$arrayIdent.init_color).move_to($arrayIdent.array_elements[$index].group.get_center())))")
     }
 }
 
