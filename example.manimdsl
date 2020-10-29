@@ -15,4 +15,3 @@ stack1.push(1);
 stack1.push(1);
 stack2.push(stack1.pop());
 
-
