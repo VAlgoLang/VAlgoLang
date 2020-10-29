@@ -67,13 +67,12 @@ class Rectangle(
 
 class CodeBlockShape(
         override val ident: String,
-        lines: List<String>,
         textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
     override val pythonVariablePrefix: String = "code_block"
-    override val text: String = "[\"${lines.joinToString("\",\"")}\"]"
+    override val text: String = ""
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }

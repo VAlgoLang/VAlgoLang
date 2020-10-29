@@ -1,17 +1,1 @@
-let stack1 = Stack<number>();
-let stack2 = Stack<number>();
-
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack2.push(stack1.pop());
-
+let raefqwetqwwqdewfqqwefqwfqwefetqweqweewqrqwer = 1;
