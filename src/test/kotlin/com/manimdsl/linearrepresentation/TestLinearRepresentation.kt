@@ -19,9 +19,9 @@ class TestLinearRepresentation {
         val rectangle1 = Rectangle("rectangle1", "3.0", "stack")
         val stackIS = InitManimStack(
             StackType(NumberType),
+            "stack",
             Coord(2.0, -1.0),
             Alignment.HORIZONTAL,
-            "stack",
             "y",
             boundary = emptyList()
         )

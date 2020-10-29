@@ -25,15 +25,22 @@ sealed class DataStructureType(
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
     abstract fun getConstructor(): ConstructorMethod
+
+    fun getMethodNameByMethod(method: DataStructureMethod): String {
+        return methods.toList().find { it.second == method }?.first ?: method.toString()
+    }
 }
 
 
 interface DataStructureMethod {
     val returnType: Type
-    val argumentTypes: List<Type>
+    // List of pairs containing type to whether it is a required argument
+    val argumentTypes:  List<Pair<Type, Boolean>>
 
     // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
+
+
 }
 
 interface ConstructorMethod : DataStructureMethod {
@@ -42,7 +49,7 @@ interface ConstructorMethod : DataStructureMethod {
 
 object ErrorMethod : DataStructureMethod {
     override val returnType: Type = ErrorType
-    override val argumentTypes: List<Type> = emptyList()
+    override val argumentTypes: List<Pair<Type, Boolean>> = emptyList()
     override val varargs: Boolean = false
 }
 
@@ -53,21 +60,27 @@ data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class ArrayType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
-        "length" to Length()
+        "size" to Size(), "swap" to Swap()
     )
 ) : DataStructureType(internalType, methods) {
     object ArrayConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
-        override val argumentTypes: List<Type> = listOf(NumberType)
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(NumberType to false)
         override val varargs: Boolean = true
 
         override fun toString(): String = "constructor"
     }
 
-    data class Length(
+    data class Size(
         override val returnType: Type = NumberType,
-        override var argumentTypes: List<Type> = emptyList(),
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    data class Swap(
+        override val returnType: Type = VoidType,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(NumberType to true, NumberType to true, BoolType to false),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
@@ -91,7 +104,7 @@ data class StackType(
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
         "push" to PushMethod(
             argumentTypes = listOf(
-                internalType,
+                internalType to true,
             )
         ),
         "pop" to PopMethod(internalType),
@@ -103,7 +116,7 @@ data class StackType(
     object StackConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 0
         override val returnType: Type = VoidType
-        override val argumentTypes: List<Type> = emptyList()
+        override val argumentTypes: List<Pair<Type, Boolean>> = emptyList()
         override val varargs: Boolean = false
 
         override fun toString(): String = "constructor"
@@ -111,31 +124,31 @@ data class StackType(
 
     data class PushMethod(
         override val returnType: Type = ErrorType,
-        override var argumentTypes: List<Type>,
+        override var argumentTypes: List<Pair<Type, Boolean>> = emptyList(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
     data class PopMethod(
         override val returnType: Type,
-        override var argumentTypes: List<Type> = listOf(),
+        override var argumentTypes: List<Pair<Type, Boolean>> = emptyList(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
     data class IsEmptyMethod(
         override val returnType: Type = BoolType,
-        override var argumentTypes: List<Type> = listOf(),
+        override var argumentTypes: List<Pair<Type, Boolean>> = emptyList(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
     data class SizeMethod(
         override val returnType: Type = NumberType,
-        override var argumentTypes: List<Type> = listOf(),
+        override var argumentTypes: List<Pair<Type, Boolean>> = emptyList(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
     data class PeekMethod(
         override val returnType: Type,
-        override var argumentTypes: List<Type> = listOf(),
+        override var argumentTypes: List<Pair<Type, Boolean>> = emptyList(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 

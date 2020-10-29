@@ -87,6 +87,18 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
     }
 }
 
+data class ArrayValue(override var manimObject: MObject, val array: Array<ExecValue>, var style: StyleProperties = StyleProperties()) : ExecValue() {
+    override val value: Array<ExecValue> = array
+
+    override fun clone(): ExecValue {
+        return ArrayValue(manimObject, array, style)
+    }
+
+    override fun toString(): String {
+        return "Array"
+    }
+}
+
 object EmptyValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType

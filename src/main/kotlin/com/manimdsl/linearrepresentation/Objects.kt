@@ -1,10 +1,8 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.shapes.CodeBlockShape
-import com.manimdsl.shapes.InitManimStackShape
-import com.manimdsl.shapes.NullShape
-import com.manimdsl.shapes.Shape
+import com.manimdsl.shapes.*
 
 /** Objects **/
 
@@ -55,7 +53,7 @@ data class CodeBlock(
             "# Building code visualisation pane",
             shape.getConstructor(),
             "$codeTextName = $ident.build()",
-            "self.place_at($codeTextName, -1, 0)",
+            "$codeTextName.move_to(np.array([-4.5, 0, 0]))",
             "self.play(FadeIn($codeTextName))",
             "# Constructing current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)",
@@ -63,20 +61,28 @@ data class CodeBlock(
     }
 }
 
-interface DataStructureMObject: MObject
+sealed class DataStructureMObject(
+    open val type: DataStructureType,
+    open val ident: String,
+    private var boundaries: List<Pair<Int, Int>> = emptyList()
+) : MObject {
+
+    abstract fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int)
+
+}
 
 data class InitManimStack(
-    val type: DataStructureType,
+    override val type: DataStructureType,
+    override val ident: String,
     val position: Position,
     val alignment: Alignment,
-    val ident: String,
     val text: String,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
     private var boundary: List<Pair<Int, Int>> = emptyList(),
     private var maxSize: Int = -1
-) : DataStructureMObject {
+) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -86,10 +92,38 @@ data class InitManimStack(
         return python
     }
 
-    fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundary = corners
         shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
+    }
+}
+
+data class ArrayStructure(
+    override val type: DataStructureType,
+    override val ident: String,
+    val text: String,
+    val values: Array<ExecValue>,
+    val color: String? = null,
+    val textColor: String? = null,
+    var maxSize: Int = -1,
+    private var boundaries: List<Pair<Int, Int>> = emptyList()
+) : DataStructureMObject(type, ident, boundaries) {
+    override var shape: Shape = NullShape
+
+    override fun toPython(): List<String> {
+        return listOf(
+            "# Constructing new $type \"$text\"",
+            shape.getConstructor(),
+            "self.play(ShowCreation($ident.title))",
+            "self.play(*[ShowCreation(array_elem.all) for array_elem in $ident.array_elements])"
+        )
+    }
+
+    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundaries = corners
+        shape = ArrayShape(ident, values, text, boundaries, color, textColor)
     }
 }
 

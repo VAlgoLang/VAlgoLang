@@ -1,17 +1,23 @@
-let stack1 = Stack<number>();
-let stack2 = Stack<number>();
+fun loop_and_swap(arr: Array<number>, i: number, limit: number) {
+    if (i < limit) {
+        if (arr[i] > arr[i+1]) {
+                arr.swap(i, i+1);
+        }
+    loop_and_swap(arr, i+1, limit);
+    }
+}
 
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack1.push(1);
-stack2.push(stack1.pop());
+fun sort(arr: Array<number>, n: number) {
+    if (n != 1) {
+        loop_and_swap(arr,0, n -1);
+        sort(arr, n-1);
+    }
+}
+
+let array = Array<number>() { 1 + 4,6 ,9,8, 2};
+
+
+sort(array, array.size());
+
+let y = array[2];
 

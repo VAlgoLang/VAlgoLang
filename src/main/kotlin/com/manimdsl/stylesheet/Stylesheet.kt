@@ -31,7 +31,7 @@ data class StyleProperties(
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
 
     private val stylesheet: Map<String, StyleProperties>
-    private val dataStructureStrings = setOf("Stack")
+    private val dataStructureStrings = setOf("Stack", "Array")
 
     init {
         stylesheet = if (stylesheetPath != null) {
