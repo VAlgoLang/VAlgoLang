@@ -336,13 +336,28 @@ class VirtualMachine(
                         is ArrayType.Swap -> {
                             val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
                             val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
+                            val longSwap = if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
                             val arrayIdent = (ds.manimObject as ArrayStructure).ident
                             val newObjectStyle = ds.style.animate ?: ds.style
-                            linearRepresentation.addAll(listOf(
-                                ArrayElemRestyle(arrayIdent, listOf(index1, index2),newObjectStyle),
-                                ArraySwap(arrayIdent, Pair(index1, index2)),
-                                ArrayElemRestyle(arrayIdent, listOf(index1, index2),ds.style),
-                            ))
+                            val arraySwap =
+                                if (longSwap) {
+                                    ArrayLongSwap(
+                                        arrayIdent,
+                                        Pair(index1, index2),
+                                        variableNameGenerator.generateNameFromPrefix("elem1"),
+                                        variableNameGenerator.generateNameFromPrefix("elem2"),
+                                        variableNameGenerator.generateNameFromPrefix("animations")
+                                    )
+                                } else {
+                                    ArrayShortSwap(arrayIdent, Pair(index1, index2))
+                                }
+                            linearRepresentation.addAll(
+                                listOf(
+                                    ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle),
+                                    arraySwap,
+                                    ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style),
+                                )
+                            )
                             val temp = ds.array[index1]
                             ds.array[index1] = ds.array[index2]
                             ds.array[index2] = temp
@@ -418,8 +433,8 @@ class VirtualMachine(
                             ident,
                             assignLHS.identifier,
                             arrayValue.array.clone(),
-                            color=arrayValue.style.borderColor,
-                            textColor= arrayValue.style.textColor
+                            color = arrayValue.style.borderColor,
+                            textColor = arrayValue.style.textColor
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure

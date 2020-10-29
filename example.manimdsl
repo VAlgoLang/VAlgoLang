@@ -1,6 +1,5 @@
 let a = Array<number>() { 1 + 4,6 ,7,8, 9};
-a.swap(0,3, false);
-
+a.swap(0,3);
 
 let stack2 = Stack<number>();
 

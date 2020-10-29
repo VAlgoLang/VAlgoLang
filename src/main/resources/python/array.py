@@ -30,3 +30,14 @@ class Array:
             CounterclockwiseTransform(o1, o1_copy),
             CounterclockwiseTransform(o2, o2_copy)
         ]
+
+    def clone_and_swap(self, i1, i2):
+        elem1_copy = deepcopy(self.array_elements[i1].text)
+        elem2_copy = deepcopy(self.array_elements[i2].text)
+        elem2_copy2 = deepcopy(self.array_elements[i2].text)
+        elem2_copy2.move_to(self.array_elements[i1].text.get_center())
+        elem1_copy2 = deepcopy(elem1_copy)
+        elem1_copy2.move_to(self.array_elements[i2].text.get_center())
+        return elem1_copy, elem2_copy, [[ApplyMethod(elem1_copy.next_to, self.array_elements[i1].all, np.array([0, 0.4, 0]))],
+                                        [ClockwiseTransform(elem2_copy, elem2_copy2), FadeOut(self.array_elements[i1].text)],
+                                        [ClockwiseTransform(elem1_copy, elem1_copy2), FadeOut(self.array_elements[i2].text)]]

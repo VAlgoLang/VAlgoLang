@@ -47,7 +47,7 @@ class ASTConstructionTests {
             MethodCallNode(
                 2,
                 "y",
-                StackType.PushMethod(returnType = ErrorType, argumentTypes = listOf(NumberType)),
+                StackType.PushMethod(returnType = ErrorType, argumentTypes = listOf(NumberType to true)),
                 listOf(NumberNode(2, 1.0))
             )
         )

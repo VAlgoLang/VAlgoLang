@@ -61,7 +61,7 @@ class InvalidSemanticTests {
         val parser = ManimDSLParser(inputFile.inputStream())
         val program = parser.parseFile().second
         val semanticErrorStatus = parser.convertToAst(program).exitStatus
-        assertEquals(semanticErrorStatus, ExitStatus.SEMANTIC_ERROR)
+        assertEquals(ExitStatus.SEMANTIC_ERROR, semanticErrorStatus)
     }
 
     @Test

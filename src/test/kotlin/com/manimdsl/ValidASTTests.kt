@@ -45,7 +45,7 @@ class ValidASTTests {
                 "y.push(1);\n"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "y"), ConstructorNode(1, StackType(NumberType), emptyList(), emptyList())),
-            MethodCallNode(2, "y", StackType.PushMethod(argumentTypes = listOf(NumberType)), listOf(NumberNode(2, 1.0)))
+            MethodCallNode(2, "y", StackType.PushMethod(argumentTypes = listOf(NumberType to true)), listOf(NumberNode(2, 1.0)))
         )
         val reference = ProgramNode(listOf(), statements)
 

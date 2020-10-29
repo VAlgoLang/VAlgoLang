@@ -82,9 +82,18 @@ data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val new
     }
 }
 
-data class ArraySwap(val arrayIdent: String, val indices: Pair<Int, Int>) : ManimInstr {
+data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second}))")
+    }
+}
+
+data class ArrayLongSwap(val arrayIdent: String, val indices: Pair<Int, Int>, val elem1: String, val elem2: String, val animations: String) : ManimInstr {
+    override fun toPython(): List<String> {
+        return listOf("$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
+                "[self.play(*animation) for animation in $animations]",
+                "$arrayIdent.array_elements[${indices.first}].text = $elem2",
+                "$arrayIdent.array_elements[${indices.second}].text = $elem1")
     }
 }
 
