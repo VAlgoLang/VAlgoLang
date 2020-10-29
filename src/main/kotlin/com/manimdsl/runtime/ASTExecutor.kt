@@ -328,6 +328,28 @@ class VirtualMachine(
                         else -> EmptyValue
                     }
                 }
+                is ArrayValue -> {
+                    return when (node.dataStructureMethod) {
+                        is ArrayType.Size -> {
+                            DoubleValue(ds.array.size.toDouble())
+                        }
+                        is ArrayType.Swap -> {
+                            val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
+                            val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
+                            linearRepresentation.add(
+                                ArraySwap(
+                                    (ds.manimObject as ArrayStructure).ident,
+                                    Pair(index1, index2)
+                                )
+                            )
+                            val temp = ds.array[index1]
+                            ds.array[index1] = ds.array[index2]
+                            ds.array[index2] = temp
+                            EmptyValue
+                        }
+                        else -> EmptyValue
+                    }
+                }
                 else -> EmptyValue
             }
         }

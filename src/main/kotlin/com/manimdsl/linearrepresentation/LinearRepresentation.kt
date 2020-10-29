@@ -82,6 +82,12 @@ data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val new
     }
 }
 
+data class ArraySwap(val arrayIdent: String, val indices: Pair<Int, Int>) : ManimInstr {
+    override fun toPython(): List<String> {
+        return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second}))")
+    }
+}
+
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,

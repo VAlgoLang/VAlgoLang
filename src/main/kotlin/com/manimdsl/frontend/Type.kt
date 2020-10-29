@@ -53,7 +53,7 @@ data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class ArrayType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
-        "length" to Length()
+        "size" to Size(), "swap" to Swap()
     )
 ) : DataStructureType(internalType, methods) {
     object ArrayConstructor : ConstructorMethod {
@@ -65,9 +65,15 @@ data class ArrayType(
         override fun toString(): String = "constructor"
     }
 
-    data class Length(
+    data class Size(
         override val returnType: Type = NumberType,
         override var argumentTypes: List<Type> = emptyList(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    data class Swap(
+        override val returnType: Type = VoidType,
+        override var argumentTypes: List<Type> = listOf(NumberType, NumberType, BoolType),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 

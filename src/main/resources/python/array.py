@@ -27,8 +27,8 @@ class Array:
         return self
 
     def swap_mobjects(self, i1: int, i2: int):
-        o1 = self.array_elements[i1].text
-        o2 = self.array_elements[i2].text
+        o1 = self.array_elements[i1].rectangle.text
+        o2 = self.array_elements[i2].rectangle.text
         o1_copy = deepcopy(o1)
         o2_copy = deepcopy(o2)
         o1_copy.move_to(o2.get_center())
