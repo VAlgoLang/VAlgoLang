@@ -220,7 +220,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             symbolTable.leaveScope()
             ElseNode(ctx.ELSE().symbol.line, scope, statements)
         } else {
-            ElseNode(ctx.ELSE().symbol.line, 0, emptyList())
+            ElseNode(ctx.stop.line, 0, emptyList())
         }
 
         ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line] = elseNode }
