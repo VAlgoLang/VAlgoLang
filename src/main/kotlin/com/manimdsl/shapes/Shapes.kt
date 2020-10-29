@@ -30,6 +30,7 @@ interface StyleableShape {
 class Rectangle(
     override val ident: String,
     override val text: String,
+    private val dataStructureIdentifier: String,
     color: String? = null,
     textColor: String? = null,
 ) : ShapeWithText(), StyleableShape {
@@ -55,6 +56,12 @@ class Rectangle(
         }
     }
 
+    override fun getConstructor(): String {
+        return "$ident = ${className}(\"${text}\", ${dataStructureIdentifier}$style)"
+    }
+
+
+
 }
 
 class CodeBlockShape(
@@ -76,15 +83,16 @@ class CodeBlockShape(
     }
 }
 
-class InitStructureShape(
+class InitManimStackShape(
     override val ident: String,
     override val text: String,
+    private val boundary: List<Pair<Int, Int>>,
     private val alignment: Alignment,
-    color: String? = null,
-    textColor: String? = null,
+    val color: String? = null,
+    val textColor: String? = null,
 ) : ShapeWithText() {
-    override val classPath: String = "python/init_structure.py"
-    override val className: String = "Init_structure"
+    override val classPath: String = "python/stack.py"
+    override val className: String = "Stack"
     override val pythonVariablePrefix: String = ""
 
     init {
@@ -93,7 +101,8 @@ class InitStructureShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}(\"$text\", ${alignment.angle}$style)"
+        val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        return "$ident = ${className}(${coordinatesString}, DOWN${style})"
     }
 }
 

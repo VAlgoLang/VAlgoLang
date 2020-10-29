@@ -8,11 +8,11 @@ data class ProgramNode(
 ) : ASTNode()
 
 data class FunctionNode(
-        override val lineNumber: Int,
-        val scope: Int,
-        val identifier: String,
-        val parameters: List<ParameterNode>,
-        val statements: List<StatementNode>
+    override val lineNumber: Int,
+    val scope: Int,
+    val identifier: String,
+    val parameters: List<ParameterNode>,
+    val statements: List<StatementNode>
 ) : CodeNode(lineNumber)
 
 data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
@@ -23,10 +23,23 @@ sealed class StatementNode(open val lineNumber: Int) : ASTNode()
 
 // Animation Command Specific type for easy detection
 sealed class AnimationNode(override val lineNumber: Int) : StatementNode(lineNumber)
-data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode) : AnimationNode(lineNumber)
+sealed class NoRenderAnimationNode(override val lineNumber: Int) : AnimationNode(lineNumber)
+
+data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode) : NoRenderAnimationNode(lineNumber)
 
 // Comments (not discarded so they can be rendered for educational purposes)
 data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
+
+// Step over to step over code and avoid additional animations
+data class StepIntoNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
+    NoRenderAnimationNode(lineNumber)
+
+// Step over to step over code and avoid additional animations
+data class StartStepIntoNode(override val lineNumber: Int) : NoRenderAnimationNode(lineNumber)
+
+// Step over to step over code and avoid additional animations
+data class StopStepIntoNode(override val lineNumber: Int) : NoRenderAnimationNode(lineNumber)
+
 
 // Code Specific Nodes holding line number
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)

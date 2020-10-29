@@ -24,6 +24,11 @@ object ErrorHandler {
         println("Your program failed at line $lineNumber: $errorEvent")
     }
 
+    fun addTooManyDatastructuresError() {
+        println("Error detected during program execution. Animation could not be generated")
+        println("Exit code: ${ExitStatus.RUNTIME_ERROR.code}")
+    }
+
     fun addWarning(warningEvent: String) {
         warnings.add("Warning: $warningEvent")
     }

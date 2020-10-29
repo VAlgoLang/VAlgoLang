@@ -12,12 +12,12 @@ class PythonStyleTests {
 
         val color = "white"
         val textColor = "black"
-        val rectangle = Rectangle("x", "rectangle", color, textColor)
+        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
+            "x = Rectangle_block(\"rectangle\", stack1, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
         assertEquals(expected, mobject.toPython()[1])
     }
 
@@ -26,24 +26,24 @@ class PythonStyleTests {
 
         val color = "#ffffff"
         val textColor = "#ffffff"
-        val rectangle = Rectangle("x", "rectangle", color, textColor)
+        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", color=\"$color\", text_color=\"$textColor\")"
+            "x = Rectangle_block(\"rectangle\", stack1, color=\"$color\", text_color=\"$textColor\")"
         assertEquals(expected, mobject.toPython()[1])
     }
 
     @Test
     fun invalidTextWeightsAreReturnedToDefault() {
 
-        val rectangle = Rectangle("x", "rectangle")
+        val rectangle = Rectangle("x", "rectangle", "stack1")
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\")"
+            "x = Rectangle_block(\"rectangle\", stack1)"
         assertEquals(expected, mobject.toPython()[1])
     }
 }

@@ -1,9 +1,5 @@
 {
-  "C": {
-    "textColor": "BLUE",
-    "borderColor": "ORANGE"
-  },
-  "B": {
+  "stack1": {
     "textColor": "PURPLE",
     "borderColor": "PINK"
   },

@@ -102,6 +102,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     private fun flattenStatements(statement: StatementNode): List<StatementNode> {
+        if (statement is StepIntoNode) {
+            return statement.statements
+        }
+
         val statements = mutableListOf<StatementNode>()
         var statementNode = statement
         // Flatten consecutive statements
@@ -209,6 +213,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val ifCondition = visit(ctx.ifCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(ifCondition, BoolType, symbolTable, ctx)
         val ifStatements = visitAndFlattenStatements(ctx.ifStat)
+        ifStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
         symbolTable.leaveScope()
 
         // elif
@@ -218,13 +225,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val elseNode = if (ctx.elseStat != null) {
             val scope = symbolTable.enterScope()
             val statements = visitAndFlattenStatements(ctx.elseStat)
+            statements.forEach {
+                lineNumberNodeMap[it.lineNumber] = it
+            }
             symbolTable.leaveScope()
-            ElseNode(ctx.elseStat.start.line - 1, scope, statements)
+            ElseNode(ctx.ELSE().symbol.line, scope, statements)
         } else {
             ElseNode(ctx.stop.line, 0, emptyList())
         }
 
-        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line - 1] = elseNode }
+        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line] = elseNode }
 
         val ifStatementNode =
             IfStatementNode(ctx.start.line, ctx.stop.line, ifScope, ifCondition, ifStatements, elifs, elseNode)
@@ -239,11 +249,27 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
         val elifStatements = visitAndFlattenStatements(ctx.elifStat)
 
+        elifStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
         symbolTable.leaveScope()
+
 
         val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
         lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
         return elifNode
+    }
+
+    override fun visitStepIntoStatement(ctx: StepIntoStatementContext): ASTNode {
+        val statements = mutableListOf<StatementNode>()
+        val start = StartStepIntoNode(ctx.start.line)
+        val end = StopStepIntoNode(ctx.stop.line)
+        statements.add(start)
+        statements.addAll(visitAndFlattenStatements(ctx.stat()))
+        statements.add(end)
+        lineNumberNodeMap[ctx.start.line] = start
+        lineNumberNodeMap[ctx.stop.line] = end
+        return StepIntoNode(ctx.start.line, ctx.stop.line, statements)
     }
 
     /** Expressions **/
