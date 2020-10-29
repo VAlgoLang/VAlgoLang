@@ -359,7 +359,7 @@ class VirtualMachine(
 
             //If
             if (conditionValue.value) {
-                val execValue = Frame(ifStatementNode.statements.first().lineNumber, ifStatementNode.statements.last().lineNumber, variables, depth, showMoveToLine = stepInto).runFrame()
+                val execValue = Frame(ifStatementNode.statements.first().lineNumber, ifStatementNode.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
                 }
@@ -373,7 +373,7 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    val execValue = Frame(elif.statements.first().lineNumber, elif.statements.last().lineNumber, variables, depth, showMoveToLine = stepInto).runFrame()
+                    val execValue = Frame(elif.statements.first().lineNumber, elif.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine).runFrame()
                     if (execValue is EmptyValue) {
                         pc = ifStatementNode.endLineNumber
                     }
@@ -385,7 +385,7 @@ class VirtualMachine(
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
                 addSleep(0.5)
-                val execValue = Frame(ifStatementNode.elseBlock.statements.first().lineNumber, ifStatementNode.elseBlock.statements.last().lineNumber, variables, depth, showMoveToLine = stepInto).runFrame()
+                val execValue = Frame(ifStatementNode.elseBlock.statements.first().lineNumber, ifStatementNode.elseBlock.statements.last().lineNumber, variables, depth, showMoveToLine = showMoveToLine).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
                 }

@@ -5,4 +5,6 @@ fun fib(n: number): number {
         return fib(n-1) + fib(n-2);
     }
 }
+stepinto {
 let ans = fib(6);
+}
