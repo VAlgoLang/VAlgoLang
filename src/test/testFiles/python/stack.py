@@ -1,5 +1,5 @@
-from abc import ABC, abstractmethod
 from manimlib.imports import *
+from abc import ABC, abstractmethod
 
 
 class Main(Scene):
