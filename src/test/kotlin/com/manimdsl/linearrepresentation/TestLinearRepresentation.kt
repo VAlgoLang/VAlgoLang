@@ -15,7 +15,7 @@ class TestLinearRepresentation {
     @Test
     fun mockStackLinearRepresentation() {
 
-        val codeBlock = listOf("let y = new Stack;", "y.push(2);", "y.push(3);", "y.pop();")
+        val codeBlock = listOf(listOf("let y = new Stack;"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
         val testIdent = Rectangle("testIdent", "2")
         val testIdent1 = Rectangle("testIdent1", "3")
         val stackIS = InitStructure(StackType(NumberType), Coord(2.0, -1.0), Alignment.HORIZONTAL, "empty", "y")
