@@ -25,11 +25,16 @@ sealed class DataStructureType(
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
     abstract fun getConstructor(): ConstructorMethod
+
+    fun getMethodNameByMethod(method: DataStructureMethod): String {
+        return methods.toList().find { it.second == method }?.first ?: method.toString()
+    }
 }
 
 
 interface DataStructureMethod {
     val returnType: Type
+    // List of pairs containing type to whether it is a required argument
     val argumentTypes:  List<Pair<Type, Boolean>>
 
     // When true last type in argumentTypes will be used to as type of varargs
@@ -44,7 +49,6 @@ interface ConstructorMethod : DataStructureMethod {
 
 object ErrorMethod : DataStructureMethod {
     override val returnType: Type = ErrorType
-    // Map of type to whether it is a required argument
     override val argumentTypes: List<Pair<Type, Boolean>> = emptyList()
     override val varargs: Boolean = false
 }

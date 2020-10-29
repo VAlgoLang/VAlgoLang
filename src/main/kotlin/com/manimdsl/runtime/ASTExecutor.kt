@@ -238,8 +238,8 @@ class VirtualMachine(
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
-                if (showMoveToLine) {
-                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate?: arrayValue.style))
+                if (showMoveToLine && arrayValue.style.animate != null) {
+                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate!!))
                     linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
                 }
                 arrayValue.array[index.value.toInt()]
@@ -420,7 +420,7 @@ class VirtualMachine(
                     val arrayValue = if (node.initialValue.isEmpty()) {
                         ArrayValue(
                             EmptyMObject,
-                            Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType) })
+                            Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) })
                     } else {
                         if (node.initialValue.size != arraySize.value.toInt()) {
                             RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
@@ -448,12 +448,12 @@ class VirtualMachine(
             }
         }
 
-        private fun getDefaultValueForType(type: Type): ExecValue {
+        private fun getDefaultValueForType(type: Type, lineNumber: Int): ExecValue {
             return when (type) {
                 NumberType -> DoubleValue(0.0)
                 BoolType -> BoolValue(false)
-                is ArrayType -> getDefaultValueForType(type.internalType)
-                else -> TODO("")
+                is ArrayType -> getDefaultValueForType(type.internalType, lineNumber)
+                else -> RuntimeError(value="Cannot create data structure with type $type", lineNumber = lineNumber)
             }
         }
 
@@ -466,6 +466,7 @@ class VirtualMachine(
             }
         }
 
+        // Used for and and or to short-circuit with first value
         private fun executeShortCircuitOp(
             node: BinaryExpression,
             shortCircuitValue: Boolean,
