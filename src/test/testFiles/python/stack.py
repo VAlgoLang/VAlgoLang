@@ -1,30 +1,36 @@
 from abc import ABC, abstractmethod
 from manimlib.imports import *
 class Main(Scene):
+    code_start = 0
+    code_end = 10
     def construct(self):
         # Building code visualisation pane
-        code_block = Code_block(["let y = new Stack<number>;","y.push(2);","y.push(3);","y.pop();"])
+        code_lines = [["let y = new Stack;"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
+        code_block = Code_block(code_lines)
         code_text = code_block.build()
-        code_text.move_to(np.array([-4.5, 0, 0]))
-        self.play(FadeIn(code_text))
+        code_text.set_width(4.2)
+        code_text.next_to(variable_frame, DOWN, buff=0.9)
+        code_text.to_edge(buff=MED_LARGE_BUFF)
+        self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end
+        self.play(FadeIn(code_text[self.code_start:self.code_end]))
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         # Moves the current line pointer to line 1
-        self.move_arrow_to_line(1, pointer, code_block)
+        self.move_arrow_to_line(1, pointer, code_block, code_text)
         # Constructing new Stack<number> "y"
         stack = Stack([5, 4, 0], [7, 4, 0], [5, -4, 0], [7, -4, 0], DOWN)
         self.play(stack.create_init("y"))
-        self.move_arrow_to_line(2, pointer, code_block)
+        self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
         [self.play(*animation) for animation in stack.push(rectangle)]
         stack.add(rectangle.all)
-        self.move_arrow_to_line(3, pointer, code_block)
+        self.move_arrow_to_line(3, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 3.0
         rectangle1 = Rectangle_block("3.0", stack)
         [self.play(*animation) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
-        self.move_arrow_to_line(4, pointer, code_block)
+        self.move_arrow_to_line(4, pointer, code_block, code_text)
         [self.play(*animation) for animation in stack.pop(rectangle1, fade_out=True)]
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
@@ -34,21 +40,54 @@ class Main(Scene):
         self.play(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
     def place_relative_to_obj(self, group, target, x, y):
         group.next_to(target, np.array([x, y, 0]))
-    def move_arrow_to_line(self, line_number, pointer, code_block):
+    def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
+        idx = 0
+        for i in range(line_number):
+            idx += len(code_block.code[i])
+        if idx > self.code_end:
+            self.play(FadeOut(pointer), runtime=0.1)
+            # [["test, test1"], ["test2", "test3"]]
+            self.scroll_down(code_text, (idx - self.code_end))
+            # code_text.move_to(code_frame)
+        elif idx - 1 < self.code_start:
+            self.play(FadeOut(pointer), runtime=0.1)
+            self.scroll_up(code_text, (self.code_start - idx+1))
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
-# Object representing the visualised code on the left hand side of the screen
+    def scroll_down(self, group, scrolls):
+        sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
+        for i in range(1, 1 + scrolls):
+            group[self.code_end + i - 1].next_to(group[self.code_end - 2 + i], DOWN, aligned_edge=LEFT)
+            self.play(FadeOut(group[self.code_start + i - 1]), FadeIn(group[self.code_end + i - 1]),
+                      group[(self.code_start + i):(self.code_end + i)].shift, sh_val * UP, run_time=0.1)
+        self.code_start = self.code_start + scrolls
+        self.code_end = self.code_end + scrolls
+    def scroll_up(self, group, scrolls):
+        sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
+        for i in range(1, 1 + scrolls):
+            group[self.code_start - i].next_to(group[self.code_start - i + 1], UP, aligned_edge=LEFT)
+            # self.play(ReplacementTransform())
+            self.play(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
+                      group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
+        self.code_start = self.code_start - scrolls
+        self.code_end = self.code_end - scrolls
 class Code_block:
     def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         for c in code:
-            group.add(Text(c, color=text_color, weight=text_weight, font=font))
-        group.set_width(4.2)
+            for sc in c:
+                text = Text(sc, color=text_color, weight=text_weight, font=font)
+                group.add(text)
+        group.set_width(5)
         self.all = group
+        self.code = code
     def build(self):
-        return self.all.arrange(DOWN, aligned_edge=LEFT)
+        return self.all.arrange(DOWN, aligned_edge=LEFT, center=True)
     def get_line_at(self, line_number):
-        return self.all[line_number - 1]
+        idx = 0
+        for i in range(line_number):
+            idx += len(self.code[i])
+        return self.all[idx-1]
 class DataStructure(ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.ul = ul
