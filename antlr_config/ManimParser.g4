@@ -22,7 +22,9 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     (ELSE OPEN_CURLY_BRACKET elseStat=stat? CLOSE_CURLY_BRACKET)?        #IfStatement
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
-    | RETURN expr? SEMI                                                  #ReturnStatement;
+    | RETURN expr? SEMI                                                  #ReturnStatement
+    | STEP_INTO OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET              #StepIntoStatement
+    ;
 
 assignment_lhs: IDENT           #IdentifierAssignment
     | array_elem                #ArrayElemAssignment;
