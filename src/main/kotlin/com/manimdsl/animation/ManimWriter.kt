@@ -50,8 +50,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
     private fun initialPythonSetup(): String {
         return """
-            from manimlib.imports import *
             from abc import ABC, abstractmethod
+            from manimlib.imports import *
              
             class Main(Scene):
                 def construct(self):
