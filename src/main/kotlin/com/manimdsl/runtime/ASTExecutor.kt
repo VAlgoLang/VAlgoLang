@@ -362,8 +362,6 @@ class VirtualMachine(
             }
 
             // Else
-            moveToLine(ifStatementNode.elseBlock.lineNumber)
-            addSleep(0.5)
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
                 addSleep(0.5)
