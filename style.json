@@ -3,7 +3,7 @@
     "textColor": "PURPLE",
     "borderColor": "PINK"
   },
-  "Stack": {
+  "Array": {
     "borderColor": "YELLOW",
     "textColor": "GREEN",
     "animate": {

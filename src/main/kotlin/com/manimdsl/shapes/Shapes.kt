@@ -124,7 +124,7 @@ class ArrayShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$text\", [${boundaries.joinToString(",")}], $style).build()"
+        return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$text\", [${boundaries.joinToString(",")}]$style).build()"
     }
 }
 

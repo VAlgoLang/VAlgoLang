@@ -336,12 +336,13 @@ class VirtualMachine(
                         is ArrayType.Swap -> {
                             val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
                             val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
-                            linearRepresentation.add(
-                                ArraySwap(
-                                    (ds.manimObject as ArrayStructure).ident,
-                                    Pair(index1, index2)
-                                )
-                            )
+                            val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                            val newObjectStyle = ds.style.animate ?: ds.style
+                            linearRepresentation.addAll(listOf(
+                                ArrayElemRestyle(arrayIdent, listOf(index1, index2),newObjectStyle),
+                                ArraySwap(arrayIdent, Pair(index1, index2)),
+                                ArrayElemRestyle(arrayIdent, listOf(index1, index2),ds.style),
+                            ))
                             val temp = ds.array[index1]
                             ds.array[index1] = ds.array[index2]
                             ds.array[index2] = temp
@@ -411,11 +412,14 @@ class VirtualMachine(
                     val ident = variableNameGenerator.generateNameFromPrefix("array")
                     dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
                     if (arrayValue is ArrayValue) {
+                        arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                         val arrayStructure = ArrayStructure(
                             node.type,
                             ident,
                             assignLHS.identifier,
-                            arrayValue.array.clone()
+                            arrayValue.array.clone(),
+                            color=arrayValue.style.borderColor,
+                            textColor= arrayValue.style.textColor
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure

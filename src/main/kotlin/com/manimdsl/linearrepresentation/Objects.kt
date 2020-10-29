@@ -116,7 +116,7 @@ data class ArrayStructure(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             "self.play(ShowCreation($ident.title))",
-            "self.play(*[ShowCreation(array_elem.group) for array_elem in $ident.array_elements])"
+            "self.play(*[ShowCreation(array_elem.all) for array_elem in $ident.array_elements])"
         )
     }
 

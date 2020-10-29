@@ -78,13 +78,36 @@ data class StackPopObject(
 
 data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue) : ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.play($arrayIdent.array_elements[$index].rectangle.replace_text(\"${newElemValue.value}\"))")
+        return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"))")
     }
 }
 
 data class ArraySwap(val arrayIdent: String, val indices: Pair<Int, Int>) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second}))")
+    }
+}
+
+data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val styleProperties: StylesheetProperty) : ManimInstr {
+    override fun toPython(): List<String> {
+        val instructions = mutableListOf<String>()
+
+        styleProperties.borderColor?.let {
+            for (i in indices) {
+                instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${it})")
+            }
+        }
+        styleProperties.textColor?.let {
+            for (i in indices) {
+                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, ${it})")
+            }
+        }
+
+        return if (instructions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("self.play(${instructions.joinToString(", ")})")
+        }
     }
 }
 
