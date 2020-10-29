@@ -5,7 +5,6 @@ import com.manimdsl.animation.ManimWriter
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
 import com.manimdsl.shapes.Rectangle
-import com.manimdsl.stylesheet.StyleProperties
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -35,12 +34,12 @@ class TestLinearRepresentation {
             stackIS,
             MoveToLine(2, "pointer", "code_block"),
             NewMObject(rectangle, "code_text"),
-            StackPushObject(rectangle, "stack", StyleProperties()),
+            StackPushObject(rectangle, "stack"),
             MoveToLine(3, "pointer", "code_block"),
             NewMObject(rectangle1, "code_text"),
-            StackPushObject(rectangle1, "stack", StyleProperties()),
+            StackPushObject(rectangle1, "stack"),
             MoveToLine(4, "pointer", "code_block"),
-            StackPopObject(rectangle1, "stack", StyleProperties(), false)
+            StackPopObject(rectangle1, "stack", false)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())

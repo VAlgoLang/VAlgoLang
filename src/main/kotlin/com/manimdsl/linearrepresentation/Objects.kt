@@ -63,6 +63,8 @@ data class CodeBlock(
     }
 }
 
+interface DataStructureMObject: MObject
+
 data class InitManimStack(
     val type: DataStructureType,
     val position: Position,
@@ -74,7 +76,7 @@ data class InitManimStack(
     val textColor: String? = null,
     private var boundary: List<Pair<Int, Int>> = emptyList(),
     private var maxSize: Int = -1
-) : MObject {
+) : DataStructureMObject {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
