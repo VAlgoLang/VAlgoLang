@@ -1,9 +1,8 @@
 package com.manimdsl.shapes
 
-import com.manimdsl.executor.ExecValue
 import com.manimdsl.linearrepresentation.Alignment
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
-import java.util.*
 
 
 sealed class Shape {
@@ -127,12 +126,12 @@ class InitManimStackShape(
 }
 
 class ArrayShape(
-        override val ident: String,
-        private val values: Array<ExecValue>,
-        override val text: String,
-        private val boundaries : List<Pair<Int, Int>>,
-        color: String? = null,
-        textColor: String? = null,
+    override val ident: String,
+    private val values: Array<ExecValue>,
+    override val text: String,
+    private val boundaries : List<Pair<Int, Int>>,
+    color: String? = null,
+    textColor: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/array.py"
     override val className: String = "Array"

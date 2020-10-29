@@ -5,6 +5,7 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.BoundaryShape
 import com.manimdsl.executor.Scene
 import com.manimdsl.executor.TallBoundary
+import com.manimdsl.executor.WideBoundary
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
@@ -251,8 +252,10 @@ class VirtualMachine(
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
-                insertVariable(node.identifier, assignedValue)
-                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+                if(node.identifier is IdentifierNode) {
+                    insertVariable(node.identifier.identifier, assignedValue)
+                    linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+                }
                 EmptyValue
             }
         }

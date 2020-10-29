@@ -1,7 +1,7 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.DataStructureType
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
 
 /** Objects **/

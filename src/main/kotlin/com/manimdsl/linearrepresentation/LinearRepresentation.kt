@@ -1,5 +1,6 @@
 package com.manimdsl.linearrepresentation
 
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.StylesheetProperty
