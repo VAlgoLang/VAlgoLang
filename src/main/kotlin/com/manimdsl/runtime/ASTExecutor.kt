@@ -6,7 +6,6 @@ import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
-import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
@@ -233,9 +232,9 @@ class VirtualMachine(
                                     StackPushObject(
                                         rectangle.shape,
                                         dataStructureIdentifier,
-                                        stylesheet.getStyle(node.instanceIdentifier, ds),
                                         hasOldMObject
-                                    )
+                                    ),
+                                    RestyleObject(rectangle.shape, ds.style)
                                 )
                             if (!hasOldMObject) {
                                 instructions.add(0, rectangle)
@@ -260,11 +259,11 @@ class VirtualMachine(
                             val instructions = mutableListOf<ManimInstr>(
                                 StackPopObject(topOfStack.shape,
                                     dataStructureIdentifier,
-                                    stylesheet.getAnimatedStyle(node.instanceIdentifier, ds) ?: AnimationProperties(),
                                     insideMethodCall
                                 )
                             )
-
+                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
+                            if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
                             linearRepresentation.addAll(instructions)
                             return poppedValue
                         }
@@ -295,7 +294,7 @@ class VirtualMachine(
                     val stackValue = StackValue(EmptyMObject, Stack())
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
-                    val style = stylesheet.getStyle(identifier, stackValue)
+                    stackValue.style = stylesheet.getStyle(identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(
