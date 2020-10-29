@@ -50,7 +50,7 @@ class VirtualMachine(
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else {
-            val (exitStatus, computedBoundaries) = Scene.compute(dataStructureBoundaries.toList())
+            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList())
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }

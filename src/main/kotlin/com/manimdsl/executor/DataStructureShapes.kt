@@ -155,7 +155,7 @@ enum class ScanDir {
     RIGHT;
 }
 
-object Scene {
+class Scene {
 
     private val sceneShape = WideBoundary(width = 9, height = 8, maxSize = -1)
 
