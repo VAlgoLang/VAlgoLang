@@ -168,14 +168,32 @@ class VirtualMachine(
             ++pc
         }
 
+        private fun executeArrayElemAssignment(arrayElemNode: ArrayElemNode, assignedValue: ExecValue): ExecValue {
+            val index = executeExpression(arrayElemNode.index) as DoubleValue
+            val arrayValue = variables[arrayElemNode.identifier] as ArrayValue
+            return if (index.value.toInt() !in arrayValue.array.indices) {
+                RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
+            } else {
+                arrayValue.array[index.value.toInt()] = assignedValue
+                println(arrayValue.manimObject)
+                linearRepresentation.add(
+                    ArrayElemAssignObject(
+                        (arrayValue.manimObject as ArrayStructure).ident,
+                        index.value.toInt(),
+                        assignedValue
+                    )
+                )
+                EmptyValue
+            }
+        }
+
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             with(node.identifier) {
                 when (this) {
                     is IdentifierNode -> variables[node.identifier.identifier] = assignedValue
                     is ArrayElemNode -> {
-                        val index = executeExpression(this.index) as DoubleValue
-                        (variables[this.identifier] as ArrayValue).array[index.value.toInt()] = assignedValue
+                        return executeArrayElemAssignment(this, assignedValue)
                     }
                 }
             }
@@ -216,9 +234,13 @@ class VirtualMachine(
         }
 
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
-            val array = variables[node.identifier] as ArrayValue
+            val arrayValue = variables[node.identifier] as ArrayValue
             val index = executeExpression(node.index) as DoubleValue
-            return array.value[index.value.toInt()]
+            return if (index.value.toInt() !in arrayValue.array.indices) {
+                RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
+            } else {
+                arrayValue.array[index.value.toInt()]
+            }
         }
 
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
@@ -367,8 +389,15 @@ class VirtualMachine(
                     }
                     val ident = variableNameGenerator.generateNameFromPrefix("array")
                     dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
-                    if(arrayValue is ArrayValue) {
-                        linearRepresentation.add(ArrayStructure(node.type, ident, assignLHS.identifier, arrayValue.array))
+                    if (arrayValue is ArrayValue) {
+                        val arrayStructure = ArrayStructure(
+                            node.type,
+                            ident,
+                            assignLHS.identifier,
+                            arrayValue.array
+                        )
+                        arrayValue.manimObject = arrayStructure
+                        linearRepresentation.add(arrayStructure)
                     }
                     arrayValue
                 }

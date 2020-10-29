@@ -1,6 +1,8 @@
 class ArrayElem:
     def __init__(self, val, scale, init_color, width):
         self.val = val
+        self.text = Text(str(self.val))
+        self.text.scale(scale)
         self.group = Rectangle_block(str(self.val), width=width, height=width).all
         self.group.set_color(init_color)
 

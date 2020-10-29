@@ -54,7 +54,7 @@ data class StackPushObject(
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
-        val methodName = if(isPushPop) "push_existing" else "push"
+        val methodName = if (isPushPop) "push_existing" else "push"
         return listOf(
             "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident})]",
             "$dataStructureIdentifier.add($shape)"
@@ -69,7 +69,16 @@ data class StackPopObject(
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
-        return listOf("[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString().capitalize()})]")
+        return listOf(
+            "[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
+                .capitalize()})]"
+        )
+    }
+}
+
+data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue) : ManimInstr {
+    override fun toPython(): List<String> {
+        return listOf("self.play(Transform($arrayIdent.array_elements[$index].text, Text(str(${newElemValue.value}), color=$arrayIdent.init_color).move_to($arrayIdent.array_elements[$index].group.get_center())))")
     }
 }
 
