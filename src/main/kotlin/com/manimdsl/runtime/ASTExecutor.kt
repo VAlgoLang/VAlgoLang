@@ -26,7 +26,7 @@ class VirtualMachine(
     private val acceptableNonStatements = setOf("}", "{", "")
     private val ALLOCATED_STACKS = 1000
     private val MAX_DISPLAYED_VARIABLES = 4
-    private val WRAP_LINE_LENGTH = 70
+    private val WRAP_LINE_LENGTH = 50
 
     init {
         fileLines.indices.forEach {
@@ -42,7 +42,7 @@ class VirtualMachine(
     fun runProgram(): Pair<ExitStatus, MutableList<ManimInstr>> {
         linearRepresentation.add(PartitionBlock("1/3", "2/3"))
         linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
-        linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
+        linearRepresentation.add(CodeBlock(displayCode.map { it.chunked(WRAP_LINE_LENGTH) }, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
         linearRepresentation.add(Sleep(1.0))

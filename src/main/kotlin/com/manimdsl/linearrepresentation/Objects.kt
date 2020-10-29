@@ -2,6 +2,7 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.shapes.*
+import java.lang.StringBuilder
 
 /** Objects **/
 
@@ -39,17 +40,30 @@ enum class ObjectSide(var coord: Coord) {
 
 /** MObjects **/
 data class CodeBlock(
-    val lines: List<String>,
+    val lines: List<List<String>>,
     val ident: String,
     val codeTextName: String,
     val pointerName: String,
     val textColor: String? = null,
 ) : MObject {
-    override val shape: Shape = CodeBlockShape(ident, lines, textColor)
+    override val shape: Shape = CodeBlockShape(ident, textColor)
 
     override fun toPython(): List<String> {
+        val codeLines = StringBuilder()
+        codeLines.append("[")
+        (lines.indices).forEach {
+            codeLines.append("[")
+            codeLines.append("\"${lines[it].joinToString("\",\"")}\"")
+            if (it == lines.size - 1) {
+                codeLines.append("]")
+            } else {
+                codeLines.append("], ")
+            }
+        }
+        codeLines.append("]")
+
         return listOf("# Building code visualisation pane",
-                        "code_lines = [\"${lines.joinToString("\",\"")}\"]",
+                        "code_lines = $codeLines",
                         shape.getConstructor(),
                         "$codeTextName = $ident.build()",
                         "$codeTextName.move_to(code_frame)",
