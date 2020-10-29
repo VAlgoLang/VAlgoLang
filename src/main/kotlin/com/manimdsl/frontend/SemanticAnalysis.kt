@@ -99,7 +99,7 @@ class SemanticAnalysis {
         }
     }
 
-    fun invalidNumberOfArgumentsCheck(
+    private fun invalidNumberOfArgumentsCheck(
         dataStructureType: DataStructureType,
         method: DataStructureMethod,
         numArgs: Int,
@@ -109,7 +109,7 @@ class SemanticAnalysis {
         if (method != ErrorMethod && !correctNumberOfArgs) {
             numOfArgsInMethodCallError(
                 dataStructureType.toString(),
-                method.toString(),
+                dataStructureType.methods.toList().find { it.second == method }!!.first,
                 numArgs,
                 method.argumentTypes.size,
                 ctx

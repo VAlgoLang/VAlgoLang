@@ -34,6 +34,8 @@ interface DataStructureMethod {
 
     // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
+
+
 }
 
 interface ConstructorMethod : DataStructureMethod {
