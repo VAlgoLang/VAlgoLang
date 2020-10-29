@@ -11,11 +11,9 @@ fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<num
         move(n - 1, aux, target, source);
     }
 }
+let C = new Stack<number>;
+let B = new Stack<number>;
+let A = new Stack<number>;
 
-let C = Stack<number>();
-let B = Stack<number>();
-let A = Stack<number>();
-buildTower(3, A);
-stepinto {
-move(3, A, B, C);
-}
+buildTower(2, A);
+move(2, A, B, C);

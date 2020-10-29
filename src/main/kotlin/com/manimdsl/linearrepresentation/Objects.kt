@@ -2,10 +2,6 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.shapes.*
-import com.manimdsl.shapes.CodeBlockShape
-import com.manimdsl.shapes.InitManimStackShape
-import com.manimdsl.shapes.NullShape
-import com.manimdsl.shapes.Shape
 import java.lang.StringBuilder
 
 /** Objects **/
@@ -120,9 +116,7 @@ data class VariableBlock(
     }
 }
 
-interface DataStructureMObject: MObject
-
-data class InitManimStack(
+data class InitStructure(
     val type: DataStructureType,
     val position: Position,
     val alignment: Alignment,
@@ -131,31 +125,29 @@ data class InitManimStack(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
-    private var boundary: List<Pair<Int, Int>> = emptyList(),
-    private var maxSize: Int = -1
-) : DataStructureMObject {
-    override var shape: Shape = NullShape
+) : MObject {
+    override val shape: Shape = InitStructureShape(ident, text, alignment, color, textColor)
 
     override fun toPython(): List<String> {
-        val python =
-            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add("self.play($ident.create_init(\"$text\"))")
+        val python = mutableListOf("# Constructing new ${type} \"${text}\"",
+                            shape.getConstructor())
+        python.add(
+            when (position) {
+                is Coord -> "$shape.to_edge(np.array([${position.x}, ${position.y}, 0]))"
+                else -> "self.place_relative_to_obj($shape, $moveToShape, ${ObjectSide.LEFT.addOffset(0)})"
+            }
+        )
+        python.add("self.play(ShowCreation($shape))")
         return python
-    }
-
-    fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
-        maxSize = newMaxSize
-        boundary = corners
-        shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
     }
 }
 
 data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
     override fun toPython(): List<String> {
-        return listOf(
-            "# Constructs a new ${shape.className} with value ${shape.text}",
-            shape.getConstructor(),
-        )
+        return listOf("# Constructs a new ${shape.className} with value ${shape.text}",
+                            shape.getConstructor(),
+                            "self.place_relative_to_obj($shape, $codeBlockVariable, ${ObjectSide.RIGHT.addOffset(0)})",
+                            "self.play(FadeIn($shape))")
     }
 }
 
