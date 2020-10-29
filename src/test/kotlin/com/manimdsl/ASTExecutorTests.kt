@@ -29,6 +29,7 @@ class ASTExecutorTests {
                 pointerName = "pointer"
             ),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
+            Sleep(length=0.5)
         )
         val (_, actual) = VirtualMachine(
             abstractSyntaxTree,
