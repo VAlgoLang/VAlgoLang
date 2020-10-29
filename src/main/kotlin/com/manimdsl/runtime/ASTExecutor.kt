@@ -42,6 +42,7 @@ class VirtualMachine(
         linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
+        linearRepresentation.add(Sleep(0.5))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
@@ -74,7 +75,7 @@ class VirtualMachine(
                     }
 
                     val value = executeStatement(statement)
-                    if (statement is ReturnNode || value is RuntimeError) return value
+                    if (statement is ReturnNode || value !is EmptyValue) return value
 
                 }
                 fetchNextStatement()
@@ -339,8 +340,11 @@ class VirtualMachine(
 
             //If
             if (conditionValue.value) {
-                return executeStatementBlock(ifStatementNode.statements)
-            }
+                val execValue = Frame(ifStatementNode.statements.first().lineNumber, ifStatementNode.statements.last().lineNumber, variables, depth).runFrame()
+                if (execValue is EmptyValue) {
+                    pc = ifStatementNode.endLineNumber
+                }
+                return execValue            }
 
             // Elif
             for (elif in ifStatementNode.elifs) {
@@ -349,15 +353,27 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    return executeStatementBlock(elif.statements)
+                    val execValue = Frame(elif.statements.first().lineNumber, elif.statements.last().lineNumber, variables, depth).runFrame()
+                    if (execValue is EmptyValue) {
+                        pc = ifStatementNode.endLineNumber
+                    }
+                    return execValue
                 }
             }
 
             // Else
             moveToLine(ifStatementNode.elseBlock.lineNumber)
             addSleep(0.5)
-            return executeStatementBlock(ifStatementNode.elseBlock.statements)
-
+            if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
+                moveToLine(ifStatementNode.elseBlock.lineNumber)
+                addSleep(0.5)
+                val execValue = Frame(ifStatementNode.elseBlock.statements.first().lineNumber, ifStatementNode.elseBlock.statements.last().lineNumber, variables, depth).runFrame()
+                if (execValue is EmptyValue) {
+                    pc = ifStatementNode.endLineNumber
+                }
+                return execValue
+            }
+            return EmptyValue
         }
 
         private fun executeStatementBlock(statements: List<StatementNode>): ExecValue {

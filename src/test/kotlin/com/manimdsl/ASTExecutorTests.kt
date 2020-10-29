@@ -1,6 +1,7 @@
 package com.manimdsl
 import com.manimdsl.linearrepresentation.CodeBlock
 import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.linearrepresentation.Sleep
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import junit.framework.TestCase.assertEquals
@@ -31,6 +32,7 @@ class ASTExecutorTests {
             MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block"),
             MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block"),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block"),
+            Sleep(0.5)
         )
         val (_, actual) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, program.split("\n"), Stylesheet(null, symbolTable)).runProgram()
 

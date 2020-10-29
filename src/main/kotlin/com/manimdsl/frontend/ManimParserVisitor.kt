@@ -202,6 +202,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val ifCondition = visit(ctx.ifCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(ifCondition, BoolType, symbolTable, ctx)
         val ifStatements = visitAndFlattenStatements(ctx.ifStat)
+        ifStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
         symbolTable.leaveScope()
 
         // elif
@@ -211,13 +214,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val elseNode = if (ctx.elseStat != null) {
             val scope = symbolTable.enterScope()
             val statements = visitAndFlattenStatements(ctx.elseStat)
+            statements.forEach {
+                lineNumberNodeMap[it.lineNumber] = it
+            }
             symbolTable.leaveScope()
             ElseNode(ctx.elseStat.start.line - 1, scope, statements)
         } else {
             ElseNode(ctx.stop.line, 0, emptyList())
         }
 
-        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line - 1] = elseNode }
+        ctx.ELSE()?.let { lineNumberNodeMap[it.symbol.line] = elseNode }
 
         val ifStatementNode =
             IfStatementNode(ctx.start.line, ctx.stop.line, ifScope, ifCondition, ifStatements, elifs, elseNode)
@@ -232,7 +238,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.checkExpressionTypeWithExpectedType(elifCondition, BoolType, symbolTable, ctx)
         val elifStatements = visitAndFlattenStatements(ctx.elifStat)
 
+        elifStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
         symbolTable.leaveScope()
+
 
         val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
         lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
