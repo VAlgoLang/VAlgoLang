@@ -66,7 +66,7 @@ data class CodeBlock(
                         "code_lines = $codeLines",
                         shape.getConstructor(),
                         "$codeTextName = $ident.build()",
-                        "$codeTextName.move_to(np.array([-4.5, 0, 0]))",
+                        "$codeTextName.move_to(code_frame)",
                         "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
                         "$codeTextName.scale(min(code_height / $codeTextName.get_height(), lhs_width / $codeTextName.get_width()))",
                         "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
@@ -83,16 +83,16 @@ data class PartitionBlock(
     override fun toPython(): List<String> {
         return listOf(
                 "# Building partition of scene",
-                "width = FRAME_WIDTH - 2 * SMALL_BUFF",
-                "height = FRAME_HEIGHT - 2 * SMALL_BUFF",
+                "width = FRAME_WIDTH",
+                "height = FRAME_HEIGHT",
                 "lhs_width = width * $scaleLeft",
                 "rhs_width = width * $scaleRight",
                 "variable_height = (height - SMALL_BUFF) * $scaleLeft",
                 "code_height = (height - SMALL_BUFF) * $scaleRight",
                 "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
-                "variable_frame.to_corner(UL, buff=SMALL_BUFF)",
+                "variable_frame.to_corner(UL, buff=0)",
                 "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
-                "code_frame.next_to(variable_frame, DOWN, buff=SMALL_BUFF)",
+                "code_frame.next_to(variable_frame, DOWN, buff=0)",
                 "self.play(FadeIn(variable_frame), FadeIn(code_frame)) \n"
         )
     }

@@ -16,7 +16,6 @@ fun sort(arr: Array<number>, n: number) {
 
 let array = Array<number>() { 1 + 4,6 ,9,8, 2};
 
-
 sort(array, array.size());
 
 let y = array[2];
