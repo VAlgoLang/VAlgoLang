@@ -217,8 +217,8 @@ class VirtualMachine(
             is PlusExpression -> executeUnaryOp(node) { x -> x }
             is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
             is BoolNode -> BoolValue(node.value)
-            is AndExpression -> executeBinaryOp(node) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
-            is OrExpression -> executeBinaryOp(node) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
+            is AndExpression -> executeShortCircuitOp(node, false) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
+            is OrExpression -> executeShortCircuitOp(node, true) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
             is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
             is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
             is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
@@ -238,6 +238,10 @@ class VirtualMachine(
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
+                if (stepInto) {
+                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate?: arrayValue.style))
+                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
+                }
                 arrayValue.array[index.value.toInt()]
             }
         }
@@ -462,6 +466,27 @@ class VirtualMachine(
             }
         }
 
+        private fun executeShortCircuitOp(
+            node: BinaryExpression,
+            shortCircuitValue: Boolean,
+            op: (first: ExecValue, seconds: ExecValue) -> ExecValue
+        ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError || leftExpression.value == shortCircuitValue) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
+            return op(
+                leftExpression,
+                rightExpression
+            )
+        }
+
         private fun executeBinaryOp(
             node: BinaryExpression,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
@@ -484,7 +509,12 @@ class VirtualMachine(
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
             addSleep(0.5)
-            var conditionValue = executeExpression(ifStatementNode.condition) as BoolValue
+            var conditionValue = executeExpression(ifStatementNode.condition)
+            if(conditionValue is RuntimeError) {
+                return conditionValue
+            } else {
+                conditionValue = conditionValue as BoolValue
+            }
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
 

@@ -26,6 +26,8 @@ class Array:
         o2_copy = deepcopy(o2)
         o1_copy.move_to(o2.get_center())
         o2_copy.move_to(o1.get_center())
+        self.array_elements[i1].text = o2
+        self.array_elements[i2].text = o1
         return [
             CounterclockwiseTransform(o1, o1_copy),
             CounterclockwiseTransform(o2, o2_copy)

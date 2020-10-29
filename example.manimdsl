@@ -1,5 +1,23 @@
-let a = Array<number>() { 1 + 4,6 ,7,8, 9};
+fun bubble_sort(arr: Array<number>, i: number, limit: number) {
+    if (i < limit) {
+        stepinto {
+            if (arr[i] > arr[i+1]) {
+                arr.swap(i, i+1);
+            }
+        }
+        bubble_sort(arr, i+1, limit);
+    }
+}
 
-let stack2 = Stack<number>();
-stack2.push(1,2);
+fun sort(arr: Array<number>, n: number) {
+    if (n != 1) {
+        bubble_sort(arr,0, n -1);
+        sort(arr, n-1);
+    }
+}
+
+let a = Array<number>() { 1 + 4,6 ,9,8, 2};
+
+
+sort(a, a.size());
 
