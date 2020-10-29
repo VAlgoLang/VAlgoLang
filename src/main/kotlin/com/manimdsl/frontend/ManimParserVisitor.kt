@@ -102,6 +102,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     private fun flattenStatements(statement: StatementNode): List<StatementNode> {
+        if (statement is StepIntoNode) {
+            return statement.statements
+        }
+
         val statements = mutableListOf<StatementNode>()
         var statementNode = statement
         // Flatten consecutive statements
@@ -237,6 +241,18 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
         lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
         return elifNode
+    }
+
+    override fun visitStepIntoStatement(ctx: StepIntoStatementContext): ASTNode {
+        val statements = mutableListOf<StatementNode>()
+        val start = StartStepIntoNode(ctx.start.line)
+        val end = StopStepIntoNode(ctx.stop.line)
+        statements.add(start)
+        statements.addAll(visitAndFlattenStatements(ctx.stat()))
+        statements.add(end)
+        lineNumberNodeMap[ctx.start.line] = start
+        lineNumberNodeMap[ctx.stop.line] = end
+        return StepIntoNode(ctx.start.line, ctx.stop.line, statements)
     }
 
     /** Expressions **/

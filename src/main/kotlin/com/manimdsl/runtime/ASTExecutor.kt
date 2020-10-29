@@ -27,11 +27,13 @@ class VirtualMachine(
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = 1000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
 
     init {
         fileLines.indices.forEach {
-            if (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode) {
+            if (statements[it + 1] !is NoRenderAnimationNode &&
+                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
+            ) {
                 displayCode.add(fileLines[it])
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
@@ -64,10 +66,12 @@ class VirtualMachine(
     }
 
     private inner class Frame(
-            private var pc: Int,
-            private var finalLine: Int,
-            private var variables: MutableMap<String, ExecValue>,
-            val depth: Int = 1
+        private var pc: Int,
+        private var finalLine: Int,
+        private var variables: MutableMap<String, ExecValue>,
+        val depth: Int = 1,
+        private val showMoveToLine: Boolean = true,
+        private var stepInto: Boolean = false
     ) {
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
@@ -91,20 +95,29 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
-            is ReturnNode -> executeExpression(statement.expression)
-            is FunctionNode -> {
-                // just go onto next line, this is just a label
-                EmptyValue
+        private fun executeStatement(statement: StatementNode): ExecValue =
+            when (statement) {
+                is ReturnNode -> executeExpression(statement.expression)
+                is FunctionNode -> {
+                    // just go onto next line, this is just a label
+                    EmptyValue
+                }
+                is SleepNode -> executeSleep(statement)
+                is AssignmentNode -> executeAssignment(statement)
+                is DeclarationNode -> executeAssignment(statement)
+                is MethodCallNode -> executeMethodCall(statement, false)
+                is FunctionCallNode -> executeFunctionCall(statement)
+                is IfStatementNode -> executeIfStatement(statement)
+                is StartStepIntoNode -> {
+                    stepInto = true
+                    EmptyValue
+                }
+                is StopStepIntoNode -> {
+                    stepInto = false
+                    EmptyValue
+                }
+                else -> EmptyValue
             }
-            is SleepNode -> executeSleep(statement)
-            is AssignmentNode -> executeAssignment(statement)
-            is DeclarationNode -> executeAssignment(statement)
-            is MethodCallNode -> executeMethodCall(statement, false)
-            is FunctionCallNode -> executeFunctionCall(statement)
-            is IfStatementNode -> executeIfStatement(statement)
-            else -> EmptyValue
-        }
 
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
@@ -117,7 +130,9 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc, updatePc: Boolean = false) {
             if (updatePc) pc = line
-            linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+            if (showMoveToLine) {
+                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+            }
         }
 
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
@@ -136,9 +151,9 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
             // program counter will forward in loop, we have popped out of stack
-            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth+1).runFrame()
+            val returnValue = Frame(functionNode.lineNumber, finalStatementLine, argumentVariables, depth + 1, showMoveToLine = stepInto).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
-            moveToLine()
+            if (stepInto) moveToLine()
             return returnValue
         }
 
@@ -388,8 +403,6 @@ class VirtualMachine(
             }
             return execValue
         }
-
-
     }
 
 }
