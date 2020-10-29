@@ -25,7 +25,7 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = 1000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
 
     init {
         fileLines.indices.forEach {
