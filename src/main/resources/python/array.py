@@ -5,13 +5,13 @@ class Array:
         size_of_square = (boundaries[1][0] - boundaries[0][0] - 1) / len(values)
         square_width = min(max, size_of_square)
         self.array_elements = [Rectangle_block(str(val), color=color, text_color=text_color, width=square_width, height=square_width) for val in self.values]
-        self.title = VGroup(Text(title).set_width(0.7))
-        self.title.move_to(np.array([boundaries[0][0] + 0.35, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
+        self.title = VGroup(Text(title).set_width(1))
+        self.title.move_to(np.array([boundaries[0][0] + 0.5, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
         self.color = color
 
     def build(self):
         previous = self.title
-        buff = 0.2
+        buff = 0.1
         for array_elem in self.array_elements:
             group = array_elem.all
             group.next_to(previous, RIGHT, buff)

@@ -238,7 +238,7 @@ class VirtualMachine(
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
-                if (stepInto) {
+                if (showMoveToLine) {
                     linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate?: arrayValue.style))
                     linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
                 }
@@ -508,7 +508,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            addSleep(0.5)
+            if(showMoveToLine) addSleep(0.5)
             var conditionValue = executeExpression(ifStatementNode.condition)
             if(conditionValue is RuntimeError) {
                 return conditionValue
@@ -537,7 +537,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                addSleep(0.5)
+                if(showMoveToLine) addSleep(0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -559,7 +559,7 @@ class VirtualMachine(
             // Else
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
-                addSleep(0.5)
+                if(showMoveToLine) addSleep(0.5)
                 val execValue = Frame(
                     ifStatementNode.elseBlock.statements.first().lineNumber,
                     ifStatementNode.elseBlock.statements.last().lineNumber,
