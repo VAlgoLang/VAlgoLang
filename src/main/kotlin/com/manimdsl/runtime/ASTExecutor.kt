@@ -308,126 +308,135 @@ class VirtualMachine(
         private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
             return when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
-                    return when (node.dataStructureMethod) {
-                        is StackType.PushMethod -> {
-                            val value = executeExpression(node.arguments[0], true)
-                            if (value is RuntimeError) {
-                                return value
-                            }
-                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                            val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
-                            boundaryShape.maxSize++
-                            dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
-                            val hasOldMObject = value.manimObject !is EmptyMObject
-                            val oldMObject = value.manimObject
-                            val newObjectStyle = ds.style.animate ?: ds.style
-                            val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                                Rectangle(
-                                    variableNameGenerator.generateNameFromPrefix("rectangle"),
-                                    value.value.toString(),
-                                    dataStructureIdentifier,
-                                    color = newObjectStyle.borderColor,
-                                    textColor = newObjectStyle.textColor
-                                ),
-                                codeTextVariable
-                            )
-
-                            val instructions: MutableList<ManimInstr> =
-                                mutableListOf(
-                                    StackPushObject(
-                                        rectangle.shape,
-                                        dataStructureIdentifier,
-                                        hasOldMObject
-                                    ),
-                                    RestyleObject(rectangle.shape, ds.style)
-                                )
-                            if (!hasOldMObject) {
-                                instructions.add(0, rectangle)
-                            }
-
-                            linearRepresentation.addAll(instructions)
-                            val clonedValue = value.clone()
-                            clonedValue.manimObject = rectangle
-                            ds.stack.push(clonedValue)
-                            EmptyValue
-                        }
-                        is StackType.PopMethod -> {
-                            if (ds.stack.empty()) {
-                                return RuntimeError(
-                                    value = "Attempted to pop from empty stack ${node.instanceIdentifier}",
-                                    lineNumber = pc
-                                )
-                            }
-                            val poppedValue = ds.stack.pop()
-                            val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-
-                            val topOfStack = poppedValue.manimObject
-                            val instructions = mutableListOf<ManimInstr>(
-                                StackPopObject(
-                                    topOfStack.shape,
-                                    dataStructureIdentifier,
-                                    insideMethodCall
-                                )
-                            )
-                            val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
-                            if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
-                            linearRepresentation.addAll(instructions)
-                            return poppedValue
-                        }
-                        is StackType.IsEmptyMethod -> {
-                            return BoolValue(ds.stack.isEmpty())
-                        }
-                        is StackType.SizeMethod -> {
-                            return DoubleValue(ds.stack.size.toDouble())
-                        }
-                        is StackType.PeekMethod -> {
-                            if (ds.stack.empty()) {
-                                return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
-                            }
-                            val clonedPeekValue = ds.stack.peek().clone()
-                            clonedPeekValue.manimObject = EmptyMObject
-                            return clonedPeekValue
-                        }
-                        else -> EmptyValue
-                    }
+                    return executeStackMethodCall(node, ds, insideMethodCall)
                 }
                 is ArrayValue -> {
-                    return when (node.dataStructureMethod) {
-                        is ArrayType.Size -> {
-                            DoubleValue(ds.array.size.toDouble())
-                        }
-                        is ArrayType.Swap -> {
-                            val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
-                            val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
-                            val longSwap = if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
-                            val arrayIdent = (ds.manimObject as ArrayStructure).ident
-                            val newObjectStyle = ds.style.animate ?: ds.style
-                            val arraySwap =
-                                if (longSwap) {
-                                    ArrayLongSwap(
-                                        arrayIdent,
-                                        Pair(index1, index2),
-                                        variableNameGenerator.generateNameFromPrefix("elem1"),
-                                        variableNameGenerator.generateNameFromPrefix("elem2"),
-                                        variableNameGenerator.generateNameFromPrefix("animations")
-                                    )
-                                } else {
-                                    ArrayShortSwap(arrayIdent, Pair(index1, index2))
-                                }
-                            linearRepresentation.addAll(
-                                listOf(
-                                    ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle),
-                                    arraySwap,
-                                    ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style),
-                                )
+                    return executeArrayMethodCall(node, ds)
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
+            return when (node.dataStructureMethod) {
+                is ArrayType.Size -> {
+                    DoubleValue(ds.array.size.toDouble())
+                }
+                is ArrayType.Swap -> {
+                    val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
+                    val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
+                    val longSwap =
+                        if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
+                    val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                    val newObjectStyle = ds.style.animate ?: ds.style
+                    val arraySwap =
+                        if (longSwap) {
+                            ArrayLongSwap(
+                                arrayIdent,
+                                Pair(index1, index2),
+                                variableNameGenerator.generateNameFromPrefix("elem1"),
+                                variableNameGenerator.generateNameFromPrefix("elem2"),
+                                variableNameGenerator.generateNameFromPrefix("animations")
                             )
-                            val temp = ds.array[index1]
-                            ds.array[index1] = ds.array[index2]
-                            ds.array[index2] = temp
-                            EmptyValue
+                        } else {
+                            ArrayShortSwap(arrayIdent, Pair(index1, index2))
                         }
-                        else -> EmptyValue
+                    linearRepresentation.addAll(
+                        listOf(
+                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle),
+                            arraySwap,
+                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style),
+                        )
+                    )
+                    val temp = ds.array[index1]
+                    ds.array[index1] = ds.array[index2]
+                    ds.array[index2] = temp
+                    EmptyValue
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean): ExecValue {
+            return when (node.dataStructureMethod) {
+                is StackType.PushMethod -> {
+                    val value = executeExpression(node.arguments[0], true)
+                    if (value is RuntimeError) {
+                        return value
                     }
+                    val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
+                    val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
+                    boundaryShape.maxSize++
+                    dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
+                    val hasOldMObject = value.manimObject !is EmptyMObject
+                    val oldMObject = value.manimObject
+                    val newObjectStyle = ds.style.animate ?: ds.style
+                    val rectangle = if (hasOldMObject) oldMObject else NewMObject(
+                        Rectangle(
+                            variableNameGenerator.generateNameFromPrefix("rectangle"),
+                            value.value.toString(),
+                            dataStructureIdentifier,
+                            color = newObjectStyle.borderColor,
+                            textColor = newObjectStyle.textColor
+                        ),
+                        codeTextVariable
+                    )
+
+                    val instructions: MutableList<ManimInstr> =
+                        mutableListOf(
+                            StackPushObject(
+                                rectangle.shape,
+                                dataStructureIdentifier,
+                                hasOldMObject
+                            ),
+                            RestyleObject(rectangle.shape, ds.style)
+                        )
+                    if (!hasOldMObject) {
+                        instructions.add(0, rectangle)
+                    }
+
+                    linearRepresentation.addAll(instructions)
+                    val clonedValue = value.clone()
+                    clonedValue.manimObject = rectangle
+                    ds.stack.push(clonedValue)
+                    EmptyValue
+                }
+                is StackType.PopMethod -> {
+                    if (ds.stack.empty()) {
+                        return RuntimeError(
+                            value = "Attempted to pop from empty stack ${node.instanceIdentifier}",
+                            lineNumber = pc
+                        )
+                    }
+                    val poppedValue = ds.stack.pop()
+                    val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
+
+                    val topOfStack = poppedValue.manimObject
+                    val instructions = mutableListOf<ManimInstr>(
+                        StackPopObject(
+                            topOfStack.shape,
+                            dataStructureIdentifier,
+                            insideMethodCall
+                        )
+                    )
+                    val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
+                    if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
+                    linearRepresentation.addAll(instructions)
+                    return poppedValue
+                }
+                is StackType.IsEmptyMethod -> {
+                    return BoolValue(ds.stack.isEmpty())
+                }
+                is StackType.SizeMethod -> {
+                    return DoubleValue(ds.stack.size.toDouble())
+                }
+                is StackType.PeekMethod -> {
+                    if (ds.stack.empty()) {
+                        return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
+                    }
+                    val clonedPeekValue = ds.stack.peek().clone()
+                    clonedPeekValue.manimObject = EmptyMObject
+                    return clonedPeekValue
                 }
                 else -> EmptyValue
             }
@@ -468,6 +477,23 @@ class VirtualMachine(
                         Pair(listOf(stackInit), stackInit)
                     }
                     linearRepresentation.addAll(instructions)
+
+                    val newObjectStyle = stackValue.style.animate ?: stackValue.style
+                    node.initialValue.map { executeExpression(it) }.forEach {
+                        stackValue.stack.push(it)
+                        val rectangle = Rectangle(
+                            variableNameGenerator.generateNameFromPrefix("rectangle"),
+                            it.value.toString(),
+                            initStructureIdent,
+                            color = newObjectStyle.borderColor,
+                            textColor = newObjectStyle.textColor
+                        )
+                        linearRepresentation.add(NewMObject(
+                            rectangle,
+                            codeTextVariable
+                        ))
+                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent))
+                    }
                     stackValue.manimObject = newObject
                     stackValue
                 }
