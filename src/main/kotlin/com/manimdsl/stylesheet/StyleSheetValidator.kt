@@ -1,6 +1,7 @@
 package com.manimdsl.stylesheet
 
 import com.manimdsl.errorhandling.ErrorHandler
+import com.manimdsl.errorhandling.warnings.invalidStyleAttribute
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
 import com.manimdsl.frontend.SymbolTableVisitor
 
@@ -26,7 +27,7 @@ object StyleSheetValidator {
         // Check code tracking
         if(!validCodeTracking.contains(styleSheet.codeTracking)) {
             // throw warning
-            undeclaredVariableStyleWarning("hi")
+            invalidStyleAttribute("codeTracking", validCodeTracking, styleSheet.codeTracking)
         }
 
         ErrorHandler.checkWarnings()

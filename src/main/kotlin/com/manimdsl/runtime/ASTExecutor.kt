@@ -130,7 +130,7 @@ class VirtualMachine(
 
             variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
 
-            linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+            updateVariableState()
 
             while (pc <= finalLine) {
                 if (statements.containsKey(pc)) {
@@ -260,12 +260,17 @@ class VirtualMachine(
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
-                if(node.identifier is IdentifierNode) {
+                if (node.identifier is IdentifierNode) {
                     insertVariable(node.identifier.identifier, assignedValue)
-                    linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+                    updateVariableState()
                 }
                 EmptyValue
             }
+        }
+
+        private fun updateVariableState() {
+            if (showMoveToLine)
+                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
         }
 
         private fun executeExpression(

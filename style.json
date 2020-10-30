@@ -1,5 +1,4 @@
 {
-  "codeTracking": "stepInto",
   "variables": {
     "A": {
       "textColor": "purple",
