@@ -7,8 +7,8 @@ import com.manimdsl.frontend.StackType
 import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.runtime.StackValue
-import com.manimdsl.runtime.VirtualMachine
 import org.hamcrest.CoreMatchers.`is`
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
 import org.junit.Test
 import java.io.File
@@ -57,13 +57,19 @@ class StylesheetTests {
         assertThat(stack1Style.textColor, `is`("BLUE"))
     }
 
+    @Test
+    fun defaultCodeTrackingIsStepInto() {
+        val stylesheet = Stylesheet(null, SymbolTableVisitor())
+        assertEquals(true, stylesheet.getStepIntoIsDefault())
+    }
+
     private fun getStylesheetAfterRunningVirtualMachine(fileName: String, stylesheetName: String): Stylesheet {
         val inputFile = File("src/test/testFiles/valid/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
         val program = parser.parseFile().second
         val parserResult = parser.convertToAst(program)
         val stylesheet = Stylesheet("$stylesheetPath/$stylesheetName", parserResult.symbolTableVisitor)
-        VirtualMachine(parserResult.abstractSyntaxTree, parserResult.symbolTableVisitor, parserResult.lineNodeMap, inputFile.readLines(), stylesheet).runProgram()
+//        VirtualMachine(parserResult.abstractSyntaxTree, parserResult.symbolTableVisitor, parserResult.lineNodeMap, inputFile.readLines(), stylesheet).runProgram()
         return stylesheet
     }
 

@@ -1,14 +1,18 @@
 {
-  "stack1": {
-    "textColor": "PURPLE",
-    "borderColor": "PINK"
+  "variables": {
+    "array": {
+      "textColor": "purple",
+      "borderColor": "pink"
+    }
   },
-  "Array": {
-    "borderColor": "YELLOW",
-    "textColor": "GREEN",
-    "animate": {
-      "borderColor": "RED",
-      "textColor": "RED"
+  "dataStructures": {
+    "Array": {
+      "borderColor": "yellow",
+      "textColor": "green",
+      "animate": {
+        "borderColor": "red",
+        "textColor": "red"
+      }
     }
   }
 }

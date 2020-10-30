@@ -23,7 +23,8 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
     | RETURN expr? SEMI                                                  #ReturnStatement
-    | STEP_INTO OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET              #StepIntoStatement
+    | step=(STEP_INTO | STEP_OVER)
+    OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                          #CodeTrackingStatement
     ;
 
 assignment_lhs: IDENT           #IdentifierAssignment

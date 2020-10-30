@@ -1,10 +1,12 @@
 {
-  "Stack": {
-    "borderColor": "YELLOW",
-    "textColor": "GREEN",
-    "animate": {
-      "borderColor": "RED",
-      "textColor": "RED"
+  "dataStructures": {
+    "Stack": {
+      "borderColor": "YELLOW",
+      "textColor": "GREEN",
+      "animate": {
+        "borderColor": "RED",
+        "textColor": "RED"
+      }
     }
   }
 }

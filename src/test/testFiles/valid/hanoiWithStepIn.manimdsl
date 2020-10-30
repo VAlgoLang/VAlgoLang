@@ -16,6 +16,6 @@ let C = Stack<number>();
 let B = Stack<number>();
 let A = Stack<number>();
 buildTower(3, A);
-stepinto {
+stepInto {
 move(3, A, B, C);
 }

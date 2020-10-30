@@ -102,12 +102,12 @@ data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val 
 
         styleProperties.borderColor?.let {
             for (i in indices) {
-                instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${it})")
+                instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(it)})")
             }
         }
         styleProperties.textColor?.let {
             for (i in indices) {
-                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, ${it})")
+                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, ${styleProperties.handleColourValue(it)})")
             }
         }
 
