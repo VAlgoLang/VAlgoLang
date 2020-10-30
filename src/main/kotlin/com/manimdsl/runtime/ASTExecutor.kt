@@ -31,7 +31,8 @@ class VirtualMachine(
     private val acceptableNonStatements = setOf("}", "{", "")
     private val MAX_DISPLAYED_VARIABLES = 4
     private val WRAP_LINE_LENGTH = 50
-    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
+    private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
 
     init {
         fileLines.indices.forEach {
@@ -51,7 +52,12 @@ class VirtualMachine(
         linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
         linearRepresentation.add(CodeBlock(displayCode.map { it.chunked(WRAP_LINE_LENGTH) }, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
-        val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
+        val result = Frame(
+            program.statements.first().lineNumber,
+            fileLines.size,
+            variables,
+            stepInto = STEP_INTO_DEFAULT
+        ).runFrame()
         linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
@@ -81,17 +87,16 @@ class VirtualMachine(
     }
 
     private inner class Frame(
-            private var pc: Int,
-            private var finalLine: Int,
-            private var variables: MutableMap<String, ExecValue>,
-            val depth: Int = 1,
-            private val showMoveToLine: Boolean = true,
-            private var stepInto: Boolean = false,
-            private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
-            private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
-
-
-            ) {
+        private var pc: Int,
+        private var finalLine: Int,
+        private var variables: MutableMap<String, ExecValue>,
+        val depth: Int = 1,
+        private val showMoveToLine: Boolean = true,
+        private var stepInto: Boolean,
+        private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
+        private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+    ) {
+        private var previousStepIntoState = stepInto
 
         fun insertVariable(identifier: String, value: ExecValue) {
             if (value is PrimitiveValue) {
@@ -162,12 +167,13 @@ class VirtualMachine(
             is MethodCallNode -> executeMethodCall(statement, false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
-            is StartStepIntoNode -> {
-                stepInto = true
+            is StartCodeTrackingNode -> {
+                previousStepIntoState = stepInto
+                stepInto = statement.isStepInto
                 EmptyValue
             }
-            is StopStepIntoNode -> {
-                stepInto = false
+            is StopCodeTrackingNode -> {
+                stepInto = previousStepIntoState
                 EmptyValue
             }
             else -> EmptyValue
@@ -211,7 +217,8 @@ class VirtualMachine(
                 finalStatementLine,
                 argumentVariables,
                 depth + 1,
-                showMoveToLine = stepInto
+                showMoveToLine = stepInto,
+                stepInto = stepInto && STEP_INTO_DEFAULT
             ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()

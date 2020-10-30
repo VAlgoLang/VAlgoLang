@@ -31,15 +31,15 @@ data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode
 data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
 
 // Step over to step over code and avoid additional animations
-data class StepIntoNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
+data class CodeTrackingNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
     NoRenderAnimationNode(lineNumber)
 
-// Step over to step over code and avoid additional animations
-data class StartStepIntoNode(override val lineNumber: Int) : NoRenderAnimationNode(lineNumber)
+// Step into code and avoid additional animations
+data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean) :
+    NoRenderAnimationNode(lineNumber)
 
-// Step over to step over code and avoid additional animations
-data class StopStepIntoNode(override val lineNumber: Int) : NoRenderAnimationNode(lineNumber)
-
+data class StopCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean) :
+    NoRenderAnimationNode(lineNumber)
 
 // Code Specific Nodes holding line number
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)

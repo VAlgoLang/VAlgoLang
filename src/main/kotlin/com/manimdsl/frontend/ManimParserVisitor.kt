@@ -102,7 +102,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     private fun flattenStatements(statement: StatementNode): List<StatementNode> {
-        if (statement is StepIntoNode) {
+        if (statement is CodeTrackingNode) {
             return statement.statements
         }
 
@@ -260,16 +260,21 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return elifNode
     }
 
-    override fun visitStepIntoStatement(ctx: StepIntoStatementContext): ASTNode {
+    override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): ASTNode {
+        val isStepInto = ctx.step.type == STEP_INTO
         val statements = mutableListOf<StatementNode>()
-        val start = StartStepIntoNode(ctx.start.line)
-        val end = StopStepIntoNode(ctx.stop.line)
+
+        val start = StartCodeTrackingNode(ctx.start.line, isStepInto)
+        val end = StopCodeTrackingNode(ctx.stop.line, isStepInto)
+
         statements.add(start)
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
+
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end
-        return StepIntoNode(ctx.start.line, ctx.stop.line, statements)
+
+        return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
     }
 
     /** Expressions **/
