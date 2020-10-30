@@ -20,7 +20,7 @@ object StyleSheetValidator {
         // Check data structures styles
         styleSheet.dataStructures.keys.forEach {
             if (!(dataStructureStrings.contains(it))) {
-                undeclaredVariableStyleWarning(it)
+                invalidStyleAttribute("dataStructures", dataStructureStrings, it)
             }
         }
 

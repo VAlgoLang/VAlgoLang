@@ -120,7 +120,6 @@ class ASTExecutorTests {
             ),
             UpdateVariableState(variables= listOf(), ident="variable_block", textColor=null),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text"),
-            UpdateVariableState(variables= listOf("x = 3.0"), ident="variable_block", textColor=null),
             UpdateVariableState(variables= listOf("ans = 9.0"), ident="variable_block", textColor=null),
             Sleep(1.0)
         )
