@@ -43,7 +43,7 @@ class StyleProperties(
 }
 
 data class StyleSheetFromJSON(
-    val codeTracking: String = "stepOver",
+    val codeTracking: String = "stepInto",
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap()
 )
