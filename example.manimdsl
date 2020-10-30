@@ -9,15 +9,17 @@ fun loop_and_swap(arr: Array<number>, i: number, limit: number) {
 
 fun sort(arr: Array<number>, n: number) {
     if (n != 1) {
+        stepinto {
         loop_and_swap(arr,0, n -1);
+        }
         sort(arr, n-1);
     }
 }
 
 let array = Array<number>() { 1 + 4,6 ,9,8, 2};
 
-
+stepinto {
 sort(array, array.size());
-
+}
 let y = array[2];
 

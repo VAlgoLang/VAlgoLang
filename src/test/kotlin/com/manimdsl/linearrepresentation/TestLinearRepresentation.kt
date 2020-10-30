@@ -14,7 +14,6 @@ class TestLinearRepresentation {
 
     @Test
     fun mockStackLinearRepresentation() {
-        val codeBlock = listOf("let y = new Stack<number>;", "y.push(2);", "y.push(3);", "y.pop();")
         val rectangle = Rectangle("rectangle", "2.0", "stack")
         val rectangle1 = Rectangle("rectangle1", "3.0", "stack")
         val stackIS = InitManimStack(
@@ -28,17 +27,19 @@ class TestLinearRepresentation {
 
         stackIS.setNewBoundary(listOf(Pair(5, 4), Pair(7, 4), Pair(5, -4), Pair(7, -4)), 5)
 
+        val codeBlock = listOf(listOf("let y = new Stack;"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
+
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
-            MoveToLine(1, "pointer", "code_block"),
+            MoveToLine(1, "pointer", "code_block", "code_text"),
             stackIS,
-            MoveToLine(2, "pointer", "code_block"),
+            MoveToLine(2, "pointer", "code_block", "code_text"),
             NewMObject(rectangle, "code_text"),
             StackPushObject(rectangle, "stack"),
-            MoveToLine(3, "pointer", "code_block"),
+            MoveToLine(3, "pointer", "code_block", "code_text"),
             NewMObject(rectangle1, "code_text"),
             StackPushObject(rectangle1, "stack"),
-            MoveToLine(4, "pointer", "code_block"),
+            MoveToLine(4, "pointer", "code_block", "code_text"),
             StackPopObject(rectangle1, "stack", false)
         )
 

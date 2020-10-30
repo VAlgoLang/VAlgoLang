@@ -1,6 +1,6 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.executor.ExecValue
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.StylesheetProperty
@@ -21,11 +21,10 @@ data class Sleep(val length: Double = 1.0) : ManimInstr {
     }
 }
 
-data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String) : ManimInstr {
+data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String, val codeTextVariable: String) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-            "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName)"
-        )
+                "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName, $codeTextVariable)")
     }
 }
 
@@ -131,10 +130,17 @@ data class RestyleObject(
     }
 }
 
-data class VariableState(val variableStates: Map<String, ExecValue>) : ManimInstr {
-    override fun toPython(): List<String> {
-        TODO("Not yet implemented")
-    }
+data class UpdateVariableState(
+        val variables: List<String>,
+        val ident: String,
+        val textColor: String? = null) : ManimInstr {
+    override fun toPython(): List<String> =
+        if(variables.isNotEmpty()) {
+            listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }}))")
+        } else {
+            emptyList()
+        }
+
 }
 
 

@@ -5,8 +5,8 @@ import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
-import com.manimdsl.executor.ExecValue
 import com.manimdsl.frontend.SymbolTableVisitor
+import com.manimdsl.runtime.ExecValue
 import java.io.File
 import java.lang.reflect.Type
 import kotlin.reflect.full.declaredMemberProperties
