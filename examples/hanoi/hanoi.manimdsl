@@ -1,9 +1,4 @@
-fun buildTower(n: number, tower: Stack<number>) {
-    if(n > 0) {
-        tower.push(n);
-        buildTower(n - 1, tower);
-    }
-}
+
 fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<number>) {
     if(n > 0) {
         stepOver {
@@ -16,10 +11,6 @@ fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<num
 
 let C = Stack<number>();
 let B = Stack<number>();
-let A = Stack<number>();
-
-stepOver {
-buildTower(3, A);
-}
+let A = Stack<number>() { 3, 2, 1} ;
 
 move(3, A, B, C);

@@ -1,16 +1,9 @@
 {
-  "variables": {
-    "array": {
-      "textColor": "purple",
-      "borderColor": "pink"
-    }
-  },
   "dataStructures": {
     "Array": {
       "borderColor": "yellow",
       "textColor": "green",
       "animate": {
-        "borderColor": "red",
         "textColor": "red"
       }
     }
