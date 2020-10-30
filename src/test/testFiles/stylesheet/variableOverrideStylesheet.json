@@ -1,14 +1,18 @@
 {
-  "stack1": {
-    "textColor": "BLUE",
-    "borderColor": "ORANGE"
+  "variables": {
+    "stack1": {
+      "textColor": "BLUE",
+      "borderColor": "ORANGE"
+    }
   },
-  "Stack": {
-    "borderColor": "YELLOW",
-    "textColor": "GREEN",
-    "animate": {
-      "borderColor": "RED",
-      "textColor": "RED"
+  "dataStructures": {
+    "Stack": {
+      "borderColor": "YELLOW",
+      "textColor": "GREEN",
+      "animate": {
+        "borderColor": "RED",
+        "textColor": "RED"
+      }
     }
   }
 }

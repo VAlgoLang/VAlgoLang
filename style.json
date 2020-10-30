@@ -1,14 +1,19 @@
 {
-  "stack1": {
-    "textColor": "PURPLE",
-    "borderColor": "PINK"
+  "codeTracking": "stepInto",
+  "variables": {
+    "A": {
+      "textColor": "purple",
+      "borderColor": "pink"
+    }
   },
-  "Array": {
-    "borderColor": "YELLOW",
-    "textColor": "GREEN",
-    "animate": {
-      "borderColor": "RED",
-      "textColor": "RED"
+  "dataStructures": {
+    "Stack": {
+      "borderColor": "yellow",
+      "textColor": "green",
+      "animate": {
+        "borderColor": "red",
+        "textColor": "red"
+      }
     }
   }
 }

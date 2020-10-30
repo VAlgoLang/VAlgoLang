@@ -3,8 +3,6 @@ package com.manimdsl.stylesheet
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
-import com.manimdsl.errorhandling.ErrorHandler
-import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
 import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.runtime.ExecValue
 import java.io.File
@@ -13,39 +11,54 @@ import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.system.exitProcess
 
-interface StylesheetProperty {
-    val borderColor: String?
-    val textColor: String?
+sealed class StylesheetProperty {
+    abstract val borderColor: String?
+    abstract val textColor: String?
+
+    fun handleColourValue(color: String?): String? {
+        if(color == null) return null
+        return if (color.matches(Regex("#[a-fA-F0-9]{6}"))) {
+            // hex value
+            "\"${color}\""
+        } else {
+            // predefined constant
+            color.toUpperCase()
+        }
+    }
 }
 
-data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null) :
-    StylesheetProperty
+class AnimationProperties(borderColor: String? = null, textColor: String? = null) :
+    StylesheetProperty() {
+    override val borderColor: String? = handleColourValue(borderColor)
+    override val textColor: String? = handleColourValue(textColor)
+}
 
-data class StyleProperties(
-    override val borderColor: String? = null,
-    override val textColor: String? = null,
+class StyleProperties(
+    borderColor: String? = null,
+    textColor: String? = null,
     val animate: AnimationProperties? = null
-) : StylesheetProperty
+) : StylesheetProperty() {
+    override val borderColor: String? = handleColourValue(borderColor)
+    override val textColor: String? = handleColourValue(textColor)
+}
 
+data class StyleSheetFromJSON(
+    val codeTracking: String = "stepOver",
+    val variables: Map<String, StyleProperties> = emptyMap(),
+    val dataStructures: Map<String, StyleProperties> = emptyMap()
+)
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
-
-    private val stylesheet: Map<String, StyleProperties>
-    private val dataStructureStrings = setOf("Stack", "Array")
+    private val stylesheet: StyleSheetFromJSON
 
     init {
         stylesheet = if (stylesheetPath != null) {
             val gson = Gson()
-            val type: Type = object : TypeToken<Map<String, StyleProperties>>() {}.type
+            val type: Type = object : TypeToken<StyleSheetFromJSON>() {}.type
             try {
-                val stylesheetMap: Map<String, StyleProperties> = gson.fromJson(File(stylesheetPath).readText(), type)
-                stylesheetMap.keys.forEach {
-                    if (!(dataStructureStrings.contains(it) || symbolTableVisitor.getVariableNames().contains(it))) {
-                        undeclaredVariableStyleWarning(it)
-                    }
-                }
-                ErrorHandler.checkWarnings()
-                stylesheetMap
+                val parsedStylesheet: StyleSheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
+                StyleSheetValidator.validateStyleSheet(parsedStylesheet, symbolTableVisitor)
+                parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
                 if (e.message.let { it != null && it.startsWith("duplicate key") }) {
@@ -56,22 +69,26 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 exitProcess(1)
             }
         } else {
-            emptyMap()
+            StyleSheetFromJSON()
         }
     }
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
         val dataStructureStyle =
-            stylesheet.getOrDefault(value.toString(), StyleProperties())
-        val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+        val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.getOrDefault(value.toString(), StyleProperties())
-        val style = stylesheet.getOrDefault(identifier, dataStructureStyle)
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+        val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         return (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+    }
+
+    fun getStepIntoIsDefault(): Boolean {
+        return stylesheet.codeTracking == "stepInto"
     }
 }
 
