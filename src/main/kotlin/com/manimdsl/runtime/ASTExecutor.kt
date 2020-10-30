@@ -56,7 +56,6 @@ class VirtualMachine(
             program.statements.first().lineNumber,
             fileLines.size,
             variables,
-            stepInto = STEP_INTO_DEFAULT
         ).runFrame()
         linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
@@ -92,7 +91,7 @@ class VirtualMachine(
         private var variables: MutableMap<String, ExecValue>,
         val depth: Int = 1,
         private val showMoveToLine: Boolean = true,
-        private var stepInto: Boolean,
+        private var stepInto: Boolean = STEP_INTO_DEFAULT,
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
         private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
     ) {
@@ -218,7 +217,7 @@ class VirtualMachine(
                 argumentVariables,
                 depth + 1,
                 showMoveToLine = stepInto,
-                stepInto = stepInto && STEP_INTO_DEFAULT
+                stepInto = stepInto && previousStepIntoState   // In the case of nested stepInto/stepOver
             ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
