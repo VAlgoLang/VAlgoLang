@@ -488,10 +488,8 @@ class VirtualMachine(
                         Pair(listOf(stackInit), stackInit)
                     }
                     linearRepresentation.addAll(instructions)
-
-                    val newObjectStyle = stackValue.style.animate ?: stackValue.style
+                    val newObjectStyle = stackValue.style
                     node.initialValue.map { executeExpression(it) }.forEach {
-                        stackValue.stack.push(it)
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             it.value.toString(),
@@ -499,10 +497,15 @@ class VirtualMachine(
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
                         )
-                        linearRepresentation.add(NewMObject(
+
+                        val newRectangle = NewMObject(
                             rectangle,
                             codeTextVariable
-                        ))
+                        )
+                        val clonedValue = it.clone()
+                        clonedValue.manimObject = newRectangle
+                        stackValue.stack.push(clonedValue)
+                        linearRepresentation.add(newRectangle)
                         linearRepresentation.add(StackPushObject(rectangle, initStructureIdent))
                     }
                     stackValue.manimObject = newObject
