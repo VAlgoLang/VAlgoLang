@@ -4,6 +4,7 @@ import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.MObject
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.shapes.NullShape
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -20,11 +21,18 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
                 }
                 is MObject -> {
-                    shapeClassPaths.add(it.shape.classPath)
+                    if (it.shape !is NullShape) {
+                        shapeClassPaths.add(it.shape.classPath)
+                    }
                 }
             }
             if (it is MoveToLine && !executed) {
-                constructCodeBlock.add(printWithIndent(2, listOf("# Moves the current line pointer to line ${it.lineNumber}")))
+                constructCodeBlock.add(
+                    printWithIndent(
+                        2,
+                        listOf("# Moves the current line pointer to line ${it.lineNumber}")
+                    )
+                )
                 executed = true
             }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
@@ -54,6 +62,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
             from manimlib.imports import *
              
             class Main(Scene):
+                code_start = 0
+                code_end = 10
                 def construct(self):
 
         """.trimIndent()

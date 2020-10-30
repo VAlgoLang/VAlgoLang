@@ -2,7 +2,10 @@ package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
-import com.manimdsl.executor.*
+import com.manimdsl.executor.BoundaryShape
+import com.manimdsl.executor.Scene
+import com.manimdsl.executor.TallBoundary
+import com.manimdsl.executor.WideBoundary
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
@@ -12,7 +15,7 @@ import java.util.*
 class VirtualMachine(
     private val program: ProgramNode,
     private val symbolTableVisitor: SymbolTableVisitor,
-    private val statements: Map<Int, StatementNode>,
+    private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet
 ) {
@@ -26,7 +29,9 @@ class VirtualMachine(
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private val acceptableNonStatements = setOf("}", "{", "")
-    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
+    private val MAX_DISPLAYED_VARIABLES = 4
+    private val WRAP_LINE_LENGTH = 50
+    private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory()/1000000
 
     init {
         fileLines.indices.forEach {
@@ -42,10 +47,12 @@ class VirtualMachine(
     }
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
-        linearRepresentation.add(CodeBlock(displayCode, codeBlockVariable, codeTextVariable, pointerVariable))
+        linearRepresentation.add(PartitionBlock("1/3", "2/3"))
+        linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
+        linearRepresentation.add(CodeBlock(displayCode.map { it.chunked(WRAP_LINE_LENGTH) }, codeBlockVariable, codeTextVariable, pointerVariable))
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(program.statements.first().lineNumber, fileLines.size, variables).runFrame()
-        linearRepresentation.add(Sleep(0.5))
+        linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
@@ -65,19 +72,61 @@ class VirtualMachine(
         }
     }
 
+
+    private fun wrapString(text: String): String {
+        val sb = StringBuilder(text)
+        for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
+            sb.insert(index, "\\n")
+        return sb.toString()
+    }
+
     private inner class Frame(
-        private var pc: Int,
-        private var finalLine: Int,
-        private var variables: MutableMap<String, ExecValue>,
-        val depth: Int = 1,
-        private val showMoveToLine: Boolean = true,
-        private var stepInto: Boolean = false
-    ) {
+            private var pc: Int,
+            private var finalLine: Int,
+            private var variables: MutableMap<String, ExecValue>,
+            val depth: Int = 1,
+            private val showMoveToLine: Boolean = true,
+            private var stepInto: Boolean = false,
+            private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
+            private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+
+
+            ) {
+
+        fun insertVariable(identifier: String, value: ExecValue) {
+            if (value is PrimitiveValue) {
+                val index = displayedDataMap.filterValues { it.first == identifier }.keys
+                if (index.isEmpty()) {
+                    // not been visualised
+                    // if there is space
+                    if (displayedDataMap.size < MAX_DISPLAYED_VARIABLES) {
+                        val newIndex = displayedDataMap.size
+                        leastRecentlyUpdatedQueue.addLast(newIndex)
+                        displayedDataMap[newIndex] = Pair(identifier, value)
+                    } else {
+                        // if there is no space
+                        val oldest = leastRecentlyUpdatedQueue.removeFirst()
+                        displayedDataMap[oldest] = Pair(identifier, value)
+                        leastRecentlyUpdatedQueue.addLast(oldest)
+                    }
+                } else {
+                    // being visualised
+                    leastRecentlyUpdatedQueue.remove(index.first())
+                    leastRecentlyUpdatedQueue.addLast(index.first())
+                    displayedDataMap[index.first()] = Pair(identifier, value)
+                }
+            }
+        }
+
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
                 return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
             }
+
+            variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
+
+            linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
 
             while (pc <= finalLine) {
                 if (statements.containsKey(pc)) {
@@ -91,34 +140,40 @@ class VirtualMachine(
                     if (statement is ReturnNode || value !is EmptyValue) return value
 
                 }
+
                 fetchNextStatement()
             }
             return EmptyValue
         }
 
-        private fun executeStatement(statement: StatementNode): ExecValue =
-            when (statement) {
-                is ReturnNode -> executeExpression(statement.expression)
-                is FunctionNode -> {
-                    // just go onto next line, this is just a label
-                    EmptyValue
-                }
-                is SleepNode -> executeSleep(statement)
-                is AssignmentNode -> executeAssignment(statement)
-                is DeclarationNode -> executeAssignment(statement)
-                is MethodCallNode -> executeMethodCall(statement, false)
-                is FunctionCallNode -> executeFunctionCall(statement)
-                is IfStatementNode -> executeIfStatement(statement)
-                is StartStepIntoNode -> {
-                    stepInto = true
-                    EmptyValue
-                }
-                is StopStepIntoNode -> {
-                    stepInto = false
-                    EmptyValue
-                }
-                else -> EmptyValue
+        private fun getVariableState(): List<String>  {
+            return displayedDataMap.toSortedMap().map { wrapString("${it.value.first} = ${it.value.second}") }
+        }
+
+        private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
+            is ReturnNode -> executeExpression(statement.expression)
+            is FunctionNode -> {
+                // just go onto next line, this is just a label
+                EmptyValue
             }
+            is SleepNode -> executeSleep(statement)
+            is AssignmentNode -> executeAssignment(statement)
+            is DeclarationNode -> executeAssignment(statement)
+            is MethodCallNode -> executeMethodCall(statement, false)
+            is FunctionCallNode -> executeFunctionCall(statement)
+            is IfStatementNode -> executeIfStatement(statement)
+            is StartStepIntoNode -> {
+                stepInto = true
+                EmptyValue
+            }
+            is StopStepIntoNode -> {
+                stepInto = false
+                EmptyValue
+            }
+            else -> EmptyValue
+        }
+
+
 
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
@@ -131,7 +186,7 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc) {
             if (showMoveToLine) {
-                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable))
+                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable, codeTextVariable))
             }
         }
 
@@ -199,6 +254,10 @@ class VirtualMachine(
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
+                if(node.identifier is IdentifierNode) {
+                    insertVariable(node.identifier.identifier, assignedValue)
+                    linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+                }
                 EmptyValue
             }
         }

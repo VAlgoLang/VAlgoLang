@@ -1,8 +1,9 @@
 package com.manimdsl.shapes
 
-import com.manimdsl.executor.ExecValue
 import com.manimdsl.linearrepresentation.Alignment
+import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
+
 
 sealed class Shape {
     abstract val ident: String
@@ -65,14 +66,32 @@ class Rectangle(
 }
 
 class CodeBlockShape(
-    override val ident: String,
-    lines: List<String>,
-    textColor: String? = null,
+        override val ident: String,
+        textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
     override val pythonVariablePrefix: String = "code_block"
-    override val text: String = "[\"${lines.joinToString("\",\"")}\"]"
+    override val text: String = ""
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        return "$ident = ${className}(code_lines$style)"
+    }
+}
+
+class VariableBlockShape(
+    override val ident: String,
+    variables: List<String>,
+    variable_frame : String,
+    textColor: String? = null,
+) : Shape() {
+    override val classPath: String = "python/variable_block.py"
+    override val className: String = "Variable_block"
+    override val pythonVariablePrefix: String = "variable_block"
+    override val text: String = "[\"${variables.joinToString("\",\"")}\"], variable_frame"
 
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
@@ -107,12 +126,12 @@ class InitManimStackShape(
 }
 
 class ArrayShape(
-        override val ident: String,
-        private val values: Array<ExecValue>,
-        override val text: String,
-        private val boundaries : List<Pair<Int, Int>>,
-        color: String? = null,
-        textColor: String? = null,
+    override val ident: String,
+    private val values: Array<ExecValue>,
+    override val text: String,
+    private val boundaries : List<Pair<Int, Int>>,
+    color: String? = null,
+    textColor: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/array.py"
     override val className: String = "Array"
