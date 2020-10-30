@@ -45,12 +45,14 @@ class Main(Scene):
         for i in range(line_number):
             idx += len(code_block.code[i])
         if idx > self.code_end:
-            self.play(FadeOut(pointer), runtime=0.1)
+            if pointer in self.mobjects:
+                self.play(FadeOut(pointer), runtime=0.1)
             # [["test, test1"], ["test2", "test3"]]
             self.scroll_down(code_text, (idx - self.code_end))
             # code_text.move_to(code_frame)
         elif idx - 1 < self.code_start:
-            self.play(FadeOut(pointer), runtime=0.1)
+            if pointer in self.mobjects:
+                self.play(FadeOut(pointer), runtime=0.1)
             self.scroll_up(code_text, (self.code_start - idx+len(code_block.code[line_number-1])))
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
