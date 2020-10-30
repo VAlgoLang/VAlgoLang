@@ -1,12 +1,12 @@
 {
   "variables": {
-    "A": {
+    "array": {
       "textColor": "purple",
       "borderColor": "pink"
     }
   },
   "dataStructures": {
-    "Stack": {
+    "Array": {
       "borderColor": "yellow",
       "textColor": "green",
       "animate": {
