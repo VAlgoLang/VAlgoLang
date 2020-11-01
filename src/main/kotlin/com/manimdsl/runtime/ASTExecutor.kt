@@ -236,7 +236,9 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate!!))
+                if (arrayValue.style.animate != null) {
+                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate!!))
+                }
                 linearRepresentation.add(
                     ArrayElemAssignObject(
                         (arrayValue.manimObject as ArrayStructure).ident,
@@ -244,7 +246,9 @@ class VirtualMachine(
                         assignedValue
                     )
                 )
-                linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
+                if (arrayValue.style.animate != null) {
+                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
+                }
                 EmptyValue
             }
         }
@@ -459,7 +463,6 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
-                    stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)

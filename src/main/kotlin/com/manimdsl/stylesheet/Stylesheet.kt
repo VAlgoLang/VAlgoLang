@@ -25,6 +25,7 @@ sealed class StylesheetProperty {
             color.toUpperCase()
         }
     }
+
 }
 
 class AnimationProperties(borderColor: String? = null, textColor: String? = null) :
@@ -84,7 +85,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-        return (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+
+        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+        // Return null if there is no style to make sure null checks work throughout executor
+        return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
     fun getStepIntoIsDefault(): Boolean {
