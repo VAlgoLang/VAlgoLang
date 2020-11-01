@@ -39,8 +39,8 @@ class StyleProperties(
     textColor: String? = null,
     val animate: AnimationProperties? = null
 ) : StylesheetProperty() {
-    override val borderColor: String? = handleColourValue(borderColor)
-    override val textColor: String? = handleColourValue(textColor)
+    override var borderColor: String? = handleColourValue(borderColor)
+    override var textColor: String? = handleColourValue(textColor)
 }
 
 data class StyleSheetFromJSON(
@@ -78,7 +78,18 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-        return style merge dataStructureStyle
+
+        val newStyle = style merge dataStructureStyle
+        val animatedStyle = getAnimatedStyle(identifier, value)
+        if (animatedStyle != null) {
+            if (animatedStyle.borderColor != null && newStyle.borderColor == null) {
+                newStyle.borderColor = "WHITE"
+            }
+            if (animatedStyle.textColor != null && newStyle.textColor == null) {
+                newStyle.textColor = "WHITE"
+            }
+        }
+        return newStyle
     }
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {

@@ -50,7 +50,14 @@ class VirtualMachine(
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         linearRepresentation.add(PartitionBlock("1/3", "2/3"))
         linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
-        linearRepresentation.add(CodeBlock(displayCode.map { it.chunked(WRAP_LINE_LENGTH) }, codeBlockVariable, codeTextVariable, pointerVariable))
+        linearRepresentation.add(
+            CodeBlock(
+                displayCode.map { it.chunked(WRAP_LINE_LENGTH) },
+                codeBlockVariable,
+                codeTextVariable,
+                pointerVariable
+            )
+        )
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(
             program.statements.first().lineNumber,
@@ -150,7 +157,7 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun getVariableState(): List<String>  {
+        private fun getVariableState(): List<String> {
             return displayedDataMap.toSortedMap().map { wrapString("${it.value.first} = ${it.value.second}") }
         }
 
@@ -179,7 +186,6 @@ class VirtualMachine(
         }
 
 
-
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
             return EmptyValue
@@ -191,7 +197,14 @@ class VirtualMachine(
 
         private fun moveToLine(line: Int = pc) {
             if (showMoveToLine) {
-                linearRepresentation.add(MoveToLine(displayLine[line - 1], pointerVariable, codeBlockVariable, codeTextVariable))
+                linearRepresentation.add(
+                    MoveToLine(
+                        displayLine[line - 1],
+                        pointerVariable,
+                        codeBlockVariable,
+                        codeTextVariable
+                    )
+                )
             }
         }
 
@@ -236,18 +249,31 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                if (arrayValue.style.animate != null) {
-                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate!!))
+                arrayValue.animatedStyle?.let {
+                    linearRepresentation.add(
+                        ArrayElemRestyle(
+                            (arrayValue.manimObject as ArrayStructure).ident,
+                            listOf(index.value.toInt()),
+                            it
+                        )
+                    )
                 }
                 linearRepresentation.add(
                     ArrayElemAssignObject(
                         (arrayValue.manimObject as ArrayStructure).ident,
                         index.value.toInt(),
-                        assignedValue
+                        assignedValue,
+                        arrayValue.animatedStyle
                     )
                 )
-                if (arrayValue.style.animate != null) {
-                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
+                if (arrayValue.animatedStyle != null) {
+                    linearRepresentation.add(
+                        ArrayElemRestyle(
+                            (arrayValue.manimObject as ArrayStructure).ident,
+                            listOf(index.value.toInt()),
+                            arrayValue.style
+                        )
+                    )
                 }
                 EmptyValue
             }
@@ -293,8 +319,14 @@ class VirtualMachine(
             is PlusExpression -> executeUnaryOp(node) { x -> x }
             is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
             is BoolNode -> BoolValue(node.value)
-            is AndExpression -> executeShortCircuitOp(node, false) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
-            is OrExpression -> executeShortCircuitOp(node, true) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
+            is AndExpression -> executeShortCircuitOp(
+                node,
+                false
+            ) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
+            is OrExpression -> executeShortCircuitOp(
+                node,
+                true
+            ) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
             is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
             is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
             is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
@@ -314,9 +346,21 @@ class VirtualMachine(
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
-                if (showMoveToLine && arrayValue.style.animate != null) {
-                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style.animate!!))
-                    linearRepresentation.add(ArrayElemRestyle((arrayValue.manimObject as ArrayStructure).ident, listOf(index.value.toInt()), arrayValue.style))
+                if (showMoveToLine && arrayValue.animatedStyle != null) {
+                    linearRepresentation.add(
+                        ArrayElemRestyle(
+                            (arrayValue.manimObject as ArrayStructure).ident,
+                            listOf(index.value.toInt()),
+                            arrayValue.animatedStyle!!
+                        )
+                    )
+                    linearRepresentation.add(
+                        ArrayElemRestyle(
+                            (arrayValue.manimObject as ArrayStructure).ident,
+                            listOf(index.value.toInt()),
+                            arrayValue.style
+                        )
+                    )
                 }
                 arrayValue.array[index.value.toInt()]
             }
@@ -345,7 +389,7 @@ class VirtualMachine(
                     val longSwap =
                         if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
                     val arrayIdent = (ds.manimObject as ArrayStructure).ident
-                    val newObjectStyle = ds.style.animate ?: ds.style
+                    val newObjectStyle = ds.animatedStyle ?: ds.style
                     val arraySwap =
                         if (longSwap) {
                             ArrayLongSwap(
@@ -387,7 +431,7 @@ class VirtualMachine(
                     dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
                     val hasOldMObject = value.manimObject !is EmptyMObject
                     val oldMObject = value.manimObject
-                    val newObjectStyle = ds.style.animate ?: ds.style
+                    val newObjectStyle = ds.animatedStyle ?: ds.style
                     val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                         Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
@@ -436,8 +480,7 @@ class VirtualMachine(
                             insideMethodCall
                         )
                     )
-                    val newStyle = stylesheet.getAnimatedStyle(node.instanceIdentifier, ds)
-                    if (newStyle != null) instructions.add(0, RestyleObject(topOfStack.shape, newStyle))
+                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it)) }
                     linearRepresentation.addAll(instructions)
                     return poppedValue
                 }
@@ -466,6 +509,7 @@ class VirtualMachine(
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
+                    stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(
@@ -524,7 +568,12 @@ class VirtualMachine(
                     val arrayValue = if (node.initialValue.isEmpty()) {
                         ArrayValue(
                             EmptyMObject,
-                            Array(arraySize.value.toInt()) { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) })
+                            Array(arraySize.value.toInt()) { _ ->
+                                getDefaultValueForType(
+                                    node.type.internalType,
+                                    node.lineNumber
+                                )
+                            })
                     } else {
                         if (node.initialValue.size != arraySize.value.toInt()) {
                             RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
@@ -536,6 +585,7 @@ class VirtualMachine(
                     dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
                     if (arrayValue is ArrayValue) {
                         arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                        arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                         val arrayStructure = ArrayStructure(
                             node.type,
                             ident,
@@ -557,7 +607,7 @@ class VirtualMachine(
                 NumberType -> DoubleValue(0.0)
                 BoolType -> BoolValue(false)
                 is ArrayType -> getDefaultValueForType(type.internalType, lineNumber)
-                else -> RuntimeError(value="Cannot create data structure with type $type", lineNumber = lineNumber)
+                else -> RuntimeError(value = "Cannot create data structure with type $type", lineNumber = lineNumber)
             }
         }
 
@@ -613,9 +663,9 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            if(showMoveToLine) addSleep(0.5)
+            if (showMoveToLine) addSleep(0.5)
             var conditionValue = executeExpression(ifStatementNode.condition)
-            if(conditionValue is RuntimeError) {
+            if (conditionValue is RuntimeError) {
                 return conditionValue
             } else {
                 conditionValue = conditionValue as BoolValue
@@ -642,7 +692,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                if(showMoveToLine) addSleep(0.5)
+                if (showMoveToLine) addSleep(0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -664,7 +714,7 @@ class VirtualMachine(
             // Else
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
-                if(showMoveToLine) addSleep(0.5)
+                if (showMoveToLine) addSleep(0.5)
                 val execValue = Frame(
                     ifStatementNode.elseBlock.statements.first().lineNumber,
                     ifStatementNode.elseBlock.statements.last().lineNumber,
