@@ -254,7 +254,7 @@ class VirtualMachine(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
                             listOf(index.value.toInt()),
-                            it
+                            it, true
                         )
                     )
                 }
@@ -351,7 +351,8 @@ class VirtualMachine(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
                             listOf(index.value.toInt()),
-                            arrayValue.animatedStyle!!
+                            arrayValue.animatedStyle!!,
+                                true
                         )
                     )
                     linearRepresentation.add(
@@ -404,7 +405,7 @@ class VirtualMachine(
                         }
                     linearRepresentation.addAll(
                         listOf(
-                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle),
+                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle, true),
                             arraySwap,
                             ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style),
                         )
