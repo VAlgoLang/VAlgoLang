@@ -11,7 +11,9 @@ class Rectangle_block:
             self.owner = target
             self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
 
-    def replace_text(self, new_text):
-        new_text_obj = Text(new_text, color=self.text_color, font=self.font)
+    def replace_text(self, new_text, color=None):
+        if not color:
+            color = self.text_color
+        new_text_obj = Text(new_text, color=color, font=self.font)
         new_text_obj.set_width(self.width * 7/10)
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))

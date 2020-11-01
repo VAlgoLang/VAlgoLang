@@ -3,6 +3,7 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
+import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StylesheetProperty
 
 interface ManimInstr {
@@ -75,9 +76,10 @@ data class StackPopObject(
     }
 }
 
-data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue) : ManimInstr {
+data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue, val animatedStyle: AnimationProperties?) : ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"))")
+        val animationString = if (animatedStyle != null) ", color=${animatedStyle.textColor}" else ""
+        return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
 

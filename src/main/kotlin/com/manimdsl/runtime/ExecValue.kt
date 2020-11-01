@@ -3,6 +3,7 @@ package com.manimdsl.runtime
 import com.manimdsl.frontend.ErrorType
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.MObject
+import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StyleProperties
 import java.util.*
 
@@ -84,11 +85,11 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
     }
 }
 
-data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>, var style: StyleProperties = StyleProperties()) : ExecValue() {
+data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
     override val value: Stack<ExecValue> = stack
 
     override fun clone(): ExecValue {
-        return StackValue(manimObject, stack, style)
+        return StackValue(manimObject, stack, style, animatedStyle)
     }
 
     override fun toString(): String {
@@ -96,11 +97,11 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
     }
 }
 
-data class ArrayValue(override var manimObject: MObject, val array: Array<ExecValue>, var style: StyleProperties = StyleProperties()) : ExecValue() {
+data class ArrayValue(override var manimObject: MObject, val array: Array<ExecValue>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
     override val value: Array<ExecValue> = array
 
     override fun clone(): ExecValue {
-        return ArrayValue(manimObject, array, style)
+        return ArrayValue(manimObject, array, style, animatedStyle)
     }
 
     override fun toString(): String {
