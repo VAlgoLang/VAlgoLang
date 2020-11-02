@@ -249,12 +249,14 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                arrayValue.animatedStyle?.let {
+                val style = arrayValue.animatedStyle
+                style?.let {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
                             listOf(index.value.toInt()),
-                            it, true
+                            it,
+                            it.pointer
                         )
                     )
                 }
@@ -346,22 +348,24 @@ class VirtualMachine(
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
-                if (showMoveToLine && arrayValue.animatedStyle != null) {
-                    linearRepresentation.add(
-                        ArrayElemRestyle(
-                            (arrayValue.manimObject as ArrayStructure).ident,
-                            listOf(index.value.toInt()),
-                            arrayValue.animatedStyle!!,
-                                true
+                with(arrayValue.animatedStyle) {
+                    if (showMoveToLine && this != null) {
+                        linearRepresentation.add(
+                                ArrayElemRestyle(
+                                        (arrayValue.manimObject as ArrayStructure).ident,
+                                        listOf(index.value.toInt()),
+                                        this,
+                                        this.pointer
+                                )
                         )
-                    )
-                    linearRepresentation.add(
-                        ArrayElemRestyle(
-                            (arrayValue.manimObject as ArrayStructure).ident,
-                            listOf(index.value.toInt()),
-                            arrayValue.style
+                        linearRepresentation.add(
+                                ArrayElemRestyle(
+                                        (arrayValue.manimObject as ArrayStructure).ident,
+                                        listOf(index.value.toInt()),
+                                        arrayValue.style
+                                )
                         )
-                    )
+                    }
                 }
                 arrayValue.array[index.value.toInt()]
             }
@@ -390,7 +394,6 @@ class VirtualMachine(
                     val longSwap =
                         if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
                     val arrayIdent = (ds.manimObject as ArrayStructure).ident
-                    val newObjectStyle = ds.animatedStyle ?: ds.style
                     val arraySwap =
                         if (longSwap) {
                             ArrayLongSwap(
@@ -403,13 +406,14 @@ class VirtualMachine(
                         } else {
                             ArrayShortSwap(arrayIdent, Pair(index1, index2))
                         }
-                    linearRepresentation.addAll(
-                        listOf(
-                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), newObjectStyle, true),
-                            arraySwap,
-                            ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style),
-                        )
-                    )
+                    val swap = mutableListOf(arraySwap)
+                    with(ds.animatedStyle){
+                        if (this != null){
+                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer))
+                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
+                        }
+                    }
+                    linearRepresentation.addAll(swap)
                     val temp = ds.array[index1]
                     ds.array[index1] = ds.array[index2]
                     ds.array[index2] = temp

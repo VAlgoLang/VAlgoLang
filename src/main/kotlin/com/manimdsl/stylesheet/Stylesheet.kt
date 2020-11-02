@@ -32,6 +32,7 @@ class AnimationProperties(borderColor: String? = null, textColor: String? = null
     StylesheetProperty() {
     override val borderColor: String? = handleColourValue(borderColor)
     override val textColor: String? = handleColourValue(textColor)
+    val pointer: Boolean? = null
 }
 
 class StyleProperties(
