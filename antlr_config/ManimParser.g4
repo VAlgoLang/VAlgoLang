@@ -71,4 +71,5 @@ bool: TRUE | FALSE;
 data_structure_initialiser: OPEN_CURLY_BRACKET expr (COMMA expr)* CLOSE_CURLY_BRACKET;
 
 array_elem: IDENT OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET;
-node_elem: IDENT (DOT (LEFT | RIGHT | VALUE))+;
+node_elem: IDENT node_elem_access* (DOT (LEFT| RIGHT| VALUE));
+node_elem_access: (DOT (LEFT | RIGHT));
