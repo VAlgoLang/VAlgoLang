@@ -99,6 +99,55 @@ data class ArrayType(
     override fun toString(): String = "Array<$internalType>"
 }
 
+data class BinaryTreeType(
+    override var internalType: Type,
+    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+        "left" to Left(BinaryTreeType(internalType)), "right" to Right(BinaryTreeType(internalType)), "value" to Value(internalType)
+    )
+) : DataStructureType(internalType, methods) {
+    class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 1
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(internalType to true)
+        override val varargs: Boolean = false
+
+        override fun toString(): String = "constructor"
+    }
+
+    class Left(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    class Right(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    class Value(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+
+    override fun containsMethod(method: String): Boolean {
+        return methods.containsKey(method)
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return methods.getOrDefault(method, ErrorMethod)
+    }
+
+    override fun getConstructor(): ConstructorMethod {
+        return BinaryTreeConstructor(internalType)
+    }
+
+    override fun toString(): String = "Node<$internalType>"
+}
+
 data class StackType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(

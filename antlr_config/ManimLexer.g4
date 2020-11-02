@@ -7,6 +7,10 @@ DOT: '.';
 EQUAL: '=';
 COMMA: ',';
 
+RIGHT: 'right';
+LEFT: 'left';
+VALUE: 'value';
+
 // boolean literals
 TRUE: 'true';
 FALSE: 'false';
@@ -47,6 +51,7 @@ COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
 ARRAY: 'Array';
+TREE_NODE: 'Node';
 IF: 'if';
 ELSE: 'else';
 STEP_INTO: 'stepInto';

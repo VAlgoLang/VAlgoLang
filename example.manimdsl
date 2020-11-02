@@ -1,8 +1,10 @@
-fun fib(n: number, dp: Array<number>): number {
-    if (dp[n] == -1) {
-        dp[n] = fib(n-1, dp) + fib(n-2, dp);
-    }
-    return dp[n];
-}
-let dp = Array<number>() { 0, 1, -1, -1, -1};
-let ans = fib(4, dp);
+let root = Node<number>(3);
+array[1]
+let y = root.right.left.right.value;
+
+root.value = 19
+
+let y = root.right
+// y = 3
+
+let x = root.right

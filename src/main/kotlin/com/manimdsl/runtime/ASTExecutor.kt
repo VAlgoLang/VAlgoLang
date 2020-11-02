@@ -604,6 +604,7 @@ class VirtualMachine(
                     }
                     arrayValue
                 }
+                is BinaryTreeType -> TODO()
             }
         }
 

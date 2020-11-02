@@ -351,7 +351,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(emptyList(), emptyList())
         }
 
-        // Check intial values
+        // Check initial values
         val initialValue = if (ctx.data_structure_initialiser() != null) {
             (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
         } else {
@@ -464,5 +464,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
         semanticAnalyser.checkExpressionTypeWithExpectedType(index, NumberType, symbolTable, ctx)
         return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
+    }
+
+    override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {
+        val elementType = visit(ctx.primitive_type()) as Type
+        return BinaryTreeType(elementType)
     }
 }
