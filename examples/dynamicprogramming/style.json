@@ -1,0 +1,17 @@
+{
+  "variables": {
+    "dp": {
+      "textColor": "blue",
+      "animate": {
+      }
+    }
+  },
+  "dataStructures": {
+    "Array": {
+      "borderColor": "yellow",
+      "animate": {
+        "textColor": "red"
+      }
+    }
+  }
+}

@@ -98,25 +98,36 @@ data class ArrayLongSwap(val arrayIdent: String, val indices: Pair<Int, Int>, va
     }
 }
 
-data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val styleProperties: StylesheetProperty) : ManimInstr {
+data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val styleProperties: StylesheetProperty, val pointer: Boolean?=false) : ManimInstr {
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
 
         styleProperties.borderColor?.let {
             for (i in indices) {
                 instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(it)})")
+
             }
         }
+        for (i in indices) {
+            if (pointer == null || pointer) {
+                instructions.add("FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].all, TOP, 0.01)." +
+                        "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))")
+            } else {
+                instructions.add("self.fade_out_if_needed($arrayIdent.array_elements[$i].pointer)")
+            }
+        }
+
         styleProperties.textColor?.let {
             for (i in indices) {
-                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, ${styleProperties.handleColourValue(it)})")
+                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, " +
+                        "${styleProperties.handleColourValue(it)})")
             }
         }
 
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(${instructions.joinToString(", ")})")
+            listOf("self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation], run_time=1.5)")
         }
     }
 }

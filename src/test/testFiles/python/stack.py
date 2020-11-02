@@ -40,19 +40,26 @@ class Main(Scene):
         self.play(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
     def place_relative_to_obj(self, group, target, x, y):
         group.next_to(target, np.array([x, y, 0]))
+    def fade_out_if_needed(self, mobject):
+        if mobject in self.mobjects:
+            return FadeOut(mobject)
+        else:
+            return None
     def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
         idx = 0
         for i in range(line_number):
             idx += len(code_block.code[i])
         if idx > self.code_end:
-            if pointer in self.mobjects:
-                self.play(FadeOut(pointer), runtime=0.1)
+            animation = self.fade_out_if_needed(pointer)
+            if animation is not None:
+                self.play(animation, runtime=0.1)
             # [["test, test1"], ["test2", "test3"]]
             self.scroll_down(code_text, (idx - self.code_end))
             # code_text.move_to(code_frame)
         elif idx - 1 < self.code_start:
-            if pointer in self.mobjects:
-                self.play(FadeOut(pointer), runtime=0.1)
+            animation = self.fade_out_if_needed(pointer)
+            if animation is not None:
+                self.play(animation, runtime=0.1)
             self.scroll_up(code_text, (self.code_start - idx+len(code_block.code[line_number-1])))
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
@@ -142,6 +149,8 @@ class Rectangle_block:
         self.width = width
         self.text_color = text_color
         self.font = font
+        self.pointer = Triangle(color=color,fill_color=color,fill_opacity=1).flip(LEFT).scale(0.1)
+        self.pointer.next_to(self.all, TOP, 0.01)
         if target:
             self.owner = target
             self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))

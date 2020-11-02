@@ -10,20 +10,28 @@ def move_relative_to_obj(self, group, target, x, y):
 def place_relative_to_obj(self, group, target, x, y):
     group.next_to(target, np.array([x, y, 0]))
 
+def fade_out_if_needed(self, mobject):
+    if mobject in self.mobjects:
+        return FadeOut(mobject)
+    else:
+        return None
+
 def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
     idx = 0
     for i in range(line_number):
         idx += len(code_block.code[i])
 
     if idx > self.code_end:
-        if pointer in self.mobjects:
-            self.play(FadeOut(pointer), runtime=0.1)
+        animation = self.fade_out_if_needed(pointer)
+        if animation is not None:
+            self.play(animation, runtime=0.1)
         # [["test, test1"], ["test2", "test3"]]
         self.scroll_down(code_text, (idx - self.code_end))
         # code_text.move_to(code_frame)
     elif idx - 1 < self.code_start:
-        if pointer in self.mobjects:
-            self.play(FadeOut(pointer), runtime=0.1)
+        animation = self.fade_out_if_needed(pointer)
+        if animation is not None:
+            self.play(animation, runtime=0.1)
         self.scroll_up(code_text, (self.code_start - idx+len(code_block.code[line_number-1])))
 
     line_object = code_block.get_line_at(line_number)
