@@ -102,7 +102,7 @@ data class ArrayType(
 data class BinaryTreeType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
-        "left" to Left(BinaryTreeType(internalType)), "right" to Right(BinaryTreeType(internalType)), "value" to Value(internalType)
+        "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
     )
 ) : DataStructureType(internalType, methods) {
     class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {

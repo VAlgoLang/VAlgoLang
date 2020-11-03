@@ -1,10 +1,7 @@
 let root = Node<number>(3);
-array[1]
+
 let y = root.right.left.right.value;
 
-root.value = 19
+root.left = 19;
 
-let y = root.right
-// y = 3
-
-let x = root.right
+let x = root.right;

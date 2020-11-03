@@ -18,7 +18,16 @@ class SemanticAnalysis {
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
+            is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
         }
+
+    private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+        var type = currentSymbolTable.getTypeOf(expression.identifier)
+        if (expression.accessChain.isNotEmpty()) {
+            type = expression.accessChain.last().returnType
+        }
+        return ErrorType
+    }
 
     private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         // To extend to multiple dimensions perform below recursively

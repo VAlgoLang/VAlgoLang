@@ -174,6 +174,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return when (ctx) {
             is IdentifierAssignmentContext -> visitIdentifierAssignmentLHS(ctx)
             is ArrayElemAssignmentContext -> visitArrayAssignmentLHS(ctx)
+            is NodeElemAssignmentContext -> visitNodeAssignmentLHS(ctx)
             else -> Pair(ErrorType, EmptyLHS)
         }
     }
@@ -192,6 +193,17 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         // Return element type
         return if (arrayType is ArrayType) {
             Pair(arrayType.internalType, arrayElem)
+        } else {
+            Pair(ErrorType, EmptyLHS)
+        }
+    }
+
+    private fun visitNodeAssignmentLHS(ctx: NodeElemAssignmentContext): Pair<Type, AssignLHS> {
+        val nodeElem = visit(ctx.node_elem()) as BinaryTreeElemNode
+        val treeType = symbolTable.getTypeOf(nodeElem.identifier)
+
+        return if (treeType is BinaryTreeType) {
+            Pair(treeType.internalType, nodeElem)
         } else {
             Pair(ErrorType, EmptyLHS)
         }
@@ -469,5 +481,40 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {
         val elementType = visit(ctx.primitive_type()) as Type
         return BinaryTreeType(elementType)
+    }
+
+    override fun visitNode_elem(ctx: Node_elemContext): BinaryTreeElemNode {
+        val identifier = ctx.IDENT().symbol.text
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
+
+        val identifierType = symbolTable.getTypeOf(identifier)
+
+        val accessChain = if (ctx.node_elem_access() != null) {
+            val list = mutableListOf<DataStructureMethod>()
+            list.addAll(ctx.node_elem_access().map { visitNodeElemAccess(it, identifier, identifierType) })
+            list
+        } else {
+            mutableListOf()
+        }
+
+        if (ctx.VALUE() != null && identifierType is DataStructureType) {
+            val value = ctx.VALUE().symbol.text
+            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, value, ctx)
+            accessChain.add(identifierType.getMethodByName(value))
+        }
+
+        return BinaryTreeElemNode(ctx.start.line, identifier, accessChain)
+    }
+
+    private fun visitNodeElemAccess(ctx: Node_elem_accessContext, ident: String, type: Type): DataStructureMethod {
+        val child = ctx.LEFT()?.symbol?.text ?: ctx.RIGHT().symbol.text
+        return if (type is DataStructureType) {
+            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, ident, child, ctx)
+            type.getMethodByName(child)
+        } else {
+            ErrorMethod
+        }
     }
 }

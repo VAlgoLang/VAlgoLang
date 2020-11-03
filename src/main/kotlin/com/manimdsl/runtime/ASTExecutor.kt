@@ -340,6 +340,7 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
             is ArrayElemNode -> executeArrayElem(node)
+            is BinaryTreeElemNode -> TODO()
         }
 
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
