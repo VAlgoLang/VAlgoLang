@@ -148,7 +148,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
 
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
+        lineNumberNodeMap[ctx.start.line] =
+            DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
         return lineNumberNodeMap[ctx.start.line] as DeclarationNode
     }
 
@@ -207,6 +208,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return lineNumberNodeMap[ctx.start.line] as CommentNode
     }
 
+    override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {
+        val whileScope = symbolTable.enterScope()
+        val whileCondition = visit(ctx.whileCond) as ExpressionNode
+        semanticAnalyser.checkExpressionTypeWithExpectedType(whileCondition, BoolType, symbolTable, ctx)
+        val whileStatements = visitAndFlattenStatements(ctx.whileStat)
+        whileStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
+        symbolTable.leaveScope()
+
+        val whileStatementNode =
+            WhileStatementNode(ctx.start.line, ctx.stop.line, whileScope, whileCondition, whileStatements)
+        lineNumberNodeMap[ctx.start.line] = whileStatementNode
+        return whileStatementNode
+    }
+
     override fun visitIfStatement(ctx: IfStatementContext): ASTNode {
         // if
         val ifScope = symbolTable.enterScope()
@@ -241,6 +258,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         lineNumberNodeMap[ctx.start.line] = ifStatementNode
         return ifStatementNode
     }
+
 
     override fun visitElseIf(ctx: ElseIfContext): ASTNode {
         val elifScope = symbolTable.enterScope()

@@ -297,6 +297,7 @@ class SemanticAnalysis {
                 is IfStatementNode -> checkStatementsHaveReturn(it.statements)
                         && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
                         && checkStatementsHaveReturn(it.elseBlock.statements)
+                is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
             }
         }

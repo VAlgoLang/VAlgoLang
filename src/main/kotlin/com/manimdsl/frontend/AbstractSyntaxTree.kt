@@ -78,6 +78,14 @@ sealed class StatementBlock(
     abstract val scope: Int
 }
 
+data class WhileStatementNode(
+    override val lineNumber: Int,
+    val endLineNumber: Int,
+    override val scope: Int,
+    val condition: ExpressionNode,
+    override val statements: List<StatementNode>
+) : StatementBlock(lineNumber)
+
 data class IfStatementNode(
     override val lineNumber: Int,
     val endLineNumber: Int,

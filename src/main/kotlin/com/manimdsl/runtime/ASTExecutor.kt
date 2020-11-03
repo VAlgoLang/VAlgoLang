@@ -173,6 +173,7 @@ class VirtualMachine(
             is MethodCallNode -> executeMethodCall(statement, false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
+            is WhileStatementNode -> executeWhileStatement(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
                 stepInto = statement.isStepInto
@@ -351,19 +352,19 @@ class VirtualMachine(
                 with(arrayValue.animatedStyle) {
                     if (showMoveToLine && this != null) {
                         linearRepresentation.add(
-                                ArrayElemRestyle(
-                                        (arrayValue.manimObject as ArrayStructure).ident,
-                                        listOf(index.value.toInt()),
-                                        this,
-                                        this.pointer
-                                )
+                            ArrayElemRestyle(
+                                (arrayValue.manimObject as ArrayStructure).ident,
+                                listOf(index.value.toInt()),
+                                this,
+                                this.pointer
+                            )
                         )
                         linearRepresentation.add(
-                                ArrayElemRestyle(
-                                        (arrayValue.manimObject as ArrayStructure).ident,
-                                        listOf(index.value.toInt()),
-                                        arrayValue.style
-                                )
+                            ArrayElemRestyle(
+                                (arrayValue.manimObject as ArrayStructure).ident,
+                                listOf(index.value.toInt()),
+                                arrayValue.style
+                            )
                         )
                     }
                 }
@@ -407,8 +408,8 @@ class VirtualMachine(
                             ArrayShortSwap(arrayIdent, Pair(index1, index2))
                         }
                     val swap = mutableListOf(arraySwap)
-                    with(ds.animatedStyle){
-                        if (this != null){
+                    with(ds.animatedStyle) {
+                        if (this != null) {
                             swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer))
                             swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
                         }
@@ -665,6 +666,40 @@ class VirtualMachine(
                 leftExpression,
                 rightExpression
             )
+        }
+
+
+        private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
+            if (showMoveToLine) addSleep(0.5)
+
+            // Set pc to end of if statement as branching is handled here
+            pc = whileStatementNode.endLineNumber
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+
+            while (true) {
+                conditionValue = executeExpression(whileStatementNode.condition)
+                if (conditionValue is RuntimeError) {
+                    return conditionValue
+                } else if (conditionValue is BoolValue && !conditionValue.value) {
+                    return EmptyValue
+                }
+
+                execValue = Frame(
+                    whileStatementNode.statements.first().lineNumber,
+                    whileStatementNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto
+                ).runFrame()
+                if (execValue is EmptyValue) {
+                    pc = whileStatementNode.endLineNumber
+                }
+
+                // TODO: Return an ExecValue/add to list of ExecValues here?
+
+            }
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {

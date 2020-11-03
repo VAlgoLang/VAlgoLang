@@ -49,6 +49,7 @@ STACK: 'Stack';
 ARRAY: 'Array';
 IF: 'if';
 ELSE: 'else';
+WHILE: 'while';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
 

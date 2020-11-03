@@ -20,6 +20,8 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     OPEN_CURLY_BRACKET ifStat=stat? CLOSE_CURLY_BRACKET
      elseIf*
     (ELSE OPEN_CURLY_BRACKET elseStat=stat? CLOSE_CURLY_BRACKET)?        #IfStatement
+    | WHILE OPEN_PARENTHESIS whileCond=expr CLOSE_PARENTHESIS
+      OPEN_CURLY_BRACKET whileStat=stat? CLOSE_CURLY_BRACKET             #WhileStatement
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
     | RETURN expr? SEMI                                                  #ReturnStatement
