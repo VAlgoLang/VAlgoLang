@@ -199,6 +199,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val arrayElem = visit(ctx.array_elem()) as ArrayElemNode
         val arrayType = symbolTable.getTypeOf(arrayElem.identifier)
 
+        semanticAnalyser.invalidArrayElemAssignment(arrayElem.identifier, arrayType, ctx)
+
         // Return element type
         return if (arrayType is ArrayType) {
             Pair(arrayType.internalType, arrayElem)
