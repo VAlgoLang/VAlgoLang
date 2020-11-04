@@ -693,12 +693,9 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto
                 ).runFrame()
-                if (execValue is EmptyValue) {
-                    pc = whileStatementNode.endLineNumber
-                }
+                pc = whileStatementNode.endLineNumber
 
-                // TODO: Return an ExecValue/add to list of ExecValues here?
-
+                if (execValue !is EmptyValue) return execValue
             }
         }
 
