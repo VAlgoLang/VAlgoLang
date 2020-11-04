@@ -227,6 +227,12 @@ class SemanticAnalysis {
         }
     }
 
+    fun breakOrContinueOutsideLoopCheck(action: String, inLoop: Boolean, ctx: ParserRuleContext) {
+        if (!inLoop) {
+            breakOrContinueOutsideLoopError(action, ctx)
+        }
+    }
+
     fun incompatibleReturnTypesCheck(
         currentSymbolTable: SymbolTableVisitor,
         functionReturnType: Type,

@@ -22,12 +22,17 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     (ELSE OPEN_CURLY_BRACKET elseStat=stat? CLOSE_CURLY_BRACKET)?        #IfStatement
     | WHILE OPEN_PARENTHESIS whileCond=expr CLOSE_PARENTHESIS
       OPEN_CURLY_BRACKET whileStat=stat? CLOSE_CURLY_BRACKET             #WhileStatement
+    | loop_stat                                                          #LoopStatement
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
     | RETURN expr? SEMI                                                  #ReturnStatement
     | step=(STEP_INTO | STEP_OVER)
     OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                          #CodeTrackingStatement
     ;
+
+loop_stat: BREAK SEMI         #BreakStatement
+         | CONTINUE SEMI      #ContinueStatement;
+
 
 assignment_lhs: IDENT           #IdentifierAssignment
     | array_elem                #ArrayElemAssignment;

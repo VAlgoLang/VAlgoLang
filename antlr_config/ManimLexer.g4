@@ -50,6 +50,8 @@ ARRAY: 'Array';
 IF: 'if';
 ELSE: 'else';
 WHILE: 'while';
+BREAK: 'break';
+CONTINUE: 'continue';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
 

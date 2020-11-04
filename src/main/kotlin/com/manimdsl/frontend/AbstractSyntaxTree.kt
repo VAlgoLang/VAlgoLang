@@ -109,6 +109,11 @@ data class ElseNode(
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
 
+
+sealed class LoopStatementNode(override val lineNumber: Int): CodeNode(lineNumber)
+data class BreakNode(override val lineNumber: Int, val loopEndLineNumber: Int) : LoopStatementNode(lineNumber)
+data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int): LoopStatementNode(lineNumber)
+
 interface AssignLHS {
     val identifier: String
 }

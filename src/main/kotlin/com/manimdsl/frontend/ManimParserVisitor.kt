@@ -10,6 +10,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
+    private var inLoop: Boolean = false
+    // First value is loop start line number and second is end line number
+    private var loopLineNumbers: Pair<Int, Int> = Pair(1, 1)
     private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ProgramContext): ProgramNode {
@@ -209,17 +212,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {
+        inLoop = true
         val whileScope = symbolTable.enterScope()
         val whileCondition = visit(ctx.whileCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(whileCondition, BoolType, symbolTable, ctx)
+        val startLineNumber = ctx.start.line
+        val endLineNumber = ctx.stop.line
+        loopLineNumbers = Pair(startLineNumber, endLineNumber)
         val whileStatements = visitAndFlattenStatements(ctx.whileStat)
         whileStatements.forEach {
             lineNumberNodeMap[it.lineNumber] = it
         }
         symbolTable.leaveScope()
+        inLoop = false
 
         val whileStatementNode =
-            WhileStatementNode(ctx.start.line, ctx.stop.line, whileScope, whileCondition, whileStatements)
+            WhileStatementNode(startLineNumber, endLineNumber, whileScope, whileCondition, whileStatements)
         lineNumberNodeMap[ctx.start.line] = whileStatementNode
         return whileStatementNode
     }
@@ -482,5 +490,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
         semanticAnalyser.checkExpressionTypeWithExpectedType(index, NumberType, symbolTable, ctx)
         return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
+    }
+
+    override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
+        return visit(ctx.loop_stat()) as LoopStatementNode
+    }
+
+    override fun visitBreakStatement(ctx: BreakStatementContext): BreakNode {
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("break", inLoop, ctx)
+        return BreakNode(ctx.start.line, loopLineNumbers.second)
+    }
+
+    override fun visitContinueStatement(ctx: ContinueStatementContext): ContinueNode {
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
+        return ContinueNode(ctx.start.line, loopLineNumbers.first)
     }
 }

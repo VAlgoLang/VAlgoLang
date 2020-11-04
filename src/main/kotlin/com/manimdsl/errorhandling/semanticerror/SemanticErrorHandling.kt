@@ -106,6 +106,10 @@ fun globalReturnError(ctx: ParserRuleContext) {
     addSemanticError("Cannot return from global scope", getErrorLinePos(ctx))
 }
 
+fun breakOrContinueOutsideLoopError(action: String, ctx: ParserRuleContext) {
+    addSemanticError("$action cannot occur outside loop", getErrorLinePos(ctx))
+}
+
 fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
 }
