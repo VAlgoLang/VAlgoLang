@@ -200,12 +200,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private fun visitNodeAssignmentLHS(ctx: NodeElemAssignmentContext): Pair<Type, AssignLHS> {
         val nodeElem = visit(ctx.node_elem()) as BinaryTreeElemNode
-        val treeType = symbolTable.getTypeOf(nodeElem.identifier)
+        val treeType = semanticAnalyser.inferType(symbolTable, nodeElem)
 
-        return if (treeType is BinaryTreeType) {
-            Pair(treeType.internalType, nodeElem)
-        } else {
+        return if (treeType is ErrorType) {
             Pair(ErrorType, EmptyLHS)
+        } else {
+           Pair(treeType, nodeElem)
         }
     }
 
