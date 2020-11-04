@@ -23,14 +23,14 @@ class SemanticAnalysis {
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
-        var type = currentSymbolTable.getTypeOf(expression.identifier)
+        val type = currentSymbolTable.getTypeOf(expression.identifier)
         return if (type is BinaryTreeType) {
             if (expression.accessChain.isNotEmpty()) {
                 val lastValue = expression.accessChain.last()
                 if (lastValue is BinaryTreeType.Value) lastValue.returnType else BinaryTreeType(lastValue.returnType)
-                type = lastValue.returnType
+            } else {
+                type
             }
-            type
         } else {
             ErrorType
         }

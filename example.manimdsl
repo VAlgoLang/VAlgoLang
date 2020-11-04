@@ -2,4 +2,4 @@ let root = Node<number>(3);
 
 let y:Node<number> = null;
 
-y.right.value = Node<number>(3);
+y.right = 3;
