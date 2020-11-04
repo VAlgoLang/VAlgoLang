@@ -19,13 +19,16 @@ class SemanticAnalysis {
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
+            is NullNode -> NullType
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         var type = currentSymbolTable.getTypeOf(expression.identifier)
         return if (type is BinaryTreeType) {
             if (expression.accessChain.isNotEmpty()) {
-                type = expression.accessChain.last().returnType
+                val lastValue = expression.accessChain.last()
+                if (lastValue is BinaryTreeType.Value) lastValue.returnType else BinaryTreeType(lastValue.returnType)
+                type = lastValue.returnType
             }
             type
         } else {
@@ -95,7 +98,7 @@ class SemanticAnalysis {
     }
 
     fun notDataStructureCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
-        if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
+        if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType && currentSymbolTable.getTypeOf(identifier) !is NullType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }

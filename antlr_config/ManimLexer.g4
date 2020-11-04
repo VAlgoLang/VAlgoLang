@@ -56,7 +56,7 @@ IF: 'if';
 ELSE: 'else';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
-
+NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;
 NUMBER: (DIGIT+) (DOT DIGIT+)?;

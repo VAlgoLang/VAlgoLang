@@ -3,8 +3,8 @@ package com.manimdsl.frontend
 open class ASTNode
 
 data class ProgramNode(
-        val functions: List<FunctionNode>,
-        val statements: List<StatementNode>
+    val functions: List<FunctionNode>,
+    val statements: List<StatementNode>
 ) : ASTNode()
 
 data class FunctionNode(
@@ -105,15 +105,18 @@ interface AssignLHS {
     val identifier: String
 }
 
-object EmptyLHS: AssignLHS {
+object EmptyLHS : AssignLHS {
     override val identifier: String = ""
 }
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
-data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber), AssignLHS
+data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber),
+    AssignLHS
+
 data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
     ExpressionNode(lineNumber), AssignLHS
+
 data class BinaryTreeElemNode(
     override val lineNumber: Int,
     override val identifier: String,
@@ -136,6 +139,8 @@ data class ConstructorNode(
     val arguments: List<ExpressionNode>,
     val initialValue: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
+
+data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 
 data class DataStructureInitialiserNode(
     val expressions: List<ExpressionNode>

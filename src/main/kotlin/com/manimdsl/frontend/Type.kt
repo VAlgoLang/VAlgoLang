@@ -53,6 +53,13 @@ object ErrorMethod : DataStructureMethod {
     override val varargs: Boolean = false
 }
 
+object ErrorConstructorMethod : ConstructorMethod {
+    override val returnType: Type = ErrorType
+    override val argumentTypes: List<Pair<Type, Boolean>> = emptyList()
+    override val varargs: Boolean = false
+    override val minRequiredArgsWithoutInitialValue: Int = 0
+}
+
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 
@@ -103,7 +110,7 @@ data class BinaryTreeType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
         "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
-    )
+    ),
 ) : DataStructureType(internalType, methods) {
     class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
@@ -146,6 +153,20 @@ data class BinaryTreeType(
     }
 
     override fun toString(): String = "Node<$internalType>"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BinaryTreeType
+
+        if (internalType != other.internalType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return internalType.hashCode()
+    }
 }
 
 data class StackType(
@@ -216,6 +237,21 @@ data class StackType(
     override fun toString(): String = "Stack<$internalType>"
 }
 
+object NullType: Type()
+
+object ErrorDataStructureType: DataStructureType(internalType = ErrorType, emptyMap()) {
+    override fun containsMethod(method: String): Boolean {
+        return false
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return ErrorMethod
+    }
+
+    override fun getConstructor(): ConstructorMethod {
+        return ErrorConstructorMethod
+    }
+}
 
 object ErrorType : Type()
 object VoidType : Type() {

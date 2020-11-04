@@ -36,6 +36,7 @@ elseIf: ELSE IF OPEN_PARENTHESIS elifCond=expr CLOSE_PARENTHESIS OPEN_CURLY_BRAC
 arg_list: expr (COMMA expr)*                                        #ArgumentList;
 
 expr: NUMBER                                                        #NumberLiteral
+    | NULL                                                          #NullLiteral
     | bool                                                          #BooleanLiteral
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr

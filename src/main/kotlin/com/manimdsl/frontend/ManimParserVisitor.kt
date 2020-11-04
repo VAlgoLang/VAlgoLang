@@ -131,7 +131,18 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val lhsType = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
+            if (rhsType is NullType) {
+                error("Cannot infer type")
+            }
             rhsType
+        }
+
+        if(rhsType is NullType) {
+            if (lhsType is DataStructureType) {
+                rhsType = lhsType
+            } else {
+                error("Cannot assign null to a primtive")
+            }
         }
 
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
@@ -436,6 +447,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return BoolNode(ctx.start.line, ctx.bool().text.toBoolean())
     }
 
+    override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
+        return NullNode(ctx.start.line)
+    }
+
     /** Types **/
 
     override fun visitPrimitiveType(ctx: PrimitiveTypeContext): PrimitiveType {
@@ -517,4 +532,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
     }
+
+
+    override fun visitNodeElemAssignment(ctx: NodeElemAssignmentContext?): ASTNode {
+        return super.visitNodeElemAssignment(ctx)
+    }
+
+    override fun visitNodeElemExpr(ctx: NodeElemExprContext?): ASTNode {
+        return super.visitNodeElemExpr(ctx)
+    }
+
+    override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
+        return super.visitNode_elem_access(ctx)
+    }
+
+
 }

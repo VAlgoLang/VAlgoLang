@@ -1,8 +1,7 @@
 fun loop_and_swap(arr: Array<number>, i: number, limit: number) {
     if (i < limit) {
         if (arr[i] > arr[i+1]) {
-                arr.swap(i, i+1);
-                sleep(4);
+            arr.swap(i, i+1);
         }
     loop_and_swap(arr, i+1, limit);
     }
@@ -10,7 +9,9 @@ fun loop_and_swap(arr: Array<number>, i: number, limit: number) {
 
 fun sort(arr: Array<number>, n: number) {
     if (n != 1) {
+        stepOver {
         loop_and_swap(arr,0, n -1);
+        }
         sort(arr, n-1);
     }
 }
