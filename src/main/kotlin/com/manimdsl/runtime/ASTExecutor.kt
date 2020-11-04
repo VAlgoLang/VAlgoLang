@@ -174,6 +174,7 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
+            is LoopStatementNode -> executeLoopStatement(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
                 stepInto = statement.isStepInto
@@ -184,6 +185,17 @@ class VirtualMachine(
                 EmptyValue
             }
             else -> EmptyValue
+        }
+
+        private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {
+            is BreakNode -> {
+                pc = statement.loopEndLineNumber
+                BreakValue
+            }
+            is ContinueNode -> {
+                pc = statement.loopStartLineNumber
+                ContinueValue
+            }
         }
 
 
@@ -672,17 +684,21 @@ class VirtualMachine(
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
             if (showMoveToLine) addSleep(0.5)
 
-            // Set pc to end of if statement as branching is handled here
-            pc = whileStatementNode.endLineNumber
             var conditionValue: ExecValue
             var execValue: ExecValue
+
 
             while (true) {
                 conditionValue = executeExpression(whileStatementNode.condition)
                 if (conditionValue is RuntimeError) {
                     return conditionValue
-                } else if (conditionValue is BoolValue && !conditionValue.value) {
-                    return EmptyValue
+                } else if (conditionValue is BoolValue) {
+                    if (!conditionValue.value) {
+                        pc = whileStatementNode.endLineNumber
+                        return EmptyValue
+                    } else {
+                        pc = whileStatementNode.lineNumber
+                    }
                 }
 
                 execValue = Frame(
@@ -693,9 +709,25 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto
                 ).runFrame()
-                pc = whileStatementNode.endLineNumber
 
-                if (execValue !is EmptyValue) return execValue
+                when (execValue) {
+                    is BreakValue -> {
+                        pc = whileStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    }
+                    is ContinueValue -> {
+                        pc = whileStatementNode.lineNumber
+                        moveToLine()
+                        continue
+                    }
+                    !is EmptyValue -> {
+                        return execValue
+                    }
+                }
+
+                pc = whileStatementNode.lineNumber
+                moveToLine()
             }
         }
 
