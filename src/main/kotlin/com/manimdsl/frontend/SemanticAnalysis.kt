@@ -85,7 +85,9 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if (lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
+        if(rhsType is NullType && lhsType !is DataStructureType && lhsType !is NullType) {
+            primitiveAssignedToNull(rhsType.toString(), lhsType.toString(), ctx)
+        } else if (lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
@@ -431,5 +433,11 @@ class SemanticAnalysis {
             )
         }
         incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
+    }
+
+    fun unableToInferTypeCheck(rhsType: Type, ctx: ParserRuleContext) {
+        if (rhsType is NullType) {
+            unableToInferType(rhsType.toString(), ctx)
+        }
     }
 }

@@ -1,0 +1,3 @@
+let root = Node<number>(3);
+
+root.right.value = true;

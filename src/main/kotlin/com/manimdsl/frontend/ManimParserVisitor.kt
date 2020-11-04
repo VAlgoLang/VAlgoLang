@@ -131,18 +131,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val lhsType = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
-            if (rhsType is NullType) {
-                error("Cannot infer type")
-            }
+            semanticAnalyser.unableToInferTypeCheck(rhsType, ctx)
             rhsType
         }
 
-        if(rhsType is NullType) {
-            if (lhsType is DataStructureType) {
-                rhsType = lhsType
-            } else {
-                error("Cannot assign null to a primtive")
-            }
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
         }
 
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
@@ -174,6 +168,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                 functionData.type = lhsType
                 rhsType = lhsType
             }
+        }
+
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
         }
 
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.toString(), ctx)
@@ -387,6 +385,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, ctx.text, ctx)
         return IdentifierNode(ctx.start.line, ctx.text)
     }
 

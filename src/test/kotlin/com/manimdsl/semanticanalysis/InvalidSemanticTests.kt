@@ -305,6 +305,37 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun binaryTreeInvalidChildAssignment() {
+        runSyntaxAndSemanticAnalysis("binaryTreeInvalidChildAssignment.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type Node<.*>"))
+        )
+    }
+
+    @Test
+    fun binaryTreeInvalidValueAssignment() {
+        runSyntaxAndSemanticAnalysis("binaryTreeInvalidValueAssignment.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
+        )
+    }
+
+    @Test
+    fun invalidPrimitiveAssignedToNull() {
+        runSyntaxAndSemanticAnalysis("invalidPrimitiveAssignedToNull.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot assign null to a primitive .* type"))
+        )
+    }
+
+    @Test
+    fun unableToInferTypeFromNull() {
+        runSyntaxAndSemanticAnalysis("unableToInferTypeFromNull.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot infer type from null"))
+        )
+    }
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

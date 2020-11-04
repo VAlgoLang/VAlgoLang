@@ -249,7 +249,11 @@ data class StackType(
     override fun toString(): String = "Stack<$internalType>"
 }
 
-object NullType: Type()
+object NullType: Type() {
+    override fun toString(): String {
+        return "null"
+    }
+}
 
 object ErrorDataStructureType: DataStructureType(internalType = ErrorType, emptyMap()) {
     override fun containsMethod(method: String): Boolean {

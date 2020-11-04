@@ -152,6 +152,14 @@ fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRule
     addSemanticError("Function $identifier called in different/incompatible ways", getErrorLinePos(ctx))
 }
 
+fun primitiveAssignedToNull(nullType: String, primitiveType: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot assign $nullType to a primitive $primitiveType type", getErrorLinePos(ctx))
+}
+
+fun unableToInferType(nullType: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot infer type from $nullType", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line
