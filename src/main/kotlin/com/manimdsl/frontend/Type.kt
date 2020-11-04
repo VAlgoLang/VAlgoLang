@@ -125,19 +125,31 @@ data class BinaryTreeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "left"
+        }
+    }
 
     class Right(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "right"
+        }
+    }
 
     class Value(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "value"
+        }
+    }
 
 
     override fun containsMethod(method: String): Boolean {

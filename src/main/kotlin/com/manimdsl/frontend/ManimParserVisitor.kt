@@ -176,7 +176,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.identifier, ctx)
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.toString(), ctx)
         lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
     }

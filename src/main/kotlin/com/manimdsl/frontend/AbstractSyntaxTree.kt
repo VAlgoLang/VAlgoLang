@@ -112,16 +112,28 @@ object EmptyLHS : AssignLHS {
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber),
-    AssignLHS
+    AssignLHS {
+    override fun toString(): String {
+        return identifier
+    }
+}
 
 data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
-    ExpressionNode(lineNumber), AssignLHS
+    ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier[$index]"
+    }
+}
 
 data class BinaryTreeElemNode(
     override val lineNumber: Int,
     override val identifier: String,
     val accessChain: List<DataStructureMethod>
-) : ExpressionNode(lineNumber), AssignLHS
+) : ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier.${accessChain.joinToString(",")}"
+    }
+}
 
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
