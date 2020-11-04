@@ -423,4 +423,10 @@ class SemanticAnalysis {
         }
         incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
     }
+
+    fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
+        if (type !is ArrayType) {
+            incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
+        }
+    }
 }

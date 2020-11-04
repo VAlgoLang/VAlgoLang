@@ -37,6 +37,18 @@ fun missingConstructorArgumentsError(
     )
 }
 
+fun incorrectLHSForDataStructureElem(
+    identifier: String,
+    expected: String,
+    actual: Type,
+    ctx: ParserRuleContext
+) {
+    addSemanticError(
+        "$identifier is not an $expected, actual type is $actual. Cannot perform element assignment on $identifier",
+        getErrorLinePos(ctx)
+    )
+}
+
 
 fun redeclarationError(
     variable: String, variableType: Type,
