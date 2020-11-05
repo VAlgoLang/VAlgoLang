@@ -2,6 +2,7 @@ package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
+import kotlin.math.abs
 
 sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
 
@@ -25,7 +26,7 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
 
     fun corners(): List<Pair<Int, Int>> {
         // UL, UR, LL, LR
-        return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1) , Pair(x1 + width, y1))
+        return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
     fun area(): Int {
@@ -54,6 +55,11 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
     fun offsetHeight(offset: Int = 1): BoundaryShape {
         height += offset
         y1 -= offset
+        return this
+    }
+
+    fun shiftHorizontal(offset: Int): BoundaryShape {
+        x1 += offset
         return this
     }
 
@@ -158,10 +164,13 @@ enum class ScanDir {
 class Scene {
 
     private val sceneShape = WideBoundary(width = 9, height = 8, maxSize = -1)
+    private val fullSceneShape = WideBoundary(width = 14, height = 8, maxSize = -1)
 
     init {
         sceneShape.x1 = -2
         sceneShape.y1 = -4
+        fullSceneShape.x1 = -7
+        fullSceneShape.y1 = -4
     }
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
@@ -179,7 +188,7 @@ class Scene {
                     is SquareBoundary -> addToScene(Corner.TR, it.second)
                     is TallBoundary -> addToScene(Corner.TR, it.second)
                 }
-                if(!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
+                if (!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
             }
             sortedShapes.forEach { maximise(it.second) }
             return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
@@ -211,6 +220,16 @@ class Scene {
                 boundaryShape.setCoords(Corner.BR.coord.first - boundaryShape.width, Corner.BR.coord.second),
                 secondScan
             )
+        }
+    }
+
+    fun centralise(fullScreen: Boolean = false) {
+        val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first }
+        val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
+        val shapesOverallWidth = abs(leftXCoord) + abs(rightXCoord)
+        val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
+        if (availableWidth > shapesOverallWidth) {
+            sceneShapes.forEach { it.shiftHorizontal((shapesOverallWidth - availableWidth) / 2) }
         }
     }
 
