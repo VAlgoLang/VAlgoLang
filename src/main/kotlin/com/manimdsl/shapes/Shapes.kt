@@ -105,7 +105,7 @@ class VariableBlockShape(
 class InitManimStackShape(
     override val ident: String,
     override val text: String,
-    private val boundary: List<Pair<Int, Int>>,
+    private val boundary: List<Pair<Double, Double>>,
     private val alignment: Alignment,
     val color: String? = null,
     val textColor: String? = null,
@@ -129,7 +129,7 @@ class ArrayShape(
     override val ident: String,
     private val values: Array<ExecValue>,
     override val text: String,
-    private val boundaries : List<Pair<Int, Int>>,
+    private val boundaries : List<Pair<Double, Double>>,
     color: String? = null,
     textColor: String? = null,
 ) : ShapeWithText() {

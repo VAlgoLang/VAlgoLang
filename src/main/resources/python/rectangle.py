@@ -8,7 +8,7 @@ class Rectangle_block:
         self.text_color = text_color
         self.font = font
         self.pointer = Triangle(color=color,fill_color=color,fill_opacity=1).flip(LEFT).scale(0.1)
-        self.pointer.next_to(self.all, TOP, 0.01)
+        self.pointer.next_to(self.shape, TOP, 0.01)
         if target:
             self.owner = target
             self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))

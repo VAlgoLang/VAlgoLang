@@ -2,9 +2,8 @@ package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
-import kotlin.math.abs
 
-sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
+sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
     abstract var width: Int
     abstract var height: Int
@@ -16,15 +15,15 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
 
-    abstract fun setCoords(x: Int, y: Int): BoundaryShape
+    abstract fun setCoords(x: Double, y: Double): BoundaryShape
 
     abstract fun clone(): BoundaryShape
 
-    fun coordInShape(x: Int, y: Int): Boolean {
+    fun coordInShape(x: Double, y: Double): Boolean {
         return (x >= x1) && (y >= y1) && (x <= (x1 + width)) && (y <= (y1 + height))
     }
 
-    fun corners(): List<Pair<Int, Int>> {
+    fun corners(): List<Pair<Double, Double>> {
         // UL, UR, LL, LR
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
@@ -58,7 +57,7 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
         return this
     }
 
-    fun shiftHorizontal(offset: Int): BoundaryShape {
+    fun shiftHorizontal(offset: Double): BoundaryShape {
         x1 += offset
         return this
     }
@@ -72,7 +71,7 @@ data class SquareBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = false
-    override fun setCoords(x: Int, y: Int): SquareBoundary {
+    override fun setCoords(x: Double, y: Double): SquareBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -94,7 +93,7 @@ data class TallBoundary(
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
 
-    override fun setCoords(x: Int, y: Int): TallBoundary {
+    override fun setCoords(x: Double, y: Double): TallBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -115,7 +114,7 @@ data class WideBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
-    override fun setCoords(x: Int, y: Int): WideBoundary {
+    override fun setCoords(x: Double, y: Double): WideBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -129,11 +128,11 @@ data class WideBoundary(
     }
 }
 
-enum class Corner(val coord: Pair<Int, Int>) {
-    BL(Pair(-2, -4)),
-    BR(Pair(7, -4)),
-    TL(Pair(-2, 4)),
-    TR(Pair(7, 4));
+enum class Corner(val coord: Pair<Double, Double>) {
+    BL(Pair(-2.0, -4.0)),
+    BR(Pair(7.0, -4.0)),
+    TL(Pair(-2.0, 4.0)),
+    TR(Pair(7.0, 4.0));
 
     fun next(): Corner {
         return when (this) {
@@ -167,10 +166,10 @@ class Scene {
     private val fullSceneShape = WideBoundary(width = 14, height = 8, maxSize = -1)
 
     init {
-        sceneShape.x1 = -2
-        sceneShape.y1 = -4
-        fullSceneShape.x1 = -7
-        fullSceneShape.y1 = -4
+        sceneShape.x1 = -2.0
+        sceneShape.y1 = -4.0
+        fullSceneShape.x1 = -7.0
+        fullSceneShape.y1 = -4.0
     }
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
@@ -191,6 +190,7 @@ class Scene {
                 if (!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
             }
             sortedShapes.forEach { maximise(it.second) }
+            centralise(false)
             return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
         }
     }
@@ -223,10 +223,10 @@ class Scene {
         }
     }
 
-    fun centralise(fullScreen: Boolean = false) {
+    private fun centralise(fullScreen: Boolean = false) {
         val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first }
         val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
-        val shapesOverallWidth = abs(leftXCoord) + abs(rightXCoord)
+        val shapesOverallWidth = rightXCoord - leftXCoord
         val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
         if (availableWidth > shapesOverallWidth) {
             sceneShapes.forEach { it.shiftHorizontal((shapesOverallWidth - availableWidth) / 2) }
