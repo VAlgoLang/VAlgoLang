@@ -224,12 +224,14 @@ class Scene {
     }
 
     private fun centralise(fullScreen: Boolean = false) {
-        val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first }
-        val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
-        val shapesOverallWidth = rightXCoord - leftXCoord
-        val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
-        if (availableWidth > shapesOverallWidth) {
-            sceneShapes.forEach { it.shiftHorizontal((shapesOverallWidth - availableWidth) / 2) }
+        if (sceneShapes.isNotEmpty()) {
+            val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first}
+            val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
+            val shapesOverallWidth = rightXCoord - leftXCoord
+            val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
+            if (availableWidth > shapesOverallWidth) {
+                sceneShapes.forEach { it.shiftHorizontal((shapesOverallWidth - availableWidth) / 2) }
+            }
         }
     }
 
