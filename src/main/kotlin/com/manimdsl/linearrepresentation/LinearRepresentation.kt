@@ -110,7 +110,7 @@ data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val 
         }
         for (i in indices) {
             if (pointer == null || pointer) {
-                instructions.add("FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].all, TOP, 0.01)." +
+                instructions.add("FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].shape, TOP, 0.01)." +
                         "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))")
             } else {
                 instructions.add("self.fade_out_if_needed($arrayIdent.array_elements[$i].pointer)")
