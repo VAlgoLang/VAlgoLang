@@ -98,9 +98,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
-        val temp1 = style.animate ?: AnimationProperties()
-        val temp2 = dataStructureStyle.animate ?: AnimationProperties()
-        val animationStyle = temp1 merge temp2
+        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
         // Return null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
