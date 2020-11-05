@@ -131,7 +131,7 @@ data class BinaryTreeElemNode(
     val accessChain: List<DataStructureMethod>
 ) : ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
-        return "$identifier.${accessChain.joinToString(",")}"
+        return "$identifier.${accessChain.joinToString(".")}"
     }
 }
 
