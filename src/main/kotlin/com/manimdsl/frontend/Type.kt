@@ -18,6 +18,8 @@ object BoolType : PrimitiveType() {
     }
 }
 
+interface NullableDataStructure
+
 sealed class DataStructureType(
     open var internalType: Type,
     open val methods: Map<String, DataStructureMethod>
@@ -55,7 +57,6 @@ object ErrorMethod : DataStructureMethod {
 
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
-
 
 data class ArrayType(
     override var internalType: Type,
@@ -97,6 +98,81 @@ data class ArrayType(
     }
 
     override fun toString(): String = "Array<$internalType>"
+}
+
+data class BinaryTreeType(
+    override var internalType: Type,
+    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+        "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
+    ),
+) : DataStructureType(internalType, methods), NullableDataStructure {
+    class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 1
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(internalType to true)
+        override val varargs: Boolean = false
+
+        override fun toString(): String = "constructor"
+    }
+
+    class Left(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "left"
+        }
+    }
+
+    class Right(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "right"
+        }
+    }
+
+    class Value(
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "value"
+        }
+    }
+
+
+    override fun containsMethod(method: String): Boolean {
+        return methods.containsKey(method)
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return methods.getOrDefault(method, ErrorMethod)
+    }
+
+    override fun getConstructor(): ConstructorMethod {
+        return BinaryTreeConstructor(internalType)
+    }
+
+    override fun toString(): String = "Node<$internalType>"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BinaryTreeType
+
+        if (internalType != other.internalType) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return internalType.hashCode()
+    }
 }
 
 data class StackType(
@@ -167,6 +243,11 @@ data class StackType(
     override fun toString(): String = "Stack<$internalType>"
 }
 
+object NullType: Type() {
+    override fun toString(): String {
+        return "null"
+    }
+}
 
 object ErrorType : Type()
 object VoidType : Type() {

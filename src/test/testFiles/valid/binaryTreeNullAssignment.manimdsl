@@ -1,0 +1,4 @@
+let y = Node<number>(1);
+y.left = Node<number>(2);
+y.left.right = Node<number>(5);
+y.left = null;

@@ -131,8 +131,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val lhsType = if (ctx.type() != null) {
             visit(ctx.type()) as Type
         } else {
+            semanticAnalyser.unableToInferTypeCheck(rhsType, ctx)
             rhsType
         }
+
+
 
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(rhs.functionIdentifier) as FunctionData
@@ -146,7 +149,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
-
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
+        }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
         lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
         return lineNumberNodeMap[ctx.start.line] as DeclarationNode
@@ -165,7 +170,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.identifier, ctx)
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
+        }
+
+        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.toString(), ctx)
         lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
     }
@@ -174,6 +183,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return when (ctx) {
             is IdentifierAssignmentContext -> visitIdentifierAssignmentLHS(ctx)
             is ArrayElemAssignmentContext -> visitArrayAssignmentLHS(ctx)
+            is NodeElemAssignmentContext -> visitNodeAssignmentLHS(ctx)
             else -> Pair(ErrorType, EmptyLHS)
         }
     }
@@ -196,6 +206,17 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(arrayType.internalType, arrayElem)
         } else {
             Pair(ErrorType, EmptyLHS)
+        }
+    }
+
+    private fun visitNodeAssignmentLHS(ctx: NodeElemAssignmentContext): Pair<Type, AssignLHS> {
+        val nodeElem = visit(ctx.node_elem()) as BinaryTreeElemNode
+        val treeType = semanticAnalyser.inferType(symbolTable, nodeElem)
+
+        return if (treeType is ErrorType) {
+            Pair(ErrorType, EmptyLHS)
+        } else {
+           Pair(treeType, nodeElem)
         }
     }
 
@@ -353,7 +374,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(emptyList(), emptyList())
         }
 
-        // Check intial values
+        // Check initial values
         val initialValue = if (ctx.data_structure_initialiser() != null) {
             (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
         } else {
@@ -366,6 +387,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, ctx.text, ctx)
         return IdentifierNode(ctx.start.line, ctx.text)
     }
 
@@ -426,6 +448,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return BoolNode(ctx.start.line, ctx.bool().text.toBoolean())
     }
 
+    override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
+        return NullNode(ctx.start.line)
+    }
+
     /** Types **/
 
     override fun visitPrimitiveType(ctx: PrimitiveTypeContext): PrimitiveType {
@@ -467,4 +493,59 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.checkExpressionTypeWithExpectedType(index, NumberType, symbolTable, ctx)
         return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
     }
+
+    override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {
+        val elementType = visit(ctx.primitive_type()) as Type
+        return BinaryTreeType(elementType)
+    }
+
+    override fun visitNode_elem(ctx: Node_elemContext): BinaryTreeElemNode {
+        val identifier = ctx.IDENT().symbol.text
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
+
+        val identifierType = symbolTable.getTypeOf(identifier)
+
+        val accessChain = if (ctx.node_elem_access() != null) {
+            val list = mutableListOf<DataStructureMethod>()
+            list.addAll(ctx.node_elem_access().map { visitNodeElemAccess(it, identifier, identifierType) })
+            list
+        } else {
+            mutableListOf()
+        }
+
+        if (ctx.VALUE() != null && identifierType is DataStructureType) {
+            val value = ctx.VALUE().symbol.text
+            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, value, ctx)
+            accessChain.add(identifierType.getMethodByName(value))
+        }
+
+        return BinaryTreeElemNode(ctx.start.line, identifier, accessChain)
+    }
+
+    private fun visitNodeElemAccess(ctx: Node_elem_accessContext, ident: String, type: Type): DataStructureMethod {
+        val child = ctx.LEFT()?.symbol?.text ?: ctx.RIGHT().symbol.text
+        return if (type is DataStructureType) {
+            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, ident, child, ctx)
+            type.getMethodByName(child)
+        } else {
+            ErrorMethod
+        }
+    }
+
+
+    override fun visitNodeElemAssignment(ctx: NodeElemAssignmentContext?): ASTNode {
+        return super.visitNodeElemAssignment(ctx)
+    }
+
+    override fun visitNodeElemExpr(ctx: NodeElemExprContext?): ASTNode {
+        return super.visitNodeElemExpr(ctx)
+    }
+
+    override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
+        return super.visitNode_elem_access(ctx)
+    }
+
+
 }
