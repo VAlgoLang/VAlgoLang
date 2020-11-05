@@ -10,6 +10,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
+    private var inLoop: Boolean = false
+    // First value is loop start line number and second is end line number
+    private var loopLineNumbers: Pair<Int, Int> = Pair(1, 1)
     private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ProgramContext): ProgramNode {
@@ -153,7 +156,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             rhsType = lhsType
         }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
-        lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
+        lineNumberNodeMap[ctx.start.line] =
+            DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
         return lineNumberNodeMap[ctx.start.line] as DeclarationNode
     }
 
@@ -230,6 +234,27 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return lineNumberNodeMap[ctx.start.line] as CommentNode
     }
 
+    override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {
+        inLoop = true
+        val whileScope = symbolTable.enterScope()
+        val whileCondition = visit(ctx.whileCond) as ExpressionNode
+        semanticAnalyser.checkExpressionTypeWithExpectedType(whileCondition, BoolType, symbolTable, ctx)
+        val startLineNumber = ctx.start.line
+        val endLineNumber = ctx.stop.line
+        loopLineNumbers = Pair(startLineNumber, endLineNumber)
+        val whileStatements = visitAndFlattenStatements(ctx.whileStat)
+        whileStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
+        symbolTable.leaveScope()
+        inLoop = false
+
+        val whileStatementNode =
+            WhileStatementNode(startLineNumber, endLineNumber, whileScope, whileCondition, whileStatements)
+        lineNumberNodeMap[ctx.start.line] = whileStatementNode
+        return whileStatementNode
+    }
+
     override fun visitIfStatement(ctx: IfStatementContext): ASTNode {
         // if
         val ifScope = symbolTable.enterScope()
@@ -264,6 +289,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         lineNumberNodeMap[ctx.start.line] = ifStatementNode
         return ifStatementNode
     }
+
 
     override fun visitElseIf(ctx: ElseIfContext): ASTNode {
         val elifScope = symbolTable.enterScope()
@@ -548,4 +574,18 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
 
+
+    override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
+        return visit(ctx.loop_stat()) as LoopStatementNode
+    }
+
+    override fun visitBreakStatement(ctx: BreakStatementContext): BreakNode {
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("break", inLoop, ctx)
+        return BreakNode(ctx.start.line, loopLineNumbers.second)
+    }
+
+    override fun visitContinueStatement(ctx: ContinueStatementContext): ContinueNode {
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
+        return ContinueNode(ctx.start.line, loopLineNumbers.first)
+    }
 }

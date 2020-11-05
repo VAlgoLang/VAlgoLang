@@ -78,6 +78,14 @@ sealed class StatementBlock(
     abstract val scope: Int
 }
 
+data class WhileStatementNode(
+    override val lineNumber: Int,
+    val endLineNumber: Int,
+    override val scope: Int,
+    val condition: ExpressionNode,
+    override val statements: List<StatementNode>
+) : StatementBlock(lineNumber)
+
 data class IfStatementNode(
     override val lineNumber: Int,
     val endLineNumber: Int,
@@ -100,6 +108,11 @@ data class ElseNode(
     override val scope: Int,
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
+
+
+sealed class LoopStatementNode(override val lineNumber: Int): CodeNode(lineNumber)
+data class BreakNode(override val lineNumber: Int, val loopEndLineNumber: Int) : LoopStatementNode(lineNumber)
+data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int): LoopStatementNode(lineNumber)
 
 interface AssignLHS {
     val identifier: String

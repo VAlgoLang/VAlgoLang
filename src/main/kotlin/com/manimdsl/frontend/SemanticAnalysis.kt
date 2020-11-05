@@ -245,6 +245,12 @@ class SemanticAnalysis {
         }
     }
 
+    fun breakOrContinueOutsideLoopCheck(action: String, inLoop: Boolean, ctx: ParserRuleContext) {
+        if (!inLoop) {
+            breakOrContinueOutsideLoopError(action, ctx)
+        }
+    }
+
     fun incompatibleReturnTypesCheck(
         currentSymbolTable: SymbolTableVisitor,
         functionReturnType: Type,
@@ -315,6 +321,7 @@ class SemanticAnalysis {
                 is IfStatementNode -> checkStatementsHaveReturn(it.statements)
                         && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
                         && checkStatementsHaveReturn(it.elseBlock.statements)
+                is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
             }
         }
