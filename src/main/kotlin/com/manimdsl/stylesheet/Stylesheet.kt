@@ -28,11 +28,11 @@ sealed class StylesheetProperty {
 
 }
 
-class AnimationProperties(borderColor: String? = null, textColor: String? = null) :
+class AnimationProperties(borderColor: String? = null, textColor: String? = null, val pointer: Boolean? = null) :
     StylesheetProperty() {
     override val borderColor: String? = handleColourValue(borderColor)
     override val textColor: String? = handleColourValue(textColor)
-    val pointer: Boolean? = null
+
 }
 
 class StyleProperties(
@@ -98,7 +98,9 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
-        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+        val temp1 = style.animate ?: AnimationProperties()
+        val temp2 = dataStructureStyle.animate ?: AnimationProperties()
+        val animationStyle = temp1 merge temp2
         // Return null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
