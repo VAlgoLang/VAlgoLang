@@ -33,6 +33,7 @@ class VirtualMachine(
     private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
+    private val MAX_NUMBER_OF_LOOPS = 10000
 
     init {
         fileLines.indices.forEach {
@@ -686,9 +687,9 @@ class VirtualMachine(
 
             var conditionValue: ExecValue
             var execValue: ExecValue
+            var loopCount = 0
 
-
-            while (true) {
+            while (loopCount < MAX_NUMBER_OF_LOOPS) {
                 conditionValue = executeExpression(whileStatementNode.condition)
                 if (conditionValue is RuntimeError) {
                     return conditionValue
@@ -728,7 +729,10 @@ class VirtualMachine(
 
                 pc = whileStatementNode.lineNumber
                 moveToLine()
+                loopCount++
             }
+
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
