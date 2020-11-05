@@ -164,8 +164,8 @@ fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRule
     addSemanticError("Function $identifier called in different/incompatible ways", getErrorLinePos(ctx))
 }
 
-fun primitiveAssignedToNull(nullType: String, primitiveType: String, ctx: ParserRuleContext) {
-    addSemanticError("Cannot assign $nullType to a primitive $primitiveType type", getErrorLinePos(ctx))
+fun nonNullableAssignedToNull(nullType: String, type: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot assign $nullType to a $type type", getErrorLinePos(ctx))
 }
 
 fun unableToInferType(nullType: String, ctx: ParserRuleContext) {

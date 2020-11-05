@@ -135,9 +135,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
-        if(rhsType is NullType && lhsType is DataStructureType) {
-            rhsType = lhsType
-        }
+
 
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(rhs.functionIdentifier) as FunctionData
@@ -151,7 +149,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
-
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
+        }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
         lineNumberNodeMap[ctx.start.line] = DeclarationNode(ctx.start.line, IdentifierNode(ctx.start.line, identifier), rhs)
         return lineNumberNodeMap[ctx.start.line] as DeclarationNode

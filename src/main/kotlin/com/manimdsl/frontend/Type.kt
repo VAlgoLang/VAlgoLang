@@ -18,6 +18,8 @@ object BoolType : PrimitiveType() {
     }
 }
 
+interface NullableDataStructure
+
 sealed class DataStructureType(
     open var internalType: Type,
     open val methods: Map<String, DataStructureMethod>
@@ -53,16 +55,8 @@ object ErrorMethod : DataStructureMethod {
     override val varargs: Boolean = false
 }
 
-object ErrorConstructorMethod : ConstructorMethod {
-    override val returnType: Type = ErrorType
-    override val argumentTypes: List<Pair<Type, Boolean>> = emptyList()
-    override val varargs: Boolean = false
-    override val minRequiredArgsWithoutInitialValue: Int = 0
-}
-
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
-
 
 data class ArrayType(
     override var internalType: Type,
@@ -111,7 +105,7 @@ data class BinaryTreeType(
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
         "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
     ),
-) : DataStructureType(internalType, methods) {
+) : DataStructureType(internalType, methods), NullableDataStructure {
     class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
@@ -252,20 +246,6 @@ data class StackType(
 object NullType: Type() {
     override fun toString(): String {
         return "null"
-    }
-}
-
-object ErrorDataStructureType: DataStructureType(internalType = ErrorType, emptyMap()) {
-    override fun containsMethod(method: String): Boolean {
-        return false
-    }
-
-    override fun getMethodByName(method: String): DataStructureMethod {
-        return ErrorMethod
-    }
-
-    override fun getConstructor(): ConstructorMethod {
-        return ErrorConstructorMethod
     }
 }
 

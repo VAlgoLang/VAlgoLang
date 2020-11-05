@@ -325,7 +325,7 @@ class InvalidSemanticTests {
     fun invalidPrimitiveAssignedToNull() {
         runSyntaxAndSemanticAnalysis("invalidPrimitiveAssignedToNull.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot assign null to a primitive .* type"))
+            outputStreamCaptor.toString().contains(Regex("Cannot assign null to .* type"))
         )
     }
 
