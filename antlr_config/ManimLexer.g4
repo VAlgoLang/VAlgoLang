@@ -7,6 +7,10 @@ DOT: '.';
 EQUAL: '=';
 COMMA: ',';
 
+RIGHT: 'right';
+LEFT: 'left';
+VALUE: 'value';
+
 // boolean literals
 TRUE: 'true';
 FALSE: 'false';
@@ -47,6 +51,7 @@ COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
 ARRAY: 'Array';
+TREE_NODE: 'Node';
 IF: 'if';
 ELSE: 'else';
 WHILE: 'while';
@@ -54,7 +59,7 @@ BREAK: 'break';
 CONTINUE: 'continue';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
-
+NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;
 NUMBER: (DIGIT+) (DOT DIGIT+)?;

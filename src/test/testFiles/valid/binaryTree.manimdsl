@@ -1,0 +1,3 @@
+let y = Node<number>(4);
+let x = 5;
+y.value = x;
