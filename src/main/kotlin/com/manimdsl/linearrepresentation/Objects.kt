@@ -95,8 +95,7 @@ data class PartitionBlock(
             "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
             "variable_frame.to_corner(UL, buff=0)",
             "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
-            "code_frame.next_to(variable_frame, DOWN, buff=0)",
-            "self.play(FadeIn(variable_frame), FadeIn(code_frame)) \n"
+            "code_frame.next_to(variable_frame, DOWN, buff=0) \n"
         )
     }
 }
