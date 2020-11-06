@@ -20,6 +20,7 @@ class SemanticAnalysis {
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
             is NullNode -> NullType
+            is CharNode -> CharType
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
@@ -61,7 +62,7 @@ class SemanticAnalysis {
 
         return when (expression) {
             is AddExpression, is SubtractExpression, is MultiplyExpression -> {
-                if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
+                if ((expr1Type is NumberType || expr1Type is CharType) && (expr2Type is NumberType || expr2Type is CharType)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType

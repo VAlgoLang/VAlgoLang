@@ -45,6 +45,7 @@ arg_list: expr (COMMA expr)*                                        #ArgumentLis
 expr: NUMBER                                                        #NumberLiteral
     | NULL                                                          #NullLiteral
     | bool                                                          #BooleanLiteral
+    | CHAR_LITER                                                    #CharacterLiteral
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
     | node_elem                                                     #NodeElemExpr
@@ -72,6 +73,7 @@ data_structure_type: STACK LT primitive_type GT                      #StackType
 
 primitive_type: NUMBER_TYPE                                          #NumberType
     | BOOL_TYPE                                                      #BoolType
+    | CHAR_TYPE                                                      #CharType
     ;
 
 bool: TRUE | FALSE;

@@ -328,6 +328,7 @@ class VirtualMachine(
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
+            is CharNode -> CharValue(node.value)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }

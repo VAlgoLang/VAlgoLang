@@ -474,6 +474,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return BoolNode(ctx.start.line, ctx.bool().text.toBoolean())
     }
 
+    override fun visitCharacterLiteral(ctx: CharacterLiteralContext): ASTNode {
+        // char in format 'a'
+        return CharNode(ctx.start.line, ctx.CHAR_LITER().text[1])
+    }
+
     override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
         return NullNode(ctx.start.line)
     }
@@ -490,6 +495,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitBoolType(ctx: BoolTypeContext): ASTNode {
         return BoolType
+    }
+
+    override fun visitCharType(ctx: CharTypeContext?): ASTNode {
+        return CharType
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
