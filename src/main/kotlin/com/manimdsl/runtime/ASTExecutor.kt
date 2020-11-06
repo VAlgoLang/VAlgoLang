@@ -613,7 +613,8 @@ class VirtualMachine(
                             assignLHS.identifier,
                             arrayValue.array.clone(),
                             color = arrayValue.style.borderColor,
-                            textColor = arrayValue.style.textColor
+                            textColor = arrayValue.style.textColor,
+                            creationString = arrayValue.style.creationStyle
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure

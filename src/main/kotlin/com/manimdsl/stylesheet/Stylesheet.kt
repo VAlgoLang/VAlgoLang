@@ -93,9 +93,6 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 newStyle.textColor = "WHITE"
             }
         }
-        if (newStyle.creationStyle == null) {
-            newStyle.creationStyle = "FadeIn"
-        }
         return newStyle
     }
 

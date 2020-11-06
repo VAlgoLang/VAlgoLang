@@ -166,12 +166,15 @@ data class ArrayStructure(
     val values: Array<ExecValue>,
     val color: String? = null,
     val textColor: String? = null,
-    val creationString: String = "FadeIn",
+    var creationString: String? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Int, Int>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
     override var shape: Shape = NullShape
 
+    init {
+        if (creationString == null) creationString = "FadeIn"
+    }
 
     override fun toPython(): List<String> {
         return listOf(
