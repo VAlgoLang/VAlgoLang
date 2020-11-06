@@ -32,33 +32,36 @@ class AnimationProperties(borderColor: String? = null, textColor: String? = null
     StylesheetProperty() {
     override val borderColor: String? = handleColourValue(borderColor)
     override val textColor: String? = handleColourValue(textColor)
+    val animationStyle: String? = null
 
+    fun hasNoStyle() : Boolean = borderColor == null && textColor == null && animationStyle == null
 }
 
 class StyleProperties(
     borderColor: String? = null,
     textColor: String? = null,
+    var creationStyle: String? = null,
     val animate: AnimationProperties? = null
 ) : StylesheetProperty() {
     override var borderColor: String? = handleColourValue(borderColor)
     override var textColor: String? = handleColourValue(textColor)
 }
 
-data class StyleSheetFromJSON(
+data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap()
 )
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
-    private val stylesheet: StyleSheetFromJSON
+    private val stylesheet: StylesheetFromJSON
 
     init {
         stylesheet = if (stylesheetPath != null) {
             val gson = Gson()
-            val type: Type = object : TypeToken<StyleSheetFromJSON>() {}.type
+            val type: Type = object : TypeToken<StylesheetFromJSON>() {}.type
             try {
-                val parsedStylesheet: StyleSheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
+                val parsedStylesheet: StylesheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
                 StyleSheetValidator.validateStyleSheet(parsedStylesheet, symbolTableVisitor)
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
@@ -71,7 +74,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 exitProcess(1)
             }
         } else {
-            StyleSheetFromJSON()
+            StylesheetFromJSON()
         }
     }
 
@@ -90,6 +93,9 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 newStyle.textColor = "WHITE"
             }
         }
+        if (newStyle.creationStyle == null) {
+            newStyle.creationStyle = "FadeIn"
+        }
         return newStyle
     }
 
@@ -100,7 +106,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
 
         // Returns null if there is no style to make sure null checks work throughout executor
-        return if (animationStyle.borderColor == null && animationStyle.textColor == null) null else animationStyle
+        return if (animationStyle.hasNoStyle()) null else animationStyle
     }
 
     fun getStepIntoIsDefault(): Boolean {

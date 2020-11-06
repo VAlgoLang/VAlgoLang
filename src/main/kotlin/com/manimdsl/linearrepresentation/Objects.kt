@@ -166,17 +166,19 @@ data class ArrayStructure(
     val values: Array<ExecValue>,
     val color: String? = null,
     val textColor: String? = null,
+    val creationString: String = "FadeIn",
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Int, Int>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
     override var shape: Shape = NullShape
 
+
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            "self.play(ShowCreation($ident.title))",
-            "self.play(*[ShowCreation(array_elem.all) for array_elem in $ident.array_elements])"
+            "self.play($creationString($ident.title))",
+            "self.play(*[$creationString(array_elem.all) for array_elem in $ident.array_elements])"
         )
     }
 
