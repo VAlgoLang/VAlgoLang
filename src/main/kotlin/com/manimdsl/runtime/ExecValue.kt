@@ -16,19 +16,46 @@ sealed class ExecValue {
 
     /** '+' **/
     operator fun plus(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value + other.value) else throwTypeError()
+        is DoubleValue -> when (other) {
+            is CharValue -> DoubleValue((other.value.toDouble() + this.value))
+            is DoubleValue -> DoubleValue((this.value + other.value))
+            else -> throwTypeError()
+        }
+        is CharValue -> when (other) {
+            is CharValue -> DoubleValue((this.value.toDouble() + other.value.toDouble()))
+            is DoubleValue -> DoubleValue((this.value.toDouble() + other.value))
+            else -> throwTypeError()
+        }
         else -> throwTypeError()
     }
 
     /** '-' **/
     operator fun minus(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value - other.value) else throwTypeError()
+        is DoubleValue -> when (other) {
+            is CharValue -> DoubleValue((other.value.toDouble() - this.value))
+            is DoubleValue -> DoubleValue((this.value - other.value))
+            else -> throwTypeError()
+        }
+        is CharValue -> when (other) {
+            is CharValue -> DoubleValue((this.value.toDouble() - other.value.toDouble()))
+            is DoubleValue -> DoubleValue((this.value.toDouble() - other.value))
+            else -> throwTypeError()
+        }
         else -> throwTypeError()
     }
 
     /** '*' **/
     operator fun times(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value * other.value) else throwTypeError()
+        is DoubleValue -> when (other) {
+            is CharValue -> DoubleValue((other.value.toDouble() * this.value))
+            is DoubleValue -> DoubleValue((this.value * other.value))
+            else -> throwTypeError()
+        }
+        is CharValue -> when (other) {
+            is CharValue -> DoubleValue((this.value.toDouble() * other.value.toDouble()))
+            is DoubleValue -> DoubleValue((this.value.toDouble() * other.value))
+            else -> throwTypeError()
+        }
         else -> throwTypeError()
     }
 
@@ -40,8 +67,17 @@ sealed class ExecValue {
 
     /** '==','!=', '<', '<=', '>', '>='  **/
     operator fun compareTo(other: Any): Int = when (this) {
-        is DoubleValue -> if (other is DoubleValue) this.value.compareTo(other.value) else throwTypeError()
+        is DoubleValue -> when (other) {
+            is DoubleValue -> this.value.compareTo(other.value)
+            is CharValue -> this.value.compareTo(other.value.toDouble())
+            else -> throwTypeError()
+        }
         is BoolValue -> if (other is BoolValue) this.value.compareTo(other.value) else throwTypeError()
+        is CharValue -> when (other) {
+            is CharValue -> this.value.compareTo(other.value)
+            is DoubleValue -> this.value.toDouble().compareTo(other.value)
+            else -> throwTypeError()
+        }
         else -> throw throwTypeError()
     }
 
@@ -65,6 +101,22 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
 
     override fun clone(): ExecValue {
         return DoubleValue(value, manimObject)
+    }
+}
+
+data class CharValue(override val value: Char, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
+    override fun equals(other: Any?): Boolean = other is CharValue && this.value == other.value
+
+    override fun hashCode(): Int {
+        return value.hashCode()
+    }
+
+    override fun toString(): String {
+        return value.toString()
+    }
+
+    override fun clone(): ExecValue {
+        return CharValue(value, manimObject)
     }
 }
 

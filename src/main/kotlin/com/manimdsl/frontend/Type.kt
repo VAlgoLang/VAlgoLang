@@ -18,6 +18,12 @@ object BoolType : PrimitiveType() {
     }
 }
 
+object CharType : PrimitiveType() {
+    override fun toString(): String {
+        return "char"
+    }
+}
+
 interface NullableDataStructure
 
 sealed class DataStructureType(

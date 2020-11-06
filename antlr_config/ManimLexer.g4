@@ -45,6 +45,7 @@ RETURN: 'return';
 // Primitive types
 NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
+CHAR_TYPE: 'char';
 
 // Keywords
 COMMENT: 'comment';
@@ -66,7 +67,6 @@ NUMBER: (DIGIT+) (DOT DIGIT+)?;
 fragment ESCAPED_CHAR: ('0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\');
 fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR;
 STRING: '"' (CHARACTER)* '"';
-
-
+CHAR_LITER:'\'' CHARACTER '\'';
 
 

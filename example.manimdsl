@@ -1,5 +1,4 @@
-let root = Node<number>(3);
+let x = 'a';
 
-let y:Node<number> = null;
-
-y.right = 3;
+let y = 'a' < 'b';
+let z = 'a' - 3;
