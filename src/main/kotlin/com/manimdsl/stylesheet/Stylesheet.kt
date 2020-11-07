@@ -78,7 +78,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE")
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE", animate = AnimationProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
 

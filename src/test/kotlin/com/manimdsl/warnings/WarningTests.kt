@@ -2,9 +2,9 @@ package com.manimdsl.warnings
 
 import com.manimdsl.ManimDSLParser
 import com.manimdsl.stylesheet.Stylesheet
-import org.junit.After
-import org.junit.Assert
-import org.junit.Before
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -15,13 +15,13 @@ class WarningTests {
     private val outputStreamCaptor = ByteArrayOutputStream()
 
     // To capture standard out e.g. use of println
-    @Before
+    @BeforeEach
     internal fun setUp() {
         System.setOut(PrintStream(outputStreamCaptor))
     }
 
     // Reset system out to stdout
-    @After
+    @AfterEach
     internal fun tearDown() {
         System.setOut(standardOut)
     }
@@ -29,7 +29,7 @@ class WarningTests {
     @Test
     fun creatingStyleForUndeclaredGlobalVariableThrowsWarning() {
         runErrorAndWarningHandling("example.manimdsl", "mixedStylesheet.json")
-        Assert.assertTrue(
+        assertTrue(
             outputStreamCaptor.toString().contains(Regex("Created style for variable .* that has not been declared"))
         )
     }
@@ -37,7 +37,7 @@ class WarningTests {
     @Test
     fun creatingStyleForUndeclaredVariableInAllScopesThrowsWarning() {
         runErrorAndWarningHandling("multiplyByTwo.manimdsl", "mixedStylesheet.json")
-        Assert.assertTrue(
+        assertTrue(
             outputStreamCaptor.toString().contains(Regex("Created style for variable .* that has not been declared"))
         )
     }
