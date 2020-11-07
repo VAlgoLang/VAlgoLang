@@ -181,7 +181,7 @@ class VirtualMachine(
             is SleepNode -> executeSleep(statement)
             is AssignmentNode -> executeAssignment(statement)
             is DeclarationNode -> executeAssignment(statement)
-            is MethodCallNode -> executeMethodCall(statement, false)
+            is MethodCallNode -> executeMethodCall(statement, false, false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
@@ -340,7 +340,7 @@ class VirtualMachine(
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
-            is MethodCallNode -> executeMethodCall(node, insideMethodCall)
+            is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
@@ -399,10 +399,10 @@ class VirtualMachine(
             }
         }
 
-        private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
+        private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
             return when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
-                    return executeStackMethodCall(node, ds, insideMethodCall)
+                    return executeStackMethodCall(node, ds, insideMethodCall, isExpression)
                 }
                 is ArrayValue -> {
                     return executeArrayMethodCall(node, ds)
@@ -451,7 +451,7 @@ class VirtualMachine(
             }
         }
 
-        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean): ExecValue {
+        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
             return when (node.dataStructureMethod) {
                 is StackType.PushMethod -> {
                     val value = executeExpression(node.arguments[0], true)
@@ -515,7 +515,7 @@ class VirtualMachine(
                     )
                     ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it)) }
                     linearRepresentation.addAll(instructions)
-                    return poppedValue
+                    return if (isExpression) poppedValue else EmptyValue
                 }
                 is StackType.IsEmptyMethod -> {
                     return BoolValue(ds.stack.isEmpty())
