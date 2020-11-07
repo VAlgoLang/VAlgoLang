@@ -57,11 +57,15 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
         return this
     }
 
-    fun shiftHorizontal(offset: Double): BoundaryShape {
+    fun shiftHorizontalToRight(offset: Double): BoundaryShape {
         x1 += offset
         return this
     }
 
+    fun shiftVerticalUpwards(offset: Double): BoundaryShape {
+        y1 -= offset
+        return this
+    }
 }
 
 data class SquareBoundary(
@@ -227,10 +231,19 @@ class Scene {
         if (sceneShapes.isNotEmpty()) {
             val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first}
             val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
+            val topYCoord = sceneShapes.map { it.corners()[0] }.maxOf { it.second }
+            val bottomYCoord = sceneShapes.map { it.corners()[2] }.minOf { it.second }
+
+            val shapeOverallHeight = topYCoord - bottomYCoord
             val shapesOverallWidth = rightXCoord - leftXCoord
             val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
+            val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
+
             if (availableWidth > shapesOverallWidth) {
-                sceneShapes.forEach { it.shiftHorizontal((shapesOverallWidth - availableWidth) / 2) }
+                sceneShapes.forEach { it.shiftHorizontalToRight((shapesOverallWidth - availableWidth) / 2) }
+            }
+            if (avaliableHeight > shapeOverallHeight) {
+                sceneShapes.forEach { it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2) }
             }
         }
     }
