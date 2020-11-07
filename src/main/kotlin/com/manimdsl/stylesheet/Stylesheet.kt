@@ -16,7 +16,7 @@ sealed class StylesheetProperty {
     abstract val textColor: String?
 
     fun handleColourValue(color: String?): String? {
-        if(color == null) return null
+        if (color == null) return null
         return if (color.matches(Regex("#[a-fA-F0-9]{6}"))) {
             // hex value
             "\"${color}\""
@@ -28,7 +28,12 @@ sealed class StylesheetProperty {
 
 }
 
-data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null, val pointer: Boolean? = null) : StylesheetProperty()
+data class AnimationProperties(
+    override val borderColor: String? = null,
+    override val textColor: String? = null,
+    val pointer: Boolean? = null,
+    val animationStyle: String? = null
+) : StylesheetProperty()
 
 data class StyleProperties(
     override var borderColor: String = "BLUE",
@@ -73,7 +78,6 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-
         return style merge dataStructureStyle
     }
 
@@ -81,7 +85,8 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+        val animationStyle =
+            (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
         // Return null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
