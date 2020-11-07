@@ -3,7 +3,7 @@ package com.manimdsl.executor
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
 
-sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
+sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
     abstract var width: Int
     abstract var height: Int
@@ -15,17 +15,17 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
 
-    abstract fun setCoords(x: Int, y: Int): BoundaryShape
+    abstract fun setCoords(x: Double, y: Double): BoundaryShape
 
     abstract fun clone(): BoundaryShape
 
-    fun coordInShape(x: Int, y: Int): Boolean {
+    fun coordInShape(x: Double, y: Double): Boolean {
         return (x >= x1) && (y >= y1) && (x <= (x1 + width)) && (y <= (y1 + height))
     }
 
-    fun corners(): List<Pair<Int, Int>> {
+    fun corners(): List<Pair<Double, Double>> {
         // UL, UR, LL, LR
-        return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1) , Pair(x1 + width, y1))
+        return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
     fun area(): Int {
@@ -57,6 +57,15 @@ sealed class BoundaryShape(var x1: Int = 0, var y1: Int = 0) {
         return this
     }
 
+    fun shiftHorizontalToRight(offset: Double): BoundaryShape {
+        x1 += offset
+        return this
+    }
+
+    fun shiftVerticalUpwards(offset: Double): BoundaryShape {
+        y1 -= offset
+        return this
+    }
 }
 
 data class SquareBoundary(
@@ -66,7 +75,7 @@ data class SquareBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = false
-    override fun setCoords(x: Int, y: Int): SquareBoundary {
+    override fun setCoords(x: Double, y: Double): SquareBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -88,7 +97,7 @@ data class TallBoundary(
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
 
-    override fun setCoords(x: Int, y: Int): TallBoundary {
+    override fun setCoords(x: Double, y: Double): TallBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -109,7 +118,7 @@ data class WideBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
-    override fun setCoords(x: Int, y: Int): WideBoundary {
+    override fun setCoords(x: Double, y: Double): WideBoundary {
         this.x1 = x
         this.y1 = y
         return this
@@ -123,11 +132,11 @@ data class WideBoundary(
     }
 }
 
-enum class Corner(val coord: Pair<Int, Int>) {
-    BL(Pair(-2, -4)),
-    BR(Pair(7, -4)),
-    TL(Pair(-2, 4)),
-    TR(Pair(7, 4));
+enum class Corner(val coord: Pair<Double, Double>) {
+    BL(Pair(-2.0, -4.0)),
+    BR(Pair(7.0, -4.0)),
+    TL(Pair(-2.0, 4.0)),
+    TR(Pair(7.0, 4.0));
 
     fun next(): Corner {
         return when (this) {
@@ -158,15 +167,18 @@ enum class ScanDir {
 class Scene {
 
     private val sceneShape = WideBoundary(width = 9, height = 8, maxSize = -1)
+    private val fullSceneShape = WideBoundary(width = 14, height = 8, maxSize = -1)
 
     init {
-        sceneShape.x1 = -2
-        sceneShape.y1 = -4
+        sceneShape.x1 = -2.0
+        sceneShape.y1 = -4.0
+        fullSceneShape.x1 = -7.0
+        fullSceneShape.y1 = -4.0
     }
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
 
-    fun compute(shapes: List<Pair<String, BoundaryShape>>): Pair<ExitStatus, Map<String, BoundaryShape>> {
+    fun compute(shapes: List<Pair<String, BoundaryShape>>, fullScreen: Boolean): Pair<ExitStatus, Map<String, BoundaryShape>> {
         val total = shapes.sumBy { it.second.area() }
         if (total > sceneShape.area()) {
             ErrorHandler.addTooManyDatastructuresError()
@@ -179,9 +191,10 @@ class Scene {
                     is SquareBoundary -> addToScene(Corner.TR, it.second)
                     is TallBoundary -> addToScene(Corner.TR, it.second)
                 }
-                if(!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
+                if (!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
             }
             sortedShapes.forEach { maximise(it.second) }
+            centralise(fullScreen)
             return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
         }
     }
@@ -211,6 +224,27 @@ class Scene {
                 boundaryShape.setCoords(Corner.BR.coord.first - boundaryShape.width, Corner.BR.coord.second),
                 secondScan
             )
+        }
+    }
+
+    private fun centralise(fullScreen: Boolean = false) {
+        if (sceneShapes.isNotEmpty()) {
+            val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first}
+            val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
+            val topYCoord = sceneShapes.map { it.corners()[0] }.maxOf { it.second }
+            val bottomYCoord = sceneShapes.map { it.corners()[2] }.minOf { it.second }
+
+            val shapeOverallHeight = topYCoord - bottomYCoord
+            val shapesOverallWidth = rightXCoord - leftXCoord
+            val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
+            val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
+
+            if (availableWidth > shapesOverallWidth) {
+                sceneShapes.forEach { it.shiftHorizontalToRight((shapesOverallWidth - availableWidth) / 2) }
+            }
+            if (avaliableHeight > shapeOverallHeight) {
+                sceneShapes.forEach { it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2) }
+            }
         }
     }
 

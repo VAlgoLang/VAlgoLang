@@ -1,16 +1,16 @@
-package com.manimdsl.stylesheet
+package com.manimdsl
 
-import com.manimdsl.ManimDSLParser
 import com.manimdsl.frontend.IdentifierData
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
 import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.runtime.StackValue
+import com.manimdsl.stylesheet.Stylesheet
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.io.File
 import java.util.*
 
@@ -21,7 +21,10 @@ class StylesheetTests {
     fun variableStyleOverridesDataStructureStyle() {
         val symbolTable = SymbolTableVisitor()
         symbolTable.addVariable("stack1", IdentifierData(StackType(NumberType)))
-        val stack1Style = Stylesheet("$stylesheetPath/variableOverrideStylesheet.json", symbolTable).getStyle("stack1", StackValue(EmptyMObject, Stack()))
+        val stack1Style = Stylesheet(
+            "$stylesheetPath/variableOverrideStylesheet.json",
+            symbolTable
+        ).getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("ORANGE"))
         assertThat(stack1Style.textColor, `is`("BLUE"))
     }
@@ -30,7 +33,10 @@ class StylesheetTests {
     fun dataStructureStyleIsPassedToVariableWhenNoOtherStyleExists() {
         val symbolTable = SymbolTableVisitor()
         symbolTable.addVariable("stack1", IdentifierData(StackType(NumberType)))
-        val stack1Style = Stylesheet("$stylesheetPath/stackTypeStylesheet.json", symbolTable).getStyle("stack1", StackValue(EmptyMObject, Stack()))
+        val stack1Style = Stylesheet(
+            "$stylesheetPath/stackTypeStylesheet.json",
+            symbolTable
+        ).getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("GREEN"))
     }
@@ -39,7 +45,8 @@ class StylesheetTests {
     fun dataStructureStyleMergesWithVariableStyle() {
         val symbolTable = SymbolTableVisitor()
         symbolTable.addVariable("stack1", IdentifierData(StackType(NumberType)))
-        val stack1Stylesheet = Stylesheet("$stylesheetPath/mixedStylesheet.json", symbolTable)
+        val stack1Stylesheet =
+            Stylesheet("$stylesheetPath/mixedStylesheet.json", symbolTable)
         val stack1Style = stack1Stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("BLUE"))
@@ -68,7 +75,10 @@ class StylesheetTests {
         val parser = ManimDSLParser(inputFile.inputStream())
         val program = parser.parseFile().second
         val parserResult = parser.convertToAst(program)
-        val stylesheet = Stylesheet("$stylesheetPath/$stylesheetName", parserResult.symbolTableVisitor)
+        val stylesheet = Stylesheet(
+            "$stylesheetPath/$stylesheetName",
+            parserResult.symbolTableVisitor
+        )
 //        VirtualMachine(parserResult.abstractSyntaxTree, parserResult.symbolTableVisitor, parserResult.lineNodeMap, inputFile.readLines(), stylesheet).runProgram()
         return stylesheet
     }

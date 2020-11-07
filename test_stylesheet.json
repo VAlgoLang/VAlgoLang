@@ -1,9 +1,9 @@
 {
+  "hideCode": true,
   "dataStructures": {
     "Array": {
       "borderColor": "YELLOW",
       "animate": {
-        "borderColor": "RED",
         "textColor": "RED"
       }
     }
