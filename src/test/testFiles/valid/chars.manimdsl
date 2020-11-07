@@ -3,4 +3,4 @@ let y = 'a' * 3;
 let z = 'a' - 'b';
 let n = 'a' * 'b';
 let o = 'a' == 'a';
-let x = 'a' < 'b'
+let a = 'a' < 'b';
