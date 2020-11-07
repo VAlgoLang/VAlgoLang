@@ -47,8 +47,8 @@ class Rectangle(
     override fun restyle(styleProperties: StylesheetProperty): List<String> {
         val instructions = mutableListOf<String>()
 
-        styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${it})") }
-        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${it})") }
+        styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${styleProperties.handleColourValue(it)})") }
+        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${styleProperties.handleColourValue(it)})") }
 
         return if (instructions.isEmpty()) {
             emptyList()
