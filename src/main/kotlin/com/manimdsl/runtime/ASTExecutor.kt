@@ -724,7 +724,8 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto = stepInto
+                    stepInto = stepInto,
+                    hideCode = hideCode
                 ).runFrame()
 
                 when (execValue) {
