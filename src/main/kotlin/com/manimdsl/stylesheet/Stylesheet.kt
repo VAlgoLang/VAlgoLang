@@ -28,21 +28,13 @@ sealed class StylesheetProperty {
 
 }
 
-class AnimationProperties(borderColor: String? = null, textColor: String? = null, val pointer: Boolean? = null) :
-    StylesheetProperty() {
-    override val borderColor: String? = handleColourValue(borderColor)
-    override val textColor: String? = handleColourValue(textColor)
+data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null, val pointer: Boolean? = null) : StylesheetProperty()
 
-}
-
-class StyleProperties(
-    borderColor: String? = null,
-    textColor: String? = null,
+data class StyleProperties(
+    override var borderColor: String = "BLUE",
+    override var textColor: String = "WHITE",
     val animate: AnimationProperties? = null
-) : StylesheetProperty() {
-    override var borderColor: String? = handleColourValue(borderColor)
-    override var textColor: String? = handleColourValue(textColor)
-}
+) : StylesheetProperty()
 
 data class StyleSheetFromJSON(
     val codeTracking: String = "stepInto",
@@ -80,17 +72,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
-        val newStyle = style merge dataStructureStyle
-        val animatedStyle = getAnimatedStyle(identifier, value)
-        if (animatedStyle != null) {
-            if (animatedStyle.borderColor != null && newStyle.borderColor == null) {
-                newStyle.borderColor = "WHITE"
-            }
-            if (animatedStyle.textColor != null && newStyle.textColor == null) {
-                newStyle.textColor = "WHITE"
-            }
-        }
-        return newStyle
+        return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
@@ -100,7 +82,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
 
         // Returns null if there is no style to make sure null checks work throughout executor
-        return if (animationStyle.borderColor == null && animationStyle.textColor == null) null else animationStyle
+        return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
     fun getStepIntoIsDefault(): Boolean {
