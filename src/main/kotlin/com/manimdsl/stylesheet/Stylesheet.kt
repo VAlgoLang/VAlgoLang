@@ -38,6 +38,7 @@ data class StyleProperties(
 
 data class StyleSheetFromJSON(
     val codeTracking: String = "stepInto",
+    val hideCode: Boolean = false,
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap()
 )
@@ -87,6 +88,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStepIntoIsDefault(): Boolean {
         return stylesheet.codeTracking == "stepInto"
+    }
+
+    fun getHideCode(): Boolean {
+        return stylesheet.hideCode
     }
 }
 

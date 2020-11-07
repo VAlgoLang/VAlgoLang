@@ -18,7 +18,7 @@ class Main(Scene):
         # Moves the current line pointer to line 1
         self.move_arrow_to_line(1, pointer, code_block, code_text)
         # Constructing new Stack<number> "y"
-        stack = Stack([5, 4, 0], [7, 4, 0], [5, -4, 0], [7, -4, 0], DOWN)
+        stack = Stack([5.0, 4.0, 0], [7.0, 4.0, 0], [5.0, -4.0, 0], [7.0, -4.0, 0], DOWN)
         self.play(stack.create_init("y"))
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
@@ -150,7 +150,7 @@ class Rectangle_block:
         self.text_color = text_color
         self.font = font
         self.pointer = Triangle(color=color,fill_color=color,fill_opacity=1).flip(LEFT).scale(0.1)
-        self.pointer.next_to(self.all, TOP, 0.01)
+        self.pointer.next_to(self.shape, TOP, 0.01)
         if target:
             self.owner = target
             self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
