@@ -95,8 +95,7 @@ data class PartitionBlock(
             "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
             "variable_frame.to_corner(UL, buff=0)",
             "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
-            "code_frame.next_to(variable_frame, DOWN, buff=0)",
-            "self.play(FadeIn(variable_frame), FadeIn(code_frame)) \n"
+            "code_frame.next_to(variable_frame, DOWN, buff=0) \n"
         )
     }
 }
@@ -124,10 +123,10 @@ data class VariableBlock(
 sealed class DataStructureMObject(
     open val type: DataStructureType,
     open val ident: String,
-    private var boundaries: List<Pair<Int, Int>> = emptyList()
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : MObject {
 
-    abstract fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int)
+    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
 }
 
@@ -140,7 +139,7 @@ data class InitManimStack(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
-    private var boundary: List<Pair<Int, Int>> = emptyList(),
+    private var boundary: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
@@ -152,7 +151,7 @@ data class InitManimStack(
         return python
     }
 
-    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundary = corners
         shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
@@ -168,7 +167,7 @@ data class ArrayStructure(
     val textColor: String? = null,
     var creationString: String? = null,
     var maxSize: Int = -1,
-    private var boundaries: List<Pair<Int, Int>> = emptyList()
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
     override var shape: Shape = NullShape
 
@@ -185,7 +184,7 @@ data class ArrayStructure(
         )
     }
 
-    override fun setNewBoundary(corners: List<Pair<Int, Int>>, newMaxSize: Int) {
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
         shape = ArrayShape(ident, values, text, boundaries, color, textColor)
