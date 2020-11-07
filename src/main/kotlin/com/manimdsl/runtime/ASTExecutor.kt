@@ -457,7 +457,7 @@ class VirtualMachine(
                     val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                         Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            value.value.toString(),
+                            value.toString(),
                             dataStructureIdentifier,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
@@ -563,7 +563,7 @@ class VirtualMachine(
                     node.initialValue.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            it.value.toString(),
+                            it.toString(),
                             initStructureIdent,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
