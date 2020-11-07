@@ -5,7 +5,7 @@ import com.manimdsl.stylesheet.Stylesheet
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
