@@ -78,7 +78,7 @@ data class StackPopObject(
 
 data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue, val animatedStyle: AnimationProperties?) : ManimInstr {
     override fun toPython(): List<String> {
-        val animationString = if (animatedStyle != null) ", color=${animatedStyle.textColor}" else ""
+        val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
         return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
