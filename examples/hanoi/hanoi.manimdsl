@@ -11,6 +11,6 @@ fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<num
 
 let C = Stack<number>();
 let B = Stack<number>();
-let A = Stack<number>() { 3, 2, 1} ;
+let A = Stack<number>() { 5,4, 3, 2, 1} ;
 
-move(3, A, B, C);
+move(A.size(), A, B, C);

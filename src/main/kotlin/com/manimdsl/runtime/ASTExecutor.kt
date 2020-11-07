@@ -33,6 +33,7 @@ class VirtualMachine(
     private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
+    private val MAX_NUMBER_OF_LOOPS = 10000
     private val hideCode = stylesheet.getHideCode()
 
     init {
@@ -183,6 +184,8 @@ class VirtualMachine(
             is MethodCallNode -> executeMethodCall(statement, false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
+            is WhileStatementNode -> executeWhileStatement(statement)
+            is LoopStatementNode -> executeLoopStatement(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
                 stepInto = statement.isStepInto
@@ -193,6 +196,17 @@ class VirtualMachine(
                 EmptyValue
             }
             else -> EmptyValue
+        }
+
+        private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {
+            is BreakNode -> {
+                pc = statement.loopEndLineNumber
+                BreakValue
+            }
+            is ContinueNode -> {
+                pc = statement.loopStartLineNumber
+                ContinueValue
+            }
         }
 
 
@@ -352,6 +366,8 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
             is ArrayElemNode -> executeArrayElem(node)
+            is BinaryTreeElemNode -> TODO()
+            is NullNode -> TODO()
         }
 
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
@@ -616,6 +632,8 @@ class VirtualMachine(
                     }
                     arrayValue
                 }
+                is BinaryTreeType -> TODO()
+                else -> EmptyValue
             }
         }
 
@@ -677,6 +695,60 @@ class VirtualMachine(
                 leftExpression,
                 rightExpression
             )
+        }
+
+
+        private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
+            if (showMoveToLine) addSleep(0.5)
+
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+            var loopCount = 0
+
+            while (loopCount < MAX_NUMBER_OF_LOOPS) {
+                conditionValue = executeExpression(whileStatementNode.condition)
+                if (conditionValue is RuntimeError) {
+                    return conditionValue
+                } else if (conditionValue is BoolValue) {
+                    if (!conditionValue.value) {
+                        pc = whileStatementNode.endLineNumber
+                        return EmptyValue
+                    } else {
+                        pc = whileStatementNode.lineNumber
+                    }
+                }
+
+                execValue = Frame(
+                    whileStatementNode.statements.first().lineNumber,
+                    whileStatementNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto
+                ).runFrame()
+
+                when (execValue) {
+                    is BreakValue -> {
+                        pc = whileStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    }
+                    is ContinueValue -> {
+                        pc = whileStatementNode.lineNumber
+                        moveToLine()
+                        continue
+                    }
+                    !is EmptyValue -> {
+                        return execValue
+                    }
+                }
+
+                pc = whileStatementNode.lineNumber
+                moveToLine()
+                loopCount++
+            }
+
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {

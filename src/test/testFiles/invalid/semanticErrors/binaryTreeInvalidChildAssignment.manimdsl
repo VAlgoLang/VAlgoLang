@@ -1,0 +1,3 @@
+let y:Node<number> = Node<number>(5);
+
+y.right = 3;

@@ -1,8 +1,5 @@
-fun fib(n: number, dp: Array<number>): number {
-    if (dp[n] == -1) {
-        dp[n] = fib(n-1, dp) + fib(n-2, dp);
-    }
-    return dp[n];
-}
-let dp = Array<number>() { 0, 1, -1, -1, -1};
-let ans = fib(4, dp);
+let root = Node<number>(3);
+
+let y:Node<number> = null;
+
+y.right = 3;

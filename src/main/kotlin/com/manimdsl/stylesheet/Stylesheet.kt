@@ -28,11 +28,11 @@ sealed class StylesheetProperty {
 
 }
 
-class AnimationProperties(borderColor: String? = null, textColor: String? = null) :
+class AnimationProperties(borderColor: String? = null, textColor: String? = null, val pointer: Boolean? = null) :
     StylesheetProperty() {
     override val borderColor: String? = handleColourValue(borderColor)
     override val textColor: String? = handleColourValue(textColor)
-    val pointer: Boolean? = null
+
 }
 
 class StyleProperties(

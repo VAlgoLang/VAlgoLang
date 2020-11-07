@@ -18,7 +18,23 @@ class SemanticAnalysis {
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
+            is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
+            is NullNode -> NullType
         }
+
+    private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+        val type = currentSymbolTable.getTypeOf(expression.identifier)
+        return if (type is BinaryTreeType) {
+            if (expression.accessChain.isNotEmpty()) {
+                val lastValue = expression.accessChain.last()
+                if (lastValue is BinaryTreeType.Value) lastValue.returnType else BinaryTreeType(lastValue.returnType)
+            } else {
+                type
+            }
+        } else {
+            ErrorType
+        }
+    }
 
     private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         // To extend to multiple dimensions perform below recursively
@@ -69,7 +85,9 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if (lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
+        if(rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
+            nonNullableAssignedToNull(rhsType.toString(), lhsType.toString(), ctx)
+        } else if (rhsType != NullType && lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
@@ -82,7 +100,7 @@ class SemanticAnalysis {
     }
 
     fun notDataStructureCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
-        if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType) {
+        if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType && currentSymbolTable.getTypeOf(identifier) !is NullType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }
@@ -227,6 +245,12 @@ class SemanticAnalysis {
         }
     }
 
+    fun breakOrContinueOutsideLoopCheck(action: String, inLoop: Boolean, ctx: ParserRuleContext) {
+        if (!inLoop) {
+            breakOrContinueOutsideLoopError(action, ctx)
+        }
+    }
+
     fun incompatibleReturnTypesCheck(
         currentSymbolTable: SymbolTableVisitor,
         functionReturnType: Type,
@@ -297,6 +321,7 @@ class SemanticAnalysis {
                 is IfStatementNode -> checkStatementsHaveReturn(it.statements)
                         && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
                         && checkStatementsHaveReturn(it.elseBlock.statements)
+                is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
             }
         }
@@ -415,6 +440,12 @@ class SemanticAnalysis {
             )
         }
         incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
+    }
+
+    fun unableToInferTypeCheck(rhsType: Type, ctx: ParserRuleContext) {
+        if (rhsType is NullType) {
+            unableToInferType(rhsType.toString(), ctx)
+        }
     }
 
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {

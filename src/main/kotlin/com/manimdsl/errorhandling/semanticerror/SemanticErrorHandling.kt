@@ -118,6 +118,10 @@ fun globalReturnError(ctx: ParserRuleContext) {
     addSemanticError("Cannot return from global scope", getErrorLinePos(ctx))
 }
 
+fun breakOrContinueOutsideLoopError(action: String, ctx: ParserRuleContext) {
+    addSemanticError("$action cannot occur outside loop", getErrorLinePos(ctx))
+}
+
 fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
 }
@@ -162,6 +166,14 @@ fun incompatibleParameterType(identifier: String, declared: String, argument: St
 
 fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("Function $identifier called in different/incompatible ways", getErrorLinePos(ctx))
+}
+
+fun nonNullableAssignedToNull(nullType: String, type: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot assign $nullType to a $type type", getErrorLinePos(ctx))
+}
+
+fun unableToInferType(nullType: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot infer type from $nullType", getErrorLinePos(ctx))
 }
 
 /* Helper function that returns line and character position for errors */

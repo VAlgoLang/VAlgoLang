@@ -3,8 +3,8 @@ package com.manimdsl.frontend
 open class ASTNode
 
 data class ProgramNode(
-        val functions: List<FunctionNode>,
-        val statements: List<StatementNode>
+    val functions: List<FunctionNode>,
+    val statements: List<StatementNode>
 ) : ASTNode()
 
 data class FunctionNode(
@@ -78,6 +78,14 @@ sealed class StatementBlock(
     abstract val scope: Int
 }
 
+data class WhileStatementNode(
+    override val lineNumber: Int,
+    val endLineNumber: Int,
+    override val scope: Int,
+    val condition: ExpressionNode,
+    override val statements: List<StatementNode>
+) : StatementBlock(lineNumber)
+
 data class IfStatementNode(
     override val lineNumber: Int,
     val endLineNumber: Int,
@@ -101,19 +109,44 @@ data class ElseNode(
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
 
+
+sealed class LoopStatementNode(override val lineNumber: Int): CodeNode(lineNumber)
+data class BreakNode(override val lineNumber: Int, val loopEndLineNumber: Int) : LoopStatementNode(lineNumber)
+data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int): LoopStatementNode(lineNumber)
+
 interface AssignLHS {
     val identifier: String
 }
 
-object EmptyLHS: AssignLHS {
+object EmptyLHS : AssignLHS {
     override val identifier: String = ""
 }
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
-data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber), AssignLHS
+data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber),
+    AssignLHS {
+    override fun toString(): String {
+        return identifier
+    }
+}
+
 data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
-    ExpressionNode(lineNumber), AssignLHS
+    ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier[$index]"
+    }
+}
+
+data class BinaryTreeElemNode(
+    override val lineNumber: Int,
+    override val identifier: String,
+    val accessChain: List<DataStructureMethod>
+) : ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier.${accessChain.joinToString(".")}"
+    }
+}
 
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
@@ -131,6 +164,8 @@ data class ConstructorNode(
     val arguments: List<ExpressionNode>,
     val initialValue: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
+
+data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 
 data class DataStructureInitialiserNode(
     val expressions: List<ExpressionNode>
