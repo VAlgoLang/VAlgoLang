@@ -11,7 +11,7 @@ class Rectangle_block:
         self.pointer.next_to(self.shape, TOP, 0.01)
         if target:
             self.owner = target
-            self.all.scale(max(target.empty.submobjects[1].get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
+            self.all.scale(max(target.empty.get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
 
     def replace_text(self, new_text, color=None):
         if not color:
