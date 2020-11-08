@@ -76,18 +76,19 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE")
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
+
         return style merge dataStructureStyle
     }
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE", animate = AnimationProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-        val animationStyle =
-            (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
-        // Return null if there is no style to make sure null checks work throughout executor
+        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+
+        // Returns null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
