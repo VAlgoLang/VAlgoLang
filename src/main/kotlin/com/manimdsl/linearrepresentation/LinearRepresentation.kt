@@ -58,15 +58,18 @@ data class StackPushObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
     val isPushPop: Boolean = false,
-    val creationStyle: String? = null
+    val creationStyle: String? = null,
+    val runtime: Double? = null
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         val creationString = if (isPushPop || creationStyle == null) "" else ", creation_style=\"$creationStyle\""
+        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
+
         val methodName = if (isPushPop) "push_existing" else "push"
 
         return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
+            "[self.play(*animation$runtimeString) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
             "$dataStructureIdentifier.add($shape)"
         )
     }
@@ -75,12 +78,14 @@ data class StackPushObject(
 data class StackPopObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
-    val insideMethodCall: Boolean
+    val insideMethodCall: Boolean,
+    val runtime: Double? = null
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
+        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
         return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
+            "[self.play(*animation$runtimeString) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
                 .capitalize()})]"
         )
     }
@@ -187,10 +192,11 @@ data class ArrayElemRestyle(
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
+    val runtime: Double?
 ) : ManimInstr {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
-            shape.restyle(newStyle)
+            shape.restyle(newStyle, runtime)
         } else emptyList()
     }
 }

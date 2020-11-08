@@ -484,9 +484,10 @@ class VirtualMachine(
                                 rectangle.shape,
                                 dataStructureIdentifier,
                                 hasOldMObject,
-                                creationStyle = ds.style.creationStyle
+                                creationStyle = ds.style.creationStyle,
+                                runtime = ds.animatedStyle?.animationTime
                             ),
-                            RestyleObject(rectangle.shape, ds.style)
+                            RestyleObject(rectangle.shape, ds.style, ds.animatedStyle?.animationTime)
                         )
                     if (!hasOldMObject) {
                         instructions.add(0, rectangle)
@@ -513,10 +514,11 @@ class VirtualMachine(
                         StackPopObject(
                             topOfStack.shape,
                             dataStructureIdentifier,
-                            insideMethodCall
+                            insideMethodCall,
+                            runtime = ds.animatedStyle?.animationTime
                         )
                     )
-                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it)) }
+                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it, it.animationTime)) }
                     linearRepresentation.addAll(instructions)
                     return if (isExpression) poppedValue else EmptyValue
                 }
@@ -556,7 +558,8 @@ class VirtualMachine(
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
-                            creationStyle = stackValue.style.creationStyle
+                            creationStyle = stackValue.style.creationStyle,
+                            creationTime = stackValue.style.creationTime
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -570,7 +573,8 @@ class VirtualMachine(
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
-                            creationStyle = stackValue.style.creationStyle
+                            creationStyle = stackValue.style.creationStyle,
+                            creationTime = stackValue.style.creationTime
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -593,7 +597,7 @@ class VirtualMachine(
                         clonedValue.manimObject = newRectangle
                         stackValue.stack.push(clonedValue)
                         linearRepresentation.add(newRectangle)
-                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent))
+                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent, runtime = newObjectStyle.animate?.animationTime))
                     }
                     stackValue.manimObject = newObject
                     stackValue

@@ -140,7 +140,7 @@ data class InitManimStack(
     val color: String? = null,
     val textColor: String? = null,
     val creationStyle: String? = null,
-    val creationTime: Int? = null,
+    val creationTime: Double? = null,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
@@ -151,7 +151,7 @@ data class InitManimStack(
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add("self.play(*$ident.create_init(\"$text\"$creationString))")
+        python.add("self.play(*$ident.create_init(\"$text\"$creationString)$runtimeString)")
         return python
     }
 
