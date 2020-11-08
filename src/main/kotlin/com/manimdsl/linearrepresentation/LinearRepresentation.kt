@@ -57,13 +57,16 @@ data class MoveObject(
 data class StackPushObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
-    val isPushPop: Boolean = false
+    val isPushPop: Boolean = false,
+    val creationStyle: String? = null
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
+        val creationString = if (isPushPop || creationStyle == null) "" else ", creation_style=\"$creationStyle\""
         val methodName = if (isPushPop) "push_existing" else "push"
+
         return listOf(
-            "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident})]",
+            "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
             "$dataStructureIdentifier.add($shape)"
         )
     }

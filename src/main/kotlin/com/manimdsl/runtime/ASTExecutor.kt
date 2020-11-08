@@ -482,7 +482,8 @@ class VirtualMachine(
                             StackPushObject(
                                 rectangle.shape,
                                 dataStructureIdentifier,
-                                hasOldMObject
+                                hasOldMObject,
+                                creationStyle = ds.style.creationStyle
                             ),
                             RestyleObject(rectangle.shape, ds.style)
                         )
