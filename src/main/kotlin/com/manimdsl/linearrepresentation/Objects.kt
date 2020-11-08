@@ -2,6 +2,7 @@ package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.*
 
 /** Objects **/
@@ -128,6 +129,32 @@ sealed class DataStructureMObject(
 
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
+}
+
+data class InitTreeStructure(
+        override val type: DataStructureType,
+        override val ident: String,
+        private var boundaries: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1,
+        val text: String,
+        val initialValue: PrimitiveValue,
+
+        ): DataStructureMObject(type, ident) {
+    override var shape: Shape = NullShape
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundaries = corners
+        shape = InitTreeShape(ident, "\"$text\"", initialValue, boundaries)
+    }
+
+    override fun toPython(): List<String> {
+        return listOf(
+            "# Constructing a new tree: $ident",
+            shape.getConstructor(),
+            "self.play($ident.create_init(${initialValue}))"
+        )
+    }
 }
 
 data class InitManimStack(

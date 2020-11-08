@@ -2,10 +2,7 @@ package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
-import com.manimdsl.executor.BoundaryShape
-import com.manimdsl.executor.Scene
-import com.manimdsl.executor.TallBoundary
-import com.manimdsl.executor.WideBoundary
+import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
@@ -146,7 +143,6 @@ class VirtualMachine(
 
             if (updateVariableState) {
                 variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
-
                 updateVariableState()
             }
 
@@ -383,7 +379,7 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
                                 this,
-                                this.pointer
+                                pointer
                             )
                         )
                         linearRepresentation.add(
@@ -634,7 +630,21 @@ class VirtualMachine(
                     }
                     arrayValue
                 }
-                is BinaryTreeType -> TODO()
+                is BinaryTreeType -> {
+                    val ident = variableNameGenerator.generateNameFromPrefix("tree")
+                    dataStructureBoundaries[ident] = TallBoundary(minDimensions = Pair(4, 4))
+
+                    val treeRepresentation = TreeNode(null, null, executeExpression(node.arguments.first()) as PrimitiveValue)
+                    linearRepresentation.add(InitTreeStructure(
+                            node.type,
+                            ident,
+                            text = assignLHS.identifier,
+                            initialValue = treeRepresentation.element
+                        )
+                    )
+                    return TreeValue(manimObject = EmptyMObject, value = treeRepresentation)
+
+                }
                 else -> EmptyValue
             }
         }

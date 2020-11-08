@@ -109,6 +109,16 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 }
 
+
+data class TreeNode(val left: TreeNode?, val right: TreeNode?, val element: PrimitiveValue)
+
+data class TreeValue(override var manimObject: MObject, override val value: TreeNode): ExecValue() {
+
+    override fun clone(): ExecValue {
+        return TreeValue(manimObject, value)
+    }
+}
+
 object EmptyValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType

@@ -2,6 +2,7 @@ package com.manimdsl.shapes
 
 import com.manimdsl.linearrepresentation.Alignment
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.stylesheet.StylesheetProperty
 
 
@@ -122,6 +123,29 @@ class InitManimStackShape(
     override fun getConstructor(): String {
         val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
         return "$ident = ${className}(${coordinatesString}, DOWN${style})"
+    }
+}
+
+class InitTreeShape(
+        override val ident: String,
+        override val text: String,
+        private val initialValue: PrimitiveValue,
+        private val boundaries: List<Pair<Double, Double>>,
+        val color: String? = null,
+        val textColor: String? = null,
+) : ShapeWithText() {
+    override val classPath: String = "python/binary_tree.py"
+    override val className: String = "Tree"
+    override val pythonVariablePrefix: String = ""
+
+    init {
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        return "$ident = ${className}(${coordinatesString}, [0, 0, 0], \"$initialValue\", ${text})"
     }
 }
 
