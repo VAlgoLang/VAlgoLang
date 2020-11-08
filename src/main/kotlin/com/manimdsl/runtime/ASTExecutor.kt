@@ -559,7 +559,7 @@ class VirtualMachine(
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime
+                            creationTime = stackValue.style.creationTime,
                             showLabel = stackValue.style.showLabel
                         )
                         // Add to stack of objects to keep track of identifier
@@ -637,7 +637,7 @@ class VirtualMachine(
                             color = arrayValue.style.borderColor,
                             textColor = arrayValue.style.textColor,
                             creationString = arrayValue.style.creationStyle,
-                            runtime = arrayValue.style.creationTime
+                            runtime = arrayValue.style.creationTime,
                             showLabel = arrayValue.style.showLabel
                         )
                         linearRepresentation.add(arrayStructure)
