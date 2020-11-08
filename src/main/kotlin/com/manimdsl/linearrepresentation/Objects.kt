@@ -152,7 +152,7 @@ data class InitManimStack(
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        val newIdent = if (showLabel == null || showLabel) "\"$ident\"" else ""
+        val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
         python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
     }
