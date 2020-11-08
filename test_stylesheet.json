@@ -3,8 +3,10 @@
   "dataStructures": {
     "Array": {
       "borderColor": "YELLOW",
+      "creationStyle": "DrawBorderThenFill",
       "animate": {
-        "textColor": "RED"
+        "textColor": "RED",
+        "animationString": "ApplyWave"
       }
     }
   }

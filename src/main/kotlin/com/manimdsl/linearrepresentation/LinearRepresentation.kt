@@ -22,10 +22,16 @@ data class Sleep(val length: Double = 1.0) : ManimInstr {
     }
 }
 
-data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBlockName: String, val codeTextVariable: String) : ManimInstr {
+data class MoveToLine(
+    val lineNumber: Int,
+    val pointerName: String,
+    val codeBlockName: String,
+    val codeTextVariable: String
+) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-                "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName, $codeTextVariable)")
+            "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName, $codeTextVariable)"
+        )
     }
 }
 
@@ -76,7 +82,12 @@ data class StackPopObject(
     }
 }
 
-data class ArrayElemAssignObject(val arrayIdent: String, val index: Int, val newElemValue: ExecValue, val animatedStyle: AnimationProperties?) : ManimInstr {
+data class ArrayElemAssignObject(
+    val arrayIdent: String,
+    val index: Int,
+    val newElemValue: ExecValue,
+    val animatedStyle: AnimationProperties?
+) : ManimInstr {
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
         return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
@@ -89,29 +100,50 @@ data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>) :
     }
 }
 
-data class ArrayLongSwap(val arrayIdent: String, val indices: Pair<Int, Int>, val elem1: String, val elem2: String, val animations: String) : ManimInstr {
+data class ArrayLongSwap(
+    val arrayIdent: String,
+    val indices: Pair<Int, Int>,
+    val elem1: String,
+    val elem2: String,
+    val animations: String
+) : ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
-                "[self.play(*animation) for animation in $animations]",
-                "$arrayIdent.array_elements[${indices.first}].text = $elem2",
-                "$arrayIdent.array_elements[${indices.second}].text = $elem1")
+        return listOf(
+            "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
+            "[self.play(*animation) for animation in $animations]",
+            "$arrayIdent.array_elements[${indices.first}].text = $elem2",
+            "$arrayIdent.array_elements[${indices.second}].text = $elem1"
+        )
     }
 }
 
-data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val styleProperties: StylesheetProperty, val pointer: Boolean?=false) : ManimInstr {
+data class ArrayElemRestyle(
+    val arrayIdent: String,
+    val indices: List<Int>,
+    val styleProperties: StylesheetProperty,
+    val pointer: Boolean? = false,
+    val animationString: String? = null
+) : ManimInstr {
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
+        val animationString = animationString ?: "FadeToColor"
 
         styleProperties.borderColor?.let {
             for (i in indices) {
-                instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(it)})")
+                instructions.add(
+                    "FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(
+                        it
+                    )})"
+                )
 
             }
         }
         for (i in indices) {
             if (pointer == null || pointer) {
-                instructions.add("FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].shape, TOP, 0.01)." +
-                        "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))")
+                instructions.add(
+                    "FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].shape, TOP, 0.01)." +
+                            "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
+                )
             } else {
                 instructions.add("self.fade_out_if_needed($arrayIdent.array_elements[$i].pointer)")
             }
@@ -119,8 +151,10 @@ data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val 
 
         styleProperties.textColor?.let {
             for (i in indices) {
-                instructions.add("FadeToColor($arrayIdent.array_elements[$i].text, " +
-                        "${styleProperties.handleColourValue(it)})")
+                instructions.add(
+                    "$animationString($arrayIdent.array_elements[$i].text, " +
+                            "color=${styleProperties.handleColourValue(it)})"
+                )
             }
         }
 
@@ -144,11 +178,12 @@ data class RestyleObject(
 }
 
 data class UpdateVariableState(
-        val variables: List<String>,
-        val ident: String,
-        val textColor: String? = null) : ManimInstr {
+    val variables: List<String>,
+    val ident: String,
+    val textColor: String? = null
+) : ManimInstr {
     override fun toPython(): List<String> =
-        if(variables.isNotEmpty()) {
+        if (variables.isNotEmpty()) {
             listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }}))")
         } else {
             emptyList()

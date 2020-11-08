@@ -11,7 +11,7 @@ object StyleSheetValidator {
     private val validCreationStrings =
         setOf("FadeIn", "FadeInFromLarge", "Write", "GrowFromCenter", "ShowCreation", "DrawBorderThenFill")
     private val validAnimationStrings =
-        setOf("Indicate", "ApplyWave", "WiggleOutThenIn", "CircleIndicate", "TurnInsideOut")
+        setOf("FadeToColor", "Indicate", "ApplyWave", "WiggleOutThenIn", "CircleIndicate", "TurnInsideOut")
 
     fun validateStyleSheet(stylesheet: StylesheetFromJSON, symbolTable: SymbolTableVisitor) {
         // Check variables
@@ -60,7 +60,7 @@ object StyleSheetValidator {
     private fun checkValidAnimationStyles(styles: Collection<StyleProperties>) {
         styles.map { style ->
             style.animate?.let { animationProperties ->
-                animationProperties.animationStyle?.let {
+                animationProperties.animationString?.let {
                     if (!validAnimationStrings.contains(it)) {
                         invalidStyleAttribute("animationStyle", validAnimationStrings, it)
                     }

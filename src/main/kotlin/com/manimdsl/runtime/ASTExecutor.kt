@@ -275,8 +275,7 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                val style = arrayValue.animatedStyle
-                style?.let {
+                arrayValue.animatedStyle?.let {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
@@ -294,7 +293,7 @@ class VirtualMachine(
                         arrayValue.animatedStyle
                     )
                 )
-                if (arrayValue.animatedStyle != null) {
+                arrayValue.animatedStyle?.let {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
@@ -383,7 +382,8 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
                                 this,
-                                this.pointer
+                                this.pointer,
+                                this.animationString
                             )
                         )
                         linearRepresentation.add(
