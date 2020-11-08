@@ -39,6 +39,7 @@ data class AnimationProperties(
 data class StyleProperties(
     override var borderColor: String? = null,
     override var textColor: String? = null,
+    val showLabel: Boolean? = null,
     var creationStyle: String? = null,
     var creationTime: Double? = null,
     val animate: AnimationProperties? = null

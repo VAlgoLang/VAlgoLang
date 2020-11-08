@@ -139,6 +139,7 @@ data class InitManimStack(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
+    val showLabel: Boolean? = null,
     val creationStyle: String? = null,
     val creationTime: Double? = null,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
@@ -151,7 +152,8 @@ data class InitManimStack(
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add("self.play(*$ident.create_init(\"$text\"$creationString)$runtimeString)")
+        val newIdent = if (showLabel == null || showLabel) "\"$ident\"" else ""
+        python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
     }
 
@@ -171,6 +173,7 @@ data class ArrayStructure(
     val textColor: String? = null,
     var creationString: String? = null,
     val runtime: Double? = null,
+    val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
@@ -186,15 +189,15 @@ data class ArrayStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            "self.play($creationString($ident.title))",
+            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
             "self.play(*[$creationString(array_elem.all$runtimeString) for array_elem in $ident.array_elements])"
-        )
+         )
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = ArrayShape(ident, values, text, boundaries, color, textColor)
+        shape = ArrayShape(ident, values, text, boundaries, color, textColor, showLabel)
     }
 }
 

@@ -133,6 +133,7 @@ class ArrayShape(
     private val boundaries : List<Pair<Double, Double>>,
     color: String? = null,
     textColor: String? = null,
+    private val showLabel: Boolean? = null
 ) : ShapeWithText() {
     override val classPath: String = "python/array.py"
     override val className: String = "Array"
@@ -144,7 +145,8 @@ class ArrayShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$text\", [${boundaries.joinToString(",")}]$style).build()"
+        val arrayTitle = if (showLabel == null || showLabel) text else ""
+         return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style).build()"
     }
 }
 

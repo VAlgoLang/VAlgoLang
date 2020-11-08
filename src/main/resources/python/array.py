@@ -2,14 +2,15 @@ class Array:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE):
         self.values = values
         boundary_width = boundaries[1][0] - boundaries[0][0]
-        width_per_element = (boundary_width - 1) / len(values)
+        title_width = 1 if title != "" else 0
+        width_per_element = (boundary_width - title_width) / len(values)
         square_dim = min((boundaries[0][1] - boundaries[3][1] - 0.15),width_per_element)
         self.array_elements = [Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val in self.values]
-        self.title = VGroup(Text(title).set_width(1))
         offset = 0
-        if ((square_dim * len(values)) + 1) < boundary_width:
-            offset = (boundary_width - ((square_dim * len(values)) + 1)) / 2
-        self.title.move_to(np.array([boundaries[0][0] + 0.5 + offset, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
+        if ((square_dim * len(values)) + title_width) < boundary_width:
+            offset = (boundary_width - ((square_dim * len(values)) + title_width)) / 2
+        self.title = VGroup(Text(title).set_width(title_width))
+        self.title.move_to(np.array([boundaries[0][0] + (title_width / 2) + offset, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
         self.color = color
 
     def build(self):

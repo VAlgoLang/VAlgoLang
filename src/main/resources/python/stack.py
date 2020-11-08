@@ -4,7 +4,7 @@ class Stack(DataStructure, ABC):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
         self.empty = None
 
-    def create_init(self, text, creation_style=None):
+    def create_init(self, text=None, creation_style=None):
         if not creation_style:
             creation_style = "ShowCreation"
         empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color, text_color=self.text_color)
@@ -65,6 +65,9 @@ class Init_structure:
         self.shape = Line(color=color)
         self.shape.set_length(length)
         self.shape.set_angle(angle)
-        self.text = Text(text, color=text_color, weight=text_weight, font=font)
-        self.text.next_to(self.shape, DOWN, SMALL_BUFF)
-        self.all = VGroup(self.text, self.shape)
+        if text is not None:
+            self.text = Text(text, color=text_color, weight=text_weight, font=font)
+            self.text.next_to(self.shape, DOWN, SMALL_BUFF)
+            self.all = VGroup(self.text, self.shape)
+        else:
+            self.all = VGroup(self.shape)
