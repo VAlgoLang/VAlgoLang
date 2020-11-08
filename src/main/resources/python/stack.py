@@ -12,7 +12,7 @@ class Stack(DataStructure, ABC):
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
         self.all.add(empty.all)
         transform = globals()[creation_style]
-        return transform(empty.all)
+        return [transform(empty.text), ShowCreation(empty.shape)]
 
     def push(self, obj):
         animations = []

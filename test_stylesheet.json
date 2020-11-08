@@ -3,7 +3,7 @@
   "dataStructures": {
     "Stack": {
       "borderColor": "YELLOW",
-      "creationStyle": "GrowFromCenter",
+      "creationStyle": "Write",
       "animate": {
         "textColor": "RED",
         "animationString": "Indicate"

@@ -149,7 +149,7 @@ data class InitManimStack(
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add("self.play($ident.create_init(\"$text\"$creationString))")
+        python.add("self.play(*$ident.create_init(\"$text\"$creationString))")
         return python
     }
 
