@@ -1,12 +1,14 @@
 {
   "hideCode": true,
   "dataStructures": {
-    "Stack": {
+    "Array": {
       "borderColor": "YELLOW",
       "creationStyle": "Write",
+      "creationTime": 6,
       "animate": {
         "textColor": "RED",
-        "animationString": "Indicate"
+        "animationString": "Indicate",
+        "animationTime": 0.4
       }
     }
   }

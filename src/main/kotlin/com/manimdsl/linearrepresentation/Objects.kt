@@ -140,6 +140,7 @@ data class InitManimStack(
     val color: String? = null,
     val textColor: String? = null,
     val creationStyle: String? = null,
+    val creationTime: Int? = null,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
@@ -147,6 +148,7 @@ data class InitManimStack(
 
     override fun toPython(): List<String> {
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
+        val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
         python.add("self.play(*$ident.create_init(\"$text\"$creationString))")
@@ -168,6 +170,7 @@ data class ArrayStructure(
     val color: String? = null,
     val textColor: String? = null,
     var creationString: String? = null,
+    val runtime: Double? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
@@ -177,12 +180,14 @@ data class ArrayStructure(
         if (creationString == null) creationString = "FadeIn"
     }
 
+    private val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
+
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             "self.play($creationString($ident.title))",
-            "self.play(*[$creationString(array_elem.all) for array_elem in $ident.array_elements])"
+            "self.play(*[$creationString(array_elem.all$runtimeString) for array_elem in $ident.array_elements])"
         )
     }
 

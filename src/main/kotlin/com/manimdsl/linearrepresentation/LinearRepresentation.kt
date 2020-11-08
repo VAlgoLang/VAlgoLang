@@ -126,11 +126,14 @@ data class ArrayElemRestyle(
     val indices: List<Int>,
     val styleProperties: StylesheetProperty,
     val pointer: Boolean? = false,
-    val animationString: String? = null
+    val animationString: String? = null,
+    val runtime: Double? = null
 ) : ManimInstr {
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
+        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
+
         val animationStringTakesColorAsParameter =
             StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
@@ -175,7 +178,7 @@ data class ArrayElemRestyle(
             emptyList()
         } else {
             listOf(
-                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation], run_time=1.5)"
+                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation]$runtimeString)"
             )
         }
     }

@@ -282,7 +282,8 @@ class VirtualMachine(
                             listOf(index.value.toInt()),
                             it,
                             it.pointer,
-                            animationString = it.animationString
+                            animationString = it.animationString,
+                            runtime = it.animationTime
                         )
                     )
                 }
@@ -630,7 +631,8 @@ class VirtualMachine(
                             arrayValue.array.clone(),
                             color = arrayValue.style.borderColor,
                             textColor = arrayValue.style.textColor,
-                            creationString = arrayValue.style.creationStyle
+                            creationString = arrayValue.style.creationStyle,
+                            runtime = arrayValue.style.creationTime
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure

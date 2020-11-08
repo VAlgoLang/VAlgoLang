@@ -33,13 +33,14 @@ data class AnimationProperties(
     override val textColor: String? = null,
     val pointer: Boolean? = null,
     var animationString: String? = null,
-    val time: Int? = null
+    var animationTime: Double? = null,
 ) : StylesheetProperty()
 
 data class StyleProperties(
     override var borderColor: String? = null,
     override var textColor: String? = null,
     var creationStyle: String? = null,
+    var creationTime: Double? = null,
     val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
