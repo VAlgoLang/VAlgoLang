@@ -282,7 +282,7 @@ class VirtualMachine(
                             listOf(index.value.toInt()),
                             it,
                             it.pointer,
-                            animationString = it.animationString,
+                            animationString = it.animationStyle,
                             runtime = it.animationTime
                         )
                     )
@@ -385,7 +385,7 @@ class VirtualMachine(
                                 listOf(index.value.toInt()),
                                 this,
                                 this.pointer,
-                                animationString = this.animationString
+                                animationString = this.animationStyle
                             )
                         )
                         linearRepresentation.add(

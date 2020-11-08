@@ -7,7 +7,7 @@
       "creationTime": 6,
       "animate": {
         "textColor": "RED",
-        "animationString": "Indicate",
+        "animationStyle": "Indicate",
         "animationTime": 0.4
       }
     }

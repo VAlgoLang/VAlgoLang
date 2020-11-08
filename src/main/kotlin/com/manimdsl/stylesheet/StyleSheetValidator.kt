@@ -71,11 +71,11 @@ object StyleSheetValidator {
     private fun checkValidAnimationStyles(styles: Collection<StyleProperties>) {
         styles.forEach { style ->
             style.animate?.let { animationProperties ->
-                animationProperties.animationString?.let { animationString ->
+                animationProperties.animationStyle?.let { animationString ->
                     if (!validAnimationStrings.contains(animationString)) {
                         invalidStyleAttribute("animationStyle", validAnimationStrings.keys, animationString)
                         // Ignores animation style if invalid and defaults to FadeToColor so that Manim program compiles
-                        style.animate.animationString = "FadeToColor"
+                        style.animate.animationStyle = "FadeToColor"
                     }
                 }
             }
