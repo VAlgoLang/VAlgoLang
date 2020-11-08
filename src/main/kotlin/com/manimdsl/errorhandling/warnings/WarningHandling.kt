@@ -17,17 +17,3 @@ fun invalidStyleAttribute(attribute: String, expecting: Collection<String>, inva
         }"
     )
 }
-
-fun animationStyleDoesNotAcceptColorWarning(
-    animationStyle: String,
-    validAnimationStylesWithColour: Collection<String>
-) {
-    addWarning(
-        "$animationStyle does not accept color. For color change, please choose one of: ${validAnimationStylesWithColour.joinToString(
-            "', '",
-            prefix = "'",
-            postfix = "'"
-        )
-        }"
-    )
-}
