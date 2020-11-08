@@ -553,6 +553,7 @@ class VirtualMachine(
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            showLabel = stackValue.style.showLabel
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -625,7 +626,8 @@ class VirtualMachine(
                             assignLHS.identifier,
                             arrayValue.array.clone(),
                             color = arrayValue.style.borderColor,
-                            textColor = arrayValue.style.textColor
+                            textColor = arrayValue.style.textColor,
+                            showLabel = arrayValue.style.showLabel
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure
