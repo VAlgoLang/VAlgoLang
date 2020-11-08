@@ -31,8 +31,8 @@ sealed class StylesheetProperty {
 data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null, val pointer: Boolean? = null) : StylesheetProperty()
 
 data class StyleProperties(
-    override var borderColor: String = "BLUE",
-    override var textColor: String = "WHITE",
+    override var borderColor: String? = null,
+    override var textColor: String? = null,
     val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
@@ -70,7 +70,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE")
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
         return style merge dataStructureStyle
@@ -78,7 +78,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties())
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE", animate = AnimationProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
 
