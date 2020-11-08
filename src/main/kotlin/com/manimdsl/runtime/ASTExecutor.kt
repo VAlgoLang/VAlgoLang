@@ -281,7 +281,8 @@ class VirtualMachine(
                             (arrayValue.manimObject as ArrayStructure).ident,
                             listOf(index.value.toInt()),
                             it,
-                            it.pointer
+                            it.pointer,
+                            animationString = it.animationString
                         )
                     )
                 }
@@ -383,7 +384,7 @@ class VirtualMachine(
                                 listOf(index.value.toInt()),
                                 this,
                                 this.pointer,
-                                this.animationString
+                                animationString = this.animationString
                             )
                         )
                         linearRepresentation.add(

@@ -4,6 +4,7 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.AnimationProperties
+import com.manimdsl.stylesheet.StyleSheetValidator
 import com.manimdsl.stylesheet.StylesheetProperty
 
 interface ManimInstr {
@@ -127,6 +128,8 @@ data class ArrayElemRestyle(
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
+        val animationStringTakesColorAsParameter =
+            StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
         styleProperties.borderColor?.let {
             for (i in indices) {
@@ -135,9 +138,9 @@ data class ArrayElemRestyle(
                         it
                     )})"
                 )
-
             }
         }
+
         for (i in indices) {
             if (pointer == null || pointer) {
                 instructions.add(
@@ -151,17 +154,26 @@ data class ArrayElemRestyle(
 
         styleProperties.textColor?.let {
             for (i in indices) {
+                if (!animationStringTakesColorAsParameter) {
+                    instructions.add(
+                        "FadeToColor($arrayIdent.array_elements[$i].text, " +
+                                "color=${styleProperties.handleColourValue(it)})"
+                    )
+                }
                 instructions.add(
                     "$animationString($arrayIdent.array_elements[$i].text, " +
                             "color=${styleProperties.handleColourValue(it)})"
                 )
+
             }
         }
 
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation], run_time=1.5)")
+            listOf(
+                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation], run_time=1.5)"
+            )
         }
     }
 }

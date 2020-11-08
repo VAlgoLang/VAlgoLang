@@ -1,7 +1,6 @@
 package com.manimdsl.stylesheet
 
 import com.manimdsl.errorhandling.ErrorHandler
-import com.manimdsl.errorhandling.warnings.animationStyleDoesNotAcceptColorWarning
 import com.manimdsl.errorhandling.warnings.invalidStyleAttribute
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
 import com.manimdsl.frontend.SymbolTableVisitor
@@ -12,8 +11,8 @@ object StyleSheetValidator {
     private val validCreationStrings =
         setOf("FadeIn", "FadeInFromLarge", "Write", "GrowFromCenter", "ShowCreation", "DrawBorderThenFill")
 
-    // Map of valid animations to whether they accept a color
-    private val validAnimationStrings =
+    // Map of valid animations to whether they accept a color as a parameter
+    val validAnimationStrings =
         mapOf(
             "FadeToColor" to true,
             "Indicate" to true,
@@ -73,16 +72,7 @@ object StyleSheetValidator {
         styles.forEach { style ->
             style.animate?.let { animationProperties ->
                 animationProperties.animationString?.let { animationString ->
-                    if (validAnimationStrings.contains(animationString)) {
-                        if (!validAnimationStrings.getOrDefault(
-                                animationString,
-                                false
-                            ) && animationProperties.textColor != null
-                        ) {
-                            val validAnimationStylesWithColor = validAnimationStrings.filter { it.value }.keys
-                            animationStyleDoesNotAcceptColorWarning(animationString, validAnimationStylesWithColor)
-                        }
-                    } else {
+                    if (!validAnimationStrings.contains(animationString)) {
                         invalidStyleAttribute("animationStyle", validAnimationStrings.keys, animationString)
                         // Ignores animation style if invalid and defaults to FadeToColor so that Manim program compiles
                         style.animate.animationString = "FadeToColor"

@@ -6,7 +6,7 @@
       "creationStyle": "DrawBorderThenFill",
       "animate": {
         "textColor": "RED",
-        "animationString": "ApplyWave"
+        "animationString": "Indicate"
       }
     }
   }
