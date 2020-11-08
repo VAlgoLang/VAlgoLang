@@ -11,6 +11,10 @@ interface ManimInstr {
     fun toPython(): List<String>
 }
 
+sealed class ManimInstrWithRuntime(open val runtime: Double? = null) : ManimInstr {
+    fun getRuntimeString(): String = if (runtime != null) ", run_time=$runtime" else ""
+}
+
 enum class Alignment(val angle: String) {
     HORIZONTAL("0"), VERTICAL("TAU/4")
 }
@@ -59,17 +63,15 @@ data class StackPushObject(
     val dataStructureIdentifier: String,
     val isPushPop: Boolean = false,
     val creationStyle: String? = null,
-    val runtime: Double? = null
-) : ManimInstr {
+    override val runtime: Double? = null
+) : ManimInstrWithRuntime(runtime) {
 
     override fun toPython(): List<String> {
         val creationString = if (isPushPop || creationStyle == null) "" else ", creation_style=\"$creationStyle\""
-        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
-
         val methodName = if (isPushPop) "push_existing" else "push"
 
         return listOf(
-            "[self.play(*animation$runtimeString) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
+            "[self.play(*animation${getRuntimeString()}) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
             "$dataStructureIdentifier.add($shape)"
         )
     }
@@ -79,13 +81,12 @@ data class StackPopObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
     val insideMethodCall: Boolean,
-    val runtime: Double? = null
-) : ManimInstr {
+    override val runtime: Double? = null
+) : ManimInstrWithRuntime(runtime) {
 
     override fun toPython(): List<String> {
-        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
         return listOf(
-            "[self.play(*animation$runtimeString) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
+            "[self.play(*animation${getRuntimeString()}) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
                 .capitalize()})]"
         )
     }
@@ -103,9 +104,10 @@ data class ArrayElemAssignObject(
     }
 }
 
-data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>) : ManimInstr {
+data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double? = null) :
+    ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {
-        return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second}))")
+        return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})${getRuntimeString()})")
     }
 }
 
@@ -114,8 +116,9 @@ data class ArrayLongSwap(
     val indices: Pair<Int, Int>,
     val elem1: String,
     val elem2: String,
-    val animations: String
-) : ManimInstr {
+    val animations: String,
+    override val runtime: Double? = null
+) : ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {
         return listOf(
             "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
@@ -132,12 +135,11 @@ data class ArrayElemRestyle(
     val styleProperties: StylesheetProperty,
     val pointer: Boolean? = false,
     val animationString: String? = null,
-    val runtime: Double? = null
-) : ManimInstr {
+    override val runtime: Double? = null
+) : ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
-        val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
 
         val animationStringTakesColorAsParameter =
             StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
@@ -183,7 +185,7 @@ data class ArrayElemRestyle(
             emptyList()
         } else {
             listOf(
-                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation]$runtimeString)"
+                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
             )
         }
     }
@@ -192,11 +194,11 @@ data class ArrayElemRestyle(
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
-    val runtime: Double?
-) : ManimInstr {
+    override val runtime: Double?
+) : ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
-            shape.restyle(newStyle, runtime)
+            shape.restyle(newStyle, getRuntimeString())
         } else emptyList()
     }
 }

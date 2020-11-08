@@ -431,10 +431,11 @@ class VirtualMachine(
                                 Pair(index1, index2),
                                 variableNameGenerator.generateNameFromPrefix("elem1"),
                                 variableNameGenerator.generateNameFromPrefix("elem2"),
-                                variableNameGenerator.generateNameFromPrefix("animations")
+                                variableNameGenerator.generateNameFromPrefix("animations"),
+                                runtime = ds.animatedStyle?.animationTime
                             )
                         } else {
-                            ArrayShortSwap(arrayIdent, Pair(index1, index2))
+                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime)
                         }
                     val swap = mutableListOf(arraySwap)
                     with(ds.animatedStyle) {
