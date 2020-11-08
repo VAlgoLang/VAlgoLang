@@ -32,7 +32,8 @@ data class AnimationProperties(
     override val borderColor: String? = null,
     override val textColor: String? = null,
     val pointer: Boolean? = null,
-    val animationString: String? = null
+    var animationString: String? = null,
+    val time: Int? = null
 ) : StylesheetProperty()
 
 data class StyleProperties(
