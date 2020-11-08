@@ -554,6 +554,7 @@ class VirtualMachine(
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            creationStyle = stackValue.style.creationStyle
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -567,6 +568,7 @@ class VirtualMachine(
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            creationStyle = stackValue.style.creationStyle
                         )
                         Pair(listOf(stackInit), stackInit)
                     }

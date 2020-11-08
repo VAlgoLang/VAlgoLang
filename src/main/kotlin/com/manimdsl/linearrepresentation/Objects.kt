@@ -139,15 +139,17 @@ data class InitManimStack(
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
+    val creationStyle: String? = null,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
+        val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        python.add("self.play($ident.create_init(\"$text\"))")
+        python.add("self.play($ident.create_init(\"$text\"$creationString))")
         return python
     }
 

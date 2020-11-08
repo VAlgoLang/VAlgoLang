@@ -4,12 +4,15 @@ class Stack(DataStructure, ABC):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
         self.empty = None
 
-    def create_init(self, text):
+    def create_init(self, text, creation_style=None):
+        if not creation_style:
+            creation_style = "ShowCreation"
         empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color, text_color=self.text_color)
         self.empty = empty.all
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
         self.all.add(empty.all)
-        return ShowCreation(empty.all)
+        transform = globals()[creation_style]
+        return transform(empty.all)
 
     def push(self, obj):
         animations = []

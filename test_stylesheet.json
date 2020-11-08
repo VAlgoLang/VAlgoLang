@@ -1,9 +1,9 @@
 {
   "hideCode": true,
   "dataStructures": {
-    "Array": {
+    "Stack": {
       "borderColor": "YELLOW",
-      "creationStyle": "DrawBorderThenFill",
+      "creationStyle": "GrowFromCenter",
       "animate": {
         "textColor": "RED",
         "animationString": "Indicate"
