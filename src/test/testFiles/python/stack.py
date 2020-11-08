@@ -19,7 +19,7 @@ class Main(Scene):
         self.move_arrow_to_line(1, pointer, code_block, code_text)
         # Constructing new Stack<number> "y"
         stack = Stack([5.0, 4.0, 0], [7.0, 4.0, 0], [5.0, -4.0, 0], [7.0, -4.0, 0], DOWN)
-        self.play(*stack.create_init("stack"))
+        self.play(*stack.create_init("y"))
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
