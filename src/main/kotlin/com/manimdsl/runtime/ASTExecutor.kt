@@ -389,6 +389,7 @@ class VirtualMachine(
             is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
+            is DivideExpression -> executeBinaryOp(node) { x, y -> x / y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
             is PlusExpression -> executeUnaryOp(node) { x -> x }
             is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }

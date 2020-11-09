@@ -19,6 +19,7 @@ FALSE: 'false';
 ADD: '+';
 MINUS: '-';
 TIMES: '*';
+DIVIDE: '/';
 LT: '<' ;
 GT: '>' ;
 GE: '>=' ;

@@ -69,7 +69,7 @@ class SemanticAnalysis {
         val expr2Type = getExpressionType(expression.expr2, currentSymbolTable)
 
         return when (expression) {
-            is AddExpression, is SubtractExpression, is MultiplyExpression -> {
+            is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
                 if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {

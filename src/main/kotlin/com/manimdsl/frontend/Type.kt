@@ -120,6 +120,10 @@ data class TreeType(
         return BinaryTreeConstructor(internalType as NodeType)
     }
 
+    override fun equals(other: Any?): Boolean {
+        return other is TreeType && other.internalType == internalType
+    }
+
     class Root(
             override val returnType: Type,
             override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),

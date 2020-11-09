@@ -6,6 +6,7 @@ import com.manimdsl.linearrepresentation.MObject
 import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StyleProperties
 import java.util.*
+import kotlin.math.roundToInt
 
 // Wrapper classes for values of variables while executing code
 sealed class ExecValue {
@@ -23,6 +24,12 @@ sealed class ExecValue {
     /** '-' **/
     operator fun minus(other: ExecValue): ExecValue = when (this) {
         is DoubleValue -> if (other is DoubleValue) DoubleValue(this.value - other.value) else throwTypeError()
+        else -> throwTypeError()
+    }
+
+    /** '/' **/
+    operator fun div(other: ExecValue): ExecValue = when (this) {
+        is DoubleValue -> if (other is DoubleValue) DoubleValue((this.value / other.value).roundToInt().toDouble()) else throwTypeError()
         else -> throwTypeError()
     }
 

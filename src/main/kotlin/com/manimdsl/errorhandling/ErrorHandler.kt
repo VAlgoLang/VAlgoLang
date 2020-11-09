@@ -25,7 +25,7 @@ object ErrorHandler {
     }
 
     fun addTooManyDatastructuresError() {
-        println("Error detected during program execution. Animation could not be generated")
+        println("Too many data structures attempted to be created. Animation could not be generated")
         println("Exit code: ${ExitStatus.RUNTIME_ERROR.code}")
     }
 

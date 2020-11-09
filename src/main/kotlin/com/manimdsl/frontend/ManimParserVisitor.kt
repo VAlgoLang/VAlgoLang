@@ -441,6 +441,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ADD -> AddExpression(ctx.start.line, expr1, expr2)
             MINUS -> SubtractExpression(ctx.start.line, expr1, expr2)
             TIMES -> MultiplyExpression(ctx.start.line, expr1, expr2)
+            DIVIDE -> DivideExpression(ctx.start.line, expr1, expr2)
             AND -> AndExpression(ctx.start.line, expr1, expr2)
             OR -> OrExpression(ctx.start.line, expr1, expr2)
             EQ -> EqExpression(ctx.start.line, expr1, expr2)

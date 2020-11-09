@@ -1,8 +1,22 @@
-let x = Node<number>(4);
-let tree = Tree<Node<number>>(x);
-tree.root.right = Node<number>(5);
-x.left = Node<number>(6);
-x.right.left = Node<number>(7);
-tree.root.left.right = Node<number>(9);
-let pointer = tree.root;
-pointer = pointer.right;
+fun buildBST(v: Array<number>, i: number, j: number): Tree<Node<number>> {
+    if (i == j) {
+        return Tree<Node<number>>(Node<number>(v[i]));
+    }
+
+    let m = i + j;
+    m = m/2.0;
+    let parent = Tree<Node<number>>(Node<number>(v[m]));
+    if (i <= m-1) {
+        let l = buildBST(v, i, m-1);
+        parent.root.left = l.root;
+    }
+    if (m+1 <= j) {
+        let r = buildBST(v, m+1, j);
+        parent.root.right = r.root;
+    }
+    return parent;
+}
+
+let arr = Array<number>(5){1,2,3,4,5};
+let t = buildBST(arr, 0, 4);
+
