@@ -51,6 +51,7 @@ COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
 ARRAY: 'Array';
+TREE: 'Tree';
 TREE_NODE: 'Node';
 IF: 'if';
 ELSE: 'else';

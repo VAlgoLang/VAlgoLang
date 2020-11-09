@@ -24,10 +24,10 @@ class SemanticAnalysis {
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
-        return if (type is BinaryTreeType) {
+        return if (type is NodeType) {
             if (expression.accessChain.isNotEmpty()) {
                 val lastValue = expression.accessChain.last()
-                if (lastValue is BinaryTreeType.Value) lastValue.returnType else BinaryTreeType(lastValue.returnType)
+                if (lastValue is NodeType.Value) lastValue.returnType else NodeType(lastValue.returnType)
             } else {
                 type
             }

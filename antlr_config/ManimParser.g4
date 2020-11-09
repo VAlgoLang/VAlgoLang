@@ -65,10 +65,13 @@ method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #Meth
 type: data_structure_type                                            #DataStructureType
     | primitive_type                                                 #PrimitiveType;
 
+node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
     | ARRAY LT primitive_type GT                                     #ArrayType
-    | TREE_NODE LT primitive_type GT                                 #BinaryTreeType
+    | node_type                                                      #NodeType
+    | TREE LT node_type GT                                           #TreeType
     ;
+
 
 primitive_type: NUMBER_TYPE                                          #NumberType
     | BOOL_TYPE                                                      #BoolType

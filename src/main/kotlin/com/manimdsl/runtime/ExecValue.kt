@@ -109,13 +109,30 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 }
 
+// value is element in node
+data class BinaryTreeNodeValue(
+        val left: BinaryTreeNodeValue?,
+        val right: BinaryTreeNodeValue?,
+        override val value: PrimitiveValue,
+        override var manimObject: MObject = EmptyMObject,
+        var binaryTreeValue: BinaryTreeValue? = null
+): ExecValue() {
+    override fun clone(): ExecValue {
+        return BinaryTreeNodeValue(left, right, value, manimObject)
+    }
 
-data class TreeNode(val left: TreeNode?, val right: TreeNode?, val element: PrimitiveValue)
+    fun attachTree(tree: BinaryTreeValue) {
+        binaryTreeValue = tree
+        left?.attachTree(tree)
+        right?.attachTree(tree)
+    }
+}
 
-data class TreeValue(override var manimObject: MObject, override val value: TreeNode): ExecValue() {
+// value is root
+data class BinaryTreeValue(override var manimObject: MObject, override val value: BinaryTreeNodeValue): ExecValue() {
 
     override fun clone(): ExecValue {
-        return TreeValue(manimObject, value)
+        return BinaryTreeValue(manimObject, value)
     }
 }
 

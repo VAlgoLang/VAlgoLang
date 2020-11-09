@@ -520,9 +520,17 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
     }
 
-    override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {
-        val elementType = visit(ctx.primitive_type()) as Type
-        return BinaryTreeType(elementType)
+    override fun visitNodeType(ctx: NodeTypeContext): NodeType {
+        return visit(ctx.node_type()) as NodeType
+    }
+
+    override fun visitNode_type(ctx: Node_typeContext): NodeType {
+        val elementType = visit(ctx.primitive_type()) as PrimitiveType
+        return NodeType(elementType)
+    }
+
+    override fun visitTreeType(ctx: TreeTypeContext): TreeType {
+        return TreeType(visit(ctx.node_type()) as NodeType)
     }
 
     override fun visitNode_elem(ctx: Node_elemContext): BinaryTreeElemNode {

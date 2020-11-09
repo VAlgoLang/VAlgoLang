@@ -1,1 +1,2 @@
-let y = Node<number>(4);
+let root = Node<number>(4);
+let y = Tree<Node<number>>(root);

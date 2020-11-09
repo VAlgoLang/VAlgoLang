@@ -527,6 +527,7 @@ class VirtualMachine(
                     clonedPeekValue.manimObject = EmptyMObject
                     return clonedPeekValue
                 }
+
                 else -> EmptyValue
             }
         }
@@ -630,20 +631,23 @@ class VirtualMachine(
                     }
                     arrayValue
                 }
-                is BinaryTreeType -> {
+                is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
                     dataStructureBoundaries[ident] = TallBoundary(minDimensions = Pair(4, 4))
-
-                    val treeRepresentation = TreeNode(null, null, executeExpression(node.arguments.first()) as PrimitiveValue)
+                    val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
                     linearRepresentation.add(InitTreeStructure(
                             node.type,
                             ident,
                             text = assignLHS.identifier,
-                            initialValue = treeRepresentation.element
-                        )
+                            initialValue = root.value
                     )
-                    return TreeValue(manimObject = EmptyMObject, value = treeRepresentation)
-
+                    )
+                    val binaryTreeValue = BinaryTreeValue(manimObject = EmptyMObject, value = root)
+                    root.attachTree(binaryTreeValue)
+                    return binaryTreeValue
+                }
+                is NodeType -> {
+                    return BinaryTreeNodeValue(null, null, executeExpression(node.arguments.first()) as PrimitiveValue)
                 }
                 else -> EmptyValue
             }
