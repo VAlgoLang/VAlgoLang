@@ -34,6 +34,7 @@ class VirtualMachine(
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
+    private val hideCode = stylesheet.getHideCode()
 
     init {
         fileLines.indices.forEach {
@@ -49,28 +50,33 @@ class VirtualMachine(
     }
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
-        linearRepresentation.add(PartitionBlock("1/3", "2/3"))
-        linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
-        linearRepresentation.add(
-            CodeBlock(
-                displayCode.map { it.chunked(WRAP_LINE_LENGTH) },
-                codeBlockVariable,
-                codeTextVariable,
-                pointerVariable
+        if (!hideCode) {
+            linearRepresentation.add(PartitionBlock("1/3", "2/3"))
+            linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
+            linearRepresentation.add(
+                CodeBlock(
+                    displayCode.map { it.chunked(WRAP_LINE_LENGTH) },
+                    codeBlockVariable,
+                    codeTextVariable,
+                    pointerVariable
+                )
             )
-        )
+        }
+
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(
             program.statements.first().lineNumber,
             fileLines.size,
             variables,
+            hideCode = hideCode,
+            updateVariableState = !hideCode
         ).runFrame()
         linearRepresentation.add(Sleep(1.0))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else {
-            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList())
+            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }
@@ -101,7 +107,9 @@ class VirtualMachine(
         private val showMoveToLine: Boolean = true,
         private var stepInto: Boolean = STEP_INTO_DEFAULT,
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
-        private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf()
+        private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf(),
+        private val updateVariableState: Boolean = true,
+        private val hideCode: Boolean = false
     ) {
         private var previousStepIntoState = stepInto
 
@@ -136,9 +144,11 @@ class VirtualMachine(
                 return RuntimeError(value = "Stack Overflow Error. Program failed to terminate.", lineNumber = pc)
             }
 
-            variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
+            if (updateVariableState) {
+                variables.forEach { (identifier, execValue) -> insertVariable(identifier, execValue) }
 
-            updateVariableState()
+                updateVariableState()
+            }
 
             while (pc <= finalLine) {
                 if (statements.containsKey(pc)) {
@@ -171,7 +181,7 @@ class VirtualMachine(
             is SleepNode -> executeSleep(statement)
             is AssignmentNode -> executeAssignment(statement)
             is DeclarationNode -> executeAssignment(statement)
-            is MethodCallNode -> executeMethodCall(statement, false)
+            is MethodCallNode -> executeMethodCall(statement, false, false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
@@ -210,7 +220,7 @@ class VirtualMachine(
         }
 
         private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine) {
+            if (showMoveToLine && !hideCode) {
                 linearRepresentation.add(
                     MoveToLine(
                         displayLine[line - 1],
@@ -244,7 +254,9 @@ class VirtualMachine(
                 argumentVariables,
                 depth + 1,
                 showMoveToLine = stepInto,
-                stepInto = stepInto && previousStepIntoState   // In the case of nested stepInto/stepOver
+                stepInto = stepInto && previousStepIntoState,   // In the case of nested stepInto/stepOver
+                updateVariableState = updateVariableState,
+                hideCode = hideCode
             ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
@@ -317,7 +329,7 @@ class VirtualMachine(
         }
 
         private fun updateVariableState() {
-            if (showMoveToLine)
+            if (showMoveToLine && !hideCode)
                 linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
         }
 
@@ -329,7 +341,7 @@ class VirtualMachine(
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is CharNode -> CharValue(node.value)
-            is MethodCallNode -> executeMethodCall(node, insideMethodCall)
+            is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
             is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
@@ -399,10 +411,10 @@ class VirtualMachine(
             }
         }
 
-        private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean): ExecValue {
+        private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
             return when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
-                    return executeStackMethodCall(node, ds, insideMethodCall)
+                    return executeStackMethodCall(node, ds, insideMethodCall, isExpression)
                 }
                 is ArrayValue -> {
                     return executeArrayMethodCall(node, ds)
@@ -451,7 +463,7 @@ class VirtualMachine(
             }
         }
 
-        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean): ExecValue {
+        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
             return when (node.dataStructureMethod) {
                 is StackType.PushMethod -> {
                     val value = executeExpression(node.arguments[0], true)
@@ -515,7 +527,7 @@ class VirtualMachine(
                     )
                     ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it)) }
                     linearRepresentation.addAll(instructions)
-                    return poppedValue
+                    return if (isExpression) poppedValue else EmptyValue
                 }
                 is StackType.IsEmptyMethod -> {
                     return BoolValue(ds.stack.isEmpty())
@@ -553,6 +565,7 @@ class VirtualMachine(
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            showLabel = stackValue.style.showLabel
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -625,7 +638,8 @@ class VirtualMachine(
                             assignLHS.identifier,
                             arrayValue.array.clone(),
                             color = arrayValue.style.borderColor,
-                            textColor = arrayValue.style.textColor
+                            textColor = arrayValue.style.textColor,
+                            showLabel = arrayValue.style.showLabel
                         )
                         linearRepresentation.add(arrayStructure)
                         arrayValue.manimObject = arrayStructure
@@ -724,7 +738,8 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto = stepInto
+                    stepInto = stepInto,
+                    hideCode = hideCode
                 ).runFrame()
 
                 when (execValue) {
@@ -752,7 +767,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            if (showMoveToLine) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(0.5)
             var conditionValue = executeExpression(ifStatementNode.condition)
             if (conditionValue is RuntimeError) {
                 return conditionValue
@@ -770,7 +785,9 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto = stepInto
+                    stepInto = stepInto,
+                    updateVariableState = updateVariableState,
+                    hideCode = hideCode
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
@@ -781,7 +798,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                if (showMoveToLine) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -791,7 +808,9 @@ class VirtualMachine(
                         variables,
                         depth,
                         showMoveToLine = showMoveToLine,
-                        stepInto = stepInto
+                        stepInto = stepInto,
+                        updateVariableState = updateVariableState,
+                        hideCode = hideCode
                     ).runFrame()
                     if (execValue is EmptyValue) {
                         pc = ifStatementNode.endLineNumber
@@ -803,14 +822,16 @@ class VirtualMachine(
             // Else
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
-                if (showMoveToLine) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(0.5)
                 val execValue = Frame(
                     ifStatementNode.elseBlock.statements.first().lineNumber,
                     ifStatementNode.elseBlock.statements.last().lineNumber,
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto = stepInto
+                    stepInto = stepInto,
+                    updateVariableState = updateVariableState,
+                    hideCode = hideCode
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber

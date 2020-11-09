@@ -1,4 +1,19 @@
-let x = 'a';
+fun bubbleSort(arr: Array<number>) {
+    let n = arr.size();
+    let i = 0;
+    while(i < n) {
+        let j = 0;
+        while (j < n - i - 1) {
+            if (arr[j] > arr[j + 1]) {
+                arr.swap(j, j+1);
+            }
+            j = j + 1;
+        }
+        i = i + 1;
+    }
+}
 
-let y = 'a' < 'b';
-let z = 'a' - 3;
+
+let root = Array<number>() {4, 2, 1};
+bubbleSort(root);
+

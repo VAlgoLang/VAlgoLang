@@ -105,7 +105,6 @@ data class ArrayElemRestyle(val arrayIdent: String, val indices: List<Int>, val 
         styleProperties.borderColor?.let {
             for (i in indices) {
                 instructions.add("FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(it)})")
-
             }
         }
         for (i in indices) {

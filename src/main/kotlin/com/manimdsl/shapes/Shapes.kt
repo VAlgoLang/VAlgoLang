@@ -105,7 +105,7 @@ class VariableBlockShape(
 class InitManimStackShape(
     override val ident: String,
     override val text: String,
-    private val boundary: List<Pair<Int, Int>>,
+    private val boundary: List<Pair<Double, Double>>,
     private val alignment: Alignment,
     val color: String? = null,
     val textColor: String? = null,
@@ -129,9 +129,10 @@ class ArrayShape(
     override val ident: String,
     private val values: Array<ExecValue>,
     override val text: String,
-    private val boundaries : List<Pair<Int, Int>>,
+    private val boundaries : List<Pair<Double, Double>>,
     color: String? = null,
     textColor: String? = null,
+    private val showLabel: Boolean? = null
 ) : ShapeWithText() {
     override val classPath: String = "python/array.py"
     override val className: String = "Array"
@@ -143,7 +144,8 @@ class ArrayShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}([${values.joinToString(",")}], \"$text\", [${boundaries.joinToString(",")}]$style).build()"
+        val arrayTitle = if (showLabel == null || showLabel) text else ""
+         return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style).build()"
     }
 }
 

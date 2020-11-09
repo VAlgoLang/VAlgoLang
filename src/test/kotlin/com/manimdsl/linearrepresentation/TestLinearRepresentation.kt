@@ -25,7 +25,7 @@ class TestLinearRepresentation {
             boundary = emptyList()
         )
 
-        stackIS.setNewBoundary(listOf(Pair(5, 4), Pair(7, 4), Pair(5, -4), Pair(7, -4)), 5)
+        stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
 
         val codeBlock = listOf(listOf("let y = new Stack;"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
 
