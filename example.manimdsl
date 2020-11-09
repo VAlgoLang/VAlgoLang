@@ -1,5 +1,5 @@
 let x = Node<number>(4);
-let y = Tree<Node<number>>(x);
 x.left = Node<number>(5);
+let y = Tree<Node<number>>(x);
 x.right = Node<number>(2);
 x.left.left = Node<number>(63);

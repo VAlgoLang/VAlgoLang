@@ -344,7 +344,7 @@ class VirtualMachine(
                             assignedValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(TreeAppendObject(parent, assignedValue, parent.binaryTreeValue!!, true))
                         } else {
-                            // TODO: node only append (invisible)
+                            linearRepresentation.add(NodeAppendObject(parent, assignedValue, true))
                         }
                     }
                     is NodeType.Right -> {
@@ -354,7 +354,7 @@ class VirtualMachine(
                             assignedValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(TreeAppendObject(parent, assignedValue, parent.binaryTreeValue!!, false))
                         } else {
-                            // TODO: node only append (invisible)
+                            linearRepresentation.add(NodeAppendObject(parent, assignedValue, false))
                         }
                     }
                 }

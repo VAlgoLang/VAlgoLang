@@ -84,6 +84,20 @@ data class TreeAppendObject(
     }
 }
 
+data class NodeAppendObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val childNodeValue: BinaryTreeNodeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "set_left" else "set_right"
+        return listOf(
+                "${parentNodeValue.manimObject.shape.ident}.$methodName(${childNodeValue.manimObject.shape.ident}, 1)",
+                )
+    }
+}
+
 data class StackPopObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
