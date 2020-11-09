@@ -75,11 +75,15 @@ class SemanticAnalysis {
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
             }
-            is EqExpression, is NeqExpression, is GtExpression,
-            is LtExpression, is GeExpression, is LeExpression -> {
+            is EqExpression, is NeqExpression -> if (expr1Type == expr2Type || isEqualNullable(expr1Type, expr2Type)) BoolType else ErrorType
+            is GtExpression, is LtExpression, is GeExpression, is LeExpression -> {
                 if (expr1Type == expr2Type) BoolType else ErrorType
             }
         }
+    }
+
+    private fun isEqualNullable(expr1Type: Type, expr2Type: Type): Boolean {
+        return (expr1Type is NullableDataStructure && expr2Type is NullType) ||  (expr1Type is NullType && expr2Type is NullableDataStructure)
     }
 
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
