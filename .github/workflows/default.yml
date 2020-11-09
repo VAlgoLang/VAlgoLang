@@ -18,8 +18,10 @@ jobs:
           python-version: '3.x'
       - name: Install Manim
         run: |
-          python -m pip install --upgrade pip
-          pip install manimlib
+          apt-get update && apt-get install -y texlive texlive-latex-extra texlive-fonts-extra texlive-latex-recommended texlive-science texlive-fonts-extra tipa
+          apt-get update && apt-get install -y python3 python3-pip sox ffmpeg libcairo2 libcairo2-dev
+          pip3 install --upgrade pip
+          pip3 install manimlib
       - name: Cache Gradle packages
         uses: actions/cache@v2
         with:
