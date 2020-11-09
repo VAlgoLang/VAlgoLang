@@ -556,9 +556,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
 
         val identifierType = symbolTable.getTypeOf(identifier)
-        semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, ctx.ROOT().symbol.text, ctx)
+        val isTree = semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, ctx.ROOT().symbol.text, ctx, identifierType)
 
-        val accessChain = if (ctx.node_elem_access() != null) {
+        val accessChain = if (isTree && ctx.node_elem_access() != null) {
             val list = mutableListOf<DataStructureMethod>()
             list.addAll(ctx.node_elem_access().map { visitNodeElemAccess(it, identifier, (identifierType as TreeType).internalType) })
             list

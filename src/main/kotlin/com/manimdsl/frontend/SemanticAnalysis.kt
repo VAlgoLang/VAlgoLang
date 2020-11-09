@@ -120,7 +120,7 @@ class SemanticAnalysis {
         method: String,
         ctx: ParserRuleContext,
         overrideType: Type = ErrorType
-    ) {
+    ): Boolean {
         val dataStructureType = if (overrideType is ErrorType) {
             currentSymbolTable.getTypeOf(identifier)
         } else {
@@ -130,7 +130,10 @@ class SemanticAnalysis {
 
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
+            return false
         }
+
+        return true
     }
 
     private fun invalidNumberOfArgumentsCheck(
