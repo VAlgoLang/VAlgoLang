@@ -9,11 +9,11 @@ fun undeclaredVariableStyleWarning(identifier: String) {
 fun invalidStyleAttribute(attribute: String, expecting: Collection<String>, invalid: String) {
     addWarning(
         "Invalid value: '$invalid' for attribute '$attribute' expecting: ${
-            expecting.joinToString(
-                "', '",
-                prefix = "'",
-                postfix = "'"
-            )
+        expecting.joinToString(
+            "', '",
+            prefix = "'",
+            postfix = "'"
+        )
         }"
     )
 }

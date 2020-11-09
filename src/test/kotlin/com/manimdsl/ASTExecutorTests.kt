@@ -272,7 +272,6 @@ class ASTExecutorTests {
         ).runProgram()
 
         assertEquals(expected.toString(), actual.toString())
-
     }
 
     // Assumes syntactically correct program

@@ -140,16 +140,20 @@ data class InitManimStack(
     val color: String? = null,
     val textColor: String? = null,
     val showLabel: Boolean? = null,
+    val creationStyle: String? = null,
+    val creationTime: Double? = null,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
+        val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
+        val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        val newIdent = if (showLabel == null || showLabel) "\"$ident\"" else ""
-        python.add("self.play($ident.create_init($newIdent))")
+        val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
+        python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
     }
 
@@ -167,19 +171,27 @@ data class ArrayStructure(
     val values: Array<ExecValue>,
     val color: String? = null,
     val textColor: String? = null,
+    var creationString: String? = null,
+    val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : DataStructureMObject(type, ident, boundaries) {
     override var shape: Shape = NullShape
 
+    init {
+        if (creationString == null) creationString = "FadeIn"
+    }
+
+    private val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
+
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play(ShowCreation($ident.title))" else "",
-            "self.play(*[ShowCreation(array_elem.all) for array_elem in $ident.array_elements])"
-        )
+            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
+            "self.play(*[$creationString(array_elem.all$runtimeString) for array_elem in $ident.array_elements])"
+         )
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {

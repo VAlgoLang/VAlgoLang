@@ -1,12 +1,14 @@
 {
   "variables": {
     "stack1": {
+      "creationStyle": "DrawBorderThenFill",
       "textColor": "BLUE",
       "borderColor": "ORANGE"
     }
   },
   "dataStructures": {
     "Stack": {
+      "creationStyle": "Write",
       "borderColor": "YELLOW",
       "textColor": "GREEN",
       "animate": {

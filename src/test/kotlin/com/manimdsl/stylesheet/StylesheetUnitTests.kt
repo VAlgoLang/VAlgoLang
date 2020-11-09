@@ -1,6 +1,5 @@
 package com.manimdsl.stylesheet
 
-import com.manimdsl.ManimDSLParser
 import com.manimdsl.frontend.IdentifierData
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
@@ -8,13 +7,12 @@ import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.runtime.StackValue
 import org.hamcrest.CoreMatchers.`is`
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThat
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.io.File
 import java.util.*
 
-class StylesheetTests {
+class StylesheetUnitTests {
     private val stylesheetPath = "src/test/testFiles/stylesheet"
 
     @Test
@@ -27,6 +25,7 @@ class StylesheetTests {
         ).getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("ORANGE"))
         assertThat(stack1Style.textColor, `is`("BLUE"))
+        assertThat(stack1Style.creationStyle, `is`("DrawBorderThenFill"))
     }
 
     @Test
@@ -39,6 +38,7 @@ class StylesheetTests {
         ).getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("GREEN"))
+        assertThat(stack1Style.animate!!.animationStyle, `is`("CircleIndicate"))
     }
 
     @Test
@@ -50,37 +50,20 @@ class StylesheetTests {
         val stack1Style = stack1Stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("BLUE"))
+        assertThat(stack1Style.creationStyle, `is`("GrowFromCenter"))
 
         val stack1AnimationStyle = stack1Stylesheet.getAnimatedStyle("stack1", StackValue(EmptyMObject, Stack()))!!
         assertThat(stack1AnimationStyle.borderColor, `is`("BLUE"))
         assertThat(stack1AnimationStyle.textColor, `is`("RED"))
-    }
-
-    @Test
-    fun localVariableAssignedCorrectStyle() {
-        val stylesheet = getStylesheetAfterRunningVirtualMachine("stackFunction.manimdsl", "variableOverrideStylesheet.json")
-        val stack1Style = stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
-        assertThat(stack1Style.borderColor, `is`("ORANGE"))
-        assertThat(stack1Style.textColor, `is`("BLUE"))
+        assertThat(stack1AnimationStyle.animationStyle, `is`("ApplyWave"))
     }
 
     @Test
     fun defaultCodeTrackingIsStepInto() {
         val stylesheet = Stylesheet(null, SymbolTableVisitor())
-        assertEquals(true, stylesheet.getStepIntoIsDefault())
+        assertTrue(stylesheet.getStepIntoIsDefault())
     }
 
-    private fun getStylesheetAfterRunningVirtualMachine(fileName: String, stylesheetName: String): Stylesheet {
-        val inputFile = File("src/test/testFiles/valid/$fileName")
-        val parser = ManimDSLParser(inputFile.inputStream())
-        val program = parser.parseFile().second
-        val parserResult = parser.convertToAst(program)
-        val stylesheet = Stylesheet(
-            "$stylesheetPath/$stylesheetName",
-            parserResult.symbolTableVisitor
-        )
-//        VirtualMachine(parserResult.abstractSyntaxTree, parserResult.symbolTableVisitor, parserResult.lineNodeMap, inputFile.readLines(), stylesheet).runProgram()
-        return stylesheet
-    }
+
 
 }
