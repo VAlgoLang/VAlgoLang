@@ -16,7 +16,7 @@ sealed class StylesheetProperty {
     abstract val textColor: String?
 
     fun handleColourValue(color: String?): String? {
-        if(color == null) return null
+        if (color == null) return null
         return if (color.matches(Regex("#[a-fA-F0-9]{6}"))) {
             // hex value
             "\"${color}\""
@@ -28,16 +28,24 @@ sealed class StylesheetProperty {
 
 }
 
-data class AnimationProperties(override val borderColor: String? = null, override val textColor: String? = null, val pointer: Boolean? = null) : StylesheetProperty()
+data class AnimationProperties(
+    override val borderColor: String? = null,
+    override val textColor: String? = null,
+    val pointer: Boolean? = null,
+    var animationStyle: String? = null,
+    var animationTime: Double? = null,
+) : StylesheetProperty()
 
 data class StyleProperties(
     override var borderColor: String? = null,
     override var textColor: String? = null,
     val showLabel: Boolean? = null,
+    var creationStyle: String? = null,
+    var creationTime: Double? = null,
     val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
-data class StyleSheetFromJSON(
+data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
     val variables: Map<String, StyleProperties> = emptyMap(),
@@ -45,14 +53,14 @@ data class StyleSheetFromJSON(
 )
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
-    private val stylesheet: StyleSheetFromJSON
+    private val stylesheet: StylesheetFromJSON
 
     init {
         stylesheet = if (stylesheetPath != null) {
             val gson = Gson()
-            val type: Type = object : TypeToken<StyleSheetFromJSON>() {}.type
+            val type: Type = object : TypeToken<StylesheetFromJSON>() {}.type
             try {
-                val parsedStylesheet: StyleSheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
+                val parsedStylesheet: StylesheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
                 StyleSheetValidator.validateStyleSheet(parsedStylesheet, symbolTableVisitor)
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
@@ -65,7 +73,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 exitProcess(1)
             }
         } else {
-            StyleSheetFromJSON()
+            StylesheetFromJSON()
         }
     }
 
