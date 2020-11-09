@@ -5,3 +5,4 @@ x.left = Node<number>(6);
 x.right.left = Node<number>(7);
 tree.root.left.right = Node<number>(9);
 let pointer = tree.root;
+pointer = pointer.right;
