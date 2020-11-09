@@ -1,9 +1,12 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
+import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.*
+import comcreat.manimdsl.linearrepresentation.Alignment
+import comcreat.manimdsl.linearrepresentation.ManimInstr
 
 /** Objects **/
 
@@ -131,13 +134,27 @@ sealed class DataStructureMObject(
 
 }
 
+data class NodeStructure(
+        val ident: String,
+        val value: String,
+        val depth: Int,
+        override val shape: Shape = NodeShape(ident, value, depth = depth)
+
+): MObject {
+    override fun toPython(): List<String> {
+        return listOf(
+            "$ident = ${shape.getConstructor()}"
+        )
+    }
+}
+
 data class InitTreeStructure(
         override val type: DataStructureType,
         override val ident: String,
         private var boundaries: List<Pair<Double, Double>> = emptyList(),
         private var maxSize: Int = -1,
         val text: String,
-        val initialValue: PrimitiveValue,
+        val root: BinaryTreeNodeValue,
 
         ): DataStructureMObject(type, ident) {
     override var shape: Shape = NullShape
@@ -145,37 +162,37 @@ data class InitTreeStructure(
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = InitTreeShape(ident, "\"$text\"", initialValue, boundaries)
+        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
     }
 
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing a new tree: $ident",
             shape.getConstructor(),
-            "self.play($ident.create_init(${initialValue}))"
+            "self.play($ident.create_init(${-1}))"
         )
     }
 }
 
 data class InitManimStack(
-    override val type: DataStructureType,
-    override val ident: String,
-    val position: Position,
-    val alignment: Alignment,
-    val text: String,
-    val moveToShape: Shape? = null,
-    val color: String? = null,
-    val textColor: String? = null,
-    val showLabel: Boolean? = null,
-    private var boundary: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1
+        override val type: DataStructureType,
+        override val ident: String,
+        val position: Position,
+        val alignment: Alignment,
+        val text: String,
+        val moveToShape: Shape? = null,
+        val color: String? = null,
+        val textColor: String? = null,
+        val showLabel: Boolean? = null,
+        private var boundary: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
-        val newIdent = if (showLabel == null || showLabel) "\"$ident\"" else ""
+        val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
         python.add("self.play($ident.create_init($newIdent))")
         return python
     }

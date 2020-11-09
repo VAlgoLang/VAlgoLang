@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, text, depth, color=RED, text_color=BLUE, text_weight=NORMAL, font="Times New Roman", radius=0.4):
+    def __init__(self, text, depth, color=RED, text_color=BLUE, text_weight=NORMAL, font="Times New Roman", radius=0.6):
         self.circle = Circle(radius=radius, color=color)
         self.radius = radius
         self.text = Text(text, color=text_color)
@@ -119,7 +119,7 @@ class Node:
 
 
 class Tree(DataStructure, ABC):
-    def __init__(self, ul, ur, ll, lr, aligned_edge, text, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
+    def __init__(self, ul, ur, ll, lr, aligned_edge, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
                  font="Times New Roman", radius=0.6):
         self.margin = [0.2, 0.2, 0]
         super().__init__(np.add(ul, self.margin), np.subtract(ur, self.margin), np.add(ll, self.margin),
@@ -127,7 +127,7 @@ class Tree(DataStructure, ABC):
         self.identifier = identifier
         self.radius = radius
         self.scale = 1
-        self.root = Node(text, 0, color=RED, text_color=BLUE, text_weight=NORMAL, font="Times New Roman", radius=radius)
+        self.root = root
         self.all.add(self.root.all)
         self.aligned_edge = np.average([ul, ur, ll, lr])
 

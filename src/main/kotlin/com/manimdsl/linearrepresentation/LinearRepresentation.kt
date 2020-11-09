@@ -1,5 +1,8 @@
-package com.manimdsl.linearrepresentation
+package comcreat.manimdsl.linearrepresentation
 
+import com.manimdsl.linearrepresentation.ObjectSide
+import com.manimdsl.runtime.BinaryTreeNodeValue
+import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
@@ -30,11 +33,11 @@ data class MoveToLine(val lineNumber: Int, val pointerName: String, val codeBloc
 }
 
 data class MoveObject(
-    val shape: Shape,
-    val moveToShape: Shape,
-    val objectSide: ObjectSide,
-    val offset: Int = 0,
-    val fadeOut: Boolean = false
+        val shape: Shape,
+        val moveToShape: Shape,
+        val objectSide: ObjectSide,
+        val offset: Int = 0,
+        val fadeOut: Boolean = false
 ) :
     ManimInstr {
     override fun toPython(): List<String> {
@@ -58,6 +61,25 @@ data class StackPushObject(
         return listOf(
             "[self.play(*animation) for animation in $dataStructureIdentifier.$methodName(${shape.ident})]",
             "$dataStructureIdentifier.add($shape)"
+        )
+    }
+}
+
+data class TreeAppendObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val childNodeValue: BinaryTreeNodeValue,
+        val treeValue: BinaryTreeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "set_left" else "set_right"
+        return listOf(
+                "${childNodeValue.manimObject.shape.ident}.depth = ${childNodeValue.depth}",
+                "${childNodeValue.manimObject.shape.ident}.radius = ${treeValue.manimObject.shape.ident}.radius",
+//                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.pathFromRoot}, ${childNodeValue.manimObject.shape.ident})]",
+                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
+
         )
     }
 }

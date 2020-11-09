@@ -109,9 +109,16 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         identifier: String,
         method: String,
-        ctx: ParserRuleContext
+        ctx: ParserRuleContext,
+        overrideType: Type = ErrorType
     ) {
-        val dataStructureType = currentSymbolTable.getTypeOf(identifier)
+        val dataStructureType = if (overrideType is ErrorType) {
+            currentSymbolTable.getTypeOf(identifier)
+        } else {
+            overrideType
+
+        }
+
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
         }

@@ -141,7 +141,7 @@ data class ArrayElemNode(override val lineNumber: Int, override val identifier: 
 data class BinaryTreeElemNode(
     override val lineNumber: Int,
     override val identifier: String,
-    val accessChain: List<DataStructureMethod>
+    val accessChain: List<DataStructureMethod>,
 ) : ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
         return "$identifier.${accessChain.joinToString(".")}"
@@ -152,11 +152,12 @@ data class NumberNode(override val lineNumber: Int, val double: Double) : Expres
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 data class MethodCallNode(
-    override val lineNumber: Int,
-    val instanceIdentifier: String,
-    val dataStructureMethod: DataStructureMethod,
-    val arguments: List<ExpressionNode>
-) : ExpressionNode(lineNumber)
+        override val lineNumber: Int,
+        val instanceIdentifier: String,
+        val dataStructureMethod: DataStructureMethod,
+        val arguments: List<ExpressionNode>,
+        override val identifier: String = ""
+) : ExpressionNode(lineNumber), AssignLHS
 
 data class ConstructorNode(
     override val lineNumber: Int,

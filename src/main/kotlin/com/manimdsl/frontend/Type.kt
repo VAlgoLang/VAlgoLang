@@ -45,6 +45,8 @@ interface DataStructureMethod {
 
 }
 
+interface LValueMemberMethod: DataStructureMethod
+
 interface ConstructorMethod : DataStructureMethod {
     val minRequiredArgsWithoutInitialValue: Int
 }
@@ -159,7 +161,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod {
+    ) : LValueMemberMethod, DataStructureMethod {
         override fun toString(): String {
             return "left"
         }
@@ -169,7 +171,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod {
+    ) : LValueMemberMethod, DataStructureMethod {
         override fun toString(): String {
             return "right"
         }

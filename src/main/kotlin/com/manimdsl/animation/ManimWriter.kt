@@ -2,9 +2,11 @@ package com.manimdsl.animation
 
 import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.MObject
-import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.linearrepresentation.MoveToLine
+import com.manimdsl.linearrepresentation.NodeStructure
+
 import com.manimdsl.shapes.NullShape
+import comcreat.manimdsl.linearrepresentation.ManimInstr
+import comcreat.manimdsl.linearrepresentation.MoveToLine
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -17,7 +19,10 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         var executed = false
         linearRepresentation.forEach {
             when (it) {
-                is DataStructureMObject -> {
+                is NodeStructure -> {
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
+                }
+                is DataStructureMObject  -> {
                     shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
                 }
                 is MObject -> {
