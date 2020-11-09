@@ -16,47 +16,20 @@ sealed class ExecValue {
 
     /** '+' **/
     operator fun plus(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> when (other) {
-            is CharValue -> DoubleValue((other.value.toDouble() + this.value))
-            is DoubleValue -> DoubleValue((this.value + other.value))
-            else -> throwTypeError()
-        }
-        is CharValue -> when (other) {
-            is CharValue -> DoubleValue((this.value.toDouble() + other.value.toDouble()))
-            is DoubleValue -> DoubleValue((this.value.toDouble() + other.value))
-            else -> throwTypeError()
-        }
-        else -> throwTypeError()
+        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() + this.toDouble())
+        else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
     /** '-' **/
     operator fun minus(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> when (other) {
-            is CharValue -> DoubleValue((other.value.toDouble() - this.value))
-            is DoubleValue -> DoubleValue((this.value - other.value))
-            else -> throwTypeError()
-        }
-        is CharValue -> when (other) {
-            is CharValue -> DoubleValue((this.value.toDouble() - other.value.toDouble()))
-            is DoubleValue -> DoubleValue((this.value.toDouble() - other.value))
-            else -> throwTypeError()
-        }
-        else -> throwTypeError()
+        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() - this.toDouble())
+        else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
     /** '*' **/
     operator fun times(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> when (other) {
-            is CharValue -> DoubleValue((other.value.toDouble() * this.value))
-            is DoubleValue -> DoubleValue((this.value * other.value))
-            else -> throwTypeError()
-        }
-        is CharValue -> when (other) {
-            is CharValue -> DoubleValue((this.value.toDouble() * other.value.toDouble()))
-            is DoubleValue -> DoubleValue((this.value.toDouble() * other.value))
-            else -> throwTypeError()
-        }
-        else -> throwTypeError()
+        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() * this.toDouble())
+        else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
     /** '!' **/
@@ -88,8 +61,13 @@ sealed class ExecValue {
 
 sealed class PrimitiveValue : ExecValue()
 
-data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
+sealed class DoubleAlias() : PrimitiveValue() {
+    abstract fun toDouble(): Double
+}
+
+data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
+    override fun toDouble(): Double = value
 
     override fun hashCode(): Int {
         return value.hashCode()
@@ -98,14 +76,14 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
     override fun toString(): String {
         return value.toString()
     }
-
     override fun clone(): ExecValue {
         return DoubleValue(value, manimObject)
     }
 }
 
-data class CharValue(override val value: Char, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
+data class CharValue(override val value: Char, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
     override fun equals(other: Any?): Boolean = other is CharValue && this.value == other.value
+    override fun toDouble(): Double = value.toDouble()
 
     override fun hashCode(): Int {
         return value.hashCode()
