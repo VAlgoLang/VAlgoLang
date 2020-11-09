@@ -7,9 +7,9 @@ import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.runtime.StackValue
 import com.manimdsl.runtime.VirtualMachine
 import org.hamcrest.CoreMatchers.`is`
-import org.junit.Assert
 import org.junit.Assert.assertThat
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
@@ -47,18 +47,16 @@ class StylesheetIntegrationTests {
 
     @Test
     fun incorrectCreationStyleDoesNotGetPassedToPython() {
-        runCompiler("stackFunction.manimdsl", "incorrectCreationStyle.json")
-        Assert.assertFalse(
-            outputStreamCaptor.toString().contains(Regex("Error"))
-        )
+        runCompiler("stackFunction.manimdsl", "incorrectCreationStyle.json", true)
+        // Pattern to recognise Manim error but not our warning
+        assertFalse(outputStreamCaptor.toString().contains(Regex(": RandomWrongTransform")))
     }
 
     @Test
     fun incorrectAnimationStyleDoesNotGetPassedToPython() {
-        runCompiler("stackFunction.manimdsl", "incorrectAnimationStyle.json")
-        Assert.assertFalse(
-            outputStreamCaptor.toString().contains(Regex("Error"))
-        )
+        runCompiler("stackFunction.manimdsl", "incorrectAnimationStyle.json", true)
+        // Pattern to recognise Manim error but not our warning
+        assertFalse(outputStreamCaptor.toString().contains(Regex(": RandomWrongTransform")))
     }
 
 
@@ -80,8 +78,8 @@ class StylesheetIntegrationTests {
         ).runProgram().second
         if (generateAnimation) {
             val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
-            writer.createPythonFile()
-            writer.generateAnimation(fileName, emptyList(),"out.mp4")
+            val pythonOutput = writer.createPythonFile()
+            writer.generateAnimation(pythonOutput, listOf("-l"), "out.mp4")
         }
         return stylesheet
     }
