@@ -77,9 +77,30 @@ data class TreeAppendObject(
         return listOf(
                 "${childNodeValue.manimObject.shape.ident}.depth = ${childNodeValue.depth}",
                 "${childNodeValue.manimObject.shape.ident}.radius = ${treeValue.manimObject.shape.ident}.radius",
-//                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.pathFromRoot}, ${childNodeValue.manimObject.shape.ident})]",
                 "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
 
+        )
+    }
+}
+
+data class NodeFocusObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        return listOf(
+                "self.play(*${parentNodeValue.manimObject.shape.ident}.highlight())",
+        )
+    }
+}
+
+data class NodeUnfocusObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        return listOf(
+                "self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight())",
         )
     }
 }

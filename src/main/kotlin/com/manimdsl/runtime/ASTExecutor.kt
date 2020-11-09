@@ -332,31 +332,34 @@ class VirtualMachine(
             }
         }
 
-        private fun executeTreeAppend(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, assignedValue: BinaryTreeNodeValue): ExecValue {
-            // todo: work with tree.root.* access
+        private fun executeTreeAppend(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, childValue: BinaryTreeNodeValue): ExecValue {
             val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (parent is RuntimeError)
                 return parent
             else if (parent is BinaryTreeNodeValue) {
                 when (binaryTreeElemNode.accessChain.last()) {
                     is NodeType.Left -> {
-                        parent.left = assignedValue
-                        assignedValue.depth = parent.depth+1
+                        parent.left = childValue
+                        childValue.depth = parent.depth+1
                         if (parent.binaryTreeValue != null) {
-                            assignedValue.attachTree(parent.binaryTreeValue!!)
-                            linearRepresentation.add(TreeAppendObject(parent, assignedValue, parent.binaryTreeValue!!, true))
+                            childValue.attachTree(parent.binaryTreeValue!!)
+                            linearRepresentation.add(NodeFocusObject(parent))
+                            linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, true))
+                            linearRepresentation.add(NodeUnfocusObject(parent))
                         } else {
-                            linearRepresentation.add(NodeAppendObject(parent, assignedValue, true))
+                            linearRepresentation.add(NodeAppendObject(parent, childValue, true))
                         }
                     }
                     is NodeType.Right -> {
-                        parent.right = assignedValue
-                        assignedValue.depth = parent.depth+1
+                        parent.right = childValue
+                        childValue.depth = parent.depth+1
                         if (parent.binaryTreeValue != null) {
-                            assignedValue.attachTree(parent.binaryTreeValue!!)
-                            linearRepresentation.add(TreeAppendObject(parent, assignedValue, parent.binaryTreeValue!!, false))
+                            childValue.attachTree(parent.binaryTreeValue!!)
+                            linearRepresentation.add(NodeFocusObject(parent))
+                            linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, false))
+                            linearRepresentation.add(NodeUnfocusObject(parent))
                         } else {
-                            linearRepresentation.add(NodeAppendObject(parent, assignedValue, false))
+                            linearRepresentation.add(NodeAppendObject(parent, childValue, false))
                         }
                     }
                 }

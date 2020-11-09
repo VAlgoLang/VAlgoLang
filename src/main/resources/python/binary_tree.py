@@ -221,12 +221,6 @@ class Tree(DataStructure, ABC):
     def edit_node_value(self, node, text):
         return node.edit_node_value(text)
 
-    def highlight(self, node):
-        return node.highlight()
-
-    def unhighlight(self, node):
-        return node.unhighlight()
-
     def create_init(self, _):
         name = Text(self.identifier)
         name.next_to(self.root.circle_text, UP, 0.3)
