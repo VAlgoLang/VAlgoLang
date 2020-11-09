@@ -345,7 +345,10 @@ class VirtualMachine(
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
                             linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, true))
+                            linearRepresentation.add(NodeFocusObject(childValue))
                             linearRepresentation.add(NodeUnfocusObject(parent))
+                            linearRepresentation.add(NodeUnfocusObject(childValue))
+
                         } else {
                             linearRepresentation.add(NodeAppendObject(parent, childValue, true))
                         }
@@ -357,7 +360,9 @@ class VirtualMachine(
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
                             linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, false))
+                            linearRepresentation.add(NodeFocusObject(childValue))
                             linearRepresentation.add(NodeUnfocusObject(parent))
+                            linearRepresentation.add(NodeUnfocusObject(childValue))
                         } else {
                             linearRepresentation.add(NodeAppendObject(parent, childValue, false))
                         }
