@@ -181,6 +181,10 @@ data class FunctionCallNode(
 // Method calls
 sealed class MethodClassNode
 
+interface ComparableTypes {
+    val compatibleTypes: Set<Type>
+}
+
 // Binary Expressions
 sealed class BinaryExpression(
     override val lineNumber: Int,
@@ -192,19 +196,25 @@ data class AddExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class SubtractExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class MultiplyExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class AndExpression(
     override val lineNumber: Int,

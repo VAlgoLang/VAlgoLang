@@ -62,7 +62,8 @@ class SemanticAnalysis {
 
         return when (expression) {
             is AddExpression, is SubtractExpression, is MultiplyExpression -> {
-                if ((expr1Type is NumberType || expr1Type is CharType) && (expr2Type is NumberType || expr2Type is CharType)) NumberType else ErrorType
+                val validTypes = (expression as ComparableTypes).compatibleTypes
+                if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
