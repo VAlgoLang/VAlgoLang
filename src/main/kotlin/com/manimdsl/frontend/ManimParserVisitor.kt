@@ -92,13 +92,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitCastExpression(ctx: CastExpressionContext): ASTNode {
         val expr = visit(ctx.expr()) as ExpressionNode
 
-        val expectedType = when (ctx.cast_method()) {
-            is ToCharacterContext -> NumberType
-            is ToNumberContext -> CharType
+        val expectedTypes = when (ctx.cast_method()) {
+            is ToCharacterContext, is ToNumberContext -> setOf(NumberType, CharType)
             else -> throw UnsupportedOperationException("Not implemented")
         }
 
-        semanticAnalyser.checkExpressionTypeWithExpectedType(expr, expectedType, symbolTable, ctx)
+        semanticAnalyser.checkExpressionTypeWithExpectedTypes(expr, expectedTypes, symbolTable, ctx)
 
         val targetType = when (ctx.cast_method()) {
             is ToCharacterContext -> CharType

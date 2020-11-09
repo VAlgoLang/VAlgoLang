@@ -236,8 +236,18 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         ctx: ParserRuleContext
     ) {
+        checkExpressionTypeWithExpectedTypes(expression, setOf(expected), currentSymbolTable, ctx)
+    }
+
+
+    fun checkExpressionTypeWithExpectedTypes(
+        expression: ExpressionNode,
+        expected: Set<Type>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
         val actual = inferType(currentSymbolTable, expression)
-        if (actual != expected) {
+        if (!expected.contains(actual)) {
             unexpectedExpressionTypeError(expected, actual, ctx)
         }
     }
