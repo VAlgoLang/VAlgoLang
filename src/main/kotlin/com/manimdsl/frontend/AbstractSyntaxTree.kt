@@ -178,6 +178,12 @@ data class FunctionCallNode(
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
+data class CastExpressionNode(
+    override val lineNumber: Int,
+    val targetType: PrimitiveType,
+    val expr: ExpressionNode
+) : ExpressionNode(lineNumber)
+
 // Method calls
 sealed class MethodClassNode
 

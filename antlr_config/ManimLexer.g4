@@ -60,6 +60,9 @@ BREAK: 'break';
 CONTINUE: 'continue';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
+TO_NUMBER: 'toNumber';
+TO_CHAR: 'toChar';
+
 NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;

@@ -357,6 +357,17 @@ class VirtualMachine(
             is ArrayElemNode -> executeArrayElem(node)
             is BinaryTreeElemNode -> TODO()
             is NullNode -> TODO()
+            is CastExpressionNode -> executeCastExpression(node)
+        }
+
+        private fun executeCastExpression(node: CastExpressionNode): ExecValue {
+            val exprValue = executeExpression(node.expr)
+
+            return when (node.targetType) {
+                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar(), exprValue.manimObject)
+                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                else -> throw UnsupportedOperationException("Not implemented yet")
+            }
         }
 
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
