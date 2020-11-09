@@ -35,23 +35,14 @@ sealed class ExecValue {
     /** '!' **/
     operator fun not(): Boolean = when (this) {
         is BoolValue -> !this.value
-        else -> throw UnsupportedOperationException("Wrong type")
+        else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
     /** '==','!=', '<', '<=', '>', '>='  **/
     operator fun compareTo(other: Any): Int = when (this) {
-        is DoubleValue -> when (other) {
-            is DoubleValue -> this.value.compareTo(other.value)
-            is CharValue -> this.value.compareTo(other.value.toDouble())
-            else -> throwTypeError()
-        }
-        is BoolValue -> if (other is BoolValue) this.value.compareTo(other.value) else throwTypeError()
-        is CharValue -> when (other) {
-            is CharValue -> this.value.compareTo(other.value)
-            is DoubleValue -> this.value.toDouble().compareTo(other.value)
-            else -> throwTypeError()
-        }
-        else -> throw throwTypeError()
+        is DoubleAlias -> this.toDouble().compareTo((other as DoubleAlias).toDouble())
+        is BoolValue -> this.value.compareTo((other as BoolValue).value)
+        else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
     private fun throwTypeError(): Nothing = throw UnsupportedOperationException("Unsupported type")
