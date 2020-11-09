@@ -45,6 +45,7 @@ arg_list: expr (COMMA expr)*                                        #ArgumentLis
 expr: NUMBER                                                        #NumberLiteral
     | NULL                                                          #NullLiteral
     | bool                                                          #BooleanLiteral
+    | CHAR_LITER                                                    #CharacterLiteral
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
     | node_elem                                                     #NodeElemExpr
@@ -57,6 +58,12 @@ expr: NUMBER                                                        #NumberLiter
     | left=expr binary_operator=(GT | GE | LE | LT) right=expr      #BinaryExpression
     | left=expr binary_operator=(EQ | NEQ) right=expr               #BinaryExpression
     | left=expr binary_operator=(AND | OR) right=expr               #BinaryExpression
+    | cast_method OPEN_PARENTHESIS expr CLOSE_PARENTHESIS          #CastExpression
+    ;
+
+
+cast_method: TO_NUMBER       #ToNumber
+    | TO_CHAR                #ToCharacter
     ;
 
 method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall
@@ -72,6 +79,7 @@ data_structure_type: STACK LT primitive_type GT                      #StackType
 
 primitive_type: NUMBER_TYPE                                          #NumberType
     | BOOL_TYPE                                                      #BoolType
+    | CHAR_TYPE                                                      #CharType
     ;
 
 bool: TRUE | FALSE;

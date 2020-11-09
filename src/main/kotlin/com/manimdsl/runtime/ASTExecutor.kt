@@ -341,6 +341,7 @@ class VirtualMachine(
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
+            is CharNode -> CharValue(node.value)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
@@ -369,6 +370,17 @@ class VirtualMachine(
             is ArrayElemNode -> executeArrayElem(node)
             is BinaryTreeElemNode -> TODO()
             is NullNode -> TODO()
+            is CastExpressionNode -> executeCastExpression(node)
+        }
+
+        private fun executeCastExpression(node: CastExpressionNode): ExecValue {
+            val exprValue = executeExpression(node.expr)
+
+            return when (node.targetType) {
+                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
+                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                else -> throw UnsupportedOperationException("Not implemented yet")
+            }
         }
 
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
@@ -471,7 +483,7 @@ class VirtualMachine(
                     val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                         Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            value.value.toString(),
+                            value.toString(),
                             dataStructureIdentifier,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
@@ -585,7 +597,7 @@ class VirtualMachine(
                     node.initialValue.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            it.value.toString(),
+                            it.toString(),
                             initStructureIdent,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
