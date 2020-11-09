@@ -315,7 +315,12 @@ class VirtualMachine(
                     is BinaryTreeNodeElemAccessNode -> {
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue as BinaryTreeNodeValue)
                     }
-                    is IdentifierNode -> variables[node.identifier.identifier] = assignedValue
+                    is IdentifierNode -> {
+                        variables[node.identifier.identifier] = assignedValue
+                        if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
+                            linearRepresentation.add(NodeFocusObject(assignedValue))
+                        }
+                    }
                     is ArrayElemNode -> {
                         return executeArrayElemAssignment(this, assignedValue)
                     }

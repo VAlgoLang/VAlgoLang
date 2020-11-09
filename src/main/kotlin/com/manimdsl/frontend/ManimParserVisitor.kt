@@ -543,15 +543,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return TreeType(visit(ctx.node_type()) as NodeType)
     }
 
-    override fun visitRootElemAssignment(ctx: RootElemAssignmentContext): BinaryTreeNodeElemAccessNode {
-        return visit(ctx) as BinaryTreeNodeElemAccessNode
+    override fun visitRootElemAssignment(ctx: RootElemAssignmentContext): BinaryTreeRootAccessNode {
+        return visit(ctx.root_elem()) as BinaryTreeRootAccessNode
     }
 
-    override fun visitRootElemExpr(ctx: RootElemExprContext): BinaryTreeNodeElemAccessNode {
-        return visit(ctx) as BinaryTreeNodeElemAccessNode
+    override fun visitRootElemExpr(ctx: RootElemExprContext): BinaryTreeRootAccessNode {
+        return visit(ctx.root_elem()) as BinaryTreeRootAccessNode
     }
 
-    override fun visitRootElem(ctx: RootElemContext): ASTNode {
+    override fun visitRootElem(ctx: RootElemContext): BinaryTreeRootAccessNode {
         val identifier = ctx.IDENT().symbol.text
         semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
 
