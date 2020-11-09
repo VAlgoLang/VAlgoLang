@@ -5,7 +5,6 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
-import com.manimdsl.shapes.NodeShape
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
@@ -310,8 +309,11 @@ class VirtualMachine(
 
             with(node.identifier) {
                 when (this) {
-                    is BinaryTreeElemNode -> {
-                        return executeTreeAppend(this, assignedValue as BinaryTreeNodeValue)
+                    is BinaryTreeRootAccessNode -> {
+                        return executeTreeAppend((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue as BinaryTreeNodeValue)
+                    }
+                    is BinaryTreeNodeElemAccessNode -> {
+                        return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue as BinaryTreeNodeValue)
                     }
                     is IdentifierNode -> variables[node.identifier.identifier] = assignedValue
                     is ArrayElemNode -> {
@@ -330,9 +332,9 @@ class VirtualMachine(
             }
         }
 
-        private fun executeTreeAppend(binaryTreeElemNode: BinaryTreeElemNode, assignedValue: BinaryTreeNodeValue): ExecValue {
+        private fun executeTreeAppend(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, assignedValue: BinaryTreeNodeValue): ExecValue {
             // todo: work with tree.root.* access
-            val (parent, _) = executeTreeAccess(binaryTreeElemNode)
+            val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (parent is RuntimeError)
                 return parent
             else if (parent is BinaryTreeNodeValue) {
@@ -401,17 +403,25 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
             is ArrayElemNode -> executeArrayElem(node)
-            is BinaryTreeElemNode -> executeTreeAccess(node).second
+            is BinaryTreeNodeElemAccessNode -> executeTreeAccess(
+                    variables[node.identifier]!! as BinaryTreeNodeValue,
+                    node
+            ).second
+            is BinaryTreeRootAccessNode -> executeRootAccess(node).second
             is NullNode -> TODO()
         }
 
-        private fun executeTreeAccess(elemAccessNode: BinaryTreeElemNode): Pair<ExecValue, ExecValue> {
-            val treeNode = variables[elemAccessNode.identifier]!! as BinaryTreeNodeValue
+        private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
+            val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
+            return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
+        }
+
+        private fun executeTreeAccess(rootNode: BinaryTreeNodeValue, elemAccessNode: BinaryTreeNodeElemAccessNode): Pair<ExecValue, ExecValue> {
             if (elemAccessNode.accessChain.isEmpty()) {
-                return Pair(EmptyValue, treeNode)
+                return Pair(EmptyValue, rootNode)
             }
 
-            val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size-1).foldRight(treeNode) {method, current ->
+            val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size-1).foldRight(rootNode) { method, current ->
                 if (method is NodeType.Left) {
                     current.left?:return Pair(RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber), RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
                 } else {

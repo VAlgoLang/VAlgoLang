@@ -18,11 +18,20 @@ class SemanticAnalysis {
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
-            is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
+            is BinaryTreeNodeElemAccessNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
             is NullNode -> NullType
+            is BinaryTreeRootAccessNode -> {
+                val type = currentSymbolTable.getTypeOf(expression.identifier)
+                if (type is TreeType) {
+                    type.internalType
+                } else {
+                    ErrorType
+                }
+            }
+
         }
 
-    private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+    private fun getBinaryTreeNodeType(expression: BinaryTreeNodeElemAccessNode, currentSymbolTable: SymbolTableVisitor): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
         return if (type is NodeType) {
             if (expression.accessChain.isNotEmpty()) {
@@ -458,6 +467,12 @@ class SemanticAnalysis {
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
         if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
+        }
+    }
+
+    fun invalidMemberAccess(nodeElem: AssignLHS, symbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
+        if (nodeElem is BinaryTreeRootAccessNode && symbolTable.getTypeOf(nodeElem.identifier) !is TreeType) {
+            unsupportedMethodError(symbolTable.getTypeOf(nodeElem.identifier).toString(), "root", ctx)
         }
     }
 }

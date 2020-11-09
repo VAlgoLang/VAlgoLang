@@ -138,16 +138,25 @@ data class ArrayElemNode(override val lineNumber: Int, override val identifier: 
     }
 }
 
-data class BinaryTreeElemNode(
-    override val lineNumber: Int,
-    override val identifier: String,
-    val accessChain: List<DataStructureMethod>,
+data class BinaryTreeNodeElemAccessNode(
+        override val lineNumber: Int,
+        override var identifier: String,
+        val accessChain: List<DataStructureMethod>,
 ) : ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
         return "$identifier.${accessChain.joinToString(".")}"
     }
 }
 
+data class BinaryTreeRootAccessNode(
+        override val lineNumber: Int,
+        override val identifier: String,
+        val elemAccessNode: BinaryTreeNodeElemAccessNode
+) : ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier.root.${elemAccessNode.accessChain.joinToString(".")}"
+    }
+}
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)

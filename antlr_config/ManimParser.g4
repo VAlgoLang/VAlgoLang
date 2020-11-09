@@ -86,4 +86,4 @@ data_structure_initialiser: OPEN_CURLY_BRACKET expr (COMMA expr)* CLOSE_CURLY_BR
 array_elem: IDENT OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET;
 node_elem: IDENT node_elem_access* (DOT VALUE)?;
 node_elem_access: (DOT (LEFT | RIGHT));
-root_elem: IDENT DOT ROOT node_elem_access* (DOT VALUE)?;
+root_elem: IDENT DOT ROOT node_elem_access* (DOT VALUE)? #RootElem;
