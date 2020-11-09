@@ -633,7 +633,7 @@ class VirtualMachine(
                 }
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
-                    dataStructureBoundaries[ident] = TallBoundary(minDimensions = Pair(4, 4))
+                    dataStructureBoundaries[ident] = SquareBoundary()
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
                     linearRepresentation.add(InitTreeStructure(
                             node.type,
