@@ -12,16 +12,6 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install Manim
-        run: |
-          apt-get update && apt-get install -y texlive texlive-latex-extra texlive-fonts-extra texlive-latex-recommended texlive-science texlive-fonts-extra tipa
-          apt-get update && apt-get install -y python3 python3-pip sox ffmpeg libcairo2 libcairo2-dev
-          pip3 install --upgrade pip
-          pip3 install manimlib
       - name: Cache Gradle packages
         uses: actions/cache@v2
         with:
