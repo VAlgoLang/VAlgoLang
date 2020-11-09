@@ -1,22 +1,4 @@
-fun buildBST(v: Array<number>, i: number, j: number): Tree<Node<number>> {
-    if (i == j) {
-        return Tree<Node<number>>(Node<number>(v[i]));
-    }
-
-    let m = i + j;
-    m = m/2.0;
-    let parent = Tree<Node<number>>(Node<number>(v[m]));
-    if (i <= m-1) {
-        let l = buildBST(v, i, m-1);
-        parent.root.left = l.root;
-    }
-    if (m+1 <= j) {
-        let r = buildBST(v, m+1, j);
-        parent.root.right = r.root;
-    }
-    return parent;
-}
-
-let arr = Array<number>(5){1,2,3,4,5};
-let t = buildBST(arr, 0, 4);
-
+let n = Tree<Node<number>>(Node<number>(3));
+let l = Node<number>(4);
+l.left = Node<number>(5);
+n.root.left = l;
