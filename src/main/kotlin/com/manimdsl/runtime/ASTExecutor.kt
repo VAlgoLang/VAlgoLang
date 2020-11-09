@@ -376,7 +376,7 @@ class VirtualMachine(
             val exprValue = executeExpression(node.expr)
 
             return when (node.targetType) {
-                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar(), exprValue.manimObject)
+                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
                 is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
                 else -> throw UnsupportedOperationException("Not implemented yet")
             }
