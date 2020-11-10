@@ -27,8 +27,8 @@ class ASTConstructionTests {
     @Test
     fun multiLineProgram() {
         val multiLineProgram = "let x: number = 1.5;\n" +
-                "# code comment\n" +
-                "let y: Stack<number> = Stack<number>();\n"
+            "# code comment\n" +
+            "let y: Stack<number> = Stack<number>();\n"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 1.5)),
             DeclarationNode(
@@ -45,7 +45,7 @@ class ASTConstructionTests {
     @Test
     fun methodCallProgram() {
         val methodProgram = "let y: Stack<number> = Stack<number>();\n" +
-                "y.push(1);\n"
+            "y.push(1);\n"
         val statements = listOf(
             DeclarationNode(
                 1,
@@ -67,10 +67,10 @@ class ASTConstructionTests {
     @Test
     fun functionDeclarationProgram() {
         val functionDeclarationProgram = "fun func(x : number): number {\n" +
-                "\tlet z: number = 10;\n" +
-                "return z;\n" +
-                "}\n" +
-                "let z: number = 5;"
+            "\tlet z: number = 10;\n" +
+            "return z;\n" +
+            "}\n" +
+            "let z: number = 5;"
         val functionStatements = listOf(
             DeclarationNode(2, IdentifierNode(2, "z"), NumberNode(2, 10.0)),
             ReturnNode(3, IdentifierNode(3, "z"))
@@ -93,11 +93,11 @@ class ASTConstructionTests {
     @Test
     fun functionCallProgram() {
         val functionCallProgram = "fun func(x: number, y: number): number {\n" +
-                "\tlet z: number = x + y;\n" +
-                "return z;\n" +
-                "}\n" +
-                "let z: number = func(1,2);\n" +
-                "func(3,4);"
+            "\tlet z: number = x + y;\n" +
+            "return z;\n" +
+            "}\n" +
+            "let z: number = func(1,2);\n" +
+            "func(3,4);"
         val functionStatements = listOf(
             DeclarationNode(
                 2,
@@ -131,15 +131,15 @@ class ASTConstructionTests {
     @Test
     fun ifStatementProgram() {
         val methodProgram = "let x = 3;\n" +
-                "if(x == 2) {\n" +
-                "    x = 2;\n" +
-                "} else if (x == 1) {\n" +
-                "    x = 4;\n" +
-                "} else if (x == 0) {\n" +
-                "    x = 3;\n" +
-                "} else {\n" +
-                "    x = 1;\n" +
-                "}"
+            "if(x == 2) {\n" +
+            "    x = 2;\n" +
+            "} else if (x == 1) {\n" +
+            "    x = 4;\n" +
+            "} else if (x == 0) {\n" +
+            "    x = 3;\n" +
+            "} else {\n" +
+            "    x = 1;\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
@@ -180,11 +180,11 @@ class ASTConstructionTests {
     @Test
     fun ifStatementWithoutElifProgram() {
         val methodProgram = "let x = 3;\n" +
-                "if(x == 2) {\n" +
-                "    x = 2;\n" +
-                "} else {\n" +
-                "    x = 1;\n" +
-                "}"
+            "if(x == 2) {\n" +
+            "    x = 2;\n" +
+            "} else {\n" +
+            "    x = 1;\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
@@ -211,9 +211,9 @@ class ASTConstructionTests {
     @Test
     fun ifStatementJustIfProgram() {
         val methodProgram = "let x = 3;\n" +
-                "if(x == 2) {\n" +
-                "    x = 2;\n" +
-                "}"
+            "if(x == 2) {\n" +
+            "    x = 2;\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 3.0)),
             IfStatementNode(
@@ -234,9 +234,9 @@ class ASTConstructionTests {
     @Test
     fun whileLoopProgram() {
         val methodProgram = "let x = 0;\n" +
-                "while(x < 2) {\n" +
-                "    x = x + 1;\n" +
-                "}"
+            "while(x < 2) {\n" +
+            "    x = x + 1;\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 0.0)),
             WhileStatementNode(
@@ -261,12 +261,12 @@ class ASTConstructionTests {
     @Test
     fun whileLoopWithBreakProgram() {
         val methodProgram = "let x = 0;\n" +
-                "while(true) {\n" +
-                "    x = x + 1;\n" +
-                "    if (x == 2) {\n" +
-                "       break;\n" +
-                "    }\n" +
-                "}"
+            "while(true) {\n" +
+            "    x = x + 1;\n" +
+            "    if (x == 2) {\n" +
+            "       break;\n" +
+            "    }\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 0.0)),
             WhileStatementNode(
@@ -300,13 +300,13 @@ class ASTConstructionTests {
     @Test
     fun whileLoopWithContinueProgram() {
         val methodProgram = "let x = 0;\n" +
-                "while(x < 2) {\n" +
-                "    x = x + 1;\n" +
-                "    if (x == 1) {\n" +
-                "       x = 3;\n" +
-                "       continue;\n" +
-                "    }\n" +
-                "}"
+            "while(x < 2) {\n" +
+            "    x = x + 1;\n" +
+            "    if (x == 1) {\n" +
+            "       x = 3;\n" +
+            "       continue;\n" +
+            "    }\n" +
+            "}"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 0.0)),
             WhileStatementNode(
@@ -335,6 +335,88 @@ class ASTConstructionTests {
         val reference = ProgramNode(listOf(), statements)
         val actual = buildAST(methodProgram)
         assertEquals(reference, actual)
+    }
+
+    @Test
+    fun forLoopProgram() {
+        val methodProgram = "let x = 0;\n" +
+            "for (i in range(3)) {\n" +
+            "    x = x + 1;\n" +
+            "}"
+        val statements = listOf(
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 0.0)),
+            ForStatementNode(
+                lineNumber = 2,
+                endLineNumber = 4,
+                scope = 1,
+                beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
+                endCondition = LtExpression(2, IdentifierNode(2, "i"), NumberNode(2, 3.0)),
+                updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
+                statements = listOf(
+                    AssignmentNode(
+                        3,
+                        IdentifierNode(3, "x"),
+                        AddExpression(3, IdentifierNode(3, "x"), NumberNode(3, 1.0))
+                    )
+                )
+            )
+        )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun nestedForLoopWithBreak() {
+        val methodProgram = "let x = 0;\n" +
+            "for (i in range(3)) {\n" +
+            "    for (j in range(i, 5)) {\n" +
+            "        if (j > 2) {\n" +
+            "            break;\n" +
+            "        }\n" +
+            "        x = i * j;\n" +
+            "    }\n" +
+            "}"
+        val statements = listOf(
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 0.0)),
+            ForStatementNode(
+                lineNumber = 2,
+                endLineNumber = 9,
+                scope = 1,
+                beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
+                endCondition = LtExpression(2, IdentifierNode(2, "i"), NumberNode(2, 3.0)),
+                updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
+                statements = listOf(
+                    ForStatementNode(
+                        lineNumber = 3,
+                        endLineNumber = 8,
+                        scope = 1,
+                        beginStatement = DeclarationNode(3, IdentifierNode(3, "j"), IdentifierNode(3, "i")),
+                        endCondition = LtExpression(3, IdentifierNode(3, "j"), NumberNode(3, 5.0)),
+                        updateCounter = AssignmentNode(3, IdentifierNode(3, "j"), AddExpression(3, IdentifierNode(3, "j"), NumberNode(3, 1.0))),
+                        statements = listOf(
+                            IfStatementNode(
+                                lineNumber = 4,
+                                endLineNumber = 6,
+                                scope = 2,
+                                condition = GtExpression(4, IdentifierNode(4, "j"), NumberNode(4, 2.0)),
+                                statements = listOf(BreakNode(5, 8)),
+                                elifs = emptyList(),
+                                elseBlock = ElseNode(6, 0, emptyList())
+                            ),
+                            AssignmentNode(
+                                7,
+                                IdentifierNode(7, "x"),
+                                MultiplyExpression(7, IdentifierNode(7, "i"), IdentifierNode(7, "j"))
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
     }
 
     // Assumes syntactically correct program

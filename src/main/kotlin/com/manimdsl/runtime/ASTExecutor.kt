@@ -779,6 +779,13 @@ class VirtualMachine(
             return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
         }
 
+        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
+            val identifier = forStatementNode.beginStatement.identifier.identifier
+            val index = displayedDataMap.filterValues { it.first == identifier }.keys
+            displayedDataMap.remove(index.first())
+            variables.remove(identifier)
+        }
+
         private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
 
             var conditionValue: ExecValue
@@ -793,10 +800,7 @@ class VirtualMachine(
                     return conditionValue
                 } else if (conditionValue is BoolValue) {
                     if (!conditionValue.value) {
-                        val identifier = forStatementNode.beginStatement.identifier.identifier
-                        val index = displayedDataMap.filterValues { it.first == identifier }.keys
-                        displayedDataMap.remove(index.first())
-                        variables.remove(identifier)
+                        removeForLoopCounter(forStatementNode)
                         pc = forStatementNode.endLineNumber
                         moveToLine()
                         return EmptyValue
@@ -818,6 +822,7 @@ class VirtualMachine(
 
                 when (execValue) {
                     is BreakValue -> {
+                        removeForLoopCounter(forStatementNode)
                         pc = forStatementNode.endLineNumber
                         moveToLine()
                         return EmptyValue
