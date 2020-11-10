@@ -65,6 +65,21 @@ data class StackPushObject(
     }
 }
 
+data class TreeDeleteObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val treeValue: BinaryTreeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "delete_left" else "delete_right"
+        return listOf(
+                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}))",
+
+        )
+    }
+}
+
 data class TreeAppendObject(
         val parentNodeValue: BinaryTreeNodeValue,
         val childNodeValue: BinaryTreeNodeValue,
@@ -79,7 +94,7 @@ data class TreeAppendObject(
                 "${childNodeValue.manimObject.shape.ident}.radius = ${treeValue.manimObject.shape.ident}.radius",
                 "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
 
-        )
+                )
     }
 }
 

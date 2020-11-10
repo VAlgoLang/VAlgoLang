@@ -310,9 +310,15 @@ class VirtualMachine(
             with(node.identifier) {
                 when (this) {
                     is BinaryTreeRootAccessNode -> {
+                        if (assignedValue is EmptyValue){
+                            return executeTreeDelete((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode)
+                        }
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue as BinaryTreeNodeValue)
                     }
                     is BinaryTreeNodeElemAccessNode -> {
+                        if (assignedValue is EmptyValue){
+                            return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
+                        }
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue as BinaryTreeNodeValue)
                     }
                     is IdentifierNode -> {
@@ -418,12 +424,36 @@ class VirtualMachine(
                     node
             ).second
             is BinaryTreeRootAccessNode -> executeRootAccess(node).second
-            is NullNode -> TODO()
+            is NullNode -> EmptyValue
         }
 
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
             val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
             return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
+        }
+
+        private fun executeTreeDelete(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode): ExecValue {
+            val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
+            if (parent is RuntimeError)
+                return parent
+            else if (parent is BinaryTreeNodeValue) {
+                when (binaryTreeElemNode.accessChain.last()) {
+                    is NodeType.Left -> {
+                        parent.left = null
+                        if (parent.binaryTreeValue != null) {
+                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, true))
+                        }
+                    }
+                    is NodeType.Right -> {
+                        parent.right = null
+                        if (parent.binaryTreeValue != null) {
+                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, false))
+                        }
+                    }
+                }
+
+            }
+            return EmptyValue
         }
 
         private fun executeTreeAccess(rootNode: BinaryTreeNodeValue, elemAccessNode: BinaryTreeNodeElemAccessNode): Pair<ExecValue, ExecValue> {
