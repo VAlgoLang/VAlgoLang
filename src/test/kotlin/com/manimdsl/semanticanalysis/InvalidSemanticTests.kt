@@ -345,6 +345,14 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun nestedForLoopRedeclarationOfVariables() {
+        runSyntaxAndSemanticAnalysis("nestedForLoopRedeclarationOfVariables.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

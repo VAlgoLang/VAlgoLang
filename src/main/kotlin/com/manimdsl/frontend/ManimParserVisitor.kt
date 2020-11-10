@@ -281,6 +281,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     private fun visitRange(ctx: RangeHeaderContext): Triple<DeclarationNode, ExpressionNode, AssignmentNode> {
         val lineNumber = ctx.start.line
         val identifier = ctx.IDENT().symbol.text
+        semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
         val startExpr = if (ctx.begin != null) {
             visit(ctx.begin) as ExpressionNode
         } else {
@@ -311,8 +312,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitForStatement(ctx: ForStatementContext): ASTNode {
         val prevInLoop = inLoop
+        val forScope = if (!prevInLoop) {
+            symbolTable.enterScope()
+        } else {
+            symbolTable.getCurrentScopeID()
+        }
         inLoop = true
-        val forScope = symbolTable.enterScope()
         val (start, end, update) = visitForHeader(ctx.forHeader())
         val startLineNumber = ctx.start.line
         val endLineNumber = ctx.stop.line
@@ -322,7 +327,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         forStatements.forEach {
             lineNumberNodeMap[it.lineNumber] = it
         }
-        symbolTable.leaveScope()
+        if (!prevInLoop) {
+            symbolTable.leaveScope()
+        }
         loopLineNumbers = prevLoopLineNumbers
         inLoop = prevInLoop
 
