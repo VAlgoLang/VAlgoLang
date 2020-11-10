@@ -337,6 +337,14 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun invalidForLoopRange() {
+        runSyntaxAndSemanticAnalysis("invalidForLoopRange.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot define for loop range using type .* - only numeric index allowed"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

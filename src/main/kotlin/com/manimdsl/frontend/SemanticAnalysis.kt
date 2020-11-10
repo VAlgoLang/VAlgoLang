@@ -322,6 +322,7 @@ class SemanticAnalysis {
                         && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
                         && checkStatementsHaveReturn(it.elseBlock.statements)
                 is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
+                is ForStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
             }
         }
@@ -451,6 +452,13 @@ class SemanticAnalysis {
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
         if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
+        }
+    }
+
+    fun rangeEndNotNumber(symbolTable: SymbolTableVisitor, endExpr: ExpressionNode, ctx: ManimParser.RangeHeaderContext) {
+        val type = inferType(symbolTable, endExpr)
+        if (type != NumberType) {
+            forLoopRangeEndNotNumber(type.toString(), ctx)
         }
     }
 }

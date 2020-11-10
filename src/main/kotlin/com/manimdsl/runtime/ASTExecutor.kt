@@ -185,6 +185,7 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
+            is ForStatementNode -> executeForStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
@@ -701,7 +702,7 @@ class VirtualMachine(
 
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
-            if (showMoveToLine) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(0.5)
 
             var conditionValue: ExecValue
             var execValue: ExecValue
@@ -752,6 +753,65 @@ class VirtualMachine(
             }
 
             return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
+        }
+
+        private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
+            if (showMoveToLine && !hideCode) addSleep(0.5)
+
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+            var loopCount = 0
+
+            executeAssignment(forStatementNode.beginStatement)
+
+            while (loopCount < MAX_NUMBER_OF_LOOPS) {
+                conditionValue = executeExpression(forStatementNode.endCondition)
+                if (conditionValue is RuntimeError) {
+                    return conditionValue
+                } else if (conditionValue is BoolValue) {
+                    if (!conditionValue.value) {
+                        pc = forStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    } else {
+                        pc = forStatementNode.lineNumber
+                    }
+                }
+
+                execValue = Frame(
+                    forStatementNode.statements.first().lineNumber,
+                    forStatementNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto,
+                    hideCode = hideCode,
+                    displayedDataMap = displayedDataMap
+                ).runFrame()
+
+                when (execValue) {
+                    is BreakValue -> {
+                        pc = forStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    }
+                    is ContinueValue -> {
+                        pc = forStatementNode.lineNumber
+                        moveToLine()
+                        continue
+                    }
+                    !is EmptyValue -> {
+                        return execValue
+                    }
+                }
+
+                executeAssignment(forStatementNode.updateCounter)
+                pc = forStatementNode.lineNumber
+                moveToLine()
+                loopCount++
+            }
+
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = forStatementNode.lineNumber)
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {

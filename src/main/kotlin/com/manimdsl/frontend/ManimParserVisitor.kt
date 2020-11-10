@@ -152,7 +152,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
@@ -174,7 +174,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
 
@@ -220,7 +220,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return if (treeType is ErrorType) {
             Pair(ErrorType, EmptyLHS)
         } else {
-           Pair(treeType, nodeElem)
+            Pair(treeType, nodeElem)
         }
     }
 
@@ -253,6 +253,58 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             WhileStatementNode(startLineNumber, endLineNumber, whileScope, whileCondition, whileStatements)
         lineNumberNodeMap[ctx.start.line] = whileStatementNode
         return whileStatementNode
+    }
+
+    private fun visitForHeader(ctx: ForHeaderContext): Triple<DeclarationNode, ExpressionNode, AssignmentNode> {
+        return visitRange(ctx as RangeHeaderContext)
+    }
+
+    private fun visitRange(ctx: RangeHeaderContext): Triple<DeclarationNode, ExpressionNode, AssignmentNode> {
+        val lineNumber = ctx.start.line
+        val identifier = ctx.IDENT().symbol.text
+        val startExpr = if (ctx.begin != null) {
+            visit(ctx.begin) as ExpressionNode
+        } else {
+            NumberNode(lineNumber, 0.0)
+        }
+        val start = DeclarationNode(lineNumber, IdentifierNode(lineNumber, identifier), startExpr)
+        val endExpr = visit(ctx.end) as ExpressionNode
+        semanticAnalyser.rangeEndNotNumber(symbolTable, endExpr, ctx)
+        val end = LtExpression(lineNumber, IdentifierNode(lineNumber, identifier), endExpr)
+        val update = AssignmentNode(
+            lineNumber,
+            IdentifierNode(lineNumber, identifier),
+            AddExpression(
+                lineNumber,
+                IdentifierNode(lineNumber, identifier),
+                NumberNode(lineNumber, 1.0)
+            )
+        )
+        symbolTable.addVariable(identifier, IdentifierData(NumberType))
+        return Triple(start, end, update)
+    }
+
+    override fun visitForStatement(ctx: ForStatementContext): ASTNode {
+        val prevInLoop = inLoop
+        inLoop = true
+        val forScope = symbolTable.enterScope()
+        val (start, end, update) = visitForHeader(ctx.forHeader())
+        val startLineNumber = ctx.start.line
+        val endLineNumber = ctx.stop.line
+        val prevLoopLineNumbers = loopLineNumbers
+        loopLineNumbers = Pair(startLineNumber, endLineNumber)
+        val forStatements = visitAndFlattenStatements(ctx.forStat)
+        forStatements.forEach {
+            lineNumberNodeMap[it.lineNumber] = it
+        }
+        symbolTable.leaveScope()
+        loopLineNumbers = prevLoopLineNumbers
+        inLoop = prevInLoop
+
+        val forStatementNode =
+            ForStatementNode(startLineNumber, endLineNumber, forScope, start, end, update, forStatements)
+        lineNumberNodeMap[ctx.start.line] = forStatementNode
+        return forStatementNode
     }
 
     override fun visitIfStatement(ctx: IfStatementContext): ASTNode {
@@ -572,7 +624,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
         return super.visitNode_elem_access(ctx)
     }
-
 
 
     override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
