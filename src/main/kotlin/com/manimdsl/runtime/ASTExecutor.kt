@@ -793,6 +793,10 @@ class VirtualMachine(
                     return conditionValue
                 } else if (conditionValue is BoolValue) {
                     if (!conditionValue.value) {
+                        val identifier = forStatementNode.beginStatement.identifier.identifier
+                        val index = displayedDataMap.filterValues { it.first == identifier }.keys
+                        displayedDataMap.remove(index.first())
+                        variables.remove(identifier)
                         pc = forStatementNode.endLineNumber
                         moveToLine()
                         return EmptyValue
