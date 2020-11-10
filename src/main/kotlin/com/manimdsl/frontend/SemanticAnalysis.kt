@@ -477,7 +477,7 @@ class SemanticAnalysis {
     ) {
         listOf(startExpr, endExpr, change).forEach {
             val type = inferType(symbolTable, it)
-            if (type != NumberType) {
+            if (type != NumberType && type != ErrorType) {
                 forLoopRangeNotNumber(type.toString(), ctx)
             }
         }

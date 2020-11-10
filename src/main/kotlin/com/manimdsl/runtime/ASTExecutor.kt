@@ -819,6 +819,7 @@ class VirtualMachine(
                         return EmptyValue
                     }
                     is ContinueValue -> {
+                        executeAssignment(forStatementNode.updateCounter)
                         pc = forStatementNode.lineNumber
                         moveToLine()
                         continue
