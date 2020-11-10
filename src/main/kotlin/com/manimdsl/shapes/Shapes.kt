@@ -25,7 +25,7 @@ sealed class Shape {
 sealed class ShapeWithText : Shape()
 
 interface StyleableShape {
-    fun restyle(styleProperties: StylesheetProperty): List<String>
+    fun restyle(styleProperties: StylesheetProperty, runtimeString: String): List<String>
 }
 
 class Rectangle(
@@ -44,7 +44,7 @@ class Rectangle(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-    override fun restyle(styleProperties: StylesheetProperty): List<String> {
+    override fun restyle(styleProperties: StylesheetProperty, runtimeString: String): List<String> {
         val instructions = mutableListOf<String>()
 
         styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${styleProperties.handleColourValue(it)})") }
@@ -53,7 +53,7 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(${instructions.joinToString(", ")})")
+            listOf("self.play(${instructions.joinToString(", ")}$runtimeString)")
         }
     }
 

@@ -75,9 +75,9 @@ fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: 
     addSemanticError(errorMessage, getErrorLinePos(ctx))
 }
 
-fun unexpectedExpressionTypeError(expected: Type, actual: Type, ctx: ParserRuleContext) {
+fun unexpectedExpressionTypeError(expected: Set<Type>, actual: Type, ctx: ParserRuleContext) {
     val errorMessage =
-        "Expected expression of type $expected but found $actual"
+        "Expected expression of type ${expected.joinToString(separator = " or ")} but found $actual"
 
     addSemanticError(errorMessage, getErrorLinePos(ctx))
 }

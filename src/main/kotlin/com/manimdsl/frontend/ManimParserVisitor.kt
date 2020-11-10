@@ -89,6 +89,25 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return lineNumberNodeMap[ctx.start.line] as ReturnNode
     }
 
+    override fun visitCastExpression(ctx: CastExpressionContext): ASTNode {
+        val expr = visit(ctx.expr()) as ExpressionNode
+
+        val expectedTypes = when (ctx.cast_method()) {
+            is ToCharacterContext, is ToNumberContext -> setOf(NumberType, CharType)
+            else -> throw UnsupportedOperationException("Not implemented")
+        }
+
+        semanticAnalyser.checkExpressionTypeWithExpectedTypes(expr, expectedTypes, symbolTable, ctx)
+
+        val targetType = when (ctx.cast_method()) {
+            is ToCharacterContext -> CharType
+            is ToNumberContext -> NumberType
+            else -> throw UnsupportedOperationException("Not implemented")
+        }
+
+        return CastExpressionNode(ctx.start.line, targetType, expr)
+    }
+
     /** Statements **/
 
     override fun visitSleepStatement(ctx: SleepStatementContext): SleepNode {
@@ -526,6 +545,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return BoolNode(ctx.start.line, ctx.bool().text.toBoolean())
     }
 
+    override fun visitCharacterLiteral(ctx: CharacterLiteralContext): ASTNode {
+        // char in format 'a'
+        return CharNode(ctx.start.line, ctx.CHAR_LITER().text[1])
+    }
+
     override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
         return NullNode(ctx.start.line)
     }
@@ -542,6 +566,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitBoolType(ctx: BoolTypeContext): ASTNode {
         return BoolType
+    }
+
+    override fun visitCharType(ctx: CharTypeContext?): ASTNode {
+        return CharType
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {

@@ -1,11 +1,11 @@
 {
   "dataStructures": {
     "Stack": {
+      "creationStyle": "RandomWrongTransform",
       "borderColor": "YELLOW",
-      "creationStyle": "Write",
       "animate": {
-        "textColor": "RED",
-        "animationStyle": "Indicate"
+        "borderColor": "RED",
+        "textColor": "RED"
       }
     }
   }

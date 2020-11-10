@@ -20,6 +20,8 @@ class SemanticAnalysis {
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
             is NullNode -> NullType
+            is CharNode -> CharType
+            is CastExpressionNode -> expression.targetType
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
@@ -61,7 +63,8 @@ class SemanticAnalysis {
 
         return when (expression) {
             is AddExpression, is SubtractExpression, is MultiplyExpression -> {
-                if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
+                val validTypes = (expression as ComparableTypes).compatibleTypes
+                if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
@@ -233,8 +236,18 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         ctx: ParserRuleContext
     ) {
+        checkExpressionTypeWithExpectedTypes(expression, setOf(expected), currentSymbolTable, ctx)
+    }
+
+
+    fun checkExpressionTypeWithExpectedTypes(
+        expression: ExpressionNode,
+        expected: Set<Type>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
         val actual = inferType(currentSymbolTable, expression)
-        if (actual != expected) {
+        if (!expected.contains(actual)) {
             unexpectedExpressionTypeError(expected, actual, ctx)
         }
     }

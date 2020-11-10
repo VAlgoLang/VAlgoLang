@@ -3,16 +3,19 @@
     "stack1": {
       "textColor": "BLUE",
       "animate": {
-        "borderColor": "BLUE"
+        "borderColor": "BLUE",
+        "animationStyle": "ApplyWave"
       }
     }
   },
   "dataStructures": {
     "Stack": {
       "borderColor": "YELLOW",
+      "creationStyle": "GrowFromCenter",
       "animate": {
         "borderColor": "RED",
-        "textColor": "RED"
+        "textColor": "RED",
+        "animationStyle": "FadeToColor"
       }
     }
   }
