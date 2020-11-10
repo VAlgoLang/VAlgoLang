@@ -32,7 +32,7 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                          #CodeTrackingStatement
     ;
 
-forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr CLOSE_PARENTHESIS     #RangeHeader;
+forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
 //         | start=(IDENT EQUAL expr) SEMI expr SEMI end=(IDENT EQUAL expr)     #StateHeader;
 
 loop_stat: BREAK SEMI         #BreakStatement

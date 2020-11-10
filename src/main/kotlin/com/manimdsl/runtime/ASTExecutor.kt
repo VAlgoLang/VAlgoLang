@@ -780,7 +780,6 @@ class VirtualMachine(
         }
 
         private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(0.5)
 
             var conditionValue: ExecValue
             var execValue: ExecValue
@@ -829,6 +828,7 @@ class VirtualMachine(
                     }
                 }
 
+                if (showMoveToLine && !hideCode) addSleep(0.5)
                 executeAssignment(forStatementNode.updateCounter)
                 pc = forStatementNode.lineNumber
                 moveToLine()

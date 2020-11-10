@@ -286,9 +286,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         } else {
             NumberNode(lineNumber, 0.0)
         }
-        val start = DeclarationNode(lineNumber, IdentifierNode(lineNumber, identifier), startExpr)
         val endExpr = visit(ctx.end) as ExpressionNode
-        semanticAnalyser.rangeEndNotNumber(symbolTable, endExpr, ctx)
+        val change = if (ctx.delta != null) {
+            visit(ctx.delta) as ExpressionNode
+        } else {
+            NumberNode(lineNumber, 1.0)
+        }
+        semanticAnalyser.forLoopRangeNotNumber(symbolTable, startExpr, endExpr, change, ctx)
+
+        val start = DeclarationNode(lineNumber, IdentifierNode(lineNumber, identifier), startExpr)
         val end = LtExpression(lineNumber, IdentifierNode(lineNumber, identifier), endExpr)
         val update = AssignmentNode(
             lineNumber,
@@ -296,7 +302,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             AddExpression(
                 lineNumber,
                 IdentifierNode(lineNumber, identifier),
-                NumberNode(lineNumber, 1.0)
+                change
             )
         )
         symbolTable.addVariable(identifier, IdentifierData(NumberType))

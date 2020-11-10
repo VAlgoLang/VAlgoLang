@@ -88,7 +88,7 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if(rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
+        if (rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
             nonNullableAssignedToNull(rhsType.toString(), lhsType.toString(), ctx)
         } else if (rhsType != NullType && lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
@@ -332,8 +332,8 @@ class SemanticAnalysis {
             when (it) {
                 is ReturnNode -> true
                 is IfStatementNode -> checkStatementsHaveReturn(it.statements)
-                        && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
-                        && checkStatementsHaveReturn(it.elseBlock.statements)
+                    && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
+                    && checkStatementsHaveReturn(it.elseBlock.statements)
                 is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
                 is ForStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
@@ -468,10 +468,18 @@ class SemanticAnalysis {
         }
     }
 
-    fun rangeEndNotNumber(symbolTable: SymbolTableVisitor, endExpr: ExpressionNode, ctx: ManimParser.RangeHeaderContext) {
-        val type = inferType(symbolTable, endExpr)
-        if (type != NumberType) {
-            forLoopRangeEndNotNumber(type.toString(), ctx)
+    fun forLoopRangeNotNumber(
+        symbolTable: SymbolTableVisitor,
+        startExpr: ExpressionNode,
+        endExpr: ExpressionNode,
+        change: ExpressionNode,
+        ctx: ManimParser.RangeHeaderContext
+    ) {
+        listOf(startExpr, endExpr, change).forEach {
+            val type = inferType(symbolTable, it)
+            if (type != NumberType) {
+                forLoopRangeNotNumber(type.toString(), ctx)
+            }
         }
     }
 }
