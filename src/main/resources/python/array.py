@@ -73,6 +73,7 @@ class Array2D:
         self.title.move_to(
             np.array([boundaries[0][0] + (title_width / 2), (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
         self.color = color
+        self.text_color = text_color
 
     def build(self):
         animations = []
@@ -82,3 +83,26 @@ class Array2D:
 
     def replace_row(self, row_index, new_values):
         return [self.rows[row_index].array_elements[i].replace_text(str(v)) for i, v in enumerate(new_values)]
+
+    def swap_mobjects(self, i1, j1, i2, j2):
+        # Animations for fading to grey and fading back to original color
+        fade_to_grey_animations = []
+        fade_to_original_animations = []
+        for i in range(len(self.rows)):
+            for j in range(len(self.rows[0].array_elements)):
+                if (i != i1 or j != j1) and (i != i2 or j != j2):
+                    fade_to_grey_animations.append(FadeToColor(self.rows[i].array_elements[j].text, GREY))
+                    fade_to_original_animations.append(FadeToColor(self.rows[i].array_elements[j].text, self.text_color))
+
+        # Swapping elements
+        o1 = self.rows[i1].array_elements[j1].text
+        o2 = self.rows[i2].array_elements[j2].text
+        o1_copy = deepcopy(o1)
+        o2_copy = deepcopy(o2)
+        o1_copy.move_to(o2.get_center())
+        o2_copy.move_to(o1.get_center())
+        self.rows[i1].array_elements[j1].text = o2
+        self.rows[i2].array_elements[j2].text = o1
+        swap_animations = [CounterclockwiseTransform(o1, o1_copy), CounterclockwiseTransform(o2, o2_copy)]
+
+        return [fade_to_grey_animations, swap_animations, fade_to_original_animations]
