@@ -43,7 +43,7 @@ class SemanticAnalysis {
         // To extend to multiple dimensions perform below recursively
         val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
-            if(arrayType.is2D) {
+            if (arrayType.is2D) {
                 ArrayType(arrayType.internalType)
             } else {
                 arrayType.internalType
@@ -93,7 +93,7 @@ class SemanticAnalysis {
     }
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
-        if(rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
+        if (rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
             nonNullableAssignedToNull(rhsType.toString(), lhsType.toString(), ctx)
         } else if (rhsType != NullType && lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
@@ -131,7 +131,8 @@ class SemanticAnalysis {
         numArgs: Int,
         ctx: ParserRuleContext
     ) {
-        val correctNumberOfArgs = numArgs >= method.argumentTypes.filter { it.second }.size && numArgs <= method.argumentTypes.size
+        val correctNumberOfArgs =
+            numArgs >= method.argumentTypes.filter { it.second }.size && numArgs <= method.argumentTypes.size
         if (method != ErrorMethod && !correctNumberOfArgs) {
             numOfArgsInMethodCallError(
                 dataStructureType.toString(),
@@ -233,6 +234,23 @@ class SemanticAnalysis {
             }
         }
 
+    }
+
+    fun checkArrayElemHasCorrectNumberOfIndices(indices: List<ExpressionNode>, is2DArray: Boolean, ctx: ParserRuleContext) {
+        val hasCorrectNumberOfIndices = is2DArray || indices.size == 1
+        if (!hasCorrectNumberOfIndices) {
+            maxArrayIndexingExceededError(is2DArray, indices.size, ctx)
+        }
+    }
+
+    fun checkArrayElemIndexTypes(
+        indices: List<ExpressionNode>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        indices.forEach {
+            checkExpressionTypeWithExpectedTypes(it, setOf(NumberType), currentSymbolTable, ctx)
+        }
     }
 
     fun checkExpressionTypeWithExpectedType(

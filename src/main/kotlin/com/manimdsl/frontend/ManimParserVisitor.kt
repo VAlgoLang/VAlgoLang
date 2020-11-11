@@ -569,16 +569,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
         val type = symbolTable.getTypeOf(arrayIdentifier) as ArrayType
-        if (type.is2D) {
-            // TODO: Move to semantic analysis
-            if (indices.size == 2) {
-                semanticAnalyser.checkExpressionTypeWithExpectedType(indices[1], NumberType, symbolTable, ctx)
-            }
-        } else if (indices.size == 2) {
-            error("not 2d array")
-        } else {
-            semanticAnalyser.checkExpressionTypeWithExpectedType(indices[0], NumberType, symbolTable, ctx)
-        }
+
+        semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
 
         return ArrayElemNode(ctx.start.line, arrayIdentifier, indices)
     }
