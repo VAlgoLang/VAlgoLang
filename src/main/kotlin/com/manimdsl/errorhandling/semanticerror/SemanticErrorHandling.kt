@@ -202,6 +202,10 @@ fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext
     addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
 }
 
+fun array2DDimensionError(ctx: ParserRuleContext) {
+    addSemanticError("Cannot initialise 2D array with arrays of different sizes", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

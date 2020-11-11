@@ -171,7 +171,7 @@ data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
     val arguments: List<ExpressionNode>,
-    val initialValues: InitialiserNode
+    val initialiser: InitialiserNode
 ) : ExpressionNode(lineNumber)
 
 data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)

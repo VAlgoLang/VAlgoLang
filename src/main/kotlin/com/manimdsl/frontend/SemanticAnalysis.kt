@@ -449,6 +449,13 @@ class SemanticAnalysis {
         }
     }
 
+    fun array2DDimensionsMatchCheck(initialiser: Array2DInitialiserNode, ctx: ParserRuleContext) {
+        val nestedExpressions = initialiser.nestedExpressions
+        if (nestedExpressions.isNotEmpty() && nestedExpressions.any { it.size != nestedExpressions[0].size}) {
+            array2DDimensionError(ctx)
+        }
+    }
+
     fun allExpressionsAreSameTypeCheck(
         expected: Type,
         expressions: List<ExpressionNode>,

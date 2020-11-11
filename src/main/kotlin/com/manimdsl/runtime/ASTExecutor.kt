@@ -298,19 +298,19 @@ class VirtualMachine(
                             RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                         } else {
                             arrayValue.array[index][index2] = assignedValue
-                        arrayValue.animatedStyle?.let {
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as Array2DStructure).ident,
-                                    listOf(index2),
-                                    it,
-                                    it.pointer,
-                                    animationString = it.animationStyle,
-                                    runtime = it.animationTime,
-                                    secondIndices = listOf(index)
+                            arrayValue.animatedStyle?.let {
+                                linearRepresentation.add(
+                                    ArrayElemRestyle(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        listOf(index2),
+                                        it,
+                                        it.pointer,
+                                        animationString = it.animationStyle,
+                                        runtime = it.animationTime,
+                                        secondIndices = listOf(index)
+                                    )
                                 )
-                            )
-                        }
+                            }
                             linearRepresentation.add(
                                 ArrayElemAssignObject(
                                     (arrayValue.manimObject as Array2DStructure).ident,
@@ -320,16 +320,16 @@ class VirtualMachine(
                                     secondIndex = index
                                 )
                             )
-                        arrayValue.animatedStyle?.let {
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as Array2DStructure).ident,
-                                    listOf(index2),
-                                    arrayValue.style,
-                                    secondIndices = listOf(index)
+                            arrayValue.animatedStyle?.let {
+                                linearRepresentation.add(
+                                    ArrayElemRestyle(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        listOf(index2),
+                                        arrayValue.style,
+                                        secondIndices = listOf(index)
+                                    )
                                 )
-                            )
-                        }
+                            }
                             EmptyValue
                         }
                     }
@@ -446,7 +446,6 @@ class VirtualMachine(
                 executeInternalArrayMethodCall(node)
             }
         }
-
 
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
@@ -623,14 +622,30 @@ class VirtualMachine(
             }
         }
 
-        private fun array2dSwap(ds: Array2DValue,indices: List<Int>): EmptyValue {
+        private fun array2dSwap(ds: Array2DValue, indices: List<Int>): EmptyValue {
             val arrayIdent = (ds.manimObject as Array2DStructure).ident
             val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime)
             val swap = mutableListOf<ManimInstr>(arraySwap)
             with(ds.animatedStyle) {
                 if (this != null) {
-                        swap.add(0, ArrayElemRestyle(arrayIdent, listOf(indices[1], indices[3]), this, this.pointer, secondIndices = listOf(indices[0], indices[2])))
-                        swap.add(ArrayElemRestyle(arrayIdent, listOf(indices[1], indices[3]), ds.style, secondIndices = listOf(indices[0], indices[2])))
+                    swap.add(
+                        0,
+                        ArrayElemRestyle(
+                            arrayIdent,
+                            listOf(indices[1], indices[3]),
+                            this,
+                            this.pointer,
+                            secondIndices = listOf(indices[0], indices[2])
+                        )
+                    )
+                    swap.add(
+                        ArrayElemRestyle(
+                            arrayIdent,
+                            listOf(indices[1], indices[3]),
+                            ds.style,
+                            secondIndices = listOf(indices[0], indices[2])
+                        )
+                    )
                 }
             }
             linearRepresentation.addAll(swap)
@@ -773,7 +788,15 @@ class VirtualMachine(
                     }
                     linearRepresentation.addAll(instructions)
                     val newObjectStyle = stackValue.style
-                    node.initialValues.map { executeExpression(it) }.forEach {
+                    val initialiserNodeExpressions =
+                        with(node.initialiser) {
+                            if (this is DataStructureInitialiserNode) {
+                                expressions
+                            } else {
+                                emptyList()
+                            }
+                        }
+                    initialiserNodeExpressions.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             it.toString(),
@@ -806,7 +829,7 @@ class VirtualMachine(
                     return if (is2DArray) {
                         execute2DArrayConstructor(node, assignLHS)
                     } else {
-                        executeArrayConstructor(node, assignLHS)
+                        execute1DArrayConstructor(node, assignLHS)
                     }
 
                 }
@@ -815,12 +838,20 @@ class VirtualMachine(
             }
         }
 
-        private fun executeArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+        private fun execute1DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val initialiserExpressions =
+                with(node.initialiser) {
+                    if (this is DataStructureInitialiserNode) {
+                        expressions
+                    } else {
+                        emptyList()
+                    }
+                }
             val arraySize =
                 if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
-                    node.initialValues.size.toDouble()
+                    initialiserExpressions.size.toDouble()
                 )
-            val arrayValue = if (node.initialValues.isEmpty()) {
+            val arrayValue = if (initialiserExpressions.isEmpty()) {
                 ArrayValue(
                     EmptyMObject,
                     Array(arraySize.value.toInt()) { _ ->
@@ -830,10 +861,10 @@ class VirtualMachine(
                         )
                     })
             } else {
-                if (node.initialValues.size != arraySize.value.toInt()) {
+                if (initialiserExpressions.size != arraySize.value.toInt()) {
                     RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
                 } else {
-                    ArrayValue(EmptyMObject, node.initialValues.map { executeExpression(it) }.toTypedArray())
+                    ArrayValue(EmptyMObject, initialiserExpressions.map { executeExpression(it) }.toTypedArray())
                 }
             }
             if (assignLHS !is ArrayElemNode) {
@@ -860,17 +891,44 @@ class VirtualMachine(
             return arrayValue
         }
 
-        private fun execute2DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): Array2DValue {
+        private fun execute2DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             val arraySizes = node.arguments.map { executeExpression(it) as DoubleValue }
-            val arrayValue = Array2DValue(
-                EmptyMObject,
-                Array(arraySizes[0].value.toInt()) { _ ->
-                    Array(arraySizes[1].value.toInt())
-                    { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+            val nestedInitialiserExpressions =
+                with(node.initialiser) {
+                    if (this is Array2DInitialiserNode) {
+                        nestedExpressions
+                    } else {
+                        emptyList()
+                    }
                 }
-            )
+            val arrayDimensions = Pair(arraySizes[0].value.toInt(), arraySizes[1].value.toInt())
+            val arrayValue = if (nestedInitialiserExpressions.isEmpty()) {
+                Array2DValue(
+                    EmptyMObject,
+                    Array(arrayDimensions.first) { _ ->
+                        Array(arrayDimensions.second)
+                        { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+                    }
+                )
+            } else {
+                if (nestedInitialiserExpressions.size != arrayDimensions.first || nestedInitialiserExpressions[0].size != arrayDimensions.second) {
+                    RuntimeError(
+                        "Array initialiser dimensions do not match those in constructor",
+                        lineNumber = node.lineNumber
+                    )
+                } else {
+                    Array2DValue(
+                        EmptyMObject,
+                        nestedInitialiserExpressions.map { exprList ->
+                            exprList.map { executeExpression(it) }.toTypedArray()
+                        }.toTypedArray()
+                    )
+                }
+            }
+
             val ident = variableNameGenerator.generateNameFromPrefix("array")
             dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
+
             if (arrayValue is Array2DValue) {
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
@@ -888,6 +946,7 @@ class VirtualMachine(
                 linearRepresentation.add(arrayStructure)
                 arrayValue.manimObject = arrayStructure
             }
+
             return arrayValue
         }
 
