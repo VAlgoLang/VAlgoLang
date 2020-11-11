@@ -3,6 +3,7 @@
     "Array": {
       "borderColor": "YELLOW",
       "creationStyle": "Write",
+      "creationTime": 5,
       "animate": {
         "textColor": "RED",
         "animationStyle": "Indicate"

@@ -11,7 +11,8 @@ interface ManimInstr {
     fun toPython(): List<String>
 }
 
-sealed class ManimInstrWithRuntime(open val runtime: Double? = null) : ManimInstr {
+interface ManimInstrWithRuntime : ManimInstr {
+    val runtime: Double?
     fun getRuntimeString(): String = if (runtime != null) ", run_time=$runtime" else ""
 }
 
@@ -64,7 +65,7 @@ data class StackPushObject(
     val isPushPop: Boolean = false,
     val creationStyle: String? = null,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
 
     override fun toPython(): List<String> {
         val creationString = if (isPushPop || creationStyle == null) "" else ", creation_style=\"$creationStyle\""
@@ -82,7 +83,7 @@ data class StackPopObject(
     val dataStructureIdentifier: String,
     val insideMethodCall: Boolean,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
 
     override fun toPython(): List<String> {
         return listOf(
@@ -107,21 +108,21 @@ data class ArrayElemAssignObject(
 }
 
 data class ArrayReplaceRow(val arrayIdent: String, val index: Int, val newArray: Array<ExecValue>, override val runtime: Double? = null) :
-    ManimInstrWithRuntime(runtime) {
+    ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return listOf("self.play(*$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])${getRuntimeString()})")
     }
 }
 
 data class Array2DSwap(val arrayIdent: String, val indices: List<Int>, override val runtime: Double? = null) :
-    ManimInstrWithRuntime(runtime) {
+    ManimInstrWithRuntime {
     override fun toPython(): List<String> {
-        return listOf("[self.play(*animations) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
+        return listOf("[self.play(*animations${getRuntimeString()}) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
     }
 }
 
 data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double? = null) :
-    ManimInstrWithRuntime(runtime) {
+    ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})${getRuntimeString()})")
     }
@@ -134,7 +135,7 @@ data class ArrayLongSwap(
     val elem2: String,
     val animations: String,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return listOf(
             "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
@@ -153,7 +154,7 @@ data class ArrayElemRestyle(
     val animationString: String? = null,
     override val runtime: Double? = null,
     val secondIndices: List<Int>? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
 
     private fun get2DAccess(index: Int): String {
         return if (secondIndices == null) "" else ".rows[${secondIndices[index]}]"
@@ -220,7 +221,7 @@ data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
     override val runtime: Double?
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
             shape.restyle(newStyle, getRuntimeString())

@@ -172,25 +172,23 @@ data class ArrayStructure(
     val color: String? = null,
     val textColor: String? = null,
     var creationString: String? = null,
-    val runtime: Double? = null,
+    override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries) {
+) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
         if (creationString == null) creationString = "FadeIn"
     }
 
-    private val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
-
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*[$creationString(array_elem.all$runtimeString) for array_elem in $ident.array_elements])"
+            "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
          )
     }
 
@@ -209,25 +207,24 @@ data class Array2DStructure(
     val color: String? = null,
     val textColor: String? = null,
     var creationString: String? = null,
-    val runtime: Double? = null,
+    override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries) {
+) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
         if (creationString == null) creationString = "FadeIn"
     }
 
-    private val runtimeString = if (runtime != null) ", run_time=$runtime" else ""
 
     override fun toPython(): List<String> {
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*$ident.build())"
+            "self.play(*$ident.build(\"$creationString\")${getRuntimeString()})"
         )
     }
 

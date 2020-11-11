@@ -75,10 +75,13 @@ class Array2D:
         self.color = color
         self.text_color = text_color
 
-    def build(self):
+    def build(self, creation_style=None):
+        if not creation_style:
+            creation_style = "FadeIn"
+        creation_transform = globals()[creation_style]
         animations = []
         for i in range(len(self.rows)):
-            animations += [FadeIn(array_elem.all) for array_elem in self.rows[i].array_elements]
+            animations += [creation_transform(array_elem.all) for array_elem in self.rows[i].array_elements]
         return animations
 
     def replace_row(self, row_index, new_values):
