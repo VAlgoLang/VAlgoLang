@@ -198,6 +198,10 @@ fun maxArrayIndexingExceededError(is2DArray: Boolean, indicesSize: Int, ctx: Par
     addSemanticError("Cannot index a ${if (is2DArray) "2D" else "1D"} array $indicesSize times", getErrorLinePos(ctx))
 }
 
+fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

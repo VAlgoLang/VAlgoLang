@@ -489,4 +489,12 @@ class SemanticAnalysis {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
         }
     }
+
+    fun incompatibleInitialiserCheck(dataStructureType: DataStructureType, initialiser: ASTNode, ctx: ParserRuleContext) {
+        val is2D = dataStructureType is ArrayType && dataStructureType.is2D
+        val arrayPrefix = if (dataStructureType is ArrayType) {if (is2D) "2D " else "1D "} else ""
+        if ((initialiser is Array2DInitialiserNode && !is2D) || (initialiser is DataStructureInitialiserNode && is2D)) {
+            incompatibleInitialisation("${arrayPrefix}$dataStructureType", ctx)
+        }
+    }
 }

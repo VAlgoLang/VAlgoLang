@@ -171,14 +171,22 @@ data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
     val arguments: List<ExpressionNode>,
-    val initialValues: List<ExpressionNode>
+    val initialValues: InitialiserNode
 ) : ExpressionNode(lineNumber)
 
 data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 
+sealed class InitialiserNode: ASTNode()
+
+object EmptyInitialiserNode: InitialiserNode()
+
 data class DataStructureInitialiserNode(
     val expressions: List<ExpressionNode>
-) : ASTNode()
+) : InitialiserNode()
+
+data class Array2DInitialiserNode(
+    val nestedExpressions: List<List<ExpressionNode>>
+) : InitialiserNode()
 
 data class FunctionCallNode(
     override val lineNumber: Int,

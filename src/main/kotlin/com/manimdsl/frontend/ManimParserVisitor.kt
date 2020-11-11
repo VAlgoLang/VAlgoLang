@@ -443,16 +443,29 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             if (dataStructureType.is2D) dataStructureType.setTo2D()
         }
 
-        // Check initial values
-        val initialValue = if (ctx.data_structure_initialiser() != null) {
-            (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
+        val initialiser = if (ctx.data_structure_initialiser() != null) {
+            visit(ctx.data_structure_initialiser()) as InitialiserNode
         } else {
-            emptyList()
+            EmptyInitialiserNode
         }
 
-        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValue, symbolTable, ctx)
-        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValue, argumentTypes, ctx)
-        return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialValue)
+        semanticAnalyser.incompatibleInitialiserCheck(dataStructureType, initialiser, ctx)
+
+        val initialValues = when (initialiser) {
+            is DataStructureInitialiserNode -> {
+                initialiser.expressions
+            }
+            is Array2DInitialiserNode -> {
+                initialiser.nestedExpressions.flatten()
+            }
+            else -> {
+                emptyList()
+            }
+        }
+
+        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValues, symbolTable, ctx)
+        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValues, argumentTypes, ctx)
+        return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialiser)
     }
 
     override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
@@ -559,8 +572,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return ArrayType(elementType)
     }
 
-    override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): ASTNode {
-        return DataStructureInitialiserNode(ctx.expr().map { visit(it) as ExpressionNode })
+    override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
+        return Array2DInitialiserNode((ctx.arg_list()
+            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments  })
+    }
+
+    override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): InitialiserNode {
+        if (ctx.arg_list() != null) {
+            val arguments: List<ExpressionNode> =
+                visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
+            return DataStructureInitialiserNode(arguments)
+        }
+
+        return visit(ctx.initialiser_list()) as Array2DInitialiserNode
     }
 
     override fun visitArray_elem(ctx: Array_elemContext): ArrayElemNode {
