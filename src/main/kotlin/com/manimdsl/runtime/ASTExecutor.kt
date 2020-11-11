@@ -471,6 +471,12 @@ class VirtualMachine(
             val accessedValue = when (elemAccessNode.accessChain.last()) {
                 is NodeType.Right -> parentValue.right?:RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
                 is NodeType.Left -> parentValue.left?:RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
+                is NodeType.Value -> {
+                    linearRepresentation.add(NodeFocusObject(parentValue))
+                    val value = parentValue.value
+                    linearRepresentation.add(NodeUnfocusObject(parentValue))
+                    value
+                }
                 else -> RuntimeError("Unknown tree access", lineNumber = elemAccessNode.lineNumber)
             }
 

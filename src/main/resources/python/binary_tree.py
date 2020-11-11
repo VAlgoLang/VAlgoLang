@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight=YELLOW, text_weight=NORMAL, font="Times New Roman", radius=0.6):
+    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight_colour=YELLOW, text_weight=NORMAL, font="Times New Roman", radius=0.6):
         self.circle = Circle(radius=radius, color=color)
         self.radius = radius
         self.text = Text(text, color=text_color)
@@ -11,7 +11,7 @@ class Node:
         self.text_weight = text_weight
         self.color = color
         self.line_color = line_color
-        self.highlight = highlight
+        self.highlight_colour = highlight_colour
         self.font = font
         self.width = 1.5
         self.text_color = text_color
@@ -96,7 +96,7 @@ class Node:
         return animation
 
     def highlight(self):
-        return [ApplyMethod(self.circle_text.set_color, self.highlight)]
+        return [ApplyMethod(self.circle_text.set_color, self.highlight_colour)]
 
     def unhighlight(self):
         return [ApplyMethod(self.circle.set_color, self.color), ApplyMethod(self.text.set_color, self.text_color)]
