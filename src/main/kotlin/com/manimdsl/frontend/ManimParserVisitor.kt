@@ -227,7 +227,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         // Return element type
         return if (arrayType is ArrayType) {
-            Pair(if (arrayType.is2D) arrayType.copy(is2D = false) else arrayType.internalType, arrayElem)
+            Pair(if (arrayType.is2D && arrayElem.indices.size == 1) ArrayType(arrayType.internalType) else arrayType.internalType, arrayElem)
         } else {
             Pair(ErrorType, EmptyLHS)
         }
@@ -364,18 +364,24 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
 
-        val index = if (ctx.expr() != null) {
-            // array indexed method call
-            val indexExpression = visit(ctx.expr()) as ExpressionNode
-            semanticAnalyser.checkExpressionTypeWithExpectedType(indexExpression, NumberType, symbolTable, ctx)
-            indexExpression
-        } else null
-
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
         semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
         semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, methodName, ctx)
 
-        val dataStructureType = symbolTable.getTypeOf(identifier)
+        var dataStructureType = symbolTable.getTypeOf(identifier)
+
+
+        val index = if (ctx.expr() != null) {
+            // array indexed method call
+            val indexExpression = visit(ctx.expr()) as ExpressionNode
+            semanticAnalyser.checkExpressionTypeWithExpectedType(indexExpression, NumberType, symbolTable, ctx)
+            // check datastructure is a 2d array
+            if (dataStructureType is ArrayType) dataStructureType= ArrayType(dataStructureType.internalType)
+            indexExpression
+        } else {
+            null
+        }
+
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
@@ -434,6 +440,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         if (dataStructureType is ArrayType) {
             dataStructureType.is2D = arguments.size == 2
+            if (dataStructureType.is2D) dataStructureType.setTo2D()
         }
 
         // Check initial values

@@ -43,7 +43,11 @@ class SemanticAnalysis {
         // To extend to multiple dimensions perform below recursively
         val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
-            arrayType.internalType
+            if(arrayType.is2D) {
+                ArrayType(arrayType.internalType)
+            } else {
+                arrayType.internalType
+            }
         } else {
             ErrorType
         }

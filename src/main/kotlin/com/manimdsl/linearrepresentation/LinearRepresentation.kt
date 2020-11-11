@@ -102,7 +102,7 @@ data class ArrayElemAssignObject(
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
         val array2d = if (secondIndex != null) ".rows" else ""
-        return listOf("self.play($arrayIdent${array2d}[${secondIndex ?: ""}].array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
+        return listOf("self.play($arrayIdent${array2d}${if (secondIndex == null) "" else "[$secondIndex]"}.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
 
