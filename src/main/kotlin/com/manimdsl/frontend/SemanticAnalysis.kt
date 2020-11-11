@@ -83,7 +83,7 @@ class SemanticAnalysis {
     }
 
     private fun isEqualNullable(expr1Type: Type, expr2Type: Type): Boolean {
-        return (expr1Type is NullableDataStructure && expr2Type is NullType) ||  (expr1Type is NullType && expr2Type is NullableDataStructure)
+        return expr1Type == expr2Type || (expr1Type is NullableDataStructure && expr2Type is NullType) ||  (expr1Type is NullType && expr2Type is NullableDataStructure)
     }
 
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
@@ -281,7 +281,7 @@ class SemanticAnalysis {
         ctx: ManimParser.ReturnStatementContext
     ) {
         val type = inferType(currentSymbolTable, expression)
-        if (type != functionReturnType) {
+        if (!isEqualNullable(type, functionReturnType)) {
             returnTypeError(type.toString(), functionReturnType.toString(), ctx)
         }
     }

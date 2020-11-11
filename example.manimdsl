@@ -1,6 +1,20 @@
+fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
+    if (i == j) {
+        return Node<number>(arr[i]);
+    }
+    if (i > j) {
+        return null;
+    }
+    let m = i+j;
+    m = m/2;
+    let head = Node<number>(arr[m]);
+    head.left = buildBST(i, m-1, arr);
+    head.right = buildBST(m+1, j, arr);
+    return head;
+}
+
 let head = Node<number>(3);
 let tree = Tree<Node<number>>(head);
 let arr = Array<number>(5) {1, 2, 3, 4, 5};
-if (head.left == null) {
-    head.left = Node<number>(1);
-}
+head.left = buildBST(0, 1, arr);
+head.right = buildBST(3, 4, arr);

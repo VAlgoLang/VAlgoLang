@@ -319,13 +319,15 @@ class VirtualMachine(
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue as BinaryTreeNodeValue)
                     }
                     is BinaryTreeNodeElemAccessNode -> {
-                        if (assignedValue is EmptyValue){
+                        if (assignedValue is NullValue){
                             return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
                         }
                         if (assignedValue is DoubleValue){
                             return executeTreeEdit((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue)
                         }
-                        return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue as BinaryTreeNodeValue)
+                        if (assignedValue is BinaryTreeNodeValue) {
+                            return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue)
+                        }
                     }
                     is IdentifierNode -> {
                         if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
