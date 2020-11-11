@@ -22,7 +22,7 @@ sealed class ExecValue {
 
     /** '-' **/
     operator fun minus(other: ExecValue): ExecValue = when (this) {
-        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() - this.toDouble())
+        is DoubleAlias -> DoubleValue(this.toDouble() - (other as DoubleAlias).toDouble())
         else -> throw UnsupportedOperationException("Not implemented yet")
     }
 
