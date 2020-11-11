@@ -2,6 +2,5 @@ let head = Node<number>(3);
 head.left = Node<number>(2);
 let tree = Tree<Node<number>>(head);
 head.right = Node<number>(4);
-if (head.left != null) {
-    head.left.left = Node<number>(0);
-}
+head.right.right = Node<number>(5);
+head.right.right.right = Node<number>(3);
