@@ -598,7 +598,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
         semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
 
-        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices)
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, type.internalType)
     }
 
     override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {

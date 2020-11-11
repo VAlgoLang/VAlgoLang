@@ -517,8 +517,9 @@ class VirtualMachine(
                     dataStructureBoundaries[ident] = WideBoundary(maxSize = newArray.size)
                     arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                     arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
+                    print(node.internalType)
                     val arrayStructure = ArrayStructure(
-                        ArrayType(NumberType),
+                        ArrayType(node.internalType),
                         ident,
                         assignLHS.identifier,
                         arrayValue2.array.clone(),
