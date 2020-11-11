@@ -113,6 +113,13 @@ data class ArrayReplaceRow(val arrayIdent: String, val index: Int, val newArray:
     }
 }
 
+data class Array2DSwap(val arrayIdent: String, val indices: List<Int>, override val runtime: Double? = null) :
+    ManimInstrWithRuntime(runtime) {
+    override fun toPython(): List<String> {
+        return listOf("[self.play(*animations) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
+    }
+}
+
 data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double? = null) :
     ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {

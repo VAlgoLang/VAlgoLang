@@ -183,6 +183,7 @@ class VirtualMachine(
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
+            is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
                 stepInto = statement.isStepInto
@@ -271,17 +272,23 @@ class VirtualMachine(
                 is Array2DValue -> {
                     val index = indices.first().value.toInt()
 
-                    return if(indices.size == 1) {
-                        if(index !in arrayValue.array.indices) {
-                            RuntimeError(value= "Index out of bounds exception", lineNumber = arrayElemNode.lineNumber)
+                    return if (indices.size == 1) {
+                        if (index !in arrayValue.array.indices) {
+                            RuntimeError(value = "Index out of bounds exception", lineNumber = arrayElemNode.lineNumber)
                         } else {
                             // Assigning row
                             val newArray = (assignedValue as ArrayValue).value
-                            if(newArray.size != arrayValue.array[index].size) {
-                                RuntimeError(value= "Dimensions do not match", lineNumber = arrayElemNode.lineNumber)
+                            if (newArray.size != arrayValue.array[index].size) {
+                                RuntimeError(value = "Dimensions do not match", lineNumber = arrayElemNode.lineNumber)
                             } else {
                                 arrayValue.array[index] = newArray
-                                linearRepresentation.add(ArrayReplaceRow((arrayValue.manimObject as Array2DStructure).ident, index, arrayValue.value[index]))
+                                linearRepresentation.add(
+                                    ArrayReplaceRow(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        index,
+                                        arrayValue.value[index]
+                                    )
+                                )
                                 EmptyValue
                             }
                         }
@@ -434,10 +441,11 @@ class VirtualMachine(
             is NullNode -> TODO()
             is CastExpressionNode -> executeCastExpression(node)
             is InternalArrayMethodCallNode -> {
-                println("here")
-                EmptyValue
+                executeInternalArrayMethodCall(node)
             }
         }
+
+
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
             val exprValue = executeExpression(node.expr)
@@ -489,18 +497,18 @@ class VirtualMachine(
         private fun executeArrayElem2D(node: ArrayElemNode, arrayValue: Array2DValue, assignLHS: AssignLHS): ExecValue {
             val indices = node.indices.map { executeExpression(it) as DoubleValue }
             return if (indices.size == 2) {
-                if(indices.first().value.toInt() !in arrayValue.array.indices || indices[1].value.toInt() !in arrayValue.array[indices.first().value.toInt()].indices) {
+                if (indices.first().value.toInt() !in arrayValue.array.indices || indices[1].value.toInt() !in arrayValue.array[indices.first().value.toInt()].indices) {
                     RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
                 } else {
                     arrayValue.array[indices.first().value.toInt()][indices[1].value.toInt()]
                 }
             } else {
-                if(indices.first().value.toInt() !in arrayValue.array.indices) {
+                if (indices.first().value.toInt() !in arrayValue.array.indices) {
                     RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
                 } else {
                     val newArray = arrayValue.array[indices.first().value.toInt()].clone()
                     val arrayValue2 = ArrayValue(
-                            EmptyMObject,
+                        EmptyMObject,
                         newArray
                     )
 
@@ -539,10 +547,13 @@ class VirtualMachine(
                 is ArrayValue -> {
                     return executeArrayMethodCall(node, ds)
                 }
+                is Array2DValue -> {
+                    return execute2DArrayMethodCall(node, ds)
+                }
                 else -> EmptyValue
             }
         }
-//        [self.play(*animations) for animations in array.swap_mobjects(0,1,2,0)]
+
         private fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
             return when (node.dataStructureMethod) {
                 is ArrayType.Size -> {
@@ -582,6 +593,49 @@ class VirtualMachine(
                 }
                 else -> EmptyValue
             }
+        }
+
+        private fun executeInternalArrayMethodCall(node: InternalArrayMethodCallNode): ExecValue {
+            val ds = variables[node.instanceIdentifier] as Array2DValue
+            val index = (executeExpression(node.index) as DoubleValue).value.toInt()
+            return when (node.dataStructureMethod) {
+                is ArrayType.Size -> DoubleValue(ds.array[index].size.toDouble())
+                is ArrayType.Swap -> {
+                    val fromToIndices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
+                    array2dSwap(ds, listOf(index, fromToIndices[0], index, fromToIndices[1]))
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun execute2DArrayMethodCall(node: MethodCallNode, ds: Array2DValue): ExecValue {
+            return when (node.dataStructureMethod) {
+                is ArrayType.Size -> {
+                    DoubleValue(ds.array.size.toDouble())
+                }
+                is ArrayType.Swap -> {
+                    val indices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
+                    array2dSwap(ds, indices)
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun array2dSwap(ds: Array2DValue,indices: List<Int>): EmptyValue {
+            val arrayIdent = (ds.manimObject as Array2DStructure).ident
+            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime)
+            val swap = mutableListOf<ManimInstr>(arraySwap)
+            with(ds.animatedStyle) {
+                if (this != null) {
+        //                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(ind, index2), this, this.pointer))
+        //                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
+                }
+            }
+            linearRepresentation.addAll(swap)
+            val temp = ds.array[indices[0]][indices[1]]
+            ds.array[indices[0]][indices[1]] = ds.array[indices[2]][indices[3]]
+            ds.array[indices[2]][indices[3]] = temp
+            return EmptyValue
         }
 
         private fun executeStackMethodCall(
