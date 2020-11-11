@@ -131,10 +131,10 @@ data class IdentifierNode(override val lineNumber: Int, override val identifier:
     }
 }
 
-data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
+data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val indices: List<ExpressionNode>) :
     ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
-        return "$identifier[$index]"
+        return "$identifier[$indices]"
     }
 }
 

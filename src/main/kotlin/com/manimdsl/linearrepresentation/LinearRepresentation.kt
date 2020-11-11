@@ -96,11 +96,13 @@ data class ArrayElemAssignObject(
     val arrayIdent: String,
     val index: Int,
     val newElemValue: ExecValue,
-    val animatedStyle: AnimationProperties?
+    val animatedStyle: AnimationProperties?,
+    val secondIndex: Int? = null
 ) : ManimInstr {
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
-        return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
+        val array2d = if (secondIndex != null) ".rows" else ""
+        return listOf("self.play($arrayIdent${array2d}[${secondIndex ?: ""}].array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
 

@@ -2,6 +2,7 @@ package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
+import kotlin.math.abs
 
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
@@ -14,6 +15,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
     abstract val minDimensions: Pair<Int, Int>
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
+    abstract val strictRatio: Boolean
 
     abstract fun setCoords(x: Double, y: Double): BoundaryShape
 
@@ -74,7 +76,8 @@ data class SquareBoundary(
     override var height: Int = minDimensions.second, override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
-    override val dynamicHeight: Boolean = false
+    override val dynamicHeight: Boolean = true
+    override val strictRatio: Boolean = true
     override fun setCoords(x: Double, y: Double): SquareBoundary {
         this.x1 = x
         this.y1 = y
@@ -96,6 +99,7 @@ data class TallBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
+    override val strictRatio: Boolean = false
 
     override fun setCoords(x: Double, y: Double): TallBoundary {
         this.x1 = x
@@ -118,6 +122,8 @@ data class WideBoundary(
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
+    override val strictRatio: Boolean = false
+
     override fun setCoords(x: Double, y: Double): WideBoundary {
         this.x1 = x
         this.y1 = y
@@ -188,7 +194,7 @@ class Scene {
             sortedShapes.forEach {
                 val didAddToScene = when (it.second) {
                     is WideBoundary -> addToScene(Corner.BL, it.second)
-                    is SquareBoundary -> addToScene(Corner.TR, it.second)
+                    is SquareBoundary -> addToScene(Corner.TL, it.second)
                     is TallBoundary -> addToScene(Corner.TR, it.second)
                 }
                 if (!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
@@ -240,22 +246,33 @@ class Scene {
             val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
 
             if (availableWidth > shapesOverallWidth) {
-                sceneShapes.forEach { it.shiftHorizontalToRight((shapesOverallWidth - availableWidth) / 2) }
+                sceneShapes.forEach { it.shiftHorizontalToRight(abs((shapesOverallWidth - availableWidth) / 2)) }
             }
             if (avaliableHeight > shapeOverallHeight) {
-                sceneShapes.forEach { it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2) }
+                sceneShapes.forEach {
+                    when (it) {
+                        !is SquareBoundary -> it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2)
+                        else -> it.shiftVerticalUpwards(-(shapeOverallHeight - avaliableHeight) / 2)
+                    }
+                }
             }
         }
     }
 
     private fun maximise(boundaryShape: BoundaryShape) {
-        if (boundaryShape.dynamicWidth) {
-            while (isValidMaximisedShape(boundaryShape.clone().offsetWidth())) {
-                boundaryShape.offsetWidth()
+        if (boundaryShape.strictRatio) {
+            while (isValidMaximisedShape(boundaryShape.clone().offsetHeight().offsetWidth())) {
+                boundaryShape.offsetHeight().offsetWidth()
             }
-        } else if (boundaryShape.dynamicHeight) {
-            while (isValidMaximisedShape(boundaryShape.clone().offsetHeight())) {
-                boundaryShape.offsetHeight()
+        } else {
+            if (boundaryShape.dynamicWidth) {
+                while (isValidMaximisedShape(boundaryShape.clone().offsetWidth())) {
+                    boundaryShape.offsetWidth()
+                }
+            } else if (boundaryShape.dynamicHeight) {
+                while (isValidMaximisedShape(boundaryShape.clone().offsetHeight())) {
+                    boundaryShape.offsetHeight()
+                }
             }
         }
     }
