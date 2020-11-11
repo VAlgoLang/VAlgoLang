@@ -126,7 +126,7 @@ class Tree(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
                  font="Times New Roman", radius=0.6):
         self.margin = [0.2, 0.2, 0]
-        self.aligned_edge = np.average([ul, ur, ll, lr])
+        self.aligned_edge = np.average([ul, ur, ll, lr], axis=0)
         super().__init__(np.add(ul, self.margin), np.subtract(ur, self.margin), np.add(ll, self.margin),
                          np.subtract(lr, self.margin), self.aligned_edge, color, text_color, text_weight, font)
         self.identifier = identifier
