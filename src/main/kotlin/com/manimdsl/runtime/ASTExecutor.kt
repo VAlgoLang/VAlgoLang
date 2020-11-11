@@ -794,8 +794,26 @@ class VirtualMachine(
 
             executeAssignment(forStatementNode.beginStatement)
 
+            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleValue
+            val end = executeExpression(forStatementNode.endCondition) as DoubleValue
+            val lineNumber = forStatementNode.lineNumber
+
+            val condition = if (start < end) {
+                LtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
+                )
+            } else {
+                GtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
+                )
+            }
+
             while (loopCount < MAX_NUMBER_OF_LOOPS) {
-                conditionValue = executeExpression(forStatementNode.endCondition)
+                conditionValue = executeExpression(condition)
                 if (conditionValue is RuntimeError) {
                     return conditionValue
                 } else if (conditionValue is BoolValue) {

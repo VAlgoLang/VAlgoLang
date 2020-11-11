@@ -350,7 +350,7 @@ class ASTConstructionTests {
                 endLineNumber = 4,
                 scope = 1,
                 beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
-                endCondition = LtExpression(2, IdentifierNode(2, "i"), NumberNode(2, 3.0)),
+                endCondition = NumberNode(2, 3.0),
                 updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
                 statements = listOf(
                     AssignmentNode(
@@ -384,7 +384,7 @@ class ASTConstructionTests {
                 endLineNumber = 9,
                 scope = 1,
                 beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
-                endCondition = LtExpression(2, IdentifierNode(2, "i"), NumberNode(2, 3.0)),
+                endCondition = NumberNode(2, 3.0),
                 updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
                 statements = listOf(
                     ForStatementNode(
@@ -392,7 +392,7 @@ class ASTConstructionTests {
                         endLineNumber = 8,
                         scope = 1,
                         beginStatement = DeclarationNode(3, IdentifierNode(3, "j"), IdentifierNode(3, "i")),
-                        endCondition = LtExpression(3, IdentifierNode(3, "j"), NumberNode(3, 5.0)),
+                        endCondition = NumberNode(3, 5.0),
                         updateCounter = AssignmentNode(3, IdentifierNode(3, "j"), AddExpression(3, IdentifierNode(3, "j"), NumberNode(3, 1.0))),
                         statements = listOf(
                             IfStatementNode(
