@@ -80,4 +80,5 @@ class Array2D:
             animations += [FadeIn(array_elem.all) for array_elem in self.rows[i].array_elements]
         return animations
 
-
+    def replace_row(self, row_index, new_values):
+        return [self.rows[row_index].array_elements[i].replace_text(str(v)) for i, v in enumerate(new_values)]
