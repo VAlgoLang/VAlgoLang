@@ -60,10 +60,11 @@ class Array2D:
         title_width = 1 if title != "" else 0
         width_per_element = (boundary_width - title_width) / len(values[0])
         boundary_height = boundaries[0][1] - boundaries[3][1]
-        square_dim = min(boundary_height / len(values), width_per_element)
+        square_dim = min((boundary_height - 0.5) / len(values), width_per_element)
         self.rows = []
+        offset_from_bottom = (boundary_height - square_dim * len(values)) / 2
         for i in range(len(values) - 1, -1, -1):
-            new_ll = boundaries[2][0] + title_width, boundaries[2][1] + (i * square_dim)
+            new_ll = boundaries[2][0] + title_width, boundaries[2][1] + (i * square_dim) + offset_from_bottom
             new_boundaries = [(new_ll[0], new_ll[1] + square_dim),
                               (new_ll[0] + boundary_width, new_ll[1] + square_dim), new_ll,
                               (new_ll[0] + square_dim, new_ll[1])]
