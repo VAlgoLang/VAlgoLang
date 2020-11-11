@@ -1,8 +1,6 @@
 let head = Node<number>(3);
-head.left = Node<number>(2);
 let tree = Tree<Node<number>>(head);
-head.right = Node<number>(4);
-head.right = 5;
-head.right.right = Node<number>(5);
-head.right.right.right = Node<number>(3);
-head.right = null;
+let arr = Array<number>(5) {1, 2, 3, 4, 5};
+if (head.left == null) {
+    head.left = Node<number>(1);
+}

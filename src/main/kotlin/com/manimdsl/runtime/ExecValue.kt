@@ -116,16 +116,30 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 }
 
+sealed class ITreeNodeValue: ExecValue()
+
+object NullValue: ITreeNodeValue() {
+    override var manimObject: MObject
+        get() = EmptyMObject
+        set(value) {}
+    override val value: Int
+        get() = 0
+
+    override fun clone(): ExecValue {
+        return this
+    }
+}
+
 // value is element in node
 data class BinaryTreeNodeValue(
-        var left: BinaryTreeNodeValue?,
-        var right: BinaryTreeNodeValue?,
+        var left: ITreeNodeValue = NullValue,
+        var right: ITreeNodeValue = NullValue,
         override val value: PrimitiveValue,
         override var manimObject: MObject = EmptyMObject,
         var binaryTreeValue: BinaryTreeValue? = null,
         var pathFromRoot: String = "",
         var depth: Int
-): ExecValue() {
+): ITreeNodeValue() {
     override fun clone(): ExecValue {
         return BinaryTreeNodeValue(left, right, value, manimObject, depth=depth)
     }
@@ -133,8 +147,12 @@ data class BinaryTreeNodeValue(
     fun attachTree(tree: BinaryTreeValue, prefix: String = "${tree.manimObject.shape.ident}.root") {
         binaryTreeValue = tree
         pathFromRoot = prefix
-        left?.attachTree(tree, "$prefix.left")
-        right?.attachTree(tree, "$prefix.right")
+        if (left is BinaryTreeNodeValue) {
+            (left as BinaryTreeNodeValue).attachTree(tree, "$prefix.left")
+        }
+        if (right is BinaryTreeNodeValue) {
+            (right as BinaryTreeNodeValue).attachTree(tree, "$prefix.right")
+        }
     }
 }
 

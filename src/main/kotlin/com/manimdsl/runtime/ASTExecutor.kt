@@ -410,7 +410,7 @@ class VirtualMachine(
         private fun executeExpression(
             node: ExpressionNode,
             insideMethodCall: Boolean = false,
-            identifier: AssignLHS = EmptyLHS
+            identifier: AssignLHS = EmptyLHS,
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
@@ -446,7 +446,7 @@ class VirtualMachine(
                     node
             ).second
             is BinaryTreeRootAccessNode -> executeRootAccess(node).second
-            is NullNode -> EmptyValue
+            is NullNode -> NullValue
         }
 
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
@@ -461,13 +461,13 @@ class VirtualMachine(
             else if (parent is BinaryTreeNodeValue) {
                 when (binaryTreeElemNode.accessChain.last()) {
                     is NodeType.Left -> {
-                        parent.left = null
+                        parent.left = NullValue
                         if (parent.binaryTreeValue != null) {
                             linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, true))
                         }
                     }
                     is NodeType.Right -> {
-                        parent.right = null
+                        parent.right = NullValue
                         if (parent.binaryTreeValue != null) {
                             linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, false))
                         }
@@ -485,14 +485,22 @@ class VirtualMachine(
 
             val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size-1).foldRight(rootNode) { method, current ->
                 if (method is NodeType.Left) {
-                    current.left?:return Pair(RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber), RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
+                    if (current.left is BinaryTreeNodeValue) {
+                        current.left as BinaryTreeNodeValue
+                    } else {
+                        return Pair(current, RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
+                    }
                 } else {
-                    current.right?:return Pair(RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber), RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
+                    if (current.right is BinaryTreeNodeValue) {
+                        current.right as BinaryTreeNodeValue
+                    } else {
+                        return Pair(current, RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
+                    }
                 }
             }
             val accessedValue = when (elemAccessNode.accessChain.last()) {
-                is NodeType.Right -> parentValue.right?:RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
-                is NodeType.Left -> parentValue.left?:RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
+                is NodeType.Right -> parentValue.right
+                is NodeType.Left -> parentValue.left
                 is NodeType.Value -> {
                     linearRepresentation.add(NodeFocusObject(parentValue))
                     val value = parentValue.value
@@ -795,7 +803,7 @@ class VirtualMachine(
                         0
                     )
                     linearRepresentation.add(nodeStructure)
-                    return BinaryTreeNodeValue(null, null, value, manimObject = nodeStructure, depth = 0)
+                    return BinaryTreeNodeValue(NullValue, NullValue, value, manimObject = nodeStructure, depth = 0)
                 }
                 else -> EmptyValue
             }
