@@ -90,10 +90,8 @@ data class TreeAppendObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
-                "${childNodeValue.manimObject.shape.ident}.depth = ${childNodeValue.depth}",
                 "${childNodeValue.manimObject.shape.ident}.radius = ${treeValue.manimObject.shape.ident}.radius",
                 "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
-
                 )
     }
 }
