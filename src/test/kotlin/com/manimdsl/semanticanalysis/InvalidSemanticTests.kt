@@ -365,6 +365,22 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun incompatible1DArrayInitialisationWith2DValues() {
+        runSyntaxAndSemanticAnalysis("array1DInitialisedAs2D.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Incompatible initialisation with .* type"))
+        )
+    }
+
+    @Test
+    fun arrayInitialisedValueDimensionsMustBeTheSame() {
+        runSyntaxAndSemanticAnalysis("arrayInitialiseDimensionsNotTheSame.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot initialise 2D array with arrays of different sizes"))
+        )
+    }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")

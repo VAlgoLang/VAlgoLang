@@ -465,7 +465,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValues, symbolTable, ctx)
         semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValues, argumentTypes, ctx)
-        if (initialiser is Array2DInitialiserNode) semanticAnalyser.array2DDimensionsMatchCheck(initialiser, ctx)
+        semanticAnalyser.array2DDimensionsMatchCheck(initialiser, dataStructureType, ctx)
         return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialiser)
     }
 

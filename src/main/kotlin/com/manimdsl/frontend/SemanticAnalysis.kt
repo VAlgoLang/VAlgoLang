@@ -449,10 +449,12 @@ class SemanticAnalysis {
         }
     }
 
-    fun array2DDimensionsMatchCheck(initialiser: Array2DInitialiserNode, ctx: ParserRuleContext) {
-        val nestedExpressions = initialiser.nestedExpressions
-        if (nestedExpressions.isNotEmpty() && nestedExpressions.any { it.size != nestedExpressions[0].size}) {
-            array2DDimensionError(ctx)
+    fun array2DDimensionsMatchCheck(initialiser: InitialiserNode, dataStructureType: DataStructureType, ctx: ParserRuleContext) {
+        if (initialiser is Array2DInitialiserNode && dataStructureType is ArrayType && dataStructureType.is2D) {
+            val nestedExpressions = initialiser.nestedExpressions
+            if (nestedExpressions.isNotEmpty() && nestedExpressions.any { it.size != nestedExpressions[0].size}) {
+                array2DDimensionError(ctx)
+            }
         }
     }
 
