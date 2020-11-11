@@ -105,14 +105,14 @@ class VirtualMachine(
         private val showMoveToLine: Boolean = true,
         private var stepInto: Boolean = STEP_INTO_DEFAULT,
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
-        private var displayedDataMap: MutableMap<Int, Pair<String, PrimitiveValue>> = mutableMapOf(),
+        private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
         private val hideCode: Boolean = false
     ) {
         private var previousStepIntoState = stepInto
 
         fun insertVariable(identifier: String, value: ExecValue) {
-            if (value is PrimitiveValue) {
+            if (value is PrimitiveValue || value is ITreeNodeValue) {
                 val index = displayedDataMap.filterValues { it.first == identifier }.keys
                 if (index.isEmpty()) {
                     // not been visualised
@@ -134,6 +134,11 @@ class VirtualMachine(
                     displayedDataMap[index.first()] = Pair(identifier, value)
                 }
             }
+        }
+
+        fun removeVariable(identifier: String) {
+            displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
+            updateVariableState()
         }
 
         // instantiate new Frame and execute on scoping changes e.g. recursion
@@ -365,6 +370,13 @@ class VirtualMachine(
                     linearRepresentation.add(NodeUnfocusObject(node))
                 }
             }
+
+            if (rootNode.binaryTreeValue != null) {
+                removeVariable(binaryTreeElemNode.identifier)
+            } else {
+                insertVariable(binaryTreeElemNode.identifier, rootNode)
+            }
+            updateVariableState()
             return EmptyValue
         }
 
@@ -391,14 +403,23 @@ class VirtualMachine(
                     }
                     is NodeType.Right -> {
                         parent.right = childValue
-                        childValue.depth = parent.depth+1
+                        childValue.depth = parent.depth + 1
                         if (parent.binaryTreeValue != null) {
-                            val boundary = dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                            val boundary =
+                                dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
                             boundary.maxSize++
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] = boundary
+                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
+                                boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
-                            linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, false))
+                            linearRepresentation.add(
+                                TreeAppendObject(
+                                    parent,
+                                    childValue,
+                                    parent.binaryTreeValue!!,
+                                    false
+                                )
+                            )
                             linearRepresentation.add(NodeUnfocusObject(parent))
                         } else {
                             linearRepresentation.add(NodeAppendObject(parent, childValue, false))
@@ -407,6 +428,13 @@ class VirtualMachine(
                 }
 
             }
+
+            if (rootNode.binaryTreeValue != null) {
+                removeVariable(binaryTreeElemNode.identifier)
+            } else {
+                insertVariable(binaryTreeElemNode.identifier, rootNode)
+            }
+            updateVariableState()
             return EmptyValue
         }
 
@@ -483,6 +511,8 @@ class VirtualMachine(
                 }
 
             }
+            insertVariable(binaryTreeElemNode.identifier, rootNode)
+            updateVariableState()
             return EmptyValue
         }
 

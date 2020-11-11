@@ -128,6 +128,10 @@ object NullValue: ITreeNodeValue() {
     override fun clone(): ExecValue {
         return this
     }
+
+    override fun toString(): String {
+        return "()"
+    }
 }
 
 // value is element in node
@@ -153,6 +157,22 @@ data class BinaryTreeNodeValue(
         if (right is BinaryTreeNodeValue) {
             (right as BinaryTreeNodeValue).attachTree(tree, "$prefix.right")
         }
+    }
+
+    override fun toString(): String {
+        val stringBuilder = StringBuilder(value.toString())
+        if (left is NullValue) {
+            stringBuilder.append(" $left")
+        } else {
+            stringBuilder.append(" (${left.value}...)")
+        }
+        if (right is NullValue) {
+            stringBuilder.append(" $right")
+        } else {
+            stringBuilder.append(" (${right.value}...)")
+        }
+
+        return stringBuilder.toString()
     }
 }
 
