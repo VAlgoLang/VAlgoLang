@@ -47,8 +47,20 @@ class Rectangle(
     override fun restyle(styleProperties: StylesheetProperty, runtimeString: String): List<String> {
         val instructions = mutableListOf<String>()
 
-        styleProperties.borderColor?.let { instructions.add("FadeToColor($ident.shape, ${styleProperties.handleColourValue(it)})") }
-        styleProperties.textColor?.let { instructions.add("FadeToColor($ident.text, ${styleProperties.handleColourValue(it)})") }
+        styleProperties.borderColor?.let {
+            instructions.add(
+                "FadeToColor($ident.shape, ${styleProperties.handleColourValue(
+                    it
+                )})"
+            )
+        }
+        styleProperties.textColor?.let {
+            instructions.add(
+                "FadeToColor($ident.text, ${styleProperties.handleColourValue(
+                    it
+                )})"
+            )
+        }
 
         return if (instructions.isEmpty()) {
             emptyList()
@@ -62,17 +74,17 @@ class Rectangle(
     }
 
 
-
 }
 
 class CodeBlockShape(
-        override val ident: String,
-        textColor: String? = null,
+    override val ident: String,
+    textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
     override val pythonVariablePrefix: String = "code_block"
     override val text: String = ""
+
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
@@ -85,7 +97,7 @@ class CodeBlockShape(
 class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
-    variable_frame : String,
+    variable_frame: String,
     textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/variable_block.py"
@@ -129,7 +141,7 @@ class ArrayShape(
     override val ident: String,
     private val values: Array<ExecValue>,
     override val text: String,
-    private val boundaries : List<Pair<Double, Double>>,
+    private val boundaries: List<Pair<Double, Double>>,
     color: String? = null,
     textColor: String? = null,
     private val showLabel: Boolean? = null
@@ -145,7 +157,9 @@ class ArrayShape(
 
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
-         return "$ident = ${className}([${values.map { it.value }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style).build()"
+        return "$ident = ${className}([${values.joinToString(",") { "\"${it.value}\"" }}], \"$arrayTitle\", [${boundaries.joinToString(
+            ","
+        )}]$style).build()"
     }
 }
 
