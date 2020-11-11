@@ -378,7 +378,9 @@ class VirtualMachine(
                         parent.left = childValue
                         childValue.depth = parent.depth+1
                         if (parent.binaryTreeValue != null) {
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!.maxSize++
+                            val boundary = dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                            boundary.maxSize++
+                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] = boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
                             linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, true))
@@ -391,8 +393,9 @@ class VirtualMachine(
                         parent.right = childValue
                         childValue.depth = parent.depth+1
                         if (parent.binaryTreeValue != null) {
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!.maxSize++
-                            childValue.attachTree(parent.binaryTreeValue!!)
+                            val boundary = dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                            boundary.maxSize++
+                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] = boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
                             linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, false))
