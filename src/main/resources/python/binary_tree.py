@@ -205,10 +205,8 @@ class Tree(DataStructure, ABC):
             else:
                 grow, scale = self.grow_if_small()
                 if grow:
-                    print(f"GROW {scale}")
                     animations.extend(grow)
 
-        print(f"GROW {scale}")
         return animations, scale
 
      # Assumes node is in the tree
