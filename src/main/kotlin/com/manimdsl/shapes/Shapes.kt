@@ -183,7 +183,7 @@ class Array2DShape(
 
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = ${className}([${values.map { array -> "[ ${array.map { it.value }.joinToString(",")}]" }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
+        return "$ident = ${className}([${values.map { array -> "[ ${array.map { "\"${it.value}\"" }.joinToString(",")}]" }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
     }
 }
 
