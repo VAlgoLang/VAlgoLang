@@ -313,11 +313,17 @@ class VirtualMachine(
                         if (assignedValue is EmptyValue){
                             return executeTreeDelete((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode)
                         }
+                        if (assignedValue is DoubleValue){
+                            return executeTreeEdit((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue)
+                        }
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue as BinaryTreeNodeValue)
                     }
                     is BinaryTreeNodeElemAccessNode -> {
                         if (assignedValue is EmptyValue){
                             return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
+                        }
+                        if (assignedValue is DoubleValue){
+                            return executeTreeEdit((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue)
                         }
                         return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue as BinaryTreeNodeValue)
                     }
@@ -342,6 +348,22 @@ class VirtualMachine(
                 }
                 EmptyValue
             }
+        }
+
+        private fun executeTreeEdit(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, childValue: DoubleValue): ExecValue {
+            val (_, node) = executeTreeAccess(rootNode, binaryTreeElemNode)
+            if (node is RuntimeError)
+                return node
+            else if (node is BinaryTreeNodeValue) {
+                val btNodeValue = BinaryTreeNodeValue(node.left, node.right, childValue, node.manimObject, depth = 0)
+                node.binaryTreeValue!!.value = btNodeValue
+                if (node.binaryTreeValue != null) {
+                    linearRepresentation.add(NodeFocusObject(node))
+                    linearRepresentation.add(TreeEditValue(node, childValue, node.binaryTreeValue!!))
+                    linearRepresentation.add(NodeUnfocusObject(node))
+                }
+            }
+            return EmptyValue
         }
 
         private fun executeTreeAppend(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, childValue: BinaryTreeNodeValue): ExecValue {

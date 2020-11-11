@@ -4,6 +4,7 @@ import com.manimdsl.linearrepresentation.ObjectSide
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.AnimationProperties
@@ -77,6 +78,21 @@ data class TreeDeleteObject(
                 "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}))",
 
         )
+    }
+}
+
+data class TreeEditValue(
+        val nodeValue: BinaryTreeNodeValue,
+        val value: PrimitiveValue,
+        val treeValue: BinaryTreeValue
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = "edit_node_value"
+        return listOf(
+                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\"))",
+
+                )
     }
 }
 

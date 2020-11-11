@@ -139,7 +139,7 @@ data class BinaryTreeNodeValue(
 }
 
 // value is root
-data class BinaryTreeValue(override var manimObject: MObject, override val value: BinaryTreeNodeValue): ExecValue() {
+data class BinaryTreeValue(override var manimObject: MObject, override var value: BinaryTreeNodeValue): ExecValue() {
 
     override fun clone(): ExecValue {
         return BinaryTreeValue(manimObject, value)

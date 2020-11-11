@@ -90,7 +90,7 @@ class Node:
 
     def edit_node_value(self, text):
         new_text_obj = Text(text, color=self.text_color)
-        animation = [ReplacementTransform(self.text, new_text_obj.move_to(self.circle_text.get_center()))]
+        animation = [Transform(self.text, new_text_obj.move_to(self.circle_text.get_center()))]
         return animation
 
     def highlight(self):
