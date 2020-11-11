@@ -2,7 +2,6 @@ package com.manimdsl.shapes
 
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
-import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.stylesheet.StylesheetProperty
 import comcreat.manimdsl.linearrepresentation.Alignment
 
@@ -134,10 +133,9 @@ class NodeShape(
         override val classPath: String = "python/binary_tree.py",
         override val className: String = "Node",
         override val pythonVariablePrefix: String ="",
-        private val depth: Int,
 ): Shape() {
     override fun getConstructor(): String {
-        return "Node(\"$text\", ${depth})"
+        return "Node(\"$text\")"
     }
 }
 

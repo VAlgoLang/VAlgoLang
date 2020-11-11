@@ -3,7 +3,6 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
-import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.*
 import comcreat.manimdsl.linearrepresentation.Alignment
 import comcreat.manimdsl.linearrepresentation.ManimInstr
@@ -135,10 +134,10 @@ sealed class DataStructureMObject(
 }
 
 data class NodeStructure(
-        val ident: String,
-        val value: String,
-        val depth: Int,
-        override val shape: Shape = NodeShape(ident, value, depth = depth)
+    val ident: String,
+    val value: String,
+    val depth: Int,
+    override val shape: Shape = NodeShape(ident, value)
 
 ): MObject {
     override fun toPython(): List<String> {
