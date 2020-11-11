@@ -134,7 +134,8 @@ class InvalidSemanticTests {
     fun incompatibleReturnType() {
         runSyntaxAndSemanticAnalysis("incompatibleReturnType.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot return expression of type .* in a function with return type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot return expression of type .* in a function with return type .*"))
         )
     }
 
@@ -158,7 +159,8 @@ class InvalidSemanticTests {
     fun incorrectArgNumForFunctionCall() {
         runSyntaxAndSemanticAnalysis("incorrectArgNumForFunctionCall.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex(".* function does not accept .* arguments \\(expected: .*, actual: .*\\)"))
+            outputStreamCaptor.toString()
+                .contains(Regex(".* function does not accept .* arguments \\(expected: .*, actual: .*\\)"))
         )
     }
 
@@ -166,7 +168,8 @@ class InvalidSemanticTests {
     fun incorrectArgTypeForFunctionCall() {
         runSyntaxAndSemanticAnalysis("incorrectArgTypeForFunctionCall.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
+            outputStreamCaptor.toString()
+                .contains(Regex(".* function does not accept argument .* of type .* \\(expected: .*, actual: .*\\)"))
         )
     }
 
@@ -174,7 +177,8 @@ class InvalidSemanticTests {
     fun missingReturnInFunction() {
         runSyntaxAndSemanticAnalysis("missingReturnInFunction.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Missing return statement in .* function that expects return type of .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Missing return statement in .* function that expects return type of .*"))
         )
     }
 
@@ -182,7 +186,8 @@ class InvalidSemanticTests {
     fun voidTypeDeclaration() {
         runSyntaxAndSemanticAnalysis("voidTypeDeclaration.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot instantiate .* to function call that has void return type"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot instantiate .* to function call that has void return type"))
         )
     }
 
@@ -190,7 +195,8 @@ class InvalidSemanticTests {
     fun incompatibleForwardDeclarationFunctionType() {
         runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationFunctionType.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Incompatible .* function return type of .* to previous function call expecting type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Incompatible .* function return type of .* to previous function call expecting type .*"))
         )
     }
 
@@ -198,7 +204,8 @@ class InvalidSemanticTests {
     fun incompatibleForwardDeclarationParameterCount() {
         runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterCount.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Incompatible .* function with 0 parameter\\(s\\) to previous function call with 1 argument\\(s\\)"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Incompatible .* function with 0 parameter\\(s\\) to previous function call with 1 argument\\(s\\)"))
         )
     }
 
@@ -206,7 +213,8 @@ class InvalidSemanticTests {
     fun incompatibleForwardDeclarationParameterType() {
         runSyntaxAndSemanticAnalysis("incompatibleForwardDeclarationParameterType.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Incompatible parameter .* of type .* to previous function call with argument of type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Incompatible parameter .* of type .* to previous function call with argument of type .*"))
         )
     }
 
@@ -222,7 +230,7 @@ class InvalidSemanticTests {
     fun undeclaredFunctionForwardDeclaration() {
         runSyntaxAndSemanticAnalysis("undeclaredFunctionForwardDeclaration.manimdsl")
         assertTrue(
-                outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
+            outputStreamCaptor.toString().contains(Regex(".* has not been declared"))
         )
     }
 
@@ -287,14 +295,32 @@ class InvalidSemanticTests {
         )
     }
 
+
     @Test
-    fun arrayAccessIncorrectIndexType() {
-        runSyntaxAndSemanticAnalysis("arrayAccessIncorrectIndexType.manimdsl")
+    fun incorrectNumberOfIndicesFor1DArray() {
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesForArray.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
+        )
+    }
+
+    @Test
+    fun array1DAccessIncorrectIndexType() {
+        runSyntaxAndSemanticAnalysis("array1DAccessIncorrectIndexType.manimdsl")
         assertTrue(
             outputStreamCaptor.toString()
                 .contains(Regex("Expected expression of type number but found .*"))
         )
     }
+
+    @Test
+    fun array2DAccessIncorrectIndexType() {
+        runSyntaxAndSemanticAnalysis("array2DAccessIncorrectIndexType.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Expected expression of type number but found .*"))
+        )
+    }
+
 
     @Test
     fun stackTooManyArgumentsInConstructor() {
@@ -309,7 +335,8 @@ class InvalidSemanticTests {
     fun binaryTreeInvalidChildAssignment() {
         runSyntaxAndSemanticAnalysis("binaryTreeInvalidChildAssignment.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type Node<.*>"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot assign expression of type .* to .*, which is of type Node<.*>"))
         )
     }
 
@@ -317,7 +344,8 @@ class InvalidSemanticTests {
     fun binaryTreeInvalidValueAssignment() {
         runSyntaxAndSemanticAnalysis("binaryTreeInvalidValueAssignment.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
+            outputStreamCaptor.toString()
+                .contains(Regex("Cannot assign expression of type .* to .*, which is of type .*"))
         )
     }
 
@@ -336,6 +364,7 @@ class InvalidSemanticTests {
             outputStreamCaptor.toString().contains(Regex("Cannot infer type from null"))
         )
     }
+
 
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
