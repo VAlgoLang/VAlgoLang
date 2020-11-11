@@ -163,6 +163,31 @@ class ArrayShape(
     }
 }
 
+class Array2DShape(
+    override val ident: String,
+    private val values: Array<Array<ExecValue>>,
+    override val text: String,
+    private val boundaries : List<Pair<Double, Double>>,
+    color: String? = null,
+    textColor: String? = null,
+    private val showLabel: Boolean? = null
+) : ShapeWithText() {
+    override val classPath: String = "python/array.py"
+    override val className: String = "Array2D"
+    override val pythonVariablePrefix: String = ""
+
+    init {
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val arrayTitle = if (showLabel == null || showLabel) text else ""
+        return "$ident = ${className}([${values.map { array -> "[ ${array.map { it.value }.joinToString(",")}]" }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
+    }
+}
+
+
 object NullShape : Shape() {
     override val ident: String = ""
     override val text: String = ""

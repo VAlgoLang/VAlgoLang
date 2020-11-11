@@ -1,0 +1,3 @@
+let x = Array<number>(3, 5);
+let y = Stack<number>();
+x[0][y] = 1;
