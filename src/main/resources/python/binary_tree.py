@@ -25,7 +25,7 @@ class Node:
             self.all.remove(self.left.all)
 
         self.left = node
-        return self.set_left_mobject(node.circle, node.circle_text, scale)
+        return self.set_left_mobject(node.circle, node.all, scale)
 
     def set_left_mobject(self, shape, vgroup, scale):
         vgroup.next_to(self.circle_text, np.add(DOWN * 2 * scale, self.width * LEFT))
@@ -48,7 +48,7 @@ class Node:
             self.all.remove(self.right.all)
 
         self.right = node
-        return self.set_right_mobject(node.circle, node.circle_text, scale)
+        return self.set_right_mobject(node.circle, node.all, scale)
 
     def set_right_mobject(self, shape, vgroup, scale):
         vgroup.next_to(self.circle_text, np.add(DOWN * 2 * scale, self.width * RIGHT))
@@ -89,7 +89,7 @@ class Node:
         return animation
 
     def edit_node_value(self, text):
-        new_text_obj = Text(text, color=self.text_color)
+        new_text_obj = Text(text, color=self.text_color, width=0.6 * self.circle.get_width())
         animation = [Transform(self.text, new_text_obj.move_to(self.circle_text.get_center()))]
         return animation
 
@@ -98,6 +98,10 @@ class Node:
 
     def unhighlight(self):
         return [ApplyMethod(self.circle.set_color, self.color), ApplyMethod(self.text.set_color, self.text_color)]
+
+    def set_radius(self, new_radius):
+        self.all.scale(new_radius / self.radius)
+        self.radius = new_radius
 
     # delete left assumes tree has left child
     def delete_left(self):
@@ -126,9 +130,8 @@ class Tree(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
                  font="Times New Roman", radius=0.6):
         self.margin = [0.2, 0.2, 0]
-        self.aligned_edge = np.average([ul, ur, ll, lr], axis=0)
         super().__init__(np.add(ul, self.margin), np.subtract(ur, self.margin), np.add(ll, self.margin),
-                         np.subtract(lr, self.margin), self.aligned_edge, color, text_color, text_weight, font)
+                         np.subtract(lr, self.margin), np.average([ul, ur, ll, lr], axis=0), color, text_color, text_weight, font)
         self.identifier = identifier
         self.radius = radius
         self.max_radius = radius * 1.3
@@ -152,11 +155,13 @@ class Tree(DataStructure, ABC):
 
     # Assumes parent is in the tree
     def set_right(self, parent, child):
+        child.set_radius(self.radius)
         animations = parent.set_right(child, self.scale)
         return self._resize_after_modification(animations)
 
     # Assumes parent is in the tree
     def set_left(self, parent, child):
+        child.set_radius(self.radius)
         animations = parent.set_left(child, self.scale)
         return self._resize_after_modification(animations)
 
