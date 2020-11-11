@@ -2,7 +2,6 @@ package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
-import kotlin.math.abs
 
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
@@ -246,7 +245,7 @@ class Scene {
             val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
 
             if (availableWidth > shapesOverallWidth) {
-                sceneShapes.forEach { it.shiftHorizontalToRight(abs((shapesOverallWidth - availableWidth) / 2)) }
+                sceneShapes.filter { it !is SquareBoundary }.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
             }
             if (avaliableHeight > shapeOverallHeight) {
                 sceneShapes.forEach {

@@ -270,11 +270,27 @@ class VirtualMachine(
             return when (val arrayValue = variables[arrayElemNode.identifier]) {
                 is Array2DValue -> {
                     val index = indices.first().value.toInt()
-                    val index2 = indices[1].value.toInt()
-                    if (indices.first().value.toInt() !in arrayValue.array.indices && index2 !in arrayValue.array[index].indices) {
-                        RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
+
+                    return if(indices.size == 1) {
+                        if(index !in arrayValue.array.indices) {
+                            RuntimeError(value= "Index out of bounds exception", lineNumber = arrayElemNode.lineNumber)
+                        } else {
+                            // Assigning row
+                            val newArray = (assignedValue as ArrayValue).value
+                            if(newArray.size != arrayValue.array[index].size) {
+                                RuntimeError(value= "Dimensions do not match", lineNumber = arrayElemNode.lineNumber)
+                            } else {
+                                arrayValue.array[index] = newArray
+                                linearRepresentation.add(ArrayReplaceRow((arrayValue.manimObject as Array2DStructure).ident, index, arrayValue.value[index]))
+                                EmptyValue
+                            }
+                        }
                     } else {
-                        arrayValue.array[index][index2] = assignedValue
+                        val index2 = indices[1].value.toInt()
+                        if (indices.first().value.toInt() !in arrayValue.array.indices && index2 !in arrayValue.array[index].indices) {
+                            RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
+                        } else {
+                            arrayValue.array[index][index2] = assignedValue
 //                        arrayValue.animatedStyle?.let {
 //                            linearRepresentation.add(
 //                                ArrayElemRestyle(
@@ -287,15 +303,15 @@ class VirtualMachine(
 //                                )
 //                            )
 //                        }
-                        linearRepresentation.add(
-                            ArrayElemAssignObject(
-                                (arrayValue.manimObject as Array2DStructure).ident,
-                                index2,
-                                assignedValue,
-                                arrayValue.animatedStyle,
-                                secondIndex = index
+                            linearRepresentation.add(
+                                ArrayElemAssignObject(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    index2,
+                                    assignedValue,
+                                    arrayValue.animatedStyle,
+                                    secondIndex = index
+                                )
                             )
-                        )
 //                        arrayValue.animatedStyle?.let {
 //                            linearRepresentation.add(
 //                                ArrayElemRestyle(
@@ -305,8 +321,11 @@ class VirtualMachine(
 //                                )
 //                            )
 //                        }
-                        EmptyValue
+                            EmptyValue
+                        }
                     }
+
+
                 }
                 is ArrayValue -> {
                     val index = indices.first()
@@ -356,6 +375,7 @@ class VirtualMachine(
                 when (this) {
                     is IdentifierNode -> variables[node.identifier.identifier] = assignedValue
                     is ArrayElemNode -> {
+
                         return executeArrayElemAssignment(this, assignedValue)
                     }
                 }
@@ -413,6 +433,7 @@ class VirtualMachine(
             is BinaryTreeElemNode -> TODO()
             is NullNode -> TODO()
             is CastExpressionNode -> executeCastExpression(node)
+            is InternalArrayMethodCallNode -> TODO()
         }
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
@@ -662,7 +683,7 @@ class VirtualMachine(
                     }
                     linearRepresentation.addAll(instructions)
                     val newObjectStyle = stackValue.style
-                    node.initialValue.map { executeExpression(it) }.forEach {
+                    node.initialValues.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             it.toString(),
@@ -707,9 +728,9 @@ class VirtualMachine(
         private fun executeArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             val arraySize =
                 if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
-                    node.initialValue.size.toDouble()
+                    node.initialValues.size.toDouble()
                 )
-            val arrayValue = if (node.initialValue.isEmpty()) {
+            val arrayValue = if (node.initialValues.isEmpty()) {
                 ArrayValue(
                     EmptyMObject,
                     Array(arraySize.value.toInt()) { _ ->
@@ -719,30 +740,32 @@ class VirtualMachine(
                         )
                     })
             } else {
-                if (node.initialValue.size != arraySize.value.toInt()) {
+                if (node.initialValues.size != arraySize.value.toInt()) {
                     RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
                 } else {
-                    ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
+                    ArrayValue(EmptyMObject, node.initialValues.map { executeExpression(it) }.toTypedArray())
                 }
             }
-            val ident = variableNameGenerator.generateNameFromPrefix("array")
-            dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
-            if (arrayValue is ArrayValue) {
-                arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
-                arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                val arrayStructure = ArrayStructure(
-                    node.type,
-                    ident,
-                    assignLHS.identifier,
-                    arrayValue.array.clone(),
-                    color = arrayValue.style.borderColor,
-                    textColor = arrayValue.style.textColor,
-                    creationString = arrayValue.style.creationStyle,
-                    runtime = arrayValue.style.creationTime,
-                    showLabel = arrayValue.style.showLabel
-                )
-                linearRepresentation.add(arrayStructure)
-                arrayValue.manimObject = arrayStructure
+            if (assignLHS !is ArrayElemNode) {
+                val ident = variableNameGenerator.generateNameFromPrefix("array")
+                dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
+                if (arrayValue is ArrayValue) {
+                    arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                    arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                    val arrayStructure = ArrayStructure(
+                        node.type,
+                        ident,
+                        assignLHS.identifier,
+                        arrayValue.array.clone(),
+                        color = arrayValue.style.borderColor,
+                        textColor = arrayValue.style.textColor,
+                        creationString = arrayValue.style.creationStyle,
+                        runtime = arrayValue.style.creationTime,
+                        showLabel = arrayValue.style.showLabel
+                    )
+                    linearRepresentation.add(arrayStructure)
+                    arrayValue.manimObject = arrayStructure
+                }
             }
             return arrayValue
         }

@@ -11,6 +11,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
     private var inLoop: Boolean = false
+
     // First value is loop start line number and second is end line number
     private var loopLineNumbers: Pair<Int, Int> = Pair(1, 1)
     private var functionReturnType: Type = VoidType
@@ -171,7 +172,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
@@ -193,7 +194,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
 
@@ -226,7 +227,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         // Return element type
         return if (arrayType is ArrayType) {
-            Pair(arrayType.internalType, arrayElem)
+            Pair(if (arrayType.is2D) arrayType.copy(is2D = false) else arrayType.internalType, arrayElem)
         } else {
             Pair(ErrorType, EmptyLHS)
         }
@@ -239,7 +240,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return if (treeType is ErrorType) {
             Pair(ErrorType, EmptyLHS)
         } else {
-           Pair(treeType, nodeElem)
+            Pair(treeType, nodeElem)
         }
     }
 
@@ -356,12 +357,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
-    override fun visitMethodCall(ctx: MethodCallContext): MethodCallNode {
+    override fun visitMethodCall(ctx: MethodCallContext): ExpressionNode {
         // Type signature of methods to be determined by symbol table
         val arguments: List<ExpressionNode> =
             visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
         val identifier = ctx.IDENT(0).symbol.text
         val methodName = ctx.IDENT(1).symbol.text
+
+        val index = if (ctx.expr() != null) {
+            // array indexed method call
+            val indexExpression = visit(ctx.expr()) as ExpressionNode
+            semanticAnalyser.checkExpressionTypeWithExpectedType(indexExpression, NumberType, symbolTable, ctx)
+            indexExpression
+        } else null
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
         semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
@@ -386,9 +394,14 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        lineNumberNodeMap[ctx.start.line] =
+        val methodCallNode = if (index == null) {
             MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
-        return lineNumberNodeMap[ctx.start.line] as MethodCallNode
+        } else {
+            InternalArrayMethodCallNode(ctx.start.line, index, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        }
+        lineNumberNodeMap[ctx.start.line] =
+            methodCallNode
+        return methodCallNode
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): FunctionCallNode {
@@ -417,6 +430,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(argExpressions, argExpressions.map { semanticAnalyser.inferType(symbolTable, it) })
         } else {
             Pair(emptyList(), emptyList())
+        }
+
+        if (dataStructureType is ArrayType) {
+            dataStructureType.is2D = arguments.size == 2
         }
 
         // Check initial values
@@ -544,12 +561,18 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val indices = ctx.expr().map { visit(it) as ExpressionNode }
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
-        semanticAnalyser.checkExpressionTypeWithExpectedType(indices[0], NumberType, symbolTable, ctx)
-        if (indices.size == 2) {
-            semanticAnalyser.checkExpressionTypeWithExpectedType(indices[1], NumberType, symbolTable, ctx)
-            // TODO: Check if arrayIdentifier is a 2d array
-
+        val type = symbolTable.getTypeOf(arrayIdentifier) as ArrayType
+        if (type.is2D) {
+            // TODO: Move to semantic analysis
+            if (indices.size == 2) {
+                semanticAnalyser.checkExpressionTypeWithExpectedType(indices[1], NumberType, symbolTable, ctx)
+            }
+        } else if (indices.size == 2) {
+            error("not 2d array")
+        } else {
+            semanticAnalyser.checkExpressionTypeWithExpectedType(indices[0], NumberType, symbolTable, ctx)
         }
+
         return ArrayElemNode(ctx.start.line, arrayIdentifier, indices)
     }
 
@@ -605,7 +628,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
         return super.visitNode_elem_access(ctx)
     }
-
 
 
     override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {

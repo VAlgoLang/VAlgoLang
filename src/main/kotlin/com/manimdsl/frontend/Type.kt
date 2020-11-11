@@ -68,7 +68,8 @@ data class ArrayType(
     override var internalType: Type,
     override val methods: Map<String, DataStructureMethod> = hashMapOf(
         "size" to Size(), "swap" to Swap()
-    )
+    ),
+    var is2D: Boolean = false
 ) : DataStructureType(internalType, methods) {
     object ArrayConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1

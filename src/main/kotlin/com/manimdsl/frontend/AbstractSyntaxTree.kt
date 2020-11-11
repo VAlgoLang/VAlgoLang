@@ -159,11 +159,19 @@ data class MethodCallNode(
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
+data class InternalArrayMethodCallNode(
+    override val lineNumber: Int,
+    val index: ExpressionNode,
+    val instanceIdentifier: String,
+    val dataStructureMethod: DataStructureMethod,
+    val arguments: List<ExpressionNode>
+) : ExpressionNode(lineNumber)
+
 data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
     val arguments: List<ExpressionNode>,
-    val initialValue: List<ExpressionNode>
+    val initialValues: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
 data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)

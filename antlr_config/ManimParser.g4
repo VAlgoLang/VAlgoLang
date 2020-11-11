@@ -66,8 +66,8 @@ cast_method: TO_NUMBER       #ToNumber
     | TO_CHAR                #ToCharacter
     ;
 
-method_call: IDENT DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS  #MethodCall
-           | IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS            #FunctionCall;
+method_call: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)? DOT IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS #MethodCall
+            | IDENT OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS                                                           #FunctionCall;
 
 type: data_structure_type                                            #DataStructureType
     | primitive_type                                                 #PrimitiveType;

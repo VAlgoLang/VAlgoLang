@@ -106,6 +106,13 @@ data class ArrayElemAssignObject(
     }
 }
 
+data class ArrayReplaceRow(val arrayIdent: String, val index: Int, val newArray: Array<ExecValue>, override val runtime: Double? = null) :
+    ManimInstrWithRuntime(runtime) {
+    override fun toPython(): List<String> {
+        return listOf("self.play(*$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])${getRuntimeString()})")
+    }
+}
+
 data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double? = null) :
     ManimInstrWithRuntime(runtime) {
     override fun toPython(): List<String> {

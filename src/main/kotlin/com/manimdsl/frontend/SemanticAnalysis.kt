@@ -22,6 +22,7 @@ class SemanticAnalysis {
             is NullNode -> NullType
             is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
+            is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
