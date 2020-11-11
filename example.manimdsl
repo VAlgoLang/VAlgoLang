@@ -1,4 +1,7 @@
-let n = Tree<Node<number>>(Node<number>(3));
-let l = Node<number>(4);
-l.left = Node<number>(5);
-n.root.left = l;
+let head = Node<number>(3);
+head.left = Node<number>(2);
+head.right = Node<number>(4);
+let tree = Tree<Node<number>>(head);
+if (head.left != null) {
+    head.left.left = Node<number>(0);
+}
