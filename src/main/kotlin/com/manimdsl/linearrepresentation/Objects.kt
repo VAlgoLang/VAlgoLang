@@ -168,7 +168,7 @@ data class InitTreeStructure(
         return listOf(
             "# Constructing a new tree: $ident",
             shape.getConstructor(),
-            "self.play($ident.create_init())"
+            "self.play($ident.create_init(0))"
         )
     }
 }
