@@ -70,7 +70,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 }
 
 data class SquareBoundary(
-    override val minDimensions: Pair<Int, Int> = Pair(4, 4),
+    override val minDimensions: Pair<Int, Int> = Pair(5, 5),
     override var width: Int = minDimensions.first,
     override var height: Int = minDimensions.second, override var maxSize: Int = 0
 ) : BoundaryShape() {

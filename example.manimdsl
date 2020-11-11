@@ -1,3 +1,13 @@
+fun inorder(head: Node<number>, arr2: Array<number>, i: number): number {
+    if (head == null) {
+        return i;
+    } else {
+        let j = inorder(head.left, arr2, i);
+        arr2[j] = head.value;
+        return inorder(head.right, arr2, j+1);
+    }
+}
+
 fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
     if (i == j) {
         return Node<number>(arr[i]);
@@ -13,8 +23,13 @@ fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
     return head;
 }
 
-let head = Node<number>(3);
+let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
+stepOver {
+let head = Node<number>(4);
 let tree = Tree<Node<number>>(head);
-let arr = Array<number>(5) {1, 2, 3, 4, 5};
-head.left = buildBST(0, 1, arr);
-head.right = buildBST(3, 4, arr);
+head.left = buildBST(0, 2, arr);
+head.right = buildBST(4, arr.size()-1, arr);
+}
+let arr2 = Array<number>(7) {-1, -1, -1, -1, -1, -1, -1};
+inorder(tree.root, arr2, 0);
+
