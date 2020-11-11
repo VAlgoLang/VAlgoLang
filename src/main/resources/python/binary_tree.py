@@ -1,5 +1,5 @@
 class Node:
-    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight_colour=YELLOW, text_weight=NORMAL, font="Times New Roman", radius=0.6):
+    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight_color=YELLOW, text_weight=NORMAL, font="Times New Roman", radius=0.6):
         self.circle = Circle(radius=radius, color=color)
         self.radius = radius
         self.text = Text(text, color=text_color)
@@ -11,7 +11,7 @@ class Node:
         self.text_weight = text_weight
         self.color = color
         self.line_color = line_color
-        self.highlight_colour = highlight_colour
+        self.highlight_color = highlight_color
         self.font = font
         self.width = 1.5
         self.text_color = text_color
@@ -94,7 +94,7 @@ class Node:
         return animation
 
     def highlight(self):
-        return [ApplyMethod(self.circle_text.set_color, self.highlight_colour)]
+        return [ApplyMethod(self.circle_text.set_color, self.highlight_color)]
 
     def unhighlight(self):
         return [ApplyMethod(self.circle.set_color, self.color), ApplyMethod(self.text.set_color, self.text_color)]
@@ -123,11 +123,12 @@ class Node:
 
 
 class Tree(DataStructure, ABC):
-    def __init__(self, ul, ur, ll, lr, aligned_edge, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
+    def __init__(self, ul, ur, ll, lr, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
                  font="Times New Roman", radius=0.6):
         self.margin = [0.2, 0.2, 0]
+        self.aligned_edge = np.average([ul, ur, ll, lr])
         super().__init__(np.add(ul, self.margin), np.subtract(ur, self.margin), np.add(ll, self.margin),
-                         np.subtract(lr, self.margin), aligned_edge, color, text_color, text_weight, font)
+                         np.subtract(lr, self.margin), self.aligned_edge, color, text_color, text_weight, font)
         self.identifier = identifier
         self.radius = radius
         self.max_radius = radius * 1.3
@@ -135,7 +136,6 @@ class Tree(DataStructure, ABC):
         self.scale = 1
         self.root = root
         self.all.add(self.root.all)
-        self.aligned_edge = np.average([ul, ur, ll, lr])
 
     def create_init(self):
         name = Text(self.identifier)

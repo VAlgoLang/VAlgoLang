@@ -158,7 +158,7 @@ class InitTreeShape(
 
     override fun getConstructor(): String {
         val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = ${className}(${coordinatesString}, [0, 0, 0], ${root.manimObject.shape.ident}, ${text})"
+        return "$ident = ${className}(${coordinatesString}, ${root.manimObject.shape.ident}, ${text})"
     }
 }
 
