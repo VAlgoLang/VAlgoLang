@@ -101,8 +101,8 @@ data class ArrayElemAssignObject(
 ) : ManimInstr {
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
-        val array2d = if (secondIndex != null) ".rows" else ""
-        return listOf("self.play($arrayIdent${array2d}${if (secondIndex == null) "" else "[$secondIndex]"}.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
+        val assignIndex2D = if (secondIndex == null) "" else ".rows[$secondIndex]"
+        return listOf("self.play($arrayIdent$assignIndex2D.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
 
@@ -151,46 +151,55 @@ data class ArrayElemRestyle(
     val styleProperties: StylesheetProperty,
     val pointer: Boolean? = false,
     val animationString: String? = null,
-    override val runtime: Double? = null
+    override val runtime: Double? = null,
+    val secondIndices: List<Int>? = null
 ) : ManimInstrWithRuntime(runtime) {
+
+    private fun get2DAccess(index: Int): String {
+        return if (secondIndices == null) "" else ".rows[${secondIndices[index]}]"
+    }
+
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
+
+
 
         val animationStringTakesColorAsParameter =
             StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
         styleProperties.borderColor?.let {
-            for (i in indices) {
+            indices.forEachIndexed { index, i ->
                 instructions.add(
-                    "FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(
+                    "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, ${styleProperties.handleColourValue(
                         it
                     )})"
                 )
+
             }
         }
 
-        for (i in indices) {
+        indices.forEachIndexed { index, i ->
             if (pointer == null || pointer) {
                 instructions.add(
-                    "FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].shape, TOP, 0.01)." +
+                    "FadeIn($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer.next_to($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, TOP, 0.01)." +
                             "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
                 )
             } else {
-                instructions.add("self.fade_out_if_needed($arrayIdent.array_elements[$i].pointer)")
+                instructions.add("self.fade_out_if_needed($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer)")
             }
         }
 
         styleProperties.textColor?.let {
-            for (i in indices) {
+            indices.forEachIndexed { index, i ->
                 if (!animationStringTakesColorAsParameter) {
                     instructions.add(
-                        "FadeToColor($arrayIdent.array_elements[$i].text, " +
+                        "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
                                 "color=${styleProperties.handleColourValue(it)})"
                     )
                 }
                 instructions.add(
-                    "$animationString($arrayIdent.array_elements[$i].text, " +
+                    "$animationString($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
                             "color=${styleProperties.handleColourValue(it)})"
                 )
 

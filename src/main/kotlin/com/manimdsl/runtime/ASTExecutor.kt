@@ -298,18 +298,19 @@ class VirtualMachine(
                             RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                         } else {
                             arrayValue.array[index][index2] = assignedValue
-//                        arrayValue.animatedStyle?.let {
-//                            linearRepresentation.add(
-//                                ArrayElemRestyle(
-//                                    (arrayValue.manimObject as ArrayStructure).ident,
-//                                    listOf(index),
-//                                    it,
-//                                    it.pointer,
-//                                    animationString = it.animationStyle,
-//                                    runtime = it.animationTime
-//                                )
-//                            )
-//                        }
+                        arrayValue.animatedStyle?.let {
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    listOf(index2),
+                                    it,
+                                    it.pointer,
+                                    animationString = it.animationStyle,
+                                    runtime = it.animationTime,
+                                    secondIndices = listOf(index)
+                                )
+                            )
+                        }
                             linearRepresentation.add(
                                 ArrayElemAssignObject(
                                     (arrayValue.manimObject as Array2DStructure).ident,
@@ -319,15 +320,16 @@ class VirtualMachine(
                                     secondIndex = index
                                 )
                             )
-//                        arrayValue.animatedStyle?.let {
-//                            linearRepresentation.add(
-//                                ArrayElemRestyle(
-//                                    (arrayValue.manimObject as ArrayStructure).ident,
-//                                    listOf(index.value.toInt()),
-//                                    arrayValue.style
-//                                )
-//                            )
-//                        }
+                        arrayValue.animatedStyle?.let {
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    listOf(index2),
+                                    arrayValue.style,
+                                    secondIndices = listOf(index)
+                                )
+                            )
+                        }
                             EmptyValue
                         }
                     }
@@ -627,8 +629,8 @@ class VirtualMachine(
             val swap = mutableListOf<ManimInstr>(arraySwap)
             with(ds.animatedStyle) {
                 if (this != null) {
-        //                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(ind, index2), this, this.pointer))
-        //                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
+                        swap.add(0, ArrayElemRestyle(arrayIdent, listOf(indices[1], indices[3]), this, this.pointer, secondIndices = listOf(indices[0], indices[2])))
+                        swap.add(ArrayElemRestyle(arrayIdent, listOf(indices[1], indices[3]), ds.style, secondIndices = listOf(indices[0], indices[2])))
                 }
             }
             linearRepresentation.addAll(swap)

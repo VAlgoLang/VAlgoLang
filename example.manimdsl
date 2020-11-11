@@ -1,8 +1,5 @@
 let root = Array<number>(4, 2);
-root[0][0] = 4;
+root[0][1] = 4;
 
-root[0].swap(0,1);
 
-root.swap(0,0, 2,1);
-let y:Array<number> = root[0];
-y.swap(0, 1);
+root.swap(0,1, 2,1);
