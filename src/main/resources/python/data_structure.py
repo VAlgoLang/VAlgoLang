@@ -21,6 +21,14 @@ class DataStructure(ABC):
             return ApplyMethod(self.all.scale, scale_factor, {"about_edge": self.aligned_edge}), scale_factor
         return 0, 1
 
+    def shrink2(self, new_width, new_height):
+        scale_factor = min((self.max_width - 2 * MED_SMALL_BUFF) / new_width,
+                           (self.max_height - 2 * MED_SMALL_BUFF) / new_height)
+        if scale_factor != 1:
+            return [ScaleInPlace(self.all, scale_factor),
+                    ApplyMethod(self.all.move_to, self.aligned_edge)], scale_factor
+        return 0, 1
+
     def will_cross_boundary(self, object_dim, boundary_name):
         boundary_options = {"TOP": self.will_cross_top_boundary,
                             "RIGHT": self.will_cross_right_boundary,

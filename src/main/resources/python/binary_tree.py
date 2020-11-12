@@ -157,30 +157,60 @@ class Tree(DataStructure, ABC):
     def check_if_child_will_cross_boundary(self, parent, child, is_left):
         child.set_radius(self.radius)
         x, y, _ = parent.circle_text.get_center()
-        y_child = y - (2 * self.scale) if is_left else y + 2 * self.scale
+        y_child = y - (2 * self.scale)
         x_child = x - 1.5 if is_left else x + 1.5
 
+        x_prev, y_prev = x_child, y_child
+        curr = child.right
+        right_most_x, right_most_y = x_child, y_child
+        while curr is not None:
+            curr.set_radius(self.radius)
+            right_most_y = y_prev - (2 * self.scale)
+            right_most_x = x_prev + 1.5
+            # bounds.append((x_child_2, y_child_2))
+            x_prev, y_prev = right_most_x, right_most_y
+            curr = curr.right
+
+        x_prev, y_prev = x_child, y_child
+        curr = child.left
+        left_most_x, left_most_y = x_child, y_child
+        while curr is not None:
+            curr.set_radius(self.radius)
+            left_most_x = x_prev - 1.5
+            left_most_y = y_prev - (2 * self.scale)
+            # bounds.append((x_child_2, y_child_2))
+            x_prev, y_prev = left_most_x, left_most_y
+            curr = curr.left
+
         animations = []
-        left_or_right_boundary = "LEFT" if is_left else "RIGHT"
 
         tree_y_boundary = self.ll[1]
         tree_x_boundary = self.ll[0] if is_left else self.lr[0]
         is_within_left_or_right_boundary = x_child > tree_x_boundary if is_left else x_child < tree_x_boundary
-        is_within_boundary = is_within_left_or_right_boundary and y_child > tree_y_boundary
 
-        if not is_within_boundary and (self.will_cross_boundary(abs(x - x_child), left_or_right_boundary) or self.will_cross_boundary(y - y_child,
-                                                                                                          "BOTTOM")):
+        if (self.will_cross_boundary(abs(x - left_most_x), "LEFT") or self.will_cross_boundary(abs(x - right_most_x),
+                                                                                               "RIGHT")
+                or self.will_cross_boundary(y - min(right_most_y, left_most_y), "BOTTOM")):
             group_left_x = self.all.get_left()[0]
             group_right_x = self.all.get_right()[0]
             group_top_y = self.all.get_top()[1]
             group_bottom_y = self.all.get_bottom()[1]
-            scale_animation, scale_factor = self.shrink(
-                (group_right_x - group_left_x + abs(x - x_child) + MED_SMALL_BUFF),
-                group_top_y - group_bottom_y + (y - y_child) + MED_SMALL_BUFF)
+            width = group_right_x - group_left_x
+            height = group_top_y - group_bottom_y
+            if right_most_x > group_right_x:
+                width += abs((right_most_x - group_right_x))
+            if left_most_x < group_left_x:
+                width += abs(group_left_x - left_most_x)
+            if min(left_most_y, right_most_y) < group_bottom_y:
+                height += abs(min(left_most_y, right_most_y))
+            scale_animation, scale_factor = self.shrink2(width + MED_SMALL_BUFF, height + MED_SMALL_BUFF)
+
             self.scale = scale_factor
             self.radius = self.radius * scale_factor
             if scale_animation:
-                animations.append(scale_animation)
+                animations.extend(scale_animation)
+                corner_coord = self.ur[0] - (scale_factor *self.all.get_width()) / 2 if is_left else self.ul[0] + (scale_factor *self.all.get_width()) / 2
+                animations.append(ApplyMethod(self.all.move_to, np.array([corner_coord, self.ul[1] - (self.all.get_height()/ 2) , 0])))
         return animations
 
     # Assumes parent is in the tree
