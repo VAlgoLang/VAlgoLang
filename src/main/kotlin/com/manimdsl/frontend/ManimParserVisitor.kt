@@ -292,9 +292,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val lineNumber = ctx.start.line
         val identifier = ctx.IDENT().symbol.text
         semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
-        if (symbolTable.getTypeOf(identifier) == ErrorType) {
-            forLoopIdentifiers.add(identifier)
-        }
+        forLoopIdentifiers.add(identifier)
         val startExpr = if (ctx.begin != null) {
             visit(ctx.begin) as ExpressionNode
         } else {
