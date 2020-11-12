@@ -11,13 +11,19 @@ class Variable_block:
         self.text_color = text_color
         self.text_weight = text_weight
         self.font = font
+        self.size = len(variables)
 
     def build(self):
         self.group.arrange(DOWN, aligned_edge=LEFT)
         return self.group.move_to(self.variable_frame)
 
     def update_variable(self, variables):
-        if len(variables) == 0:
+        # To avoid awkward replace transform
+        if self.size == 0:
+            self.group.scale_in_place(0)
+
+        self.size = len(variables)
+        if self.size == 0:
             return [FadeOut(self.group)]
         group = VGroup()
         for v in variables:

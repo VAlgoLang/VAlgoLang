@@ -315,23 +315,39 @@ class VirtualMachine(
             with(node.identifier) {
                 when (this) {
                     is BinaryTreeRootAccessNode -> {
-                        if (assignedValue is EmptyValue){
+                        if (assignedValue is EmptyValue) {
                             return executeTreeDelete((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode)
                         }
-                        if (assignedValue is DoubleValue){
-                            return executeTreeEdit((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue)
+                        if (assignedValue is DoubleValue) {
+                            return executeTreeEdit(
+                                (variables[identifier]!! as BinaryTreeValue).value,
+                                elemAccessNode,
+                                assignedValue
+                            )
                         }
-                        return executeTreeAppend((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode, assignedValue as BinaryTreeNodeValue)
+                        return executeTreeAppend(
+                            (variables[identifier]!! as BinaryTreeValue).value,
+                            elemAccessNode,
+                            assignedValue as BinaryTreeNodeValue
+                        )
                     }
                     is BinaryTreeNodeElemAccessNode -> {
-                        if (assignedValue is NullValue){
+                        if (assignedValue is NullValue) {
                             return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
                         }
-                        if (assignedValue is DoubleValue){
-                            return executeTreeEdit((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue)
+                        if (assignedValue is DoubleValue) {
+                            return executeTreeEdit(
+                                (variables[identifier]!! as BinaryTreeNodeValue),
+                                this,
+                                assignedValue
+                            )
                         }
                         if (assignedValue is BinaryTreeNodeValue) {
-                            return executeTreeAppend((variables[identifier]!! as BinaryTreeNodeValue), this, assignedValue)
+                            return executeTreeAppend(
+                                (variables[identifier]!! as BinaryTreeNodeValue),
+                                this,
+                                assignedValue
+                            )
                         }
                     }
                     is IdentifierNode -> {
@@ -357,7 +373,11 @@ class VirtualMachine(
             }
         }
 
-        private fun executeTreeEdit(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, childValue: DoubleValue): ExecValue {
+        private fun executeTreeEdit(
+            rootNode: BinaryTreeNodeValue,
+            binaryTreeElemNode: BinaryTreeNodeElemAccessNode,
+            childValue: DoubleValue
+        ): ExecValue {
             val (_, node) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (node is RuntimeError)
                 return node
@@ -371,83 +391,71 @@ class VirtualMachine(
                 }
             }
 
-            if (rootNode.binaryTreeValue != null) {
-                removeVariable(binaryTreeElemNode.identifier)
-            } else {
+            if (rootNode.binaryTreeValue == null) {
                 insertVariable(binaryTreeElemNode.identifier, rootNode)
             }
-            updateVariableState()
             return EmptyValue
         }
 
-        private fun executeTreeAppend(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode, childValue: BinaryTreeNodeValue): ExecValue {
+        private fun executeTreeAppend(
+            rootNode: BinaryTreeNodeValue,
+            binaryTreeElemNode: BinaryTreeNodeElemAccessNode,
+            childValue: BinaryTreeNodeValue
+        ): ExecValue {
             val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (parent is RuntimeError)
                 return parent
-
             if (childValue.binaryTreeValue != null && childValue.binaryTreeValue == rootNode.binaryTreeValue) {
                 return RuntimeError("Tree cannot self reference", childValue.manimObject, binaryTreeElemNode.lineNumber)
             } else if (parent is BinaryTreeNodeValue) {
+                var isLeft = false
                 when (binaryTreeElemNode.accessChain.last()) {
                     is NodeType.Left -> {
                         parent.left = childValue
                         childValue.depth = parent.depth + 1
-                        if (parent.binaryTreeValue != null) {
-                            val boundary =
-                                dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
-                            boundary.maxSize += nodeCount(childValue)
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
-                                boundary
-                            childValue.attachTree(parent.binaryTreeValue!!)
-                            linearRepresentation.add(NodeFocusObject(parent))
-                            linearRepresentation.add(
-                                TreeAppendObject(
-                                    parent,
-                                    childValue,
-                                    parent.binaryTreeValue!!,
-                                    true
-                                )
-                            )
-                            linearRepresentation.add(NodeUnfocusObject(parent))
-                        } else {
-                            linearRepresentation.add(NodeAppendObject(parent, childValue, true))
-                        }
+                        isLeft = true
                     }
                     is NodeType.Right -> {
                         parent.right = childValue
                         childValue.depth = parent.depth + 1
-                        if (parent.binaryTreeValue != null) {
-                            val boundary =
-                                dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
-                            boundary.maxSize += nodeCount(childValue)
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
-                                boundary
-                            childValue.attachTree(parent.binaryTreeValue!!)
-                            linearRepresentation.add(NodeFocusObject(parent))
-                            linearRepresentation.add(
-                                TreeAppendObject(
-                                    parent,
-                                    childValue,
-                                    parent.binaryTreeValue!!,
-                                    false
-                                )
-                            )
-                            linearRepresentation.add(NodeUnfocusObject(parent))
-                        } else {
-                            linearRepresentation.add(NodeAppendObject(parent, childValue, false))
-                        }
+                        isLeft = false
                     }
                 }
 
+                if (parent.binaryTreeValue != null) {
+                    linearRepresentation.add(NodeFocusObject(parent))
+                    val boundary =
+                        dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                    boundary.maxSize += nodeCount(childValue)
+                    dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
+                        boundary
+                    childValue.attachTree(parent.binaryTreeValue!!)
+                    linearRepresentation.add(
+                        TreeAppendObject(
+                            parent,
+                            childValue,
+                            parent.binaryTreeValue!!,
+                            isLeft
+                        )
+                    )
+                    linearRepresentation.add(NodeUnfocusObject(parent))
+                } else {
+                    linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft))
+                }
             }
 
-            if (rootNode.binaryTreeValue != null) {
-                removeVariable(binaryTreeElemNode.identifier)
-            } else {
+            if (rootNode.binaryTreeValue == null) {
                 insertVariable(binaryTreeElemNode.identifier, rootNode)
             }
-            updateVariableState()
             return EmptyValue
+        }
+
+        private fun removeNodeFromVariableState(parent: ITreeNodeValue) {
+            if (parent is BinaryTreeNodeValue && parent.binaryTreeValue != null) {
+                variables.filter { (_, v) -> v == parent }.keys.forEach(this::removeVariable)
+                removeNodeFromVariableState(parent.left)
+                removeNodeFromVariableState(parent.right)
+            }
         }
 
         private fun updateVariableState() {
@@ -491,8 +499,8 @@ class VirtualMachine(
             is VoidNode -> VoidValue
             is ArrayElemNode -> executeArrayElem(node)
             is BinaryTreeNodeElemAccessNode -> executeTreeAccess(
-                    variables[node.identifier]!! as BinaryTreeNodeValue,
-                    node
+                variables[node.identifier]!! as BinaryTreeNodeValue,
+                node
             ).second
             is BinaryTreeRootAccessNode -> executeRootAccess(node).second
             is NullNode -> NullValue
@@ -504,7 +512,10 @@ class VirtualMachine(
             return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
         }
 
-        private fun executeTreeDelete(rootNode: BinaryTreeNodeValue, binaryTreeElemNode: BinaryTreeNodeElemAccessNode): ExecValue {
+        private fun executeTreeDelete(
+            rootNode: BinaryTreeNodeValue,
+            binaryTreeElemNode: BinaryTreeNodeElemAccessNode
+        ): ExecValue {
             val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (parent is RuntimeError)
                 return parent
@@ -530,26 +541,36 @@ class VirtualMachine(
             return EmptyValue
         }
 
-        private fun executeTreeAccess(rootNode: BinaryTreeNodeValue, elemAccessNode: BinaryTreeNodeElemAccessNode): Pair<ExecValue, ExecValue> {
+        private fun executeTreeAccess(
+            rootNode: BinaryTreeNodeValue,
+            elemAccessNode: BinaryTreeNodeElemAccessNode
+        ): Pair<ExecValue, ExecValue> {
             if (elemAccessNode.accessChain.isEmpty()) {
                 return Pair(EmptyValue, rootNode)
             }
 
-            val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size-1).foldRight(rootNode) { method, current ->
-                if (method is NodeType.Left) {
-                    if (current.left is BinaryTreeNodeValue) {
-                        current.left as BinaryTreeNodeValue
+            val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size - 1)
+                .foldRight(rootNode) { method, current ->
+                    if (method is NodeType.Left) {
+                        if (current.left is BinaryTreeNodeValue) {
+                            current.left as BinaryTreeNodeValue
+                        } else {
+                            return Pair(
+                                current,
+                                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
+                            )
+                        }
                     } else {
-                        return Pair(current, RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
-                    }
-                } else {
-                    if (current.right is BinaryTreeNodeValue) {
-                        current.right as BinaryTreeNodeValue
-                    } else {
-                        return Pair(current, RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber))
+                        if (current.right is BinaryTreeNodeValue) {
+                            current.right as BinaryTreeNodeValue
+                        } else {
+                            return Pair(
+                                current,
+                                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
+                            )
+                        }
                     }
                 }
-            }
             val accessedValue = when (elemAccessNode.accessChain.last()) {
                 is NodeType.Right -> parentValue.right
                 is NodeType.Left -> parentValue.left
@@ -605,7 +626,11 @@ class VirtualMachine(
             }
         }
 
-        private fun executeMethodCall(node: MethodCallNode, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
+        private fun executeMethodCall(
+            node: MethodCallNode,
+            insideMethodCall: Boolean,
+            isExpression: Boolean
+        ): ExecValue {
             return when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
                     return executeStackMethodCall(node, ds, insideMethodCall, isExpression)
@@ -660,7 +685,12 @@ class VirtualMachine(
             }
         }
 
-        private fun executeStackMethodCall(node: MethodCallNode, ds: StackValue, insideMethodCall: Boolean, isExpression: Boolean): ExecValue {
+        private fun executeStackMethodCall(
+            node: MethodCallNode,
+            ds: StackValue,
+            insideMethodCall: Boolean,
+            isExpression: Boolean
+        ): ExecValue {
             return when (node.dataStructureMethod) {
                 is StackType.PushMethod -> {
                     val value = executeExpression(node.arguments[0], true)
@@ -806,7 +836,13 @@ class VirtualMachine(
                         clonedValue.manimObject = newRectangle
                         stackValue.stack.push(clonedValue)
                         linearRepresentation.add(newRectangle)
-                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent, runtime = newObjectStyle.animate?.animationTime))
+                        linearRepresentation.add(
+                            StackPushObject(
+                                rectangle,
+                                initStructureIdent,
+                                runtime = newObjectStyle.animate?.animationTime
+                            )
+                        )
                     }
                     stackValue.manimObject = newObject
                     stackValue
@@ -867,7 +903,7 @@ class VirtualMachine(
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
                     root.attachTree(binaryTreeValue)
                     // Remove any variables pointing to node from variable block as it now belongs to a tree
-                    variables.filter { (_, v) -> v == root }.keys.forEach(this::removeVariable)
+                    removeNodeFromVariableState(root)
                     return binaryTreeValue
                 }
                 is NodeType -> {
