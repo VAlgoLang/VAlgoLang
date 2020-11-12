@@ -184,13 +184,11 @@ class Tree(DataStructure, ABC):
 
         animations = []
 
-        tree_y_boundary = self.ll[1]
-        tree_x_boundary = self.ll[0] if is_left else self.lr[0]
-        is_within_left_or_right_boundary = x_child > tree_x_boundary if is_left else x_child < tree_x_boundary
+        is_within_left_or_right_boundary = left_most_x > self.ll[0] and right_most_x < self.lr[0] and right_most_y > self.ll[1] and left_most_y > self.ll[1]
 
-        if (self.will_cross_boundary(abs(x - left_most_x), "LEFT") or self.will_cross_boundary(abs(x - right_most_x),
-                                                                                               "RIGHT")
-                or self.will_cross_boundary(y - min(right_most_y, left_most_y), "BOTTOM")):
+        if (not is_within_left_or_right_boundary) and (self.will_cross_boundary(abs(x - left_most_x), "LEFT") or self.will_cross_boundary(abs(x - right_most_x),
+                                                                                                                                          "RIGHT")
+                                                       or self.will_cross_boundary(y - min(right_most_y, left_most_y), "BOTTOM")):
             group_left_x = self.all.get_left()[0]
             group_right_x = self.all.get_right()[0]
             group_top_y = self.all.get_top()[1]
@@ -302,7 +300,7 @@ class Tree(DataStructure, ABC):
             if(target_radius > self.max_radius):
                 scale *= self.max_radius / target_radius
 
-            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, np.array[(self.ul[0] + self.ur[0]) / 2,(self.ll[1] + self.ur[1]) / 2, 0 ])], scale
+            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, np.array([(self.ul[0] + self.ur[0]) / 2,(self.ll[1] + self.ur[1]) / 2, 0]))], scale
         else:
             return 0, self.scale
 

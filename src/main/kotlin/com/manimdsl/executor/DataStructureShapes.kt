@@ -74,9 +74,9 @@ data class SquareBoundary(
     override var width: Int = minDimensions.first,
     override var height: Int = minDimensions.second, override var maxSize: Int = 0
 ) : BoundaryShape() {
-    override val dynamicWidth: Boolean = false
+    override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = true
-    override val strictRatio: Boolean = true
+    override val strictRatio: Boolean = false
     override val priority: Int = 3
 
     override fun setCoords(x: Double, y: Double): SquareBoundary {
