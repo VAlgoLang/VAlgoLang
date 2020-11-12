@@ -516,8 +516,8 @@ class SemanticAnalysis {
     ) {
         val startExprType = inferType(symbolTable, startExpr)
         val endExprType = inferType(symbolTable, endExpr)
-        if (!(startExprType is NumberType && endExprType is NumberType)
-            && !(startExprType is CharType && endExprType is CharType)) {
+        if (!(startExprType is NumberType && endExprType is NumberType
+            || startExprType is CharType && endExprType is CharType)) {
             forLoopRangeNotNumberOrChar(startExprType.toString(), endExprType.toString(), ctx)
         }
     }
