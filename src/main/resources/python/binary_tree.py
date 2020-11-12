@@ -93,8 +93,8 @@ class Node:
         animation = [Transform(self.text, new_text_obj.move_to(self.circle_text.get_center()))]
         return animation
 
-    def highlight(self):
-        return [ApplyMethod(self.circle_text.set_color, self.highlight_color)]
+    def highlight(self, color):
+        return [ApplyMethod(self.circle_text.set_color, color)]
 
     def unhighlight(self):
         return [ApplyMethod(self.circle.set_color, self.color), ApplyMethod(self.text.set_color, self.text_color)]

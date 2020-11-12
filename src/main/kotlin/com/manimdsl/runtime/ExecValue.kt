@@ -74,6 +74,7 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
     override fun toString(): String {
         return value.toString()
     }
+
     override fun clone(): ExecValue {
         return DoubleValue(value, manimObject)
     }
@@ -137,9 +138,9 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 }
 
-sealed class ITreeNodeValue: ExecValue()
+sealed class ITreeNodeValue : ExecValue()
 
-object NullValue: ITreeNodeValue() {
+object NullValue : ITreeNodeValue() {
     override var manimObject: MObject
         get() = EmptyMObject
         set(value) {}
@@ -172,9 +173,9 @@ data class BinaryTreeNodeValue(
     var binaryTreeValue: BinaryTreeValue? = null,
     var pathFromRoot: String = "",
     var depth: Int
-): ITreeNodeValue() {
+) : ITreeNodeValue() {
     override fun clone(): ExecValue {
-        return BinaryTreeNodeValue(left, right, value, manimObject, depth=depth)
+        return BinaryTreeNodeValue(left, right, value, manimObject, depth = depth)
     }
 
     fun attachTree(tree: BinaryTreeValue, prefix: String = "${tree.manimObject.shape.ident}.root") {
@@ -206,10 +207,14 @@ data class BinaryTreeNodeValue(
 }
 
 // value is root
-data class BinaryTreeValue(override var manimObject: MObject, override var value: BinaryTreeNodeValue): ExecValue() {
+data class BinaryTreeValue(override var manimObject: MObject, override var value: BinaryTreeNodeValue, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
 
     override fun clone(): ExecValue {
-        return BinaryTreeValue(manimObject, value)
+        return BinaryTreeValue(manimObject, value, style, animatedStyle)
+    }
+
+    override fun toString(): String {
+        return "Tree"
     }
 }
 
@@ -244,7 +249,7 @@ object VoidValue : ExecValue() {
     }
 }
 
-object BreakValue: ExecValue() {
+object BreakValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
 
@@ -253,7 +258,7 @@ object BreakValue: ExecValue() {
     }
 }
 
-object ContinueValue: ExecValue() {
+object ContinueValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
 

@@ -425,8 +425,14 @@ class VirtualMachine(
                     }
                     is IdentifierNode -> {
                         if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
-                            linearRepresentation.add(NodeFocusObject(assignedValue))
-                            linearRepresentation.add(NodeUnfocusObject(assignedValue))
+                            linearRepresentation.add(TreeNodeRestyle(assignedValue.manimObject.shape.ident,
+                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!,
+                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                                                    ))
+                            linearRepresentation.add(TreeNodeRestyle(
+                                    assignedValue.manimObject.shape.ident,
+                                    assignedValue.binaryTreeValue!!.style,
+                            ))
                         }
                         variables[node.identifier.identifier] = assignedValue
                     }
@@ -458,10 +464,26 @@ class VirtualMachine(
             else if (node is BinaryTreeNodeValue) {
                 val btNodeValue = BinaryTreeNodeValue(node.left, node.right, childValue, node.manimObject, depth = 0)
                 node.binaryTreeValue!!.value = btNodeValue
+                val instructions = mutableListOf<ManimInstr>(TreeEditValue(node, childValue, node.binaryTreeValue!!))
                 if (node.binaryTreeValue != null) {
-                    linearRepresentation.add(NodeFocusObject(node))
-                    linearRepresentation.add(TreeEditValue(node, childValue, node.binaryTreeValue!!))
-                    linearRepresentation.add(NodeUnfocusObject(node))
+                    if(node.binaryTreeValue!!.animatedStyle != null) {
+                        instructions.add(0,
+                                TreeNodeRestyle(
+                                        node.manimObject.shape.ident,
+                                        node.binaryTreeValue!!.animatedStyle!!,
+                                        node.binaryTreeValue!!.animatedStyle!!.highlight,
+                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                )
+                        )
+                        instructions.add(
+                                TreeNodeRestyle(
+                                        node.manimObject.shape.ident,
+                                        node.binaryTreeValue!!.style,
+                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                )
+                        )
+                    }
+                    linearRepresentation.addAll(instructions)
                 }
             }
 
@@ -497,7 +519,15 @@ class VirtualMachine(
                 }
 
                 if (parent.binaryTreeValue != null) {
-                    linearRepresentation.add(NodeFocusObject(parent))
+                    if (parent.binaryTreeValue!!.animatedStyle != null) {
+                        linearRepresentation.add(TreeNodeRestyle(
+                                parent.manimObject.shape.ident,
+                                parent.binaryTreeValue!!.animatedStyle!!,
+                                parent.binaryTreeValue!!.animatedStyle!!.highlight,
+                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
+                        ))
+                    }
+
                     val boundary =
                         dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
                     boundary.maxSize += nodeCount(childValue)
@@ -512,7 +542,13 @@ class VirtualMachine(
                             isLeft
                         )
                     )
-                    linearRepresentation.add(NodeUnfocusObject(parent))
+                    if (parent.binaryTreeValue!!.animatedStyle != null) {
+                        linearRepresentation.add(TreeNodeRestyle(
+                                parent.manimObject.shape.ident,
+                                parent.binaryTreeValue!!.style,
+                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
+                        ))
+                    }
                 } else {
                     linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft))
                 }
@@ -653,9 +689,20 @@ class VirtualMachine(
                 is NodeType.Right -> parentValue.right
                 is NodeType.Left -> parentValue.left
                 is NodeType.Value -> {
-                    linearRepresentation.add(NodeFocusObject(parentValue))
+                    if (parentValue.binaryTreeValue!!.animatedStyle != null){
+                    linearRepresentation.add(TreeNodeRestyle(
+                            parentValue.manimObject.shape.ident,
+                            parentValue.binaryTreeValue!!.animatedStyle!!,
+                            parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
+                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                    ))
+                    linearRepresentation.add(TreeNodeRestyle(
+                            parentValue.manimObject.shape.ident,
+                            parentValue.binaryTreeValue!!.style,
+                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                    ))
+                    }
                     val value = parentValue.value
-                    linearRepresentation.add(NodeUnfocusObject(parentValue))
                     value
                 }
                 else -> RuntimeError("Unknown tree access", lineNumber = elemAccessNode.lineNumber)
@@ -1064,6 +1111,8 @@ class VirtualMachine(
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
+                    binaryTreeValue.style = stylesheet.getStyle(assignLHS.identifier, binaryTreeValue)
+                    binaryTreeValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, binaryTreeValue)
                     root.attachTree(binaryTreeValue)
                     // Remove any variables pointing to node from variable block as it now belongs to a tree
                     removeNodeFromVariableState(root)

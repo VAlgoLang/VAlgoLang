@@ -134,7 +134,7 @@ data class NodeFocusObject(
 
     override fun toPython(): List<String> {
         return listOf(
-                "self.play(*${parentNodeValue.manimObject.shape.ident}.highlight())",
+                "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color))",
         )
     }
 }
@@ -298,6 +298,35 @@ data class ArrayElemRestyle(
         } else {
             listOf(
                 "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
+            )
+        }
+    }
+}
+
+data class TreeNodeRestyle(
+        val nodeIdent: String,
+        val styleProperties: StylesheetProperty,
+        val highlightColor: String? = null,
+        val animationString: String? = null,
+        override val runtime: Double? = null
+) : ManimInstrWithRuntime {
+    override fun toPython(): List<String> {
+        var instructions = ""
+        val animationString = animationString ?: "FadeToColor"
+
+        val animationStringTakesColorAsParameter =
+                StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
+        if (highlightColor != null) {
+            instructions = "${nodeIdent}.highlight(${styleProperties.handleColourValue(highlightColor)})"
+        } else {
+            instructions = "${nodeIdent}.unhighlight()"
+        }
+
+        return if (instructions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf(
+                    "self.play(*${instructions}${getRuntimeString()})"
             )
         }
     }

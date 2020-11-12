@@ -195,7 +195,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.toString(), ctx)
+        if(rhsType is NullType && lhsType is DataStructureType) {
+            rhsType = lhsType
+        }
+        if (lhsType is NodeType && lhsType.internalType != rhsType){
+            semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, lhs.toString(), ctx)
+        }
         lineNumberNodeMap[ctx.start.line] = AssignmentNode(ctx.start.line, lhs, expression)
         return lineNumberNodeMap[ctx.start.line] as AssignmentNode
     }

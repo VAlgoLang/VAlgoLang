@@ -1,0 +1,11 @@
+{
+  "dataStructures": {
+    "Tree": {
+      "borderColor": "yellow",
+      "animate": {
+        "highlight": "yellow"
+      }
+    },
+    "Array":{}
+  }
+}
