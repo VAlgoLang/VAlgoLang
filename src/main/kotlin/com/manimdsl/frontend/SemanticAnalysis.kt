@@ -355,9 +355,10 @@ class SemanticAnalysis {
             when (it) {
                 is ReturnNode -> true
                 is IfStatementNode -> checkStatementsHaveReturn(it.statements)
-                        && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
-                        && checkStatementsHaveReturn(it.elseBlock.statements)
+                    && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
+                    && checkStatementsHaveReturn(it.elseBlock.statements)
                 is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
+                is ForStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
             }
         }
@@ -504,6 +505,33 @@ class SemanticAnalysis {
         val arrayPrefix = if (dataStructureType is ArrayType) {if (is2D) "2D " else "1D "} else ""
         if ((initialiser is Array2DInitialiserNode && !is2D) || (initialiser is DataStructureInitialiserNode && is2D)) {
             incompatibleInitialisation("${arrayPrefix}$dataStructureType", ctx)
+        }
+    }
+
+    fun forLoopRangeTypeCheck(
+        symbolTable: SymbolTableVisitor,
+        startExpr: ExpressionNode,
+        endExpr: ExpressionNode,
+        ctx: ManimParser.RangeHeaderContext
+    ) {
+        val startExprType = inferType(symbolTable, startExpr)
+        val endExprType = inferType(symbolTable, endExpr)
+        if (!(startExprType is NumberType && endExprType is NumberType
+            || startExprType is CharType && endExprType is CharType)) {
+            forLoopRangeNotNumberOrChar(startExprType.toString(), endExprType.toString(), ctx)
+        }
+    }
+
+    fun forLoopRangeUpdateNumberTypeCheck(symbolTable: SymbolTableVisitor, change: ExpressionNode, ctx: ParserRuleContext) {
+        val type = inferType(symbolTable, change)
+        if (type !is NumberType) {
+            forLoopRangeUpdateNotNumber(type.toString(), ctx)
+        }
+    }
+
+    fun forLoopIdentifierNotBeingReassignedCheck(identifier: String, forLoopIdentifiers: Set<String>, ctx: ParserRuleContext) {
+        if (forLoopIdentifiers.contains(identifier)) {
+            forLoopIdentifierBeingReassignedError(identifier, ctx)
         }
     }
 }

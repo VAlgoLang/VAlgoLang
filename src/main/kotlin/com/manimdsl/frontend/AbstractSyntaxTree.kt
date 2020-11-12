@@ -86,6 +86,16 @@ data class WhileStatementNode(
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
 
+data class ForStatementNode(
+    override val lineNumber: Int,
+    val endLineNumber: Int,
+    override val scope: Int,
+    val beginStatement: DeclarationNode,
+    val endCondition: ExpressionNode,
+    val updateCounter: AssignmentNode,
+    override val statements: List<StatementNode>,
+    ) : StatementBlock(lineNumber)
+
 data class IfStatementNode(
     override val lineNumber: Int,
     val endLineNumber: Int,

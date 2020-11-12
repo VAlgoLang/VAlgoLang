@@ -382,6 +382,22 @@ class InvalidSemanticTests {
     }
 
 
+    @Test
+    fun invalidForLoopRange() {
+        runSyntaxAndSemanticAnalysis("invalidForLoopRange.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("For loop range has to be both number or both character - found start type of .* and end type of .*"))
+        )
+    }
+
+    @Test
+    fun nestedForLoopRedeclarationOfVariables() {
+        runSyntaxAndSemanticAnalysis("nestedForLoopRedeclarationOfVariables.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

@@ -182,6 +182,7 @@ class VirtualMachine(
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
+            is ForStatementNode -> executeForStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
             is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
             is StartCodeTrackingNode -> {
@@ -1035,7 +1036,7 @@ class VirtualMachine(
 
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
-            if (showMoveToLine) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(0.5)
 
             var conditionValue: ExecValue
             var execValue: ExecValue
@@ -1086,6 +1087,93 @@ class VirtualMachine(
             }
 
             return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
+        }
+
+        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
+            val identifier = forStatementNode.beginStatement.identifier.identifier
+            val index = displayedDataMap.filterValues { it.first == identifier }.keys
+            displayedDataMap.remove(index.first())
+            variables.remove(identifier)
+        }
+
+        private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
+
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+            var loopCount = 0
+
+            executeAssignment(forStatementNode.beginStatement)
+
+            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
+            val end = executeExpression(forStatementNode.endCondition) as DoubleAlias
+            val lineNumber = forStatementNode.lineNumber
+
+            val condition = if (start < end) {
+                LtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
+                )
+            } else {
+                GtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
+                )
+            }
+
+            while (loopCount < MAX_NUMBER_OF_LOOPS) {
+                conditionValue = executeExpression(condition)
+                if (conditionValue is RuntimeError) {
+                    return conditionValue
+                } else if (conditionValue is BoolValue) {
+                    if (!conditionValue.value) {
+                        removeForLoopCounter(forStatementNode)
+                        pc = forStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    } else {
+                        pc = forStatementNode.lineNumber
+                    }
+                }
+
+                execValue = Frame(
+                    forStatementNode.statements.first().lineNumber,
+                    forStatementNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = showMoveToLine,
+                    stepInto = stepInto,
+                    hideCode = hideCode,
+                    displayedDataMap = displayedDataMap
+                ).runFrame()
+
+                when (execValue) {
+                    is BreakValue -> {
+                        removeForLoopCounter(forStatementNode)
+                        pc = forStatementNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    }
+                    is ContinueValue -> {
+                        executeAssignment(forStatementNode.updateCounter)
+                        pc = forStatementNode.lineNumber
+                        moveToLine()
+                        continue
+                    }
+                    !is EmptyValue -> {
+                        return execValue
+                    }
+                }
+
+                if (showMoveToLine && !hideCode) addSleep(0.5)
+                executeAssignment(forStatementNode.updateCounter)
+                pc = forStatementNode.lineNumber
+                moveToLine()
+                loopCount++
+            }
+
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = forStatementNode.lineNumber)
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {

@@ -206,6 +206,18 @@ fun array2DDimensionError(ctx: ParserRuleContext) {
     addSemanticError("Cannot initialise 2D array with arrays of different sizes", getErrorLinePos(ctx))
 }
 
+fun forLoopRangeNotNumberOrChar(startType: String, endType: String, ctx: ParserRuleContext) {
+    addSemanticError("For loop range has to be both number or both character - found start type of $startType and end type of $endType", getErrorLinePos(ctx))
+}
+
+fun forLoopRangeUpdateNotNumber(actual: String, ctx: ParserRuleContext) {
+    addSemanticError("For loop range update value of type $actual - only numerical update value allowed", getErrorLinePos(ctx))
+}
+
+fun forLoopIdentifierBeingReassignedError(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot reassign to variable $identifier being used in for loop header", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

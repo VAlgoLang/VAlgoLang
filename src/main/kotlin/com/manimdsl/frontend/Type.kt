@@ -262,7 +262,11 @@ object NullType: Type() {
     }
 }
 
-object ErrorType : Type()
+object ErrorType : Type() {
+    override fun toString(): String {
+        return "error"
+    }
+}
 object VoidType : Type() {
     override fun toString(): String {
         return "void"
