@@ -131,33 +131,32 @@ sealed class DataStructureMObject(
 }
 
 data class InitManimStack(
-        override val type: DataStructureType,
-        override val ident: String,
-        val position: Position,
-        val alignment: Alignment,
-        val text: String,
-        val hide: Boolean,
-        val moveToShape: Shape? = null,
-        val color: String? = null,
-        val textColor: String? = null,
-        val showLabel: Boolean? = null,
-        val creationStyle: String? = null,
-        val creationTime: Double? = null,
-        private var boundary: List<Pair<Double, Double>> = emptyList(),
-        private var maxSize: Int = -1
-) : DataStructureMObject(type, ident, boundary) {
+    override val type: DataStructureType,
+    override val ident: String,
+    val position: Position,
+    val alignment: Alignment,
+    val text: String,
+    override val hide: Boolean,
+    val moveToShape: Shape? = null,
+    val color: String? = null,
+    val textColor: String? = null,
+    val showLabel: Boolean? = null,
+    val creationStyle: String? = null,
+    override val runtime: Double? = null,
+    private var boundary: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1
+) : DataStructureMObject(type, ident, boundary), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
-        val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
             mutableListOf("# Constructing new $type \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
         if (hide) {
-            python.add("$ident.create_init($newIdent$creationString)$runtimeString")
+            python.add("$ident.create_init($newIdent$creationString)${getRuntimeString()}")
         } else {
-            python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
+            python.add("self.play(*$ident.create_init($newIdent$creationString)${getRuntimeString()})")
         }
         return python
     }

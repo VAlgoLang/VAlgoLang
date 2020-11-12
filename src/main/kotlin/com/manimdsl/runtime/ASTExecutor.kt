@@ -325,7 +325,8 @@ class VirtualMachine(
                                     assignedValue,
                                     arrayValue.animatedStyle,
                                     secondIndex = index,
-                                    hidden = arrayValue.style.hide
+                                    hide = arrayValue.style.hide,
+                                    runtime = arrayValue.animatedStyle?.animationTime
                                 )
                             )
                             arrayValue.animatedStyle?.let {
@@ -370,7 +371,8 @@ class VirtualMachine(
                                 index.value.toInt(),
                                 assignedValue,
                                 arrayValue.animatedStyle,
-                                hidden = arrayValue.style.hide,
+                                hide = arrayValue.style.hide,
+                                runtime = arrayValue.animatedStyle?.animationTime
                             )
                         )
                         arrayValue.animatedStyle?.let {
@@ -792,7 +794,7 @@ class VirtualMachine(
                                 color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime,
+                            runtime = stackValue.style.creationTime,
                             showLabel = stackValue.style.showLabel
                         )
                         // Add to stack of objects to keep track of identifier
@@ -809,7 +811,7 @@ class VirtualMachine(
                                 color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime
+                            runtime = stackValue.style.creationTime
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
