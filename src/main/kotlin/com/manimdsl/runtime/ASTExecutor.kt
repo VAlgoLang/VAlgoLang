@@ -847,14 +847,16 @@ class VirtualMachine(
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
                     dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
                     val initTreeStructure = InitTreeStructure(
-                            node.type,
-                            ident,
-                            text = assignLHS.identifier,
-                            root = root
+                        node.type,
+                        ident,
+                        text = assignLHS.identifier,
+                        root = root
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
                     root.attachTree(binaryTreeValue)
+                    // Remove any variables pointing to node from variable block as it now belongs to a tree
+                    variables.filter { (_, v) -> v == root }.keys.forEach(this::removeVariable)
                     return binaryTreeValue
                 }
                 is NodeType -> {
