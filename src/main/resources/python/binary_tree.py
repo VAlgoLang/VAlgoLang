@@ -153,6 +153,36 @@ class Tree(DataStructure, ABC):
         self.root = node
         return animations
 
+    # Checks whether adding child will cross boundary
+    def check_if_child_will_cross_boundary(self, parent, child, is_left):
+        child.set_radius(self.radius)
+        x, y, _ = parent.circle_text.get_center()
+        y_child = y - (2 * self.scale) if is_left else y + 2 * self.scale
+        x_child = x - 1.5 if is_left else x + 1.5
+
+        animations = []
+        left_or_right_boundary = "LEFT" if is_left else "RIGHT"
+
+        tree_y_boundary = self.ll[1]
+        tree_x_boundary = self.ll[0] if is_left else self.lr[0]
+        is_within_left_or_right_boundary = x_child > tree_x_boundary if is_left else x_child < tree_x_boundary
+        is_within_boundary = is_within_left_or_right_boundary and y_child > tree_y_boundary
+
+        if not is_within_boundary and (self.will_cross_boundary(abs(x - x_child), left_or_right_boundary) or self.will_cross_boundary(y - y_child,
+                                                                                                          "BOTTOM")):
+            group_left_x = self.all.get_left()[0]
+            group_right_x = self.all.get_right()[0]
+            group_top_y = self.all.get_top()[1]
+            group_bottom_y = self.all.get_bottom()[1]
+            scale_animation, scale_factor = self.shrink(
+                (group_right_x - group_left_x + abs(x - x_child) + MED_SMALL_BUFF),
+                group_top_y - group_bottom_y + (y - y_child) + MED_SMALL_BUFF)
+            self.scale = scale_factor
+            self.radius = self.radius * scale_factor
+            if scale_animation:
+                animations.append(scale_animation)
+        return animations
+
     # Assumes parent is in the tree
     def set_right(self, parent, child):
         child.set_radius(self.radius)
@@ -190,9 +220,10 @@ class Tree(DataStructure, ABC):
         scale_animations, scale_factor = self.check_positioning()
         animations.extend(scale_animations)
 
-        target_radius = self.radius * (scale_factor if scale_factor else 1)
-        self.scale = (scale_factor if scale_factor else 1)
-        self.radius = target_radius
+        if scale_factor != self.scale:
+            target_radius = self.radius * (scale_factor if scale_factor else 1)
+            self.scale = (scale_factor if scale_factor else 1)
+            self.radius = target_radius
         return animations
 
     # Assumes node is in the tree
@@ -204,10 +235,7 @@ class Tree(DataStructure, ABC):
             animations.extend(overlapping_children)
         else:
             shrink, scale_factor = self.shrink_if_cross_border()
-            scale = min(scale, scale_factor)
-            if shrink:
-                animations.extend(shrink)
-            else:
+            if not shrink:
                 grow, scale = self.grow_if_small()
                 if grow:
                     animations.extend(grow)
