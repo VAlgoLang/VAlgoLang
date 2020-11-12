@@ -384,18 +384,30 @@ class VirtualMachine(
             val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
             if (parent is RuntimeError)
                 return parent
-            else if (parent is BinaryTreeNodeValue) {
+
+            if (childValue.binaryTreeValue != null && childValue.binaryTreeValue == rootNode.binaryTreeValue) {
+                return RuntimeError("Tree cannot self reference", childValue.manimObject, binaryTreeElemNode.lineNumber)
+            } else if (parent is BinaryTreeNodeValue) {
                 when (binaryTreeElemNode.accessChain.last()) {
                     is NodeType.Left -> {
                         parent.left = childValue
-                        childValue.depth = parent.depth+1
+                        childValue.depth = parent.depth + 1
                         if (parent.binaryTreeValue != null) {
-                            val boundary = dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                            val boundary =
+                                dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
                             boundary.maxSize += nodeCount(childValue)
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] = boundary
+                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
+                                boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
-                            linearRepresentation.add(TreeAppendObject(parent, childValue, parent.binaryTreeValue!!, true))
+                            linearRepresentation.add(
+                                TreeAppendObject(
+                                    parent,
+                                    childValue,
+                                    parent.binaryTreeValue!!,
+                                    true
+                                )
+                            )
                             linearRepresentation.add(NodeUnfocusObject(parent))
                         } else {
                             linearRepresentation.add(NodeAppendObject(parent, childValue, true))
