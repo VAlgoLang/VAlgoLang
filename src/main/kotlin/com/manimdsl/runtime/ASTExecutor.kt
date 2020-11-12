@@ -187,6 +187,7 @@ class VirtualMachine(
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
+            is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
             is StartCodeTrackingNode -> {
                 previousStepIntoState = stepInto
                 stepInto = statement.isStepInto
@@ -270,42 +271,114 @@ class VirtualMachine(
         }
 
         private fun executeArrayElemAssignment(arrayElemNode: ArrayElemNode, assignedValue: ExecValue): ExecValue {
-            val index = executeExpression(arrayElemNode.index) as DoubleValue
-            val arrayValue = variables[arrayElemNode.identifier] as ArrayValue
-            return if (index.value.toInt() !in arrayValue.array.indices) {
-                RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
-            } else {
-                arrayValue.array[index.value.toInt()] = assignedValue
-                arrayValue.animatedStyle?.let {
-                    linearRepresentation.add(
-                        ArrayElemRestyle(
-                            (arrayValue.manimObject as ArrayStructure).ident,
-                            listOf(index.value.toInt()),
-                            it,
-                            it.pointer,
-                            animationString = it.animationStyle,
-                            runtime = it.animationTime
-                        )
-                    )
+            val indices = arrayElemNode.indices.map { executeExpression(it) as DoubleValue }
+            return when (val arrayValue = variables[arrayElemNode.identifier]) {
+                is Array2DValue -> {
+                    val index = indices.first().value.toInt()
+
+                    return if (indices.size == 1) {
+                        if (index !in arrayValue.array.indices) {
+                            RuntimeError(value = "Index out of bounds exception", lineNumber = arrayElemNode.lineNumber)
+                        } else {
+                            // Assigning row
+                            val newArray = (assignedValue as ArrayValue).value
+                            if (newArray.size != arrayValue.array[index].size) {
+                                RuntimeError(value = "Dimensions do not match", lineNumber = arrayElemNode.lineNumber)
+                            } else {
+                                arrayValue.array[index] = newArray
+                                linearRepresentation.add(
+                                    ArrayReplaceRow(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        index,
+                                        arrayValue.value[index]
+                                    )
+                                )
+                                EmptyValue
+                            }
+                        }
+                    } else {
+                        val index2 = indices[1].value.toInt()
+                        if (indices.first().value.toInt() !in arrayValue.array.indices && index2 !in arrayValue.array[index].indices) {
+                            RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
+                        } else {
+                            arrayValue.array[index][index2] = assignedValue
+                            arrayValue.animatedStyle?.let {
+                                linearRepresentation.add(
+                                    ArrayElemRestyle(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        listOf(index2),
+                                        it,
+                                        it.pointer,
+                                        animationString = it.animationStyle,
+                                        runtime = it.animationTime,
+                                        secondIndices = listOf(index)
+                                    )
+                                )
+                            }
+                            linearRepresentation.add(
+                                ArrayElemAssignObject(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    index2,
+                                    assignedValue,
+                                    arrayValue.animatedStyle,
+                                    secondIndex = index
+                                )
+                            )
+                            arrayValue.animatedStyle?.let {
+                                linearRepresentation.add(
+                                    ArrayElemRestyle(
+                                        (arrayValue.manimObject as Array2DStructure).ident,
+                                        listOf(index2),
+                                        arrayValue.style,
+                                        secondIndices = listOf(index)
+                                    )
+                                )
+                            }
+                            EmptyValue
+                        }
+                    }
+
+
                 }
-                linearRepresentation.add(
-                    ArrayElemAssignObject(
-                        (arrayValue.manimObject as ArrayStructure).ident,
-                        index.value.toInt(),
-                        assignedValue,
-                        arrayValue.animatedStyle
-                    )
-                )
-                arrayValue.animatedStyle?.let {
-                    linearRepresentation.add(
-                        ArrayElemRestyle(
-                            (arrayValue.manimObject as ArrayStructure).ident,
-                            listOf(index.value.toInt()),
-                            arrayValue.style
+                is ArrayValue -> {
+                    val index = indices.first()
+                    if (indices.first().value.toInt() !in arrayValue.array.indices) {
+                        RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
+                    } else {
+                        arrayValue.array[index.value.toInt()] = assignedValue
+                        arrayValue.animatedStyle?.let {
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as ArrayStructure).ident,
+                                    listOf(index.value.toInt()),
+                                    it,
+                                    it.pointer,
+                                    animationString = it.animationStyle,
+                                    runtime = it.animationTime
+                                )
+                            )
+                        }
+                        linearRepresentation.add(
+                            ArrayElemAssignObject(
+                                (arrayValue.manimObject as ArrayStructure).ident,
+                                index.value.toInt(),
+                                assignedValue,
+                                arrayValue.animatedStyle
+                            )
                         )
-                    )
+                        arrayValue.animatedStyle?.let {
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as ArrayStructure).ident,
+                                    listOf(index.value.toInt()),
+                                    arrayValue.style
+                                )
+                            )
+                        }
+                        EmptyValue
+                    }
                 }
-                EmptyValue
+                else -> EmptyValue
             }
         }
 
@@ -358,6 +431,7 @@ class VirtualMachine(
                         variables[node.identifier.identifier] = assignedValue
                     }
                     is ArrayElemNode -> {
+
                         return executeArrayElemAssignment(this, assignedValue)
                     }
                 }
@@ -497,7 +571,7 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
-            is ArrayElemNode -> executeArrayElem(node)
+            is ArrayElemNode -> executeArrayElem(node, identifier)
             is BinaryTreeNodeElemAccessNode -> executeTreeAccess(
                 variables[node.identifier]!! as BinaryTreeNodeValue,
                 node
@@ -505,7 +579,11 @@ class VirtualMachine(
             is BinaryTreeRootAccessNode -> executeRootAccess(node).second
             is NullNode -> NullValue
             is CastExpressionNode -> executeCastExpression(node)
+            is InternalArrayMethodCallNode -> {
+                executeInternalArrayMethodCall(node)
+            }
         }
+
 
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
             val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
@@ -596,9 +674,16 @@ class VirtualMachine(
             }
         }
 
-        private fun executeArrayElem(node: ArrayElemNode): ExecValue {
-            val arrayValue = variables[node.identifier] as ArrayValue
-            val index = executeExpression(node.index) as DoubleValue
+        private fun executeArrayElem(node: ArrayElemNode, identifier: AssignLHS): ExecValue {
+            return when (val arrayValue = variables[node.identifier]) {
+                is ArrayValue -> executeArrayElemSingle(node, arrayValue)
+                is Array2DValue -> executeArrayElem2D(node, arrayValue, identifier)
+                else -> EmptyValue
+            }
+        }
+
+        private fun executeArrayElemSingle(node: ArrayElemNode, arrayValue: ArrayValue): ExecValue {
+            val index = executeExpression(node.indices.first()) as DoubleValue
             return if (index.value.toInt() !in arrayValue.array.indices) {
                 RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
             } else {
@@ -626,6 +711,47 @@ class VirtualMachine(
             }
         }
 
+        private fun executeArrayElem2D(node: ArrayElemNode, arrayValue: Array2DValue, assignLHS: AssignLHS): ExecValue {
+            val indices = node.indices.map { executeExpression(it) as DoubleValue }
+            return if (indices.size == 2) {
+                if (indices.first().value.toInt() !in arrayValue.array.indices || indices[1].value.toInt() !in arrayValue.array[indices.first().value.toInt()].indices) {
+                    RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
+                } else {
+                    arrayValue.array[indices.first().value.toInt()][indices[1].value.toInt()]
+                }
+            } else {
+                if (indices.first().value.toInt() !in arrayValue.array.indices) {
+                    RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
+                } else {
+                    val newArray = arrayValue.array[indices.first().value.toInt()].clone()
+                    val arrayValue2 = ArrayValue(
+                        EmptyMObject,
+                        newArray
+                    )
+
+                    val ident = variableNameGenerator.generateNameFromPrefix("array")
+                    dataStructureBoundaries[ident] = WideBoundary(maxSize = newArray.size)
+                    arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
+                    arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
+                    print(node.internalType)
+                    val arrayStructure = ArrayStructure(
+                        ArrayType(node.internalType),
+                        ident,
+                        assignLHS.identifier,
+                        arrayValue2.array.clone(),
+                        color = arrayValue2.style.borderColor,
+                        textColor = arrayValue2.style.textColor,
+                        creationString = arrayValue2.style.creationStyle,
+                        runtime = arrayValue2.style.creationTime,
+                        showLabel = arrayValue2.style.showLabel
+                    )
+                    linearRepresentation.add(arrayStructure)
+                    arrayValue2.manimObject = arrayStructure
+                    arrayValue2
+                }
+            }
+        }
+
         private fun executeMethodCall(
             node: MethodCallNode,
             insideMethodCall: Boolean,
@@ -638,7 +764,9 @@ class VirtualMachine(
                 is ArrayValue -> {
                     return executeArrayMethodCall(node, ds)
                 }
-
+                is Array2DValue -> {
+                    return execute2DArrayMethodCall(node, ds)
+                }
                 else -> EmptyValue
             }
         }
@@ -684,6 +812,66 @@ class VirtualMachine(
                 else -> EmptyValue
             }
         }
+
+        private fun executeInternalArrayMethodCall(node: InternalArrayMethodCallNode): ExecValue {
+            val ds = variables[node.instanceIdentifier] as Array2DValue
+            val index = (executeExpression(node.index) as DoubleValue).value.toInt()
+            return when (node.dataStructureMethod) {
+                is ArrayType.Size -> DoubleValue(ds.array[index].size.toDouble())
+                is ArrayType.Swap -> {
+                    val fromToIndices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
+                    array2dSwap(ds, listOf(index, fromToIndices[0], index, fromToIndices[1]))
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun execute2DArrayMethodCall(node: MethodCallNode, ds: Array2DValue): ExecValue {
+            return when (node.dataStructureMethod) {
+                is ArrayType.Size -> {
+                    DoubleValue(ds.array.size.toDouble())
+                }
+                is ArrayType.Swap -> {
+                    val indices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
+                    array2dSwap(ds, indices)
+                }
+                else -> EmptyValue
+            }
+        }
+
+        private fun array2dSwap(ds: Array2DValue, indices: List<Int>): EmptyValue {
+            val arrayIdent = (ds.manimObject as Array2DStructure).ident
+            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime)
+            val swap = mutableListOf<ManimInstr>(arraySwap)
+            with(ds.animatedStyle) {
+                if (this != null) {
+                    swap.add(
+                        0,
+                        ArrayElemRestyle(
+                            arrayIdent,
+                            listOf(indices[1], indices[3]),
+                            this,
+                            this.pointer,
+                            secondIndices = listOf(indices[0], indices[2])
+                        )
+                    )
+                    swap.add(
+                        ArrayElemRestyle(
+                            arrayIdent,
+                            listOf(indices[1], indices[3]),
+                            ds.style,
+                            secondIndices = listOf(indices[0], indices[2])
+                        )
+                    )
+                }
+            }
+            linearRepresentation.addAll(swap)
+            val temp = ds.array[indices[0]][indices[1]]
+            ds.array[indices[0]][indices[1]] = ds.array[indices[2]][indices[3]]
+            ds.array[indices[2]][indices[3]] = temp
+            return EmptyValue
+        }
+
 
         private fun executeStackMethodCall(
             node: MethodCallNode,
@@ -819,7 +1007,15 @@ class VirtualMachine(
                     }
                     linearRepresentation.addAll(instructions)
                     val newObjectStyle = stackValue.style
-                    node.initialValue.map { executeExpression(it) }.forEach {
+                    val initialiserNodeExpressions =
+                        with(node.initialiser) {
+                            if (this is DataStructureInitialiserNode) {
+                                expressions
+                            } else {
+                                emptyList()
+                            }
+                        }
+                    initialiserNodeExpressions.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             it.toString(),
@@ -848,46 +1044,13 @@ class VirtualMachine(
                     stackValue
                 }
                 is ArrayType -> {
-                    val arraySize =
-                        if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
-                            node.initialValue.size.toDouble()
-                        )
-                    val arrayValue = if (node.initialValue.isEmpty()) {
-                        ArrayValue(
-                            EmptyMObject,
-                            Array(arraySize.value.toInt()) { _ ->
-                                getDefaultValueForType(
-                                    node.type.internalType,
-                                    node.lineNumber
-                                )
-                            })
+                    val is2DArray = node.arguments.size == 2
+                    return if (is2DArray) {
+                        execute2DArrayConstructor(node, assignLHS)
                     } else {
-                        if (node.initialValue.size != arraySize.value.toInt()) {
-                            RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
-                        } else {
-                            ArrayValue(EmptyMObject, node.initialValue.map { executeExpression(it) }.toTypedArray())
-                        }
+                        execute1DArrayConstructor(node, assignLHS)
                     }
-                    val ident = variableNameGenerator.generateNameFromPrefix("array")
-                    dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
-                    if (arrayValue is ArrayValue) {
-                        arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
-                        arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                        val arrayStructure = ArrayStructure(
-                            node.type,
-                            ident,
-                            assignLHS.identifier,
-                            arrayValue.array.clone(),
-                            color = arrayValue.style.borderColor,
-                            textColor = arrayValue.style.textColor,
-                            creationString = arrayValue.style.creationStyle,
-                            runtime = arrayValue.style.creationTime,
-                            showLabel = arrayValue.style.showLabel
-                        )
-                        linearRepresentation.add(arrayStructure)
-                        arrayValue.manimObject = arrayStructure
-                    }
-                    arrayValue
+
                 }
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
@@ -918,6 +1081,118 @@ class VirtualMachine(
                 }
                 else -> EmptyValue
             }
+        }
+
+        private fun execute1DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val initialiserExpressions =
+                with(node.initialiser) {
+                    if (this is DataStructureInitialiserNode) {
+                        expressions
+                    } else {
+                        emptyList()
+                    }
+                }
+            val arraySize =
+                if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
+                    initialiserExpressions.size.toDouble()
+                )
+            val arrayValue = if (initialiserExpressions.isEmpty()) {
+                ArrayValue(
+                    EmptyMObject,
+                    Array(arraySize.value.toInt()) { _ ->
+                        getDefaultValueForType(
+                            node.type.internalType,
+                            node.lineNumber
+                        )
+                    })
+            } else {
+                if (initialiserExpressions.size != arraySize.value.toInt()) {
+                    RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
+                } else {
+                    ArrayValue(EmptyMObject, initialiserExpressions.map { executeExpression(it) }.toTypedArray())
+                }
+            }
+            if (assignLHS !is ArrayElemNode) {
+                val ident = variableNameGenerator.generateNameFromPrefix("array")
+                dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
+                if (arrayValue is ArrayValue) {
+                    arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                    arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                    val arrayStructure = ArrayStructure(
+                        node.type,
+                        ident,
+                        assignLHS.identifier,
+                        arrayValue.array.clone(),
+                        color = arrayValue.style.borderColor,
+                        textColor = arrayValue.style.textColor,
+                        creationString = arrayValue.style.creationStyle,
+                        runtime = arrayValue.style.creationTime,
+                        showLabel = arrayValue.style.showLabel
+                    )
+                    linearRepresentation.add(arrayStructure)
+                    arrayValue.manimObject = arrayStructure
+                }
+            }
+            return arrayValue
+        }
+
+        private fun execute2DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val arraySizes = node.arguments.map { executeExpression(it) as DoubleValue }
+            val nestedInitialiserExpressions =
+                with(node.initialiser) {
+                    if (this is Array2DInitialiserNode) {
+                        nestedExpressions
+                    } else {
+                        emptyList()
+                    }
+                }
+            val arrayDimensions = Pair(arraySizes[0].value.toInt(), arraySizes[1].value.toInt())
+            val arrayValue = if (nestedInitialiserExpressions.isEmpty()) {
+                Array2DValue(
+                    EmptyMObject,
+                    Array(arrayDimensions.first) { _ ->
+                        Array(arrayDimensions.second)
+                        { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+                    }
+                )
+            } else {
+                if (nestedInitialiserExpressions.size != arrayDimensions.first || nestedInitialiserExpressions[0].size != arrayDimensions.second) {
+                    RuntimeError(
+                        "Array initialiser dimensions do not match those in constructor",
+                        lineNumber = node.lineNumber
+                    )
+                } else {
+                    Array2DValue(
+                        EmptyMObject,
+                        nestedInitialiserExpressions.map { exprList ->
+                            exprList.map { executeExpression(it) }.toTypedArray()
+                        }.toTypedArray()
+                    )
+                }
+            }
+
+            val ident = variableNameGenerator.generateNameFromPrefix("array")
+            dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
+
+            if (arrayValue is Array2DValue) {
+                arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                val arrayStructure = Array2DStructure(
+                    node.type,
+                    ident,
+                    assignLHS.identifier,
+                    arrayValue.array.map { it.clone() }.toTypedArray(),
+                    color = arrayValue.style.borderColor,
+                    textColor = arrayValue.style.textColor,
+                    creationString = arrayValue.style.creationStyle,
+                    runtime = arrayValue.style.creationTime,
+                    showLabel = arrayValue.style.showLabel
+                )
+                linearRepresentation.add(arrayStructure)
+                arrayValue.manimObject = arrayStructure
+            }
+
+            return arrayValue
         }
 
         private fun getDefaultValueForType(type: Type, lineNumber: Int): ExecValue {

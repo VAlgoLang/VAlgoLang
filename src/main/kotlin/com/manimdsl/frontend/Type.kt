@@ -28,7 +28,7 @@ interface NullableDataStructure
 
 sealed class DataStructureType(
     open var internalType: Type,
-    open val methods: Map<String, DataStructureMethod>
+    open val methods: MutableMap<String, DataStructureMethod>
 ) : Type() {
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
@@ -67,7 +67,8 @@ data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 
 data class ArrayType(
     override var internalType: Type,
-    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+    var is2D: Boolean = false,
+    override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
         "size" to Size(), "swap" to Swap()
     )
 ) : DataStructureType(internalType, methods) {
@@ -105,6 +106,12 @@ data class ArrayType(
     }
 
     override fun toString(): String = "Array<$internalType>"
+
+
+    fun setTo2D() {
+        is2D = true
+        methods["swap"] = Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
+    }
 }
 
 data class TreeType(
@@ -153,7 +160,7 @@ data class TreeType(
 
 data class NodeType(
     override var internalType: Type,
-    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+    override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
         "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
     ),
 ) : DataStructureType(internalType, methods), NullableDataStructure {
@@ -228,7 +235,7 @@ data class NodeType(
 
 data class StackType(
     override var internalType: Type,
-    override val methods: Map<String, DataStructureMethod> = hashMapOf(
+    override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
         "push" to PushMethod(
             argumentTypes = listOf(
                 internalType to true,

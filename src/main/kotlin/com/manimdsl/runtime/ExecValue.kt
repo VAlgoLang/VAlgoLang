@@ -165,13 +165,13 @@ fun nodeCount(node: ITreeNodeValue): Int {
 
 // value is element in node
 data class BinaryTreeNodeValue(
-        var left: ITreeNodeValue = NullValue,
-        var right: ITreeNodeValue = NullValue,
-        override val value: PrimitiveValue,
-        override var manimObject: MObject = EmptyMObject,
-        var binaryTreeValue: BinaryTreeValue? = null,
-        var pathFromRoot: String = "",
-        var depth: Int
+    var left: ITreeNodeValue = NullValue,
+    var right: ITreeNodeValue = NullValue,
+    override val value: PrimitiveValue,
+    override var manimObject: MObject = EmptyMObject,
+    var binaryTreeValue: BinaryTreeValue? = null,
+    var pathFromRoot: String = "",
+    var depth: Int
 ): ITreeNodeValue() {
     override fun clone(): ExecValue {
         return BinaryTreeNodeValue(left, right, value, manimObject, depth=depth)
@@ -210,6 +210,18 @@ data class BinaryTreeValue(override var manimObject: MObject, override var value
 
     override fun clone(): ExecValue {
         return BinaryTreeValue(manimObject, value)
+    }
+}
+
+data class Array2DValue(override var manimObject: MObject, val array: Array<Array<ExecValue>>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
+    override val value: Array<Array<ExecValue>> = array
+
+    override fun clone(): ExecValue {
+        return Array2DValue(manimObject, array, style, animatedStyle)
+    }
+
+    override fun toString(): String {
+        return "Array"
     }
 }
 
