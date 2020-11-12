@@ -14,15 +14,16 @@ class TestLinearRepresentation {
 
     @Test
     fun mockStackLinearRepresentation() {
-        val rectangle = Rectangle("rectangle", "2.0", "stack")
-        val rectangle1 = Rectangle("rectangle1", "3.0", "stack")
+        val rectangle = Rectangle("rectangle", "2.0", "stack", hidden = false)
+        val rectangle1 = Rectangle("rectangle1", "3.0", "stack", hidden = false)
         val stackIS = InitManimStack(
             StackType(NumberType),
             "stack",
             Coord(2.0, -1.0),
             Alignment.HORIZONTAL,
             "y",
-            boundary = emptyList()
+            boundary = emptyList(),
+            hide = false
         )
 
         stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
@@ -35,12 +36,12 @@ class TestLinearRepresentation {
             stackIS,
             MoveToLine(2, "pointer", "code_block", "code_text"),
             NewMObject(rectangle, "code_text"),
-            StackPushObject(rectangle, "stack"),
+            StackPushObject(rectangle, "stack",hide = false),
             MoveToLine(3, "pointer", "code_block", "code_text"),
             NewMObject(rectangle1, "code_text"),
-            StackPushObject(rectangle1, "stack"),
+            StackPushObject(rectangle1, "stack", hide = false),
             MoveToLine(4, "pointer", "code_block", "code_text"),
-            StackPopObject(rectangle1, "stack", false)
+            StackPopObject(rectangle1, "stack", false, hide = false)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())

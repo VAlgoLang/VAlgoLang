@@ -12,7 +12,7 @@ class PythonStyleTests {
 
         val color = "white"
         val textColor = "black"
-        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
+        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor, hidden = false)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
@@ -26,7 +26,7 @@ class PythonStyleTests {
 
         val color = "#ffffff"
         val textColor = "#ffffff"
-        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
+        val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor, hidden = false)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
@@ -38,7 +38,7 @@ class PythonStyleTests {
     @Test
     fun invalidTextWeightsAreReturnedToDefault() {
 
-        val rectangle = Rectangle("x", "rectangle", "stack1")
+        val rectangle = Rectangle("x", "rectangle", "stack1", hidden = false)
 
         val mobject = NewMObject(rectangle, "codeBlock")
 
