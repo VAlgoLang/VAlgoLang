@@ -233,10 +233,12 @@ data class MultiplyExpression(
 }
 
 data class DivideExpression(
-        override val lineNumber: Int,
-        override val expr1: ExpressionNode,
-        override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class AndExpression(
     override val lineNumber: Int,

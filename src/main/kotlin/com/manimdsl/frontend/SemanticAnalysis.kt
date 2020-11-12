@@ -22,6 +22,14 @@ class SemanticAnalysis {
             is NullNode -> NullType
             is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
+            is BinaryTreeRootAccessNode -> {
+                val type = currentSymbolTable.getTypeOf(expression.identifier)
+                if (type is TreeType) {
+                    type.internalType
+                } else {
+                    ErrorType
+                }
+            }
         }
 
 
@@ -63,14 +71,18 @@ class SemanticAnalysis {
         val expr2Type = getExpressionType(expression.expr2, currentSymbolTable)
 
         return when (expression) {
-            is AddExpression, is SubtractExpression, is MultiplyExpression -> {
+            is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
                 val validTypes = (expression as ComparableTypes).compatibleTypes
                 if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
             }
-            is EqExpression, is NeqExpression -> if (expr1Type == expr2Type || isEqualNullable(expr1Type, expr2Type)) BoolType else ErrorType
+            is EqExpression, is NeqExpression -> if (expr1Type == expr2Type || isEqualNullable(
+                    expr1Type,
+                    expr2Type
+                )
+            ) BoolType else ErrorType
             is GtExpression, is LtExpression, is GeExpression, is LeExpression -> {
                 if (expr1Type == expr2Type) BoolType else ErrorType
             }
