@@ -138,7 +138,6 @@ class VirtualMachine(
 
         fun removeVariable(identifier: String) {
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
-            updateVariableState()
         }
 
         // instantiate new Frame and execute on scoping changes e.g. recursion
