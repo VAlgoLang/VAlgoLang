@@ -391,7 +391,7 @@ class VirtualMachine(
                         childValue.depth = parent.depth+1
                         if (parent.binaryTreeValue != null) {
                             val boundary = dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
-                            boundary.maxSize++
+                            boundary.maxSize += nodeCount(childValue)
                             dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] = boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
                             linearRepresentation.add(NodeFocusObject(parent))
@@ -407,7 +407,7 @@ class VirtualMachine(
                         if (parent.binaryTreeValue != null) {
                             val boundary =
                                 dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
-                            boundary.maxSize++
+                            boundary.maxSize += nodeCount(childValue)
                             dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
                                 boundary
                             childValue.attachTree(parent.binaryTreeValue!!)
@@ -820,8 +820,8 @@ class VirtualMachine(
                 }
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
-                    dataStructureBoundaries[ident] = SquareBoundary()
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
+                    dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
                     val initTreeStructure = InitTreeStructure(
                             node.type,
                             ident,

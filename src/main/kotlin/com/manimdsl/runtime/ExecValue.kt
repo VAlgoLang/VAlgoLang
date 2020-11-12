@@ -134,6 +134,14 @@ object NullValue: ITreeNodeValue() {
     }
 }
 
+fun nodeCount(node: ITreeNodeValue): Int {
+    return if (node is NullValue) {
+        0
+    } else {
+        1 + nodeCount((node as BinaryTreeNodeValue).left) + nodeCount((node as BinaryTreeNodeValue).right)
+    }
+}
+
 // value is element in node
 data class BinaryTreeNodeValue(
         var left: ITreeNodeValue = NullValue,

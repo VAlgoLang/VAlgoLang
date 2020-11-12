@@ -9,7 +9,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
     abstract var height: Int
 
     abstract var maxSize: Int
-
+    abstract val priority: Int
 
     abstract val minDimensions: Pair<Int, Int>
     abstract val dynamicWidth: Boolean
@@ -77,6 +77,8 @@ data class SquareBoundary(
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
     override val strictRatio: Boolean = true
+    override val priority: Int = 3
+
     override fun setCoords(x: Double, y: Double): SquareBoundary {
         this.x1 = x
         this.y1 = y
@@ -99,6 +101,7 @@ data class TallBoundary(
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
     override val strictRatio: Boolean = false
+    override val priority: Int = 2
 
     override fun setCoords(x: Double, y: Double): TallBoundary {
         this.x1 = x
@@ -122,6 +125,7 @@ data class WideBoundary(
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
     override val strictRatio: Boolean = false
+    override val priority: Int = 1
 
     override fun setCoords(x: Double, y: Double): WideBoundary {
         this.x1 = x
@@ -189,7 +193,7 @@ class Scene {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
-            val sortedShapes = shapes.sortedBy { -it.second.maxSize }
+            val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }
             sortedShapes.forEach {
                 val didAddToScene = when (it.second) {
                     is WideBoundary -> addToScene(Corner.BL, it.second)
