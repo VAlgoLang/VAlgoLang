@@ -99,7 +99,7 @@ data class ArrayElemAssignObject(
     val animatedStyle: AnimationProperties?
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
+        val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor.toUpperCase()}" else ""
         return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
