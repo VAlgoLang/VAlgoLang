@@ -153,6 +153,30 @@ class Tree(DataStructure, ABC):
         self.root = node
         return animations
 
+    # Checks whether adding child will cross boundary
+    def check_if_child_will_cross_boundary(self, parent, child, is_left):
+        child.set_radius(self.radius)
+        x, y, _ = parent.circle_text.get_center()
+        y_child = y - (2 * self.scale) if is_left else y + 2 * self.scale
+        x_child = x - 1.5 if is_left else x + 1.5
+
+        animations = []
+        left_or_right_boundary = "LEFT" if is_left else "RIGHT"
+        if self.will_cross_boundary(abs(x - x_child), left_or_right_boundary) or self.will_cross_boundary(y - y_child,
+                                                                                                          "BOTTOM"):
+            group_left_x = self.all.get_left()[0]
+            group_right_x = self.all.get_right()[0]
+            group_top_y = self.all.get_top()[1]
+            group_bottom_y = self.all.get_bottom()[1]
+            scale_animation, scale_factor = self.shrink(
+                (group_right_x - group_left_x + abs(x - x_child) + MED_SMALL_BUFF),
+                group_top_y - group_bottom_y + (y - y_child) + MED_SMALL_BUFF)
+            print(scale_animation)
+            self.radius = self.radius * scale_factor
+            if scale_animation:
+                animations.append(scale_animation)
+        return animations
+
     # Assumes parent is in the tree
     def set_right(self, parent, child):
         child.set_radius(self.radius)

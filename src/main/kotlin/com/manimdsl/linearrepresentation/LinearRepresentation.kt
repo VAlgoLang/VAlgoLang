@@ -106,6 +106,7 @@ data class TreeAppendObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
+                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident},${left.toString().capitalize()})]",
                 "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
                 )
     }
