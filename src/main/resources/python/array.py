@@ -4,8 +4,8 @@ class Array:
         boundary_width = boundaries[1][0] - boundaries[0][0]
         title_width = 1 if title != "" else 0
         width_per_element = (boundary_width - title_width) / len(values)
-        padding = 0.15 if padding else 0
-        square_dim = min((boundaries[0][1] - boundaries[3][1] - padding), width_per_element)
+        self.padding = 0.15 if padding else 0
+        square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
         self.array_elements = [
             Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val
             in self.values]
@@ -20,7 +20,7 @@ class Array:
 
     def build(self):
         previous = self.title
-        buff = 0.1
+        buff = self.padding
         for array_elem in self.array_elements:
             group = array_elem.all
             group.next_to(previous, RIGHT, buff)
@@ -58,20 +58,21 @@ class Array2D:
         self.values = values
         boundary_width = boundaries[1][0] - boundaries[0][0]
         title_width = 1 if title != "" else 0
-        width_per_element = (boundary_width - title_width) / len(values[0])
+        width_per_element = (boundary_width - title_width - 0.2) / len(values[0])
         boundary_height = boundaries[0][1] - boundaries[3][1]
         square_dim = min((boundary_height - 0.5) / len(values), width_per_element)
         self.rows = []
         offset_from_bottom = (boundary_height - square_dim * len(values)) / 2
+        sub_array_width = (square_dim * len(values[0]))
         for i in range(len(values) - 1, -1, -1):
-            new_ll = boundaries[2][0] + title_width, boundaries[2][1] + (i * square_dim) + offset_from_bottom
+            new_ll = boundaries[2][0] + ((boundary_width - sub_array_width) /2) , boundaries[2][1] + (i * square_dim) + offset_from_bottom - 0.25
             new_boundaries = [(new_ll[0], new_ll[1] + square_dim),
-                              (new_ll[0] + boundary_width, new_ll[1] + square_dim), new_ll,
-                              (new_ll[0] + square_dim, new_ll[1])]
+                              (new_ll[0] + sub_array_width, new_ll[1] + square_dim), new_ll,
+                              (new_ll[0] + sub_array_width, new_ll[1])]
             self.rows.append(Array(values[len(values) - 1 - i], "",new_boundaries, color=color, text_color=text_color, padding=False).build())
         self.title = VGroup(Text(title).set_width(title_width))
         self.title.move_to(
-            np.array([boundaries[0][0] + (title_width / 2), (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
+            np.array([boundaries[0][0] + (boundary_width/ 2), (boundaries[0][1] - 0.5), 0]))
         self.color = color
         self.text_color = text_color
 

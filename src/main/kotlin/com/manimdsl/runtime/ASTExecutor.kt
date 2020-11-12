@@ -764,6 +764,28 @@ class VirtualMachine(
                 if (indices.first().value.toInt() !in arrayValue.array.indices || indices[1].value.toInt() !in arrayValue.array[indices.first().value.toInt()].indices) {
                     RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
                 } else {
+                    with(arrayValue.animatedStyle) {
+                        if (showMoveToLine && this != null) {
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    listOf(indices[1].value.toInt()),
+                                    this,
+                                    this.pointer,
+                                    animationString = this.animationStyle,
+                                    secondIndices = listOf(indices.first().value.toInt())
+                                )
+                            )
+                            linearRepresentation.add(
+                                ArrayElemRestyle(
+                                    (arrayValue.manimObject as Array2DStructure).ident,
+                                    listOf(indices[1].value.toInt()),
+                                    arrayValue.style,
+                                    secondIndices = listOf(indices.first().value.toInt())
+                                )
+                            )
+                        }
+                    }
                     arrayValue.array[indices.first().value.toInt()][indices[1].value.toInt()]
                 }
             } else {
@@ -1331,7 +1353,7 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
+                    stepInto =  stepInto,
                     hideCode = hideCode
                 ).runFrame()
 
