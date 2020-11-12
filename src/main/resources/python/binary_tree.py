@@ -301,7 +301,8 @@ class Tree(DataStructure, ABC):
             target_radius = self.radius * scale
             if(target_radius > self.max_radius):
                 scale *= self.max_radius / target_radius
-            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, self.aligned_edge)], scale
+
+            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, np.array[(self.ul[0] + self.ur[0]) / 2,(self.ll[1] + self.ur[1]) / 2, 0 ])], scale
         else:
             return 0, self.scale
 
