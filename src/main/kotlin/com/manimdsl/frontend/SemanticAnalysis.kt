@@ -44,7 +44,7 @@ class SemanticAnalysis {
         val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
             if (arrayType.is2D) {
-                ArrayType(arrayType.internalType)
+                if (expression.indices.size == 2) arrayType.internalType else ArrayType(arrayType.internalType)
             } else {
                 arrayType.internalType
             }
