@@ -6,6 +6,7 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
 import comcreat.manimdsl.linearrepresentation.Alignment
 import comcreat.manimdsl.linearrepresentation.ManimInstr
+import comcreat.manimdsl.linearrepresentation.ManimInstrWithRuntime
 
 /** Objects **/
 

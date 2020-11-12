@@ -33,7 +33,7 @@ class SemanticAnalysis {
             }
         }
 
-    private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+    private fun getBinaryTreeNodeType(expression: BinaryTreeNodeElemAccessNode, currentSymbolTable: SymbolTableVisitor): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
         return if (type is NodeType) {
             if (expression.accessChain.isNotEmpty()) {

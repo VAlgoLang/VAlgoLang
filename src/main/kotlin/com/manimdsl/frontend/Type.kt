@@ -116,7 +116,7 @@ data class ArrayType(
 
 data class TreeType(
         override var internalType: Type,
-        override val methods: Map<String, DataStructureMethod> = hashMapOf(
+        override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
                 "root" to Root(internalType as NodeType)
         )
         ): DataStructureType(internalType, methods) {
