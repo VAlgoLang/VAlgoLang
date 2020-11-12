@@ -20,16 +20,10 @@ class SemanticAnalysis {
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeNodeElemAccessNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
             is NullNode -> NullType
-            is BinaryTreeRootAccessNode -> {
-                val type = currentSymbolTable.getTypeOf(expression.identifier)
-                if (type is TreeType) {
-                    type.internalType
-                } else {
-                    ErrorType
-                }
-            }
-
+            is CharNode -> CharType
+            is CastExpressionNode -> expression.targetType
         }
+
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeNodeElemAccessNode, currentSymbolTable: SymbolTableVisitor): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
@@ -69,8 +63,9 @@ class SemanticAnalysis {
         val expr2Type = getExpressionType(expression.expr2, currentSymbolTable)
 
         return when (expression) {
-            is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
-                if (expr1Type is NumberType && expr2Type is NumberType) NumberType else ErrorType
+            is AddExpression, is SubtractExpression, is MultiplyExpression -> {
+                val validTypes = (expression as ComparableTypes).compatibleTypes
+                if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
@@ -256,8 +251,18 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         ctx: ParserRuleContext
     ) {
+        checkExpressionTypeWithExpectedTypes(expression, setOf(expected), currentSymbolTable, ctx)
+    }
+
+
+    fun checkExpressionTypeWithExpectedTypes(
+        expression: ExpressionNode,
+        expected: Set<Type>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
         val actual = inferType(currentSymbolTable, expression)
-        if (actual != expected) {
+        if (!expected.contains(actual)) {
             unexpectedExpressionTypeError(expected, actual, ctx)
         }
     }

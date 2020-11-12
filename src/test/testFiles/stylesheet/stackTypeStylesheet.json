@@ -5,7 +5,8 @@
       "textColor": "GREEN",
       "animate": {
         "borderColor": "RED",
-        "textColor": "RED"
+        "textColor": "RED",
+        "animationStyle": "CircleIndicate"
       }
     }
   }

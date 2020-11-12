@@ -46,6 +46,7 @@ RETURN: 'return';
 // Primitive types
 NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
+CHAR_TYPE: 'char';
 
 // Keywords
 COMMENT: 'comment';
@@ -61,6 +62,9 @@ BREAK: 'break';
 CONTINUE: 'continue';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
+TO_NUMBER: 'toNumber';
+TO_CHAR: 'toChar';
+
 ROOT: 'root';
 NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
@@ -69,7 +73,6 @@ NUMBER: (DIGIT+) (DOT DIGIT+)?;
 fragment ESCAPED_CHAR: ('0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\');
 fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR;
 STRING: '"' (CHARACTER)* '"';
-
-
+CHAR_LITER:'\'' CHARACTER '\'';
 
 

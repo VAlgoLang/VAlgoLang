@@ -159,6 +159,7 @@ data class BinaryTreeRootAccessNode(
 }
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
+data class CharNode(override val lineNumber: Int, val value: Char) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 data class MethodCallNode(
         override val lineNumber: Int,
@@ -187,8 +188,18 @@ data class FunctionCallNode(
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
+data class CastExpressionNode(
+    override val lineNumber: Int,
+    val targetType: PrimitiveType,
+    val expr: ExpressionNode
+) : ExpressionNode(lineNumber)
+
 // Method calls
 sealed class MethodClassNode
+
+interface ComparableTypes {
+    val compatibleTypes: Set<Type>
+}
 
 // Binary Expressions
 sealed class BinaryExpression(
@@ -201,19 +212,25 @@ data class AddExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class SubtractExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class MultiplyExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
-) : BinaryExpression(lineNumber, expr1, expr2)
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
 
 data class DivideExpression(
         override val lineNumber: Int,

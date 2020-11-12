@@ -277,14 +277,15 @@ class VirtualMachine(
                 RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
             } else {
                 arrayValue.array[index.value.toInt()] = assignedValue
-                val style = arrayValue.animatedStyle
-                style?.let {
+                arrayValue.animatedStyle?.let {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
                             listOf(index.value.toInt()),
                             it,
-                            it.pointer
+                            it.pointer,
+                            animationString = it.animationStyle,
+                            runtime = it.animationTime
                         )
                     )
                 }
@@ -296,7 +297,7 @@ class VirtualMachine(
                         arrayValue.animatedStyle
                     )
                 )
-                if (arrayValue.animatedStyle != null) {
+                arrayValue.animatedStyle?.let {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
@@ -450,6 +451,7 @@ class VirtualMachine(
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
+            is CharNode -> CharValue(node.value)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
             is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
             is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
@@ -483,6 +485,7 @@ class VirtualMachine(
             ).second
             is BinaryTreeRootAccessNode -> executeRootAccess(node).second
             is NullNode -> NullValue
+            is CastExpressionNode -> executeCastExpression(node)
         }
 
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
@@ -551,6 +554,16 @@ class VirtualMachine(
             return Pair(parentValue, accessedValue)
         }
 
+        private fun executeCastExpression(node: CastExpressionNode): ExecValue {
+            val exprValue = executeExpression(node.expr)
+
+            return when (node.targetType) {
+                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
+                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                else -> throw UnsupportedOperationException("Not implemented yet")
+            }
+        }
+
         private fun executeArrayElem(node: ArrayElemNode): ExecValue {
             val arrayValue = variables[node.identifier] as ArrayValue
             val index = executeExpression(node.index) as DoubleValue
@@ -564,7 +577,8 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
                                 this,
-                                pointer
+                                this.pointer,
+                                animationString = this.animationStyle
                             )
                         )
                         linearRepresentation.add(
@@ -612,10 +626,11 @@ class VirtualMachine(
                                 Pair(index1, index2),
                                 variableNameGenerator.generateNameFromPrefix("elem1"),
                                 variableNameGenerator.generateNameFromPrefix("elem2"),
-                                variableNameGenerator.generateNameFromPrefix("animations")
+                                variableNameGenerator.generateNameFromPrefix("animations"),
+                                runtime = ds.animatedStyle?.animationTime
                             )
                         } else {
-                            ArrayShortSwap(arrayIdent, Pair(index1, index2))
+                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime)
                         }
                     val swap = mutableListOf(arraySwap)
                     with(ds.animatedStyle) {
@@ -651,7 +666,7 @@ class VirtualMachine(
                     val rectangle = if (hasOldMObject) oldMObject else NewMObject(
                         Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            value.value.toString(),
+                            value.toString(),
                             dataStructureIdentifier,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
@@ -664,9 +679,11 @@ class VirtualMachine(
                             StackPushObject(
                                 rectangle.shape,
                                 dataStructureIdentifier,
-                                hasOldMObject
+                                hasOldMObject,
+                                creationStyle = ds.style.creationStyle,
+                                runtime = ds.animatedStyle?.animationTime
                             ),
-                            RestyleObject(rectangle.shape, ds.style)
+                            RestyleObject(rectangle.shape, ds.style, ds.animatedStyle?.animationTime)
                         )
                     if (!hasOldMObject) {
                         instructions.add(0, rectangle)
@@ -693,10 +710,11 @@ class VirtualMachine(
                         StackPopObject(
                             topOfStack.shape,
                             dataStructureIdentifier,
-                            insideMethodCall
+                            insideMethodCall,
+                            runtime = ds.animatedStyle?.animationTime
                         )
                     )
-                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it)) }
+                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it, it.animationTime)) }
                     linearRepresentation.addAll(instructions)
                     return if (isExpression) poppedValue else EmptyValue
                 }
@@ -737,6 +755,8 @@ class VirtualMachine(
                             assignLHS.identifier,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            creationStyle = stackValue.style.creationStyle,
+                            creationTime = stackValue.style.creationTime,
                             showLabel = stackValue.style.showLabel
                         )
                         // Add to stack of objects to keep track of identifier
@@ -751,6 +771,8 @@ class VirtualMachine(
                             numStack.manimObject.shape,
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
+                            creationStyle = stackValue.style.creationStyle,
+                            creationTime = stackValue.style.creationTime
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -759,7 +781,7 @@ class VirtualMachine(
                     node.initialValue.map { executeExpression(it) }.forEach {
                         val rectangle = Rectangle(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            it.value.toString(),
+                            it.toString(),
                             initStructureIdent,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
@@ -773,7 +795,7 @@ class VirtualMachine(
                         clonedValue.manimObject = newRectangle
                         stackValue.stack.push(clonedValue)
                         linearRepresentation.add(newRectangle)
-                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent))
+                        linearRepresentation.add(StackPushObject(rectangle, initStructureIdent, runtime = newObjectStyle.animate?.animationTime))
                     }
                     stackValue.manimObject = newObject
                     stackValue
@@ -811,6 +833,8 @@ class VirtualMachine(
                             arrayValue.array.clone(),
                             color = arrayValue.style.borderColor,
                             textColor = arrayValue.style.textColor,
+                            creationString = arrayValue.style.creationStyle,
+                            runtime = arrayValue.style.creationTime,
                             showLabel = arrayValue.style.showLabel
                         )
                         linearRepresentation.add(arrayStructure)

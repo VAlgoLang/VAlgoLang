@@ -19,7 +19,7 @@ class Main(Scene):
         self.move_arrow_to_line(1, pointer, code_block, code_text)
         # Constructing new Stack<number> "y"
         stack = Stack([5.0, 4.0, 0], [7.0, 4.0, 0], [5.0, -4.0, 0], [7.0, -4.0, 0], DOWN)
-        self.play(stack.create_init("stack"))
+        self.play(*stack.create_init("y"))
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
@@ -164,13 +164,18 @@ class Stack(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
         self.empty = None
-    def create_init(self, text=None):
+    def create_init(self, text=None, creation_style=None):
+        if not creation_style:
+            creation_style = "ShowCreation"
         empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color, text_color=self.text_color)
         self.empty = empty.all
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
         self.all.add(empty.all)
-        return ShowCreation(empty.all)
-    def push(self, obj):
+        creation_transform = globals()[creation_style]
+        return [creation_transform(empty.text), ShowCreation(empty.shape)]
+    def push(self, obj, creation_style=None):
+        if not creation_style:
+            creation_style = "FadeIn"
         animations = []
         obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)
         shrink, scale_factor = self.shrink_if_cross_border(obj.all)
@@ -178,7 +183,8 @@ class Stack(DataStructure, ABC):
             animations.append([shrink])
         target_width = self.all.get_width() * (scale_factor if scale_factor else 1)
         obj.all.scale(target_width / obj.all.get_width())
-        animations.append([FadeIn(obj.all)])
+        creation_transform = globals()[creation_style]
+        animations.append([creation_transform(obj.all)])
         animations.append([ApplyMethod(obj.all.next_to, self.all, np.array([0, 0.25, 0]))])
         return animations
     def pop(self, obj, fade_out=True):
