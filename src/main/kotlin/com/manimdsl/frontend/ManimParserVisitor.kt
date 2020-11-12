@@ -2,6 +2,7 @@ package com.manimdsl.frontend
 
 import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
+import java.util.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
