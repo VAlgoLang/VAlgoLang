@@ -33,7 +33,6 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     ;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
-//         | start=(IDENT EQUAL expr) SEMI expr SEMI end=(IDENT EQUAL expr)     #StateHeader;
 
 loop_stat: BREAK SEMI         #BreakStatement
          | CONTINUE SEMI      #ContinueStatement;
