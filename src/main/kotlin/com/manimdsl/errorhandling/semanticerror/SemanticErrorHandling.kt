@@ -123,29 +123,38 @@ fun breakOrContinueOutsideLoopError(action: String, ctx: ParserRuleContext) {
 }
 
 fun returnTypeError(type: String, expectedType: String, ctx: ParserRuleContext) {
-    addSemanticError("Cannot return expression of type $type in a function with return type $expectedType", getErrorLinePos(ctx))
+    addSemanticError(
+        "Cannot return expression of type $type in a function with return type $expectedType",
+        getErrorLinePos(ctx)
+    )
 }
 
-fun numOfArgsInFunctionCallError(function: String, numArgs: Int, expected:Int, ctx: ParserRuleContext) {
-    addSemanticError("$function function does not accept $numArgs arguments (expected: $expected, actual: $numArgs)", getErrorLinePos(ctx))
+fun numOfArgsInFunctionCallError(function: String, numArgs: Int, expected: Int, ctx: ParserRuleContext) {
+    addSemanticError(
+        "$function function does not accept $numArgs arguments (expected: $expected, actual: $numArgs)",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun typeOfArgsInFunctionCallError(
-        function: String,
-        argType: String,
-        argName: String,
-        expected: String,
-        ctx: ParserRuleContext
+    function: String,
+    argType: String,
+    argName: String,
+    expected: String,
+    ctx: ParserRuleContext
 ) {
     // To modify once nex version is merged
     addSemanticError(
-            "$function function does not accept argument $argName of type $argType (expected: $expected, actual: $argType)",
-            getErrorLinePos(ctx)
+        "$function function does not accept argument $argName of type $argType (expected: $expected, actual: $argType)",
+        getErrorLinePos(ctx)
     )
 }
 
 fun missingReturnError(function: String, type: String, ctx: ParserRuleContext) {
-    addSemanticError("Missing return statement in $function function that expects return type of $type", getErrorLinePos(ctx))
+    addSemanticError(
+        "Missing return statement in $function function that expects return type of $type",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
@@ -153,15 +162,24 @@ fun voidTypeDeclarationError(identifier: String, ctx: ParserRuleContext) {
 }
 
 fun incompatibleFunctionType(identifier: String, declared: String, called: String, ctx: ParserRuleContext) {
-    addSemanticError("Incompatible $identifier function return type of $declared to previous function call expecting type $called", getErrorLinePos(ctx))
+    addSemanticError(
+        "Incompatible $identifier function return type of $declared to previous function call expecting type $called",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun incompatibleParameterCount(identifier: String, declared: Int, called: Int, ctx: ParserRuleContext) {
-    addSemanticError("Incompatible $identifier function with $declared parameter(s) to previous function call with $called argument(s)", getErrorLinePos(ctx))
+    addSemanticError(
+        "Incompatible $identifier function with $declared parameter(s) to previous function call with $called argument(s)",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun incompatibleParameterType(identifier: String, declared: String, argument: String, ctx: ParserRuleContext) {
-    addSemanticError("Incompatible parameter $identifier of type $declared to previous function call with argument of type $argument", getErrorLinePos(ctx))
+    addSemanticError(
+        "Incompatible parameter $identifier of type $declared to previous function call with argument of type $argument",
+        getErrorLinePos(ctx)
+    )
 }
 
 fun incompatibleTypeFromMultipleFunctionCall(identifier: String, ctx: ParserRuleContext) {
@@ -174,6 +192,18 @@ fun nonNullableAssignedToNull(nullType: String, type: String, ctx: ParserRuleCon
 
 fun unableToInferType(nullType: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot infer type from $nullType", getErrorLinePos(ctx))
+}
+
+fun maxArrayIndexingExceededError(is2DArray: Boolean, indicesSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot index a ${if (is2DArray) "2D" else "1D"} array $indicesSize times", getErrorLinePos(ctx))
+}
+
+fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
+    addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
+}
+
+fun array2DDimensionError(ctx: ParserRuleContext) {
+    addSemanticError("Cannot initialise 2D array with arrays of different sizes", getErrorLinePos(ctx))
 }
 
 fun forLoopRangeNotNumberOrChar(startType: String, endType: String, ctx: ParserRuleContext) {

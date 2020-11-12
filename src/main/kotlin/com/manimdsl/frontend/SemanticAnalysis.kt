@@ -22,6 +22,7 @@ class SemanticAnalysis {
             is NullNode -> NullType
             is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
+            is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
         }
 
     private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
@@ -42,7 +43,11 @@ class SemanticAnalysis {
         // To extend to multiple dimensions perform below recursively
         val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
         return if (arrayType is ArrayType) {
-            arrayType.internalType
+            if (arrayType.is2D) {
+                ArrayType(arrayType.internalType)
+            } else {
+                arrayType.internalType
+            }
         } else {
             ErrorType
         }
@@ -126,7 +131,8 @@ class SemanticAnalysis {
         numArgs: Int,
         ctx: ParserRuleContext
     ) {
-        val correctNumberOfArgs = numArgs >= method.argumentTypes.filter { it.second }.size && numArgs <= method.argumentTypes.size
+        val correctNumberOfArgs =
+            numArgs >= method.argumentTypes.filter { it.second }.size && numArgs <= method.argumentTypes.size
         if (method != ErrorMethod && !correctNumberOfArgs) {
             numOfArgsInMethodCallError(
                 dataStructureType.toString(),
@@ -228,6 +234,23 @@ class SemanticAnalysis {
             }
         }
 
+    }
+
+    fun checkArrayElemHasCorrectNumberOfIndices(indices: List<ExpressionNode>, is2DArray: Boolean, ctx: ParserRuleContext) {
+        val hasCorrectNumberOfIndices = is2DArray || indices.size == 1
+        if (!hasCorrectNumberOfIndices) {
+            maxArrayIndexingExceededError(is2DArray, indices.size, ctx)
+        }
+    }
+
+    fun checkArrayElemIndexTypes(
+        indices: List<ExpressionNode>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        indices.forEach {
+            checkExpressionTypeWithExpectedTypes(it, setOf(NumberType), currentSymbolTable, ctx)
+        }
     }
 
     fun checkExpressionTypeWithExpectedType(
@@ -427,6 +450,15 @@ class SemanticAnalysis {
         }
     }
 
+    fun array2DDimensionsMatchCheck(initialiser: InitialiserNode, dataStructureType: DataStructureType, ctx: ParserRuleContext) {
+        if (initialiser is Array2DInitialiserNode && dataStructureType is ArrayType && dataStructureType.is2D) {
+            val nestedExpressions = initialiser.nestedExpressions
+            if (nestedExpressions.isNotEmpty() && nestedExpressions.any { it.size != nestedExpressions[0].size}) {
+                array2DDimensionError(ctx)
+            }
+        }
+    }
+
     fun allExpressionsAreSameTypeCheck(
         expected: Type,
         expressions: List<ExpressionNode>,
@@ -465,6 +497,14 @@ class SemanticAnalysis {
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
         if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
+        }
+    }
+
+    fun incompatibleInitialiserCheck(dataStructureType: DataStructureType, initialiser: ASTNode, ctx: ParserRuleContext) {
+        val is2D = dataStructureType is ArrayType && dataStructureType.is2D
+        val arrayPrefix = if (dataStructureType is ArrayType) {if (is2D) "2D " else "1D "} else ""
+        if ((initialiser is Array2DInitialiserNode && !is2D) || (initialiser is DataStructureInitialiserNode && is2D)) {
+            incompatibleInitialisation("${arrayPrefix}$dataStructureType", ctx)
         }
     }
 

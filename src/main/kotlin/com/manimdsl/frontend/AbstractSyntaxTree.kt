@@ -141,10 +141,10 @@ data class IdentifierNode(override val lineNumber: Int, override val identifier:
     }
 }
 
-data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val index: ExpressionNode) :
+data class ArrayElemNode(override val lineNumber: Int, override val identifier: String, val indices: List<ExpressionNode>, val internalType: Type) :
     ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
-        return "$identifier[$index]"
+        return "$identifier[$indices]"
     }
 }
 
@@ -169,18 +169,34 @@ data class MethodCallNode(
     val arguments: List<ExpressionNode>
 ) : ExpressionNode(lineNumber)
 
+data class InternalArrayMethodCallNode(
+    override val lineNumber: Int,
+    val index: ExpressionNode,
+    val instanceIdentifier: String,
+    val dataStructureMethod: DataStructureMethod,
+    val arguments: List<ExpressionNode>
+) : ExpressionNode(lineNumber)
+
 data class ConstructorNode(
     override val lineNumber: Int,
     val type: DataStructureType,
     val arguments: List<ExpressionNode>,
-    val initialValue: List<ExpressionNode>
+    val initialiser: InitialiserNode
 ) : ExpressionNode(lineNumber)
 
 data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 
+sealed class InitialiserNode: ASTNode()
+
+object EmptyInitialiserNode: InitialiserNode()
+
 data class DataStructureInitialiserNode(
     val expressions: List<ExpressionNode>
-) : ASTNode()
+) : InitialiserNode()
+
+data class Array2DInitialiserNode(
+    val nestedExpressions: List<List<ExpressionNode>>
+) : InitialiserNode()
 
 data class FunctionCallNode(
     override val lineNumber: Int,

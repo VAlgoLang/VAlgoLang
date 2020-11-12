@@ -34,7 +34,7 @@ class ASTConstructionTests {
             DeclarationNode(
                 3,
                 IdentifierNode(3, "y"),
-                ConstructorNode(3, StackType(NumberType), emptyList(), emptyList())
+                ConstructorNode(3, StackType(NumberType), emptyList(), EmptyInitialiserNode)
             )
         )
         val reference = ProgramNode(listOf(), statements)
@@ -50,7 +50,7 @@ class ASTConstructionTests {
             DeclarationNode(
                 1,
                 IdentifierNode(1, "y"),
-                ConstructorNode(1, StackType(NumberType), emptyList(), emptyList())
+                ConstructorNode(1, StackType(NumberType), emptyList(), EmptyInitialiserNode)
             ),
             MethodCallNode(
                 2,
