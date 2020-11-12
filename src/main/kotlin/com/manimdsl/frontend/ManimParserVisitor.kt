@@ -11,6 +11,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
     private var inLoop: Boolean = false
+
     // First value is loop start line number and second is end line number
     private var loopLineNumbers: Pair<Int, Int> = Pair(1, 1)
     private var functionReturnType: Type = VoidType
@@ -171,7 +172,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         semanticAnalyser.voidTypeDeclarationCheck(rhsType, identifier, ctx)
         semanticAnalyser.incompatibleTypesCheck(lhsType, rhsType, identifier, ctx)
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
         symbolTable.addVariable(identifier, IdentifierData(rhsType))
@@ -193,7 +194,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             }
         }
 
-        if(rhsType is NullType && lhsType is DataStructureType) {
+        if (rhsType is NullType && lhsType is DataStructureType) {
             rhsType = lhsType
         }
 
@@ -226,7 +227,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         // Return element type
         return if (arrayType is ArrayType) {
-            Pair(arrayType.internalType, arrayElem)
+            Pair(if (arrayType.is2D && arrayElem.indices.size == 1) ArrayType(arrayType.internalType) else arrayType.internalType, arrayElem)
         } else {
             Pair(ErrorType, EmptyLHS)
         }
@@ -239,7 +240,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return if (treeType is ErrorType) {
             Pair(ErrorType, EmptyLHS)
         } else {
-           Pair(treeType, nodeElem)
+            Pair(treeType, nodeElem)
         }
     }
 
@@ -356,7 +357,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode })
     }
 
-    override fun visitMethodCall(ctx: MethodCallContext): MethodCallNode {
+    override fun visitMethodCall(ctx: MethodCallContext): ExpressionNode {
         // Type signature of methods to be determined by symbol table
         val arguments: List<ExpressionNode> =
             visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
@@ -367,7 +368,20 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
         semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, methodName, ctx)
 
-        val dataStructureType = symbolTable.getTypeOf(identifier)
+        var dataStructureType = symbolTable.getTypeOf(identifier)
+
+
+        val index = if (ctx.expr() != null) {
+            // array indexed method call
+            val indexExpression = visit(ctx.expr()) as ExpressionNode
+            semanticAnalyser.checkExpressionTypeWithExpectedType(indexExpression, NumberType, symbolTable, ctx)
+            // check datastructure is a 2d array
+            if (dataStructureType is ArrayType) dataStructureType= ArrayType(dataStructureType.internalType)
+            indexExpression
+        } else {
+            null
+        }
+
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
@@ -386,9 +400,14 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
 
-        lineNumberNodeMap[ctx.start.line] =
+        val methodCallNode = if (index == null) {
             MethodCallNode(ctx.start.line, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
-        return lineNumberNodeMap[ctx.start.line] as MethodCallNode
+        } else {
+            InternalArrayMethodCallNode(ctx.start.line, index, ctx.IDENT(0).symbol.text, dataStructureMethod, arguments)
+        }
+        lineNumberNodeMap[ctx.start.line] =
+            methodCallNode
+        return methodCallNode
     }
 
     override fun visitFunctionCall(ctx: FunctionCallContext): FunctionCallNode {
@@ -419,16 +438,35 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(emptyList(), emptyList())
         }
 
-        // Check initial values
-        val initialValue = if (ctx.data_structure_initialiser() != null) {
-            (visit(ctx.data_structure_initialiser()) as DataStructureInitialiserNode).expressions
-        } else {
-            emptyList()
+        if (dataStructureType is ArrayType) {
+            dataStructureType.is2D = arguments.size == 2
+            if (dataStructureType.is2D) dataStructureType.setTo2D()
         }
 
-        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValue, symbolTable, ctx)
-        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValue, argumentTypes, ctx)
-        return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialValue)
+        val initialiser = if (ctx.data_structure_initialiser() != null) {
+            visit(ctx.data_structure_initialiser()) as InitialiserNode
+        } else {
+            EmptyInitialiserNode
+        }
+
+        semanticAnalyser.incompatibleInitialiserCheck(dataStructureType, initialiser, ctx)
+
+        val initialValues = when (initialiser) {
+            is DataStructureInitialiserNode -> {
+                initialiser.expressions
+            }
+            is Array2DInitialiserNode -> {
+                initialiser.nestedExpressions.flatten()
+            }
+            else -> {
+                emptyList()
+            }
+        }
+
+        semanticAnalyser.allExpressionsAreSameTypeCheck(dataStructureType.internalType, initialValues, symbolTable, ctx)
+        semanticAnalyser.datastructureConstructorCheck(dataStructureType, initialValues, argumentTypes, ctx)
+        semanticAnalyser.array2DDimensionsMatchCheck(initialiser, dataStructureType, ctx)
+        return ConstructorNode(ctx.start.line, dataStructureType, arguments, initialiser)
     }
 
     override fun visitIdentifier(ctx: IdentifierContext): IdentifierNode {
@@ -535,17 +573,32 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return ArrayType(elementType)
     }
 
-    override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): ASTNode {
-        return DataStructureInitialiserNode(ctx.expr().map { visit(it) as ExpressionNode })
+    override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
+        return Array2DInitialiserNode((ctx.arg_list()
+            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments  })
+    }
+
+    override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): InitialiserNode {
+        if (ctx.arg_list() != null) {
+            val arguments: List<ExpressionNode> =
+                visitArgumentList(ctx.arg_list() as ArgumentListContext?).arguments
+            return DataStructureInitialiserNode(arguments)
+        }
+
+        return visit(ctx.initialiser_list()) as Array2DInitialiserNode
     }
 
     override fun visitArray_elem(ctx: Array_elemContext): ArrayElemNode {
         val arrayIdentifier = ctx.IDENT().symbol.text
-        val index = visit(ctx.expr()) as ExpressionNode
+        val indices = ctx.expr().map { visit(it) as ExpressionNode }
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
-        semanticAnalyser.checkExpressionTypeWithExpectedType(index, NumberType, symbolTable, ctx)
-        return ArrayElemNode(ctx.start.line, arrayIdentifier, index)
+        val type = symbolTable.getTypeOf(arrayIdentifier) as ArrayType
+
+        semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
+
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, type.internalType)
     }
 
     override fun visitBinaryTreeType(ctx: BinaryTreeTypeContext): ASTNode {
@@ -600,7 +653,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
         return super.visitNode_elem_access(ctx)
     }
-
 
 
     override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {

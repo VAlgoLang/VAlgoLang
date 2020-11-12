@@ -130,6 +130,18 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 }
 
+data class Array2DValue(override var manimObject: MObject, val array: Array<Array<ExecValue>>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
+    override val value: Array<Array<ExecValue>> = array
+
+    override fun clone(): ExecValue {
+        return Array2DValue(manimObject, array, style, animatedStyle)
+    }
+
+    override fun toString(): String {
+        return "Array"
+    }
+}
+
 object EmptyValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
