@@ -11,7 +11,8 @@ interface ManimInstr {
     fun toPython(): List<String>
 }
 
-sealed class ManimInstrWithRuntime(open val runtime: Double? = null) : ManimInstr {
+interface ManimInstrWithRuntime : ManimInstr {
+    val runtime: Double?
     fun getRuntimeString(): String = if (runtime != null) ", run_time=$runtime" else ""
 }
 
@@ -64,7 +65,7 @@ data class StackPushObject(
     val isPushPop: Boolean = false,
     val creationStyle: String? = null,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
 
     override fun toPython(): List<String> {
         val creationString = if (isPushPop || creationStyle == null) "" else ", creation_style=\"$creationStyle\""
@@ -82,7 +83,7 @@ data class StackPopObject(
     val dataStructureIdentifier: String,
     val insideMethodCall: Boolean,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
 
     override fun toPython(): List<String> {
         return listOf(
@@ -96,16 +97,33 @@ data class ArrayElemAssignObject(
     val arrayIdent: String,
     val index: Int,
     val newElemValue: ExecValue,
-    val animatedStyle: AnimationProperties?
+    val animatedStyle: AnimationProperties?,
+    val secondIndex: Int? = null
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor.toUpperCase()}" else ""
-        return listOf("self.play($arrayIdent.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
+        val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.textColor}" else ""
+        val assignIndex2D = if (secondIndex == null) "" else ".rows[$secondIndex]"
+        return listOf("self.play($arrayIdent$assignIndex2D.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString))")
     }
 }
 
+data class ArrayReplaceRow(val arrayIdent: String, val index: Int, val newArray: Array<ExecValue>, override val runtime: Double? = null) :
+        ManimInstrWithRuntime {
+    override fun toPython(): List<String> {
+        return listOf("self.play(*$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])${getRuntimeString()})")
+    }
+}
+
+data class Array2DSwap(val arrayIdent: String, val indices: List<Int>, override val runtime: Double? = null) :
+        ManimInstrWithRuntime {
+    override fun toPython(): List<String> {
+        return listOf("[self.play(*animations${getRuntimeString()}) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
+    }
+}
+
+
 data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double? = null) :
-    ManimInstrWithRuntime(runtime) {
+    ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})${getRuntimeString()})")
     }
@@ -118,7 +136,7 @@ data class ArrayLongSwap(
     val elem2: String,
     val animations: String,
     override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return listOf(
             "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
@@ -135,46 +153,55 @@ data class ArrayElemRestyle(
     val styleProperties: StylesheetProperty,
     val pointer: Boolean? = false,
     val animationString: String? = null,
-    override val runtime: Double? = null
-) : ManimInstrWithRuntime(runtime) {
+    override val runtime: Double? = null,
+    val secondIndices: List<Int>? = null
+) : ManimInstrWithRuntime {
+
+    private fun get2DAccess(index: Int): String {
+        return if (secondIndices == null) "" else ".rows[${secondIndices[index]}]"
+    }
+
     override fun toPython(): List<String> {
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
+
+
 
         val animationStringTakesColorAsParameter =
             StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
         styleProperties.borderColor?.let {
-            for (i in indices) {
+            indices.forEachIndexed { index, i ->
                 instructions.add(
-                    "FadeToColor($arrayIdent.array_elements[$i].shape, ${styleProperties.handleColourValue(
+                    "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, ${styleProperties.handleColourValue(
                         it
                     )})"
                 )
+
             }
         }
 
-        for (i in indices) {
+        indices.forEachIndexed { index, i ->
             if (pointer == null || pointer) {
                 instructions.add(
-                    "FadeIn($arrayIdent.array_elements[$i].pointer.next_to($arrayIdent.array_elements[$i].shape, TOP, 0.01)." +
+                    "FadeIn($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer.next_to($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, TOP, 0.01)." +
                             "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
                 )
             } else {
-                instructions.add("self.fade_out_if_needed($arrayIdent.array_elements[$i].pointer)")
+                instructions.add("self.fade_out_if_needed($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer)")
             }
         }
 
         styleProperties.textColor?.let {
-            for (i in indices) {
+            indices.forEachIndexed { index, i ->
                 if (!animationStringTakesColorAsParameter) {
                     instructions.add(
-                        "FadeToColor($arrayIdent.array_elements[$i].text, " +
+                        "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
                                 "color=${styleProperties.handleColourValue(it)})"
                     )
                 }
                 instructions.add(
-                    "$animationString($arrayIdent.array_elements[$i].text, " +
+                    "$animationString($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
                             "color=${styleProperties.handleColourValue(it)})"
                 )
 
@@ -195,7 +222,7 @@ data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
     override val runtime: Double?
-) : ManimInstrWithRuntime(runtime) {
+) : ManimInstrWithRuntime {
     override fun toPython(): List<String> {
         return if (shape is StyleableShape) {
             shape.restyle(newStyle, getRuntimeString())
