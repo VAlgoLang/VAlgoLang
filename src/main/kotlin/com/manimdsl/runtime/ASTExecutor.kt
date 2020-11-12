@@ -794,8 +794,8 @@ class VirtualMachine(
 
             executeAssignment(forStatementNode.beginStatement)
 
-            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleValue
-            val end = executeExpression(forStatementNode.endCondition) as DoubleValue
+            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
+            val end = executeExpression(forStatementNode.endCondition) as DoubleAlias
             val lineNumber = forStatementNode.lineNumber
 
             val condition = if (start < end) {

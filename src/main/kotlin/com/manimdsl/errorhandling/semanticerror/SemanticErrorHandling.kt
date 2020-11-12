@@ -176,8 +176,12 @@ fun unableToInferType(nullType: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot infer type from $nullType", getErrorLinePos(ctx))
 }
 
-fun forLoopRangeNotNumber(actual: String, ctx: ParserRuleContext) {
-    addSemanticError("Cannot define for loop range using type $actual - only numeric index allowed", getErrorLinePos(ctx))
+fun forLoopRangeNotNumberOrChar(startType: String, endType: String, ctx: ParserRuleContext) {
+    addSemanticError("For loop range has to be both number or both character - found start type of $startType and end type of $endType", getErrorLinePos(ctx))
+}
+
+fun forLoopRangeUpdateNotNumber(actual: String, ctx: ParserRuleContext) {
+    addSemanticError("For loop range update value of type $actual - only numerical update value allowed", getErrorLinePos(ctx))
 }
 
 /* Helper function that returns line and character position for errors */

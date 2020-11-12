@@ -293,19 +293,37 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         } else {
             NumberNode(lineNumber, 1.0)
         }
-        semanticAnalyser.forLoopRangeNotNumber(symbolTable, startExpr, end, change, ctx)
+        semanticAnalyser.forLoopRangeUpdateNumberTypeCheck(symbolTable, change, ctx)
+        semanticAnalyser.forLoopRangeTypeCheck(symbolTable, startExpr, end, ctx)
 
         val start = DeclarationNode(lineNumber, IdentifierNode(lineNumber, identifier), startExpr)
-        val update = AssignmentNode(
-            lineNumber,
-            IdentifierNode(lineNumber, identifier),
-            AddExpression(
+        val counterType = semanticAnalyser.inferType(symbolTable, startExpr)
+        val update = if (counterType is CharType) {
+            AssignmentNode(
                 lineNumber,
                 IdentifierNode(lineNumber, identifier),
-                change
+                CastExpressionNode(
+                    lineNumber,
+                    CharType,
+                    AddExpression(
+                        lineNumber,
+                        IdentifierNode(lineNumber, identifier),
+                        change
+                    )
+                )
             )
-        )
-        symbolTable.addVariable(identifier, IdentifierData(NumberType))
+        } else{
+            AssignmentNode(
+                lineNumber,
+                IdentifierNode(lineNumber, identifier),
+                AddExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, identifier),
+                    change
+                )
+            )
+        }
+        symbolTable.addVariable(identifier, IdentifierData(counterType))
         return Triple(start, end, update)
     }
 

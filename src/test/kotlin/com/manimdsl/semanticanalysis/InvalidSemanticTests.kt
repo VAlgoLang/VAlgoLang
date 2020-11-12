@@ -341,7 +341,7 @@ class InvalidSemanticTests {
     fun invalidForLoopRange() {
         runSyntaxAndSemanticAnalysis("invalidForLoopRange.manimdsl")
         assertTrue(
-            outputStreamCaptor.toString().contains(Regex("Cannot define for loop range using type .* - only numeric index allowed"))
+            outputStreamCaptor.toString().contains(Regex("For loop range has to be both number or both character - found start type of .* and end type of .*"))
         )
     }
 

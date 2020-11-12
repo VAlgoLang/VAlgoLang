@@ -468,18 +468,24 @@ class SemanticAnalysis {
         }
     }
 
-    fun forLoopRangeNotNumber(
+    fun forLoopRangeTypeCheck(
         symbolTable: SymbolTableVisitor,
         startExpr: ExpressionNode,
         endExpr: ExpressionNode,
-        change: ExpressionNode,
         ctx: ManimParser.RangeHeaderContext
     ) {
-        listOf(startExpr, endExpr, change).forEach {
-            val type = inferType(symbolTable, it)
-            if (type != NumberType && type != ErrorType) {
-                forLoopRangeNotNumber(type.toString(), ctx)
-            }
+        val startExprType = inferType(symbolTable, startExpr)
+        val endExprType = inferType(symbolTable, endExpr)
+        if (!(startExprType is NumberType && endExprType is NumberType)
+            && !(startExprType is CharType && endExprType is CharType)) {
+            forLoopRangeNotNumberOrChar(startExprType.toString(), endExprType.toString(), ctx)
+        }
+    }
+
+    fun forLoopRangeUpdateNumberTypeCheck(symbolTable: SymbolTableVisitor, change: ExpressionNode, ctx: ParserRuleContext) {
+        val type = inferType(symbolTable, change)
+        if (type !is NumberType) {
+            forLoopRangeUpdateNotNumber(type.toString(), ctx)
         }
     }
 }
