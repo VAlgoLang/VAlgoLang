@@ -1,4 +1,12 @@
 {
+  "variables": {
+    "A": {
+      "hide": "true",
+      "textColor": "blue",
+      "animate": {
+      }
+    }
+  },
   "dataStructures": {
     "Stack": {
       "borderColor": "yellow",

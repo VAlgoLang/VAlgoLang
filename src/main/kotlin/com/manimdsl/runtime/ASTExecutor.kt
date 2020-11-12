@@ -79,8 +79,13 @@ class VirtualMachine(
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
                 if (it is DataStructureMObject) {
-                    val boundaryShape = computedBoundaries[it.ident]!!
-                    it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
+                    if (computedBoundaries.containsKey(it.ident)) {
+                        val boundaryShape = computedBoundaries[it.ident]!!
+
+                        it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
+                    } else {
+                        it.setNewBoundary(NoBoundary.corners(), NoBoundary.maxSize)
+                    }
                 }
                 it
             }
@@ -286,7 +291,8 @@ class VirtualMachine(
                                     ArrayReplaceRow(
                                         (arrayValue.manimObject as Array2DStructure).ident,
                                         index,
-                                        arrayValue.value[index]
+                                        arrayValue.value[index],
+                                        hide = arrayValue.style.hide
                                     )
                                 )
                                 EmptyValue
@@ -307,7 +313,8 @@ class VirtualMachine(
                                         it.pointer,
                                         animationString = it.animationStyle,
                                         runtime = it.animationTime,
-                                        secondIndices = listOf(index)
+                                        secondIndices = listOf(index),
+                                        hide = arrayValue.style.hide
                                     )
                                 )
                             }
@@ -317,7 +324,8 @@ class VirtualMachine(
                                     index2,
                                     assignedValue,
                                     arrayValue.animatedStyle,
-                                    secondIndex = index
+                                    secondIndex = index,
+                                    hidden = arrayValue.style.hide
                                 )
                             )
                             arrayValue.animatedStyle?.let {
@@ -326,7 +334,8 @@ class VirtualMachine(
                                         (arrayValue.manimObject as Array2DStructure).ident,
                                         listOf(index2),
                                         arrayValue.style,
-                                        secondIndices = listOf(index)
+                                        secondIndices = listOf(index),
+                                            hide = arrayValue.style.hide
                                     )
                                 )
                             }
@@ -350,7 +359,8 @@ class VirtualMachine(
                                     it,
                                     it.pointer,
                                     animationString = it.animationStyle,
-                                    runtime = it.animationTime
+                                    runtime = it.animationTime,
+                                        hide = arrayValue.style.hide
                                 )
                             )
                         }
@@ -359,7 +369,8 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 index.value.toInt(),
                                 assignedValue,
-                                arrayValue.animatedStyle
+                                arrayValue.animatedStyle,
+                                hidden = arrayValue.style.hide,
                             )
                         )
                         arrayValue.animatedStyle?.let {
@@ -367,7 +378,8 @@ class VirtualMachine(
                                 ArrayElemRestyle(
                                     (arrayValue.manimObject as ArrayStructure).ident,
                                     listOf(index.value.toInt()),
-                                    arrayValue.style
+                                    arrayValue.style,
+                                        hide = arrayValue.style.hide
                                 )
                             )
                         }
@@ -479,14 +491,16 @@ class VirtualMachine(
                                 listOf(index.value.toInt()),
                                 this,
                                 this.pointer,
-                                animationString = this.animationStyle
+                                animationString = this.animationStyle,
+                                    hide = arrayValue.style.hide
                             )
                         )
                         linearRepresentation.add(
                             ArrayElemRestyle(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
-                                arrayValue.style
+                                arrayValue.style,
+                                    hide=arrayValue.style.hide
                             )
                         )
                     }
@@ -521,6 +535,7 @@ class VirtualMachine(
                     val arrayStructure = ArrayStructure(
                         ArrayType(node.internalType),
                         ident,
+                        arrayValue2.style.hide,
                         assignLHS.identifier,
                         arrayValue2.array.clone(),
                         color = arrayValue2.style.borderColor,
@@ -575,16 +590,17 @@ class VirtualMachine(
                                 variableNameGenerator.generateNameFromPrefix("elem1"),
                                 variableNameGenerator.generateNameFromPrefix("elem2"),
                                 variableNameGenerator.generateNameFromPrefix("animations"),
-                                runtime = ds.animatedStyle?.animationTime
+                                runtime = ds.animatedStyle?.animationTime,
+                                hide = ds.style.hide
                             )
                         } else {
-                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime)
+                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime, hide = ds.style.hide)
                         }
                     val swap = mutableListOf(arraySwap)
                     with(ds.animatedStyle) {
                         if (this != null) {
-                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer))
-                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
+                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer, hide = ds.style.hide))
+                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style, hide=ds.style.hide))
                         }
                     }
                     linearRepresentation.addAll(swap)
@@ -625,7 +641,7 @@ class VirtualMachine(
 
         private fun array2dSwap(ds: Array2DValue, indices: List<Int>): EmptyValue {
             val arrayIdent = (ds.manimObject as Array2DStructure).ident
-            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime)
+            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime, hide = ds.style.hide)
             val swap = mutableListOf<ManimInstr>(arraySwap)
             with(ds.animatedStyle) {
                 if (this != null) {
@@ -636,7 +652,8 @@ class VirtualMachine(
                             listOf(indices[1], indices[3]),
                             this,
                             this.pointer,
-                            secondIndices = listOf(indices[0], indices[2])
+                            secondIndices = listOf(indices[0], indices[2]),
+                                hide = ds.style.hide
                         )
                     )
                     swap.add(
@@ -644,7 +661,8 @@ class VirtualMachine(
                             arrayIdent,
                             listOf(indices[1], indices[3]),
                             ds.style,
-                            secondIndices = listOf(indices[0], indices[2])
+                            secondIndices = listOf(indices[0], indices[2]),
+                                hide = ds.style.hide
                         )
                     )
                 }
@@ -669,9 +687,11 @@ class VirtualMachine(
                         return value
                     }
                     val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                    val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
-                    boundaryShape.maxSize++
-                    dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
+                    if (dataStructureBoundaries.containsKey(dataStructureIdentifier)) {
+                        val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
+                        boundaryShape.maxSize++
+                        dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
+                    }
                     val hasOldMObject = value.manimObject !is EmptyMObject
                     val oldMObject = value.manimObject
                     val newObjectStyle = ds.animatedStyle ?: ds.style
@@ -680,6 +700,7 @@ class VirtualMachine(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             value.toString(),
                             dataStructureIdentifier,
+                            ds.style.hide,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
                         ),
@@ -723,7 +744,8 @@ class VirtualMachine(
                             topOfStack.shape,
                             dataStructureIdentifier,
                             insideMethodCall,
-                            runtime = ds.animatedStyle?.animationTime
+                            runtime = ds.animatedStyle?.animationTime,
+                            hide = ds.style.hide
                         )
                     )
                     ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it, it.animationTime)) }
@@ -753,8 +775,10 @@ class VirtualMachine(
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
-                    dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
+                    if (!stackValue.style.hide) {
+                        dataStructureBoundaries[initStructureIdent] = TallBoundary()
+                    }
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
@@ -762,9 +786,10 @@ class VirtualMachine(
                             node.type,
                             initStructureIdent,
                             Coord(2.0, -1.0),
-                            Alignment.HORIZONTAL,
-                            assignLHS.identifier,
-                            color = stackValue.style.borderColor,
+                                Alignment.HORIZONTAL,
+                                assignLHS.identifier,
+                                stackValue.style.hide,
+                                color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime,
@@ -777,10 +802,11 @@ class VirtualMachine(
                             node.type,
                             initStructureIdent,
                             RelativeToMoveIdent,
-                            Alignment.HORIZONTAL,
-                            assignLHS.identifier,
-                            numStack.manimObject.shape,
-                            color = stackValue.style.borderColor,
+                                Alignment.HORIZONTAL,
+                                assignLHS.identifier,
+                                stackValue.style.hide,
+                                numStack.manimObject.shape,
+                                color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime
@@ -802,6 +828,7 @@ class VirtualMachine(
                             variableNameGenerator.generateNameFromPrefix("rectangle"),
                             it.toString(),
                             initStructureIdent,
+                            stackValue.style.hide,
                             color = newObjectStyle.borderColor,
                             textColor = newObjectStyle.textColor
                         )
@@ -818,6 +845,7 @@ class VirtualMachine(
                             StackPushObject(
                                 rectangle,
                                 initStructureIdent,
+                                stackValue.style.hide,
                                 runtime = newObjectStyle.animate?.animationTime
                             )
                         )
@@ -870,13 +898,16 @@ class VirtualMachine(
             }
             if (assignLHS !is ArrayElemNode) {
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
-                dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
                 if (arrayValue is ArrayValue) {
                     arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                    if (arrayValue.style.hide) {
+                        dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
+                    }
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                     val arrayStructure = ArrayStructure(
                         node.type,
                         ident,
+                        arrayValue.style.hide,
                         assignLHS.identifier,
                         arrayValue.array.clone(),
                         color = arrayValue.style.borderColor,
@@ -928,14 +959,17 @@ class VirtualMachine(
             }
 
             val ident = variableNameGenerator.generateNameFromPrefix("array")
-            dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
 
             if (arrayValue is Array2DValue) {
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
+                if (!arrayValue.style.hide) {
+                    dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
+                }
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 val arrayStructure = Array2DStructure(
                     node.type,
                     ident,
+                    arrayValue.style.hide,
                     assignLHS.identifier,
                     arrayValue.array.map { it.clone() }.toTypedArray(),
                     color = arrayValue.style.borderColor,

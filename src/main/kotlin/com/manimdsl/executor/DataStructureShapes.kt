@@ -3,6 +3,7 @@ package com.manimdsl.executor
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
 
+
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
     abstract var width: Int
@@ -65,6 +66,33 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
     fun shiftVerticalUpwards(offset: Double): BoundaryShape {
         y1 -= offset
+        return this
+    }
+}
+object NoBoundary: BoundaryShape() {
+    override var width: Int
+        get() = 0
+        set(value) {}
+    override var height: Int
+        get() = 0
+        set(value) {}
+    override var maxSize: Int
+        get() = 0
+        set(value) {}
+    override val minDimensions: Pair<Int, Int>
+        get() = Pair(0, 0)
+    override val dynamicWidth: Boolean
+        get() = false
+    override val dynamicHeight: Boolean
+        get() = false
+    override val strictRatio: Boolean
+        get() = false
+
+    override fun setCoords(x: Double, y: Double): BoundaryShape {
+        return this
+    }
+
+    override fun clone(): BoundaryShape {
         return this
     }
 }
@@ -195,6 +223,7 @@ class Scene {
                     is WideBoundary -> addToScene(Corner.BL, it.second)
                     is SquareBoundary -> addToScene(Corner.TL, it.second)
                     is TallBoundary -> addToScene(Corner.TR, it.second)
+                    NoBoundary -> true
                 }
                 if (!didAddToScene) return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
             }

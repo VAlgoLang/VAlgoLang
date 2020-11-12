@@ -14,6 +14,7 @@ import kotlin.system.exitProcess
 sealed class StylesheetProperty {
     abstract val borderColor: String?
     abstract val textColor: String?
+    abstract val hide: Boolean
 
     fun handleColourValue(color: String?): String? {
         if (color == null) return null
@@ -31,18 +32,20 @@ sealed class StylesheetProperty {
 data class AnimationProperties(
     override val borderColor: String? = null,
     override val textColor: String? = null,
+    override val hide: Boolean = false,
     val pointer: Boolean? = null,
     var animationStyle: String? = null,
     var animationTime: Double? = null,
 ) : StylesheetProperty()
 
 data class StyleProperties(
-    override var borderColor: String? = null,
-    override var textColor: String? = null,
-    val showLabel: Boolean? = null,
-    var creationStyle: String? = null,
-    var creationTime: Double? = null,
-    val animate: AnimationProperties? = null
+        override var borderColor: String? = null,
+        override var textColor: String? = null,
+        override var hide: Boolean = false,
+        val showLabel: Boolean? = null,
+        var creationStyle: String? = null,
+        var creationTime: Double? = null,
+        val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
 data class StylesheetFromJSON(

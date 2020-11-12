@@ -131,19 +131,20 @@ sealed class DataStructureMObject(
 }
 
 data class InitManimStack(
-    override val type: DataStructureType,
-    override val ident: String,
-    val position: Position,
-    val alignment: Alignment,
-    val text: String,
-    val moveToShape: Shape? = null,
-    val color: String? = null,
-    val textColor: String? = null,
-    val showLabel: Boolean? = null,
-    val creationStyle: String? = null,
-    val creationTime: Double? = null,
-    private var boundary: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1
+        override val type: DataStructureType,
+        override val ident: String,
+        val position: Position,
+        val alignment: Alignment,
+        val text: String,
+        val hide: Boolean,
+        val moveToShape: Shape? = null,
+        val color: String? = null,
+        val textColor: String? = null,
+        val showLabel: Boolean? = null,
+        val creationStyle: String? = null,
+        val creationTime: Double? = null,
+        private var boundary: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1
 ) : DataStructureMObject(type, ident, boundary) {
     override var shape: Shape = NullShape
 
@@ -151,9 +152,13 @@ data class InitManimStack(
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
-            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
+            mutableListOf("# Constructing new $type \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
-        python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
+        if (hide) {
+            python.add("$ident.create_init($newIdent$creationString)$runtimeString")
+        } else {
+            python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
+        }
         return python
     }
 
@@ -167,6 +172,7 @@ data class InitManimStack(
 data class ArrayStructure(
     override val type: DataStructureType,
     override val ident: String,
+    override val hide: Boolean,
     val text: String,
     val values: Array<ExecValue>,
     val color: String? = null,
@@ -187,8 +193,8 @@ data class ArrayStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
+            if ((showLabel == null || showLabel) && !hide) "self.play($creationString($ident.title))" else "",
+            playIfNotHidden("[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements]")
          )
     }
 
@@ -202,6 +208,7 @@ data class ArrayStructure(
 data class Array2DStructure(
     override val type: DataStructureType,
     override val ident: String,
+    override val hide: Boolean,
     val text: String,
     val values: Array<Array<ExecValue>>,
     val color: String? = null,
@@ -223,8 +230,8 @@ data class Array2DStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*$ident.build(\"$creationString\")${getRuntimeString()})"
+            if ((showLabel == null || showLabel) && !hide)"self.play($creationString($ident.title))" else "",
+            playIfNotHidden("*$ident.build(\"$creationString\")${getRuntimeString()}")
         )
     }
 

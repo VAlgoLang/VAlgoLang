@@ -1,6 +1,7 @@
 {
   "variables": {
     "dp": {
+      "hide": "true",
       "textColor": "blue",
       "animate": {
       }

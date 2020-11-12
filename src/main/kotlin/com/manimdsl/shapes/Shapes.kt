@@ -11,6 +11,7 @@ sealed class Shape {
     abstract val classPath: String
     abstract val className: String
     abstract val pythonVariablePrefix: String
+
     val style = PythonStyle()
 
     open fun getConstructor(): String {
@@ -32,8 +33,9 @@ class Rectangle(
     override val ident: String,
     override val text: String,
     private val dataStructureIdentifier: String,
+    val hidden: Boolean,
     color: String? = null,
-    textColor: String? = null,
+    textColor: String? = null
 ) : ShapeWithText(), StyleableShape {
     override val classPath: String = "python/rectangle.py"
     override val className: String = "Rectangle_block"
@@ -62,7 +64,7 @@ class Rectangle(
             )
         }
 
-        return if (instructions.isEmpty()) {
+        return if (instructions.isEmpty() || hidden) {
             emptyList()
         } else {
             listOf("self.play(${instructions.joinToString(", ")}$runtimeString)")
