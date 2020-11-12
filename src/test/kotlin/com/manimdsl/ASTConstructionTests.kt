@@ -340,7 +340,7 @@ class ASTConstructionTests {
     @Test
     fun forLoopProgram() {
         val methodProgram = "let x = 0;\n" +
-            "for (i in range(3)) {\n" +
+            "for i in range(3) {\n" +
             "    x = x + 1;\n" +
             "}"
         val statements = listOf(
@@ -369,8 +369,8 @@ class ASTConstructionTests {
     @Test
     fun nestedForLoopWithBreak() {
         val methodProgram = "let x = 0;\n" +
-            "for (i in range(3)) {\n" +
-            "    for (j in range(i, 5)) {\n" +
+            "for i in range(3) {\n" +
+            "    for j in range(i, 5) {\n" +
             "        if (j > 2) {\n" +
             "            break;\n" +
             "        }\n" +
