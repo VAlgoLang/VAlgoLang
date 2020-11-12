@@ -17,6 +17,8 @@ class Variable_block:
         return self.group.move_to(self.variable_frame)
 
     def update_variable(self, variables):
+        if len(variables) == 0:
+            return [FadeOut(self.group)]
         group = VGroup()
         for v in variables:
             text = Text(v, color=self.text_color, weight=self.text_weight, font=self.font)
