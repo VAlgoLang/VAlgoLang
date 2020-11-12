@@ -214,6 +214,10 @@ fun forLoopRangeUpdateNotNumber(actual: String, ctx: ParserRuleContext) {
     addSemanticError("For loop range update value of type $actual - only numerical update value allowed", getErrorLinePos(ctx))
 }
 
+fun forLoopIdentifierBeingReassignedError(identifier: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot reassign to variable $identifier being used in for loop header", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line

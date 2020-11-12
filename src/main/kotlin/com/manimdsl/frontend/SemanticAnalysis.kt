@@ -528,4 +528,10 @@ class SemanticAnalysis {
             forLoopRangeUpdateNotNumber(type.toString(), ctx)
         }
     }
+
+    fun forLoopIdentifierNotBeingReassignedCheck(identifier: String, forLoopIdentifiers: Set<String>, ctx: ParserRuleContext) {
+        if (forLoopIdentifiers.contains(identifier)) {
+            forLoopIdentifierBeingReassignedError(identifier, ctx)
+        }
+    }
 }

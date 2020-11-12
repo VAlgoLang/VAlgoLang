@@ -2,6 +2,7 @@ package com.manimdsl.frontend
 
 import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
+import java.util.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
@@ -10,10 +11,13 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private val semanticAnalyser = SemanticAnalysis()
     private var inFunction: Boolean = false
-    private var inLoop: Boolean = false
 
-    // First value is loop start line number and second is end line number
-    private var loopLineNumbers: Pair<Int, Int> = Pair(1, 1)
+    // First value in pair is loop start line number and second is end line number
+    private val loopLineNumberStack: Stack<Pair<Int, Int>> = Stack()
+
+    // Special set of identifiers that cannot be reassigned within loop
+    private val forLoopIdentifiers = hashSetOf<String>()
+
     private var functionReturnType: Type = VoidType
 
     override fun visitProgram(ctx: ProgramContext): ProgramNode {
@@ -216,6 +220,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val identifier = ctx.IDENT().symbol.text
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        semanticAnalyser.forLoopIdentifierNotBeingReassignedCheck(identifier, forLoopIdentifiers, ctx)
+
         return Pair(symbolTable.getTypeOf(identifier), IdentifierNode(ctx.start.line, identifier))
     }
 
@@ -227,7 +233,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         // Return element type
         return if (arrayType is ArrayType) {
-            Pair(if (arrayType.is2D && arrayElem.indices.size == 1) ArrayType(arrayType.internalType) else arrayType.internalType, arrayElem)
+            Pair(
+                if (arrayType.is2D && arrayElem.indices.size == 1) ArrayType(arrayType.internalType) else arrayType.internalType,
+                arrayElem
+            )
         } else {
             Pair(ErrorType, EmptyLHS)
         }
@@ -255,19 +264,19 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {
-        inLoop = true
         val whileScope = symbolTable.enterScope()
         val whileCondition = visit(ctx.whileCond) as ExpressionNode
         semanticAnalyser.checkExpressionTypeWithExpectedType(whileCondition, BoolType, symbolTable, ctx)
         val startLineNumber = ctx.start.line
         val endLineNumber = ctx.stop.line
-        loopLineNumbers = Pair(startLineNumber, endLineNumber)
+
+        loopLineNumberStack.push(Pair(startLineNumber, endLineNumber))
         val whileStatements = visitAndFlattenStatements(ctx.whileStat)
         whileStatements.forEach {
             lineNumberNodeMap[it.lineNumber] = it
         }
         symbolTable.leaveScope()
-        inLoop = false
+        loopLineNumberStack.pop()
 
         val whileStatementNode =
             WhileStatementNode(startLineNumber, endLineNumber, whileScope, whileCondition, whileStatements)
@@ -283,6 +292,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val lineNumber = ctx.start.line
         val identifier = ctx.IDENT().symbol.text
         semanticAnalyser.redeclaredVariableCheck(symbolTable, identifier, ctx)
+        if (symbolTable.getTypeOf(identifier) != ErrorType) {
+            forLoopIdentifiers.add(identifier)
+        }
         val startExpr = if (ctx.begin != null) {
             visit(ctx.begin) as ExpressionNode
         } else {
@@ -313,7 +325,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                     )
                 )
             )
-        } else{
+        } else {
             AssignmentNode(
                 lineNumber,
                 IdentifierNode(lineNumber, identifier),
@@ -329,28 +341,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitForStatement(ctx: ForStatementContext): ASTNode {
-        val prevInLoop = inLoop
-        val forScope = if (!prevInLoop) {
-            symbolTable.enterScope()
-        } else {
-            symbolTable.getCurrentScopeID()
-        }
-        inLoop = true
+
+        val forScope = symbolTable.enterScope()
+
         val (start, end, update) = visitForHeader(ctx.forHeader())
         val startLineNumber = ctx.start.line
         val endLineNumber = ctx.stop.line
-        val prevLoopLineNumbers = loopLineNumbers
-        loopLineNumbers = Pair(startLineNumber, endLineNumber)
+
+        loopLineNumberStack.push(Pair(startLineNumber, endLineNumber))
         val forStatements = visitAndFlattenStatements(ctx.forStat)
         forStatements.forEach {
             lineNumberNodeMap[it.lineNumber] = it
         }
-        if (!prevInLoop) {
-            symbolTable.leaveScope()
-        }
-        loopLineNumbers = prevLoopLineNumbers
-        inLoop = prevInLoop
 
+        symbolTable.leaveScope()
+        loopLineNumberStack.pop()
+        forLoopIdentifiers.remove(start.identifier.identifier)
         val forStatementNode =
             ForStatementNode(startLineNumber, endLineNumber, forScope, start, end, update, forStatements)
         lineNumberNodeMap[ctx.start.line] = forStatementNode
@@ -458,7 +464,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             val indexExpression = visit(ctx.expr()) as ExpressionNode
             semanticAnalyser.checkExpressionTypeWithExpectedType(indexExpression, NumberType, symbolTable, ctx)
             // check datastructure is a 2d array
-            if (dataStructureType is ArrayType) dataStructureType= ArrayType(dataStructureType.internalType)
+            if (dataStructureType is ArrayType) dataStructureType = ArrayType(dataStructureType.internalType)
             indexExpression
         } else {
             null
@@ -657,7 +663,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
         return Array2DInitialiserNode((ctx.arg_list()
-            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments  })
+            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments })
     }
 
     override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): InitialiserNode {
@@ -742,12 +748,16 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitBreakStatement(ctx: BreakStatementContext): BreakNode {
+        val inLoop = loopLineNumberStack.isNotEmpty()
+        val endLineNumber = if (inLoop) loopLineNumberStack.peek().second else -1
         semanticAnalyser.breakOrContinueOutsideLoopCheck("break", inLoop, ctx)
-        return BreakNode(ctx.start.line, loopLineNumbers.second)
+        return BreakNode(ctx.start.line, endLineNumber)
     }
 
     override fun visitContinueStatement(ctx: ContinueStatementContext): ContinueNode {
+        val inLoop = loopLineNumberStack.isNotEmpty()
+        val startLineNumber = if (inLoop) loopLineNumberStack.peek().first else -1
         semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
-        return ContinueNode(ctx.start.line, loopLineNumbers.first)
+        return ContinueNode(ctx.start.line, startLineNumber)
     }
 }

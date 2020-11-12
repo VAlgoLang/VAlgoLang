@@ -390,7 +390,7 @@ class ASTConstructionTests {
                     ForStatementNode(
                         lineNumber = 3,
                         endLineNumber = 8,
-                        scope = 1,
+                        scope = 2,
                         beginStatement = DeclarationNode(3, IdentifierNode(3, "j"), IdentifierNode(3, "i")),
                         endCondition = NumberNode(3, 5.0),
                         updateCounter = AssignmentNode(3, IdentifierNode(3, "j"), AddExpression(3, IdentifierNode(3, "j"), NumberNode(3, 1.0))),
@@ -398,7 +398,7 @@ class ASTConstructionTests {
                             IfStatementNode(
                                 lineNumber = 4,
                                 endLineNumber = 6,
-                                scope = 2,
+                                scope = 3,
                                 condition = GtExpression(4, IdentifierNode(4, "j"), NumberNode(4, 2.0)),
                                 statements = listOf(BreakNode(5, 8)),
                                 elifs = emptyList(),
