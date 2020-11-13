@@ -51,6 +51,7 @@ interface DataStructureMethod {
 
 }
 
+
 interface ConstructorMethod : DataStructureMethod {
     val minRequiredArgsWithoutInitialValue: Int
 }
@@ -113,13 +114,57 @@ data class ArrayType(
     }
 }
 
-data class BinaryTreeType(
+data class TreeType(
+        override var internalType: Type,
+        override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
+                "root" to Root(internalType as NodeType)
+        )
+        ): DataStructureType(internalType, methods) {
+
+    override fun containsMethod(method: String): Boolean {
+        return methods.containsKey(method)
+    }
+
+    override fun getMethodByName(method: String): DataStructureMethod {
+        return methods.getOrDefault(method, ErrorMethod)
+    }
+
+    override fun getConstructor(): ConstructorMethod {
+        return BinaryTreeConstructor(internalType as NodeType)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is TreeType && other.internalType == internalType
+    }
+
+    class Root(
+            override val returnType: Type,
+            override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+            override val varargs: Boolean = false
+    ) : DataStructureMethod {
+        override fun toString(): String {
+            return "root"
+        }
+    }
+
+    class BinaryTreeConstructor(nodeType: NodeType) : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 1
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(nodeType to true)
+        override val varargs: Boolean = false
+
+        override fun toString(): String = "constructor"
+    }
+
+}
+
+data class NodeType(
     override var internalType: Type,
     override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
         "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
     ),
 ) : DataStructureType(internalType, methods), NullableDataStructure {
-    class BinaryTreeConstructor(internalType: Type) : ConstructorMethod {
+    class NodeConstructor(internalType: Type) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
         override val argumentTypes: List<Pair<Type, Boolean>> = listOf(internalType to true)
@@ -132,7 +177,7 @@ data class BinaryTreeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod {
+    ): DataStructureMethod {
         override fun toString(): String {
             return "left"
         }
@@ -142,7 +187,7 @@ data class BinaryTreeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ) : DataStructureMethod {
+    ): DataStructureMethod {
         override fun toString(): String {
             return "right"
         }
@@ -168,15 +213,15 @@ data class BinaryTreeType(
     }
 
     override fun getConstructor(): ConstructorMethod {
-        return BinaryTreeConstructor(internalType)
+        return NodeConstructor(internalType)
     }
 
     override fun toString(): String = "Node<$internalType>"
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
+        if (this === other || other is NullType) return true
         if (javaClass != other?.javaClass) return false
 
-        other as BinaryTreeType
+        other as NodeType
 
         if (internalType != other.internalType) return false
 

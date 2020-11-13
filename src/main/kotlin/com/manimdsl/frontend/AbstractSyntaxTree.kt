@@ -148,26 +148,36 @@ data class ArrayElemNode(override val lineNumber: Int, override val identifier: 
     }
 }
 
-data class BinaryTreeElemNode(
-    override val lineNumber: Int,
-    override val identifier: String,
-    val accessChain: List<DataStructureMethod>
+data class BinaryTreeNodeElemAccessNode(
+        override val lineNumber: Int,
+        override var identifier: String,
+        val accessChain: List<DataStructureMethod>,
 ) : ExpressionNode(lineNumber), AssignLHS {
     override fun toString(): String {
         return "$identifier.${accessChain.joinToString(".")}"
     }
 }
 
+data class BinaryTreeRootAccessNode(
+        override val lineNumber: Int,
+        override val identifier: String,
+        val elemAccessNode: BinaryTreeNodeElemAccessNode
+) : ExpressionNode(lineNumber), AssignLHS {
+    override fun toString(): String {
+        return "$identifier.root.${elemAccessNode.accessChain.joinToString(".")}"
+    }
+}
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
 data class CharNode(override val lineNumber: Int, val value: Char) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 data class MethodCallNode(
-    override val lineNumber: Int,
-    val instanceIdentifier: String,
-    val dataStructureMethod: DataStructureMethod,
-    val arguments: List<ExpressionNode>
-) : ExpressionNode(lineNumber)
+        override val lineNumber: Int,
+        val instanceIdentifier: String,
+        val dataStructureMethod: DataStructureMethod,
+        val arguments: List<ExpressionNode>,
+        override val identifier: String = ""
+) : ExpressionNode(lineNumber), AssignLHS
 
 data class InternalArrayMethodCallNode(
     override val lineNumber: Int,
@@ -241,6 +251,14 @@ data class SubtractExpression(
 }
 
 data class MultiplyExpression(
+    override val lineNumber: Int,
+    override val expr1: ExpressionNode,
+    override val expr2: ExpressionNode
+) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+}
+
+data class DivideExpression(
     override val lineNumber: Int,
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode

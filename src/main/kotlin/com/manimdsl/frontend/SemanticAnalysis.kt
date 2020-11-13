@@ -18,19 +18,27 @@ class SemanticAnalysis {
             is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
-            is BinaryTreeElemNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
+            is BinaryTreeNodeElemAccessNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
             is NullNode -> NullType
             is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
             is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
+            is BinaryTreeRootAccessNode -> {
+                val type = currentSymbolTable.getTypeOf(expression.identifier)
+                if (type is TreeType) {
+                    type.internalType
+                } else {
+                    ErrorType
+                }
+            }
         }
 
-    private fun getBinaryTreeNodeType(expression: BinaryTreeElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+    private fun getBinaryTreeNodeType(expression: BinaryTreeNodeElemAccessNode, currentSymbolTable: SymbolTableVisitor): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
-        return if (type is BinaryTreeType) {
+        return if (type is NodeType) {
             if (expression.accessChain.isNotEmpty()) {
                 val lastValue = expression.accessChain.last()
-                if (lastValue is BinaryTreeType.Value) lastValue.returnType else BinaryTreeType(lastValue.returnType)
+                if (lastValue is NodeType.Value) lastValue.returnType else NodeType(lastValue.returnType)
             } else {
                 type
             }
@@ -67,18 +75,26 @@ class SemanticAnalysis {
         val expr2Type = getExpressionType(expression.expr2, currentSymbolTable)
 
         return when (expression) {
-            is AddExpression, is SubtractExpression, is MultiplyExpression -> {
+            is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
                 val validTypes = (expression as ComparableTypes).compatibleTypes
                 if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
             }
-            is EqExpression, is NeqExpression, is GtExpression,
-            is LtExpression, is GeExpression, is LeExpression -> {
+            is EqExpression, is NeqExpression -> if (expr1Type == expr2Type || isEqualNullable(
+                    expr1Type,
+                    expr2Type
+                )
+            ) BoolType else ErrorType
+            is GtExpression, is LtExpression, is GeExpression, is LeExpression -> {
                 if (expr1Type == expr2Type) BoolType else ErrorType
             }
         }
+    }
+
+    private fun isEqualNullable(expr1Type: Type, expr2Type: Type): Boolean {
+        return expr1Type == expr2Type || (expr1Type is NullableDataStructure && expr2Type is NullType) ||  (expr1Type is NullType && expr2Type is NullableDataStructure)
     }
 
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
@@ -117,12 +133,22 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor,
         identifier: String,
         method: String,
-        ctx: ParserRuleContext
-    ) {
-        val dataStructureType = currentSymbolTable.getTypeOf(identifier)
+        ctx: ParserRuleContext,
+        overrideType: Type = ErrorType
+    ): Boolean {
+        val dataStructureType = if (overrideType is ErrorType) {
+            currentSymbolTable.getTypeOf(identifier)
+        } else {
+            overrideType
+
+        }
+
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
             unsupportedMethodError(dataStructureType.toString(), method, ctx)
+            return false
         }
+
+        return true
     }
 
     private fun invalidNumberOfArgumentsCheck(
@@ -294,7 +320,7 @@ class SemanticAnalysis {
         ctx: ManimParser.ReturnStatementContext
     ) {
         val type = inferType(currentSymbolTable, expression)
-        if (type != functionReturnType) {
+        if (!isEqualNullable(type, functionReturnType)) {
             returnTypeError(type.toString(), functionReturnType.toString(), ctx)
         }
     }
@@ -497,6 +523,12 @@ class SemanticAnalysis {
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
         if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
+        }
+    }
+
+    fun invalidMemberAccess(nodeElem: AssignLHS, symbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
+        if (nodeElem is BinaryTreeRootAccessNode && symbolTable.getTypeOf(nodeElem.identifier) !is TreeType) {
+            unsupportedMethodError(symbolTable.getTypeOf(nodeElem.identifier).toString(), "root", ctx)
         }
     }
 

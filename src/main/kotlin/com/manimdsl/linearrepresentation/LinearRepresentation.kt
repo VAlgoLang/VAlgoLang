@@ -1,6 +1,10 @@
-package com.manimdsl.linearrepresentation
+package comcreat.manimdsl.linearrepresentation
 
+import com.manimdsl.linearrepresentation.ObjectSide
+import com.manimdsl.runtime.BinaryTreeNodeValue
+import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.AnimationProperties
@@ -42,11 +46,11 @@ data class MoveToLine(
 }
 
 data class MoveObject(
-    val shape: Shape,
-    val moveToShape: Shape,
-    val objectSide: ObjectSide,
-    val offset: Int = 0,
-    val fadeOut: Boolean = false
+        val shape: Shape,
+        val moveToShape: Shape,
+        val objectSide: ObjectSide,
+        val offset: Int = 0,
+        val fadeOut: Boolean = false
 ) :
     ManimInstr {
     override fun toPython(): List<String> {
@@ -75,6 +79,88 @@ data class StackPushObject(
             "[self.play(*animation${getRuntimeString()}) for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
             "$dataStructureIdentifier.add($shape)"
         )
+    }
+}
+
+data class TreeDeleteObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val treeValue: BinaryTreeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "delete_left" else "delete_right"
+        return listOf(
+                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}))",
+
+        )
+    }
+}
+
+data class TreeEditValue(
+        val nodeValue: BinaryTreeNodeValue,
+        val value: PrimitiveValue,
+        val treeValue: BinaryTreeValue
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = "edit_node_value"
+        return listOf(
+                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\"))",
+
+                )
+    }
+}
+
+data class TreeAppendObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val childNodeValue: BinaryTreeNodeValue,
+        val treeValue: BinaryTreeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "set_left" else "set_right"
+        return listOf(
+                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident},${left.toString().capitalize()})]",
+                "[self.play(animation) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
+                )
+    }
+}
+
+data class NodeFocusObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        return listOf(
+                "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color))",
+        )
+    }
+}
+
+data class NodeUnfocusObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        return listOf(
+                "self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight())",
+        )
+    }
+}
+
+data class NodeAppendObject(
+        val parentNodeValue: BinaryTreeNodeValue,
+        val childNodeValue: BinaryTreeNodeValue,
+        val left: Boolean,
+) : ManimInstr {
+
+    override fun toPython(): List<String> {
+        val methodName = if (left) "set_left" else "set_right"
+        return listOf(
+                "${parentNodeValue.manimObject.shape.ident}.$methodName(${childNodeValue.manimObject.shape.ident}, 1)",
+                )
     }
 }
 
@@ -217,6 +303,35 @@ data class ArrayElemRestyle(
     }
 }
 
+data class TreeNodeRestyle(
+        val nodeIdent: String,
+        val styleProperties: StylesheetProperty,
+        val highlightColor: String? = null,
+        val animationString: String? = null,
+        override val runtime: Double? = null
+) : ManimInstrWithRuntime {
+    override fun toPython(): List<String> {
+        var instructions = ""
+        val animationString = animationString ?: "FadeToColor"
+
+        val animationStringTakesColorAsParameter =
+                StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
+        if (highlightColor != null) {
+            instructions = "${nodeIdent}.highlight(${styleProperties.handleColourValue(highlightColor)})"
+        } else {
+            instructions = "${nodeIdent}.unhighlight()"
+        }
+
+        return if (instructions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf(
+                    "self.play(*${instructions}${getRuntimeString()})"
+            )
+        }
+    }
+}
+
 data class RestyleObject(
     val shape: Shape,
     val newStyle: StylesheetProperty,
@@ -235,12 +350,7 @@ data class UpdateVariableState(
     val textColor: String? = null
 ) : ManimInstr {
     override fun toPython(): List<String> =
-        if (variables.isNotEmpty()) {
-            listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }}))")
-        } else {
-            emptyList()
-        }
-
+        listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }}))")
 }
 
 

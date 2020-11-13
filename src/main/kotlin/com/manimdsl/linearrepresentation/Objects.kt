@@ -1,8 +1,12 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
+import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
+import comcreat.manimdsl.linearrepresentation.Alignment
+import comcreat.manimdsl.linearrepresentation.ManimInstr
+import comcreat.manimdsl.linearrepresentation.ManimInstrWithRuntime
 
 /** Objects **/
 
@@ -128,6 +132,46 @@ sealed class DataStructureMObject(
 
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
+}
+
+data class NodeStructure(
+    val ident: String,
+    val value: String,
+    val depth: Int,
+    override val shape: Shape = NodeShape(ident, value)
+
+): MObject {
+    override fun toPython(): List<String> {
+        return listOf(
+            "$ident = ${shape.getConstructor()}"
+        )
+    }
+}
+
+data class InitTreeStructure(
+        override val type: DataStructureType,
+        override val ident: String,
+        private var boundaries: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1,
+        val text: String,
+        val root: BinaryTreeNodeValue,
+
+        ): DataStructureMObject(type, ident) {
+    override var shape: Shape = NullShape
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        maxSize = newMaxSize
+        boundaries = corners
+        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
+    }
+
+    override fun toPython(): List<String> {
+        return listOf(
+            "# Constructing a new tree: $ident",
+            shape.getConstructor(),
+            "self.play($ident.create_init(0))"
+        )
+    }
 }
 
 data class InitManimStack(

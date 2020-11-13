@@ -39,7 +39,8 @@ loop_stat: BREAK SEMI         #BreakStatement
 
 assignment_lhs: IDENT           #IdentifierAssignment
     | array_elem                #ArrayElemAssignment
-    | node_elem                 #NodeElemAssignment;
+    | node_elem                 #NodeElemAssignment
+    | root_elem                 #RootElemAssignment;
 
 elseIf: ELSE IF OPEN_PARENTHESIS elifCond=expr CLOSE_PARENTHESIS OPEN_CURLY_BRACKET elifStat=stat? CLOSE_CURLY_BRACKET;
 
@@ -52,12 +53,13 @@ expr: NUMBER                                                        #NumberLiter
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
     | node_elem                                                     #NodeElemExpr
+    | root_elem                                                     #RootElemExpr
     | data_structure_type
     OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS
     data_structure_initialiser?                                     #DataStructureConstructor
     | method_call                                                   #MethodCallExpression
     | unary_operator=(ADD | MINUS | NOT) expr                       #UnaryOperator
-    | left=expr binary_operator=(ADD | MINUS | TIMES) right=expr    #BinaryExpression
+    | left=expr binary_operator=(ADD | MINUS | TIMES | DIVIDE) right=expr    #BinaryExpression
     | left=expr binary_operator=(GT | GE | LE | LT) right=expr      #BinaryExpression
     | left=expr binary_operator=(EQ | NEQ) right=expr               #BinaryExpression
     | left=expr binary_operator=(AND | OR) right=expr               #BinaryExpression
@@ -75,10 +77,13 @@ method_call: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)? DOT IDENT OP
 type: data_structure_type                                            #DataStructureType
     | primitive_type                                                 #PrimitiveType;
 
+node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
     | ARRAY LT primitive_type GT                                     #ArrayType
-    | TREE_NODE LT primitive_type GT                                 #BinaryTreeType
+    | node_type                                                      #NodeType
+    | TREE LT node_type GT                                           #TreeType
     ;
+
 
 primitive_type: NUMBER_TYPE                                          #NumberType
     | BOOL_TYPE                                                      #BoolType
@@ -93,3 +98,4 @@ initialiser_list: OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET (COMMA OPEN_
 array_elem: IDENT OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)?;
 node_elem: IDENT node_elem_access* (DOT VALUE)?;
 node_elem_access: (DOT (LEFT | RIGHT));
+root_elem: IDENT DOT ROOT node_elem_access* (DOT VALUE)? #RootElem;

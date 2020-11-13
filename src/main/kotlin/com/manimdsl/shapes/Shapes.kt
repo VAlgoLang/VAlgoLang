@@ -1,8 +1,9 @@
 package com.manimdsl.shapes
 
-import com.manimdsl.linearrepresentation.Alignment
+import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
+import comcreat.manimdsl.linearrepresentation.Alignment
 
 
 sealed class Shape {
@@ -94,6 +95,8 @@ class CodeBlockShape(
     }
 }
 
+
+
 class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
@@ -115,12 +118,12 @@ class VariableBlockShape(
 }
 
 class InitManimStackShape(
-    override val ident: String,
-    override val text: String,
-    private val boundary: List<Pair<Double, Double>>,
-    private val alignment: Alignment,
-    val color: String? = null,
-    val textColor: String? = null,
+        override val ident: String,
+        override val text: String,
+        private val boundary: List<Pair<Double, Double>>,
+        private val alignment: Alignment,
+        val color: String? = null,
+        val textColor: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/stack.py"
     override val className: String = "Stack"
@@ -134,6 +137,40 @@ class InitManimStackShape(
     override fun getConstructor(): String {
         val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
         return "$ident = ${className}(${coordinatesString}, DOWN${style})"
+    }
+}
+class NodeShape(
+        override val ident: String,
+        override val text: String,
+        override val classPath: String = "python/binary_tree.py",
+        override val className: String = "Node",
+        override val pythonVariablePrefix: String ="",
+): Shape() {
+    override fun getConstructor(): String {
+        return "Node(\"$text\")"
+    }
+}
+
+class InitTreeShape(
+        override val ident: String,
+        override val text: String,
+        private val root: BinaryTreeNodeValue,
+        private val boundaries: List<Pair<Double, Double>>,
+        val color: String? = null,
+        val textColor: String? = null,
+) : ShapeWithText() {
+    override val classPath: String = "python/binary_tree.py"
+    override val className: String = "Tree"
+    override val pythonVariablePrefix: String = ""
+
+    init {
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        return "$ident = ${className}(${coordinatesString}, ${root.manimObject.shape.ident}, ${text})"
     }
 }
 

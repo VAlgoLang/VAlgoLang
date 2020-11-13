@@ -40,10 +40,10 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     }
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val (exitStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+    val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
 
-    if (exitStatus != ExitStatus.EXIT_SUCCESS) {
-        exitProcess(exitStatus.code)
+    if (runtimeErrorStatus != ExitStatus.EXIT_SUCCESS) {
+        exitProcess(runtimeErrorStatus.code)
     }
 
     val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())

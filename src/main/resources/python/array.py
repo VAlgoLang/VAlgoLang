@@ -60,7 +60,7 @@ class Array2D:
         title_width = 1 if title != "" else 0
         width_per_element = (boundary_width - title_width - 0.2) / len(values[0])
         boundary_height = boundaries[0][1] - boundaries[3][1]
-        square_dim = min((boundary_height - 0.5) / len(values), width_per_element)
+        square_dim = min((boundary_height - 1) / len(values), width_per_element)
         self.rows = []
         offset_from_bottom = (boundary_height - square_dim * len(values)) / 2
         sub_array_width = (square_dim * len(values[0]))

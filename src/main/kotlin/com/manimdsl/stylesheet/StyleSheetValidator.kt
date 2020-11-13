@@ -6,7 +6,7 @@ import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
 import com.manimdsl.frontend.SymbolTableVisitor
 
 object StyleSheetValidator {
-    private val dataStructureStrings = setOf("Stack", "Array")
+    private val dataStructureStrings = setOf("Stack", "Array", "Tree")
     private val validCodeTracking = setOf("stepOver", "stepInto")
     private val validCreationStrings =
         setOf("FadeIn", "FadeInFromLarge", "Write", "GrowFromCenter", "ShowCreation", "DrawBorderThenFill")
