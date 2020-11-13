@@ -299,7 +299,7 @@ class VirtualMachine(
                         }
                     } else {
                         val index2 = indices[1].value.toInt()
-                        if (indices.first().value.toInt() !in arrayValue.array.indices && index2 !in arrayValue.array[index].indices) {
+                        if (indices.first().value.toInt() !in arrayValue.array.indices || index2 !in arrayValue.array[index].indices) {
                             RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                         } else {
                             arrayValue.array[index][index2] = assignedValue
