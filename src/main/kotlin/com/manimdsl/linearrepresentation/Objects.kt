@@ -203,11 +203,6 @@ data class InitManimStack(
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
-        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
-            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
-            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
-            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
-        python.add("self.add(Polygon($coordinatesString, color=YELLOW))")
         python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
     }
@@ -243,15 +238,10 @@ data class ArrayStructure(
     }
 
     override fun toPython(): List<String> {
-        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
-            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
-            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
-            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.add(Polygon($coordinatesString, color=YELLOW))",
             "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
         )
     }
@@ -288,15 +278,10 @@ data class Array2DStructure(
 
 
     override fun toPython(): List<String> {
-        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
-            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
-            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
-            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.add(Polygon($coordinatesString, color=YELLOW))",
             "self.play(*$ident.build(\"$creationString\")${getRuntimeString()})"
         )
     }
