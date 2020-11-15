@@ -116,7 +116,8 @@ class VirtualMachine(
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
-        private val hideCode: Boolean = false
+        private val hideCode: Boolean = false,
+        private val functionNamePrefix: String = ""
     ) {
         private var previousStepIntoState = stepInto
 
@@ -268,7 +269,8 @@ class VirtualMachine(
                 showMoveToLine = stepInto,
                 stepInto = stepInto && previousStepIntoState,   // In the case of nested stepInto/stepOver
                 updateVariableState = updateVariableState,
-                hideCode = hideCode
+                hideCode = hideCode,
+                functionNamePrefix = "${functionNode.identifier}."
             ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
@@ -1065,7 +1067,7 @@ class VirtualMachine(
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
-                    val position = stylesheet.getPosition(assignLHS.identifier)
+                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                     if (stylesheet.userDefinedPositions() && position == null) {
                         return RuntimeError("Missing position values", lineNumber = node.lineNumber)
                     }
@@ -1098,7 +1100,9 @@ class VirtualMachine(
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime
+                            creationTime = stackValue.style.creationTime,
+                            showLabel = stackValue.style.showLabel,
+                            boundaries = boundaries
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -1153,11 +1157,17 @@ class VirtualMachine(
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
                     dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
+                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val initTreeStructure = InitTreeStructure(
                         node.type,
                         ident,
                         text = assignLHS.identifier,
-                        root = root
+                        root = root,
+                        boundaries = boundaries
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
@@ -1217,7 +1227,7 @@ class VirtualMachine(
                 if (arrayValue is ArrayValue) {
                     arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                    val position = stylesheet.getPosition(assignLHS.identifier)
+                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                     if (stylesheet.userDefinedPositions() && position == null) {
                         return RuntimeError("Missing position values", lineNumber = node.lineNumber)
                     }
@@ -1282,7 +1292,7 @@ class VirtualMachine(
             if (arrayValue is Array2DValue) {
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                val position = stylesheet.getPosition(assignLHS.identifier)
+                val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                 if (stylesheet.userDefinedPositions() && position == null) {
                     return RuntimeError("Missing position values", lineNumber = node.lineNumber)
                 }
