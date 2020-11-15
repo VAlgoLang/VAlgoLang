@@ -1,10 +1,17 @@
 class Code_block:
     def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
+        fp = open("sample.re", "w")
+
         for c in code:
             for sc in c:
-                text = Text(sc, color=text_color, weight=text_weight, font=font)
-                group.add(text)
+                # TODO: Remove final newline
+                fp.write(sc + "\n")
+
+        fp.close()
+
+        self.paragraph = Code("sample.re", style="inkpot", language="reasonml", line_spacing=0.2).code
+        group.add(self.paragraph)
         group.set_width(5)
         self.all = group
         self.code = code
@@ -16,4 +23,4 @@ class Code_block:
         idx = 0
         for i in range(line_number):
             idx += len(self.code[i])
-        return self.all[idx-1]
+        return self.paragraph[idx-1]
