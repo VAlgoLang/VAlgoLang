@@ -1,13 +1,33 @@
 {
+  "hideCode": false,
   "dataStructures": {
     "Array": {
-      "borderColor": "YELLOW",
       "creationStyle": "Write",
       "animate": {
         "textColor": "RED",
         "animationStyle": "Indicate",
         "animationTime": 0.1
       }
+    }
+  },
+  "positions": {
+    "arr": {
+      "x": 0,
+      "y": -3,
+      "width": 6,
+      "height": 1
+    },
+    "original": {
+      "x": -2,
+      "y": 0,
+      "width": 4,
+      "height": 4
+    },
+    "transpose": {
+      "x": 2,
+      "y": -2,
+      "width": 3,
+      "height": 5
     }
   }
 }

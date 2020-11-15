@@ -6,6 +6,7 @@ import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
@@ -73,7 +74,7 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else {
+        } else if (!stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
@@ -86,6 +87,14 @@ class VirtualMachine(
                 it
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
+        }
+        else {
+            linearRepresentation.forEach {
+                if (it is DataStructureMObject) {
+                    it.setShape()
+                }
+            }
+            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
         }
     }
 
@@ -1036,6 +1045,18 @@ class VirtualMachine(
             }
         }
 
+        private fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
+            val boundaries = mutableListOf<Pair<Double, Double>>()
+            if (position != null) {
+                val left = position.x!!.toDouble()
+                val right = left + position.width!!.toDouble()
+                val bottom = position.y!!.toDouble()
+                val top = bottom + position.height!!.toDouble()
+                boundaries.addAll(listOf(Pair(left, top), Pair(right, top), Pair(left, bottom), Pair(right, bottom)))
+            }
+            return boundaries
+        }
+
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             return when (node.type) {
                 is StackType -> {
@@ -1044,6 +1065,11 @@ class VirtualMachine(
                     dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
+                    val position = stylesheet.getPosition(assignLHS.identifier)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(
@@ -1056,7 +1082,8 @@ class VirtualMachine(
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime,
-                            showLabel = stackValue.style.showLabel
+                            showLabel = stackValue.style.showLabel,
+                            boundaries = boundaries
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -1190,6 +1217,11 @@ class VirtualMachine(
                 if (arrayValue is ArrayValue) {
                     arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                    val position = stylesheet.getPosition(assignLHS.identifier)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
                         node.type,
                         ident,
@@ -1199,7 +1231,8 @@ class VirtualMachine(
                         textColor = arrayValue.style.textColor,
                         creationString = arrayValue.style.creationStyle,
                         runtime = arrayValue.style.creationTime,
-                        showLabel = arrayValue.style.showLabel
+                        showLabel = arrayValue.style.showLabel,
+                        boundaries = boundaries
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue.manimObject = arrayStructure
@@ -1249,6 +1282,11 @@ class VirtualMachine(
             if (arrayValue is Array2DValue) {
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                val position = stylesheet.getPosition(assignLHS.identifier)
+                if (stylesheet.userDefinedPositions() && position == null) {
+                    return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                }
+                val boundaries = getBoundaries(position)
                 val arrayStructure = Array2DStructure(
                     node.type,
                     ident,
@@ -1258,7 +1296,8 @@ class VirtualMachine(
                     textColor = arrayValue.style.textColor,
                     creationString = arrayValue.style.creationStyle,
                     runtime = arrayValue.style.creationTime,
-                    showLabel = arrayValue.style.showLabel
+                    showLabel = arrayValue.style.showLabel,
+                    boundaries = boundaries
                 )
                 linearRepresentation.add(arrayStructure)
                 arrayValue.manimObject = arrayStructure

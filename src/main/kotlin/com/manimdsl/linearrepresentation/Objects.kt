@@ -132,6 +132,8 @@ sealed class DataStructureMObject(
 
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
+    abstract fun setShape()
+
 }
 
 data class NodeStructure(
@@ -140,7 +142,7 @@ data class NodeStructure(
     val depth: Int,
     override val shape: Shape = NodeShape(ident, value)
 
-): MObject {
+) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = ${shape.getConstructor()}"
@@ -149,20 +151,24 @@ data class NodeStructure(
 }
 
 data class InitTreeStructure(
-        override val type: DataStructureType,
-        override val ident: String,
-        private var boundaries: List<Pair<Double, Double>> = emptyList(),
-        private var maxSize: Int = -1,
-        val text: String,
-        val root: BinaryTreeNodeValue,
+    override val type: DataStructureType,
+    override val ident: String,
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1,
+    val text: String,
+    val root: BinaryTreeNodeValue
 
-        ): DataStructureMObject(type, ident) {
+) : DataStructureMObject(type, ident) {
     override var shape: Shape = NullShape
+
+    override fun setShape() {
+        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
+    }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
+        setShape()
     }
 
     override fun toPython(): List<String> {
@@ -186,9 +192,9 @@ data class InitManimStack(
     val showLabel: Boolean? = null,
     val creationStyle: String? = null,
     val creationTime: Double? = null,
-    private var boundary: List<Pair<Double, Double>> = emptyList(),
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1
-) : DataStructureMObject(type, ident, boundary) {
+) : DataStructureMObject(type, ident, boundaries) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -197,14 +203,23 @@ data class InitManimStack(
         val python =
             mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
+        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
+            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
+            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
+            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
+        python.add("self.add(Polygon($coordinatesString, color=YELLOW))")
         python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
     }
 
+    override fun setShape() {
+        shape = InitManimStackShape(ident, text, boundaries, alignment, color, textColor)
+    }
+
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
-        boundary = corners
-        shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
+        boundaries = corners
+        setShape()
     }
 }
 
@@ -228,18 +243,27 @@ data class ArrayStructure(
     }
 
     override fun toPython(): List<String> {
+        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
+            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
+            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
+            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
+            "self.add(Polygon($coordinatesString, color=YELLOW))",
             "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
-         )
+        )
+    }
+
+    override fun setShape() {
+        shape = ArrayShape(ident, values, text, boundaries, color, textColor, showLabel)
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = ArrayShape(ident, values, text, boundaries, color, textColor, showLabel)
+        setShape()
     }
 }
 
@@ -264,18 +288,27 @@ data class Array2DStructure(
 
 
     override fun toPython(): List<String> {
+        val coordinatesString = "[${boundaries[0].first}, ${boundaries[0].second}, 0], " +
+            "[${boundaries[1].first}, ${boundaries[1].second}, 0], " +
+            "[${boundaries[3].first}, ${boundaries[3].second}, 0], " +
+            "[${boundaries[2].first}, ${boundaries[2].second}, 0]"
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
+            "self.add(Polygon($coordinatesString, color=YELLOW))",
             "self.play(*$ident.build(\"$creationString\")${getRuntimeString()})"
         )
+    }
+
+    override fun setShape() {
+        shape = Array2DShape(ident, values, text, boundaries, color, textColor, showLabel)
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = Array2DShape(ident, values, text, boundaries, color, textColor, showLabel)
+        setShape()
     }
 }
 

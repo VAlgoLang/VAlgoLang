@@ -46,11 +46,19 @@ data class StyleProperties(
     val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
+data class PositionProperties(
+    val x: String? = null,
+    val y: String? = null,
+    val width: String? = null,
+    val height: String? = null,
+)
+
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
     val variables: Map<String, StyleProperties> = emptyMap(),
-    val dataStructures: Map<String, StyleProperties> = emptyMap()
+    val dataStructures: Map<String, StyleProperties> = emptyMap(),
+    val positions: Map<String, PositionProperties> = emptyMap()
 )
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
@@ -94,6 +102,16 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
         // Returns null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
+    }
+
+    fun getPosition(identifier: String): PositionProperties? {
+        val position = stylesheet.positions.getOrDefault(identifier, PositionProperties())
+
+        return if (position == PositionProperties()) null else position
+    }
+
+    fun userDefinedPositions(): Boolean {
+        return stylesheet.positions.isNotEmpty()
     }
 
     fun getStepIntoIsDefault(): Boolean {
