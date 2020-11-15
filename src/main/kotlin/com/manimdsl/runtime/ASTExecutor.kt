@@ -18,7 +18,7 @@ class VirtualMachine(
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet,
-    private val returnBoundaries: Boolean
+    private val returnBoundaries: Boolean = false
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -93,8 +93,7 @@ class VirtualMachine(
                 it
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
-        }
-        else {
+        } else {
             linearRepresentation.forEach {
                 if (it is DataStructureMObject) {
                     it.setShape()
@@ -443,14 +442,19 @@ class VirtualMachine(
                     }
                     is IdentifierNode -> {
                         if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
-                            linearRepresentation.add(TreeNodeRestyle(assignedValue.manimObject.shape.ident,
-                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!,
-                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
-                                                                    ))
-                            linearRepresentation.add(TreeNodeRestyle(
+                            linearRepresentation.add(
+                                TreeNodeRestyle(
+                                    assignedValue.manimObject.shape.ident,
+                                    assignedValue.binaryTreeValue!!.animatedStyle!!,
+                                    assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                )
+                            )
+                            linearRepresentation.add(
+                                TreeNodeRestyle(
                                     assignedValue.manimObject.shape.ident,
                                     assignedValue.binaryTreeValue!!.style,
-                            ))
+                                )
+                            )
                         }
                         variables[node.identifier.identifier] = assignedValue
                     }
@@ -484,21 +488,22 @@ class VirtualMachine(
                 node.binaryTreeValue!!.value = btNodeValue
                 val instructions = mutableListOf<ManimInstr>(TreeEditValue(node, childValue, node.binaryTreeValue!!))
                 if (node.binaryTreeValue != null) {
-                    if(node.binaryTreeValue!!.animatedStyle != null) {
-                        instructions.add(0,
-                                TreeNodeRestyle(
-                                        node.manimObject.shape.ident,
-                                        node.binaryTreeValue!!.animatedStyle!!,
-                                        node.binaryTreeValue!!.animatedStyle!!.highlight,
-                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
-                                )
+                    if (node.binaryTreeValue!!.animatedStyle != null) {
+                        instructions.add(
+                            0,
+                            TreeNodeRestyle(
+                                node.manimObject.shape.ident,
+                                node.binaryTreeValue!!.animatedStyle!!,
+                                node.binaryTreeValue!!.animatedStyle!!.highlight,
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
                         )
                         instructions.add(
-                                TreeNodeRestyle(
-                                        node.manimObject.shape.ident,
-                                        node.binaryTreeValue!!.style,
-                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
-                                )
+                            TreeNodeRestyle(
+                                node.manimObject.shape.ident,
+                                node.binaryTreeValue!!.style,
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
                         )
                     }
                     linearRepresentation.addAll(instructions)
@@ -538,12 +543,14 @@ class VirtualMachine(
 
                 if (parent.binaryTreeValue != null) {
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(TreeNodeRestyle(
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.animatedStyle!!,
                                 parent.binaryTreeValue!!.animatedStyle!!.highlight,
                                 animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
-                        ))
+                            )
+                        )
                     }
 
                     val boundary =
@@ -561,11 +568,13 @@ class VirtualMachine(
                         )
                     )
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(TreeNodeRestyle(
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.style,
                                 animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
-                        ))
+                            )
+                        )
                     }
                 } else {
                     linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft))
@@ -707,18 +716,22 @@ class VirtualMachine(
                 is NodeType.Right -> parentValue.right
                 is NodeType.Left -> parentValue.left
                 is NodeType.Value -> {
-                    if (parentValue.binaryTreeValue!!.animatedStyle != null){
-                    linearRepresentation.add(TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
-                            parentValue.binaryTreeValue!!.animatedStyle!!,
-                            parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
-                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
-                    ))
-                    linearRepresentation.add(TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
-                            parentValue.binaryTreeValue!!.style,
-                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
-                    ))
+                    if (parentValue.binaryTreeValue!!.animatedStyle != null) {
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
+                                parentValue.manimObject.shape.ident,
+                                parentValue.binaryTreeValue!!.animatedStyle!!,
+                                parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
+                        )
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
+                                parentValue.manimObject.shape.ident,
+                                parentValue.binaryTreeValue!!.style,
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
+                        )
                     }
                     val value = parentValue.value
                     value
@@ -1409,7 +1422,7 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto =  stepInto,
+                    stepInto = stepInto,
                     hideCode = hideCode
                 ).runFrame()
 
