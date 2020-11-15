@@ -26,7 +26,7 @@ class TestLinearRepresentation {
             Coord(2.0, -1.0),
             Alignment.HORIZONTAL,
             "y",
-            boundary = emptyList()
+            boundaries = emptyList()
         )
 
         stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
