@@ -1,5 +1,6 @@
 package com.manimdsl.runtime
 
+import com.google.gson.Gson
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
@@ -16,7 +17,8 @@ class VirtualMachine(
     private val symbolTableVisitor: SymbolTableVisitor,
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
-    private val stylesheet: Stylesheet
+    private val stylesheet: Stylesheet,
+    private val returnBoundaries: Boolean
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -76,6 +78,10 @@ class VirtualMachine(
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else if (!stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
+            if (returnBoundaries) {
+                val gson = Gson()
+                println(gson.toJson(computedBoundaries.map { it.key to it.value.corners().toString() }))
+            }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }

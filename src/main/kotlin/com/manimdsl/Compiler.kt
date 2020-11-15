@@ -10,7 +10,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>, stylesheetPath: String?) {
+private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: Boolean) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -40,7 +40,11 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
     }
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet).runProgram()
+    val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet, boundaries).runProgram()
+
+    if(boundaries) {
+        exitProcess(runtimeErrorStatus.code)
+    }
 
     if (runtimeErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(runtimeErrorStatus.code)
@@ -105,6 +109,10 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code (optional)."])
     var manim: Boolean = false
 
+    @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"])
+    var boundaries: Boolean = false
+
+
     @Option(
         names = ["-q", "--quality"],
         defaultValue = "low",
@@ -128,7 +136,7 @@ class DSLCommandLineArguments : Callable<Int> {
     }
 
     override fun call(): Int {
-        compile(file, output, python, manim, manimArguments, stylesheet)
+        compile(file, output, python, manim, manimArguments, stylesheet, boundaries)
         return 0
     }
 }
