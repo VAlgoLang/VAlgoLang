@@ -80,7 +80,7 @@ class VirtualMachine(
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
             if (returnBoundaries) {
                 val gson = Gson()
-                println(gson.toJson(computedBoundaries.map { it.key to it.value.corners().toString() }))
+                println(gson.toJson(computedBoundaries.map { it.key to it.value.positioning() }.toMap()))
             }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
