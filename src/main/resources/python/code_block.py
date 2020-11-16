@@ -5,19 +5,18 @@ class Code_block:
 
         for c in code:
             for sc in c:
-                # TODO: Remove final newline
                 fp.write(sc + "\n")
 
         fp.close()
 
-        self.paragraph = Code("sample.re", style="inkpot", language="reasonml", line_spacing=0.2).code
+        self.paragraph = Code("sample.re", style="inkpot", language="reasonml", line_spacing=0.2,
+                              tab_width=2).code
         group.add(self.paragraph)
         group.set_width(5)
-        self.all = group
         self.code = code
 
     def build(self):
-        return self.all.arrange(DOWN, aligned_edge=LEFT, center=True)
+        return self.paragraph.arrange(DOWN, aligned_edge=LEFT, center=True)
 
     def get_line_at(self, line_number):
         idx = 0
