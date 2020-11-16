@@ -7,7 +7,6 @@ import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
-import com.manimdsl.wrapCode
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
 
