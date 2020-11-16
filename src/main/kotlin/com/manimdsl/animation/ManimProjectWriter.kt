@@ -20,6 +20,7 @@ class ManimProjectWriter(private val pythonCode: String) {
     }
 
     fun generateAnimation(fileName: String, options: List<String>, outputFile: String): Int {
+        Files.createDirectories(Paths.get(outputFile.split("/").dropLast(1).joinToString("")))
         val uid = UUID.randomUUID().toString()
         val commandOptions = options.joinToString(" ")
         val manimExitCode = ProcessBuilder("manim $fileName Main $commandOptions --media_dir $uid --video_output_dir $uid".split(" "))
