@@ -1,4 +1,4 @@
-package com.manimdsl.runtime
+package com.manimdsl.runtime.utility
 private val WRAP_LINE_LENGTH = 50
 
 fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
