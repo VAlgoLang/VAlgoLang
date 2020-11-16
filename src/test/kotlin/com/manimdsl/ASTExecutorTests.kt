@@ -42,7 +42,7 @@ class ASTExecutorTests {
                     listOf("    return x * 3;"),
                     listOf("}"),
                     listOf("let ans = f(3);"),
-                    listOf("")
+                    listOf(" ")
                 ),
                 ident = "code_block",
                 codeTextName = "code_text",
@@ -103,7 +103,7 @@ class ASTExecutorTests {
             PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
             VariableBlock(listOf(), ident = "variable_block", variableGroupName = "variable_vg", variableFrame = "variable_frame", textColor = null),
             CodeBlock(
-                lines = listOf(listOf("fun f(x: number): number{"), listOf("    return x * 3;"), listOf("}"), listOf("let ans = f(3);"), listOf("")),
+                lines = listOf(listOf("fun f(x: number): number{"), listOf("    return x * 3;"), listOf("}"), listOf("let ans = f(3);"), listOf(" ")),
                 ident = "code_block",
                 codeTextName = "code_text",
                 pointerName = "pointer"
@@ -156,7 +156,7 @@ class ASTExecutorTests {
                     listOf("    return x * 3;"),
                     listOf("}"),
                     listOf("let ans = f(3);"),
-                    listOf("")
+                    listOf(" ")
                 ),
                 ident = "code_block",
                 codeTextName = "code_text",
