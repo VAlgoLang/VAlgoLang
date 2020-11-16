@@ -4,6 +4,8 @@ class Rectangle_block:
         self.shape = Rectangle(height=height, width=width, color=color)
         self.all = VGroup(self.text, self.shape)
         self.text.set_width(7/10 * width)
+        if(self.text.get_height() > 0.6 * height):
+            self.text.scale(0.6 * height / self.text.get_height())
         self.width = width
         self.text_color = text_color
         self.font = font
@@ -18,4 +20,6 @@ class Rectangle_block:
             color = self.text_color
         new_text_obj = Text(new_text, color=color, font=self.font)
         new_text_obj.set_width(self.width * 7/10)
+        if(new_text_obj.get_height() > 0.8 * height):
+                    new_text_obj.scale(0.8 * height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
