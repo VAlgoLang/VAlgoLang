@@ -9,31 +9,5 @@
         "animationTime": 0.1
       }
     }
-  },
-  "positions": {
-    "x": {
-      "x": 0,
-      "y": -3,
-      "width": 1,
-      "height": 4
-    },
-    "func.x": {
-      "x": 3,
-      "y": -4,
-      "width": 1,
-      "height": 5
-    },
-    "y": {
-      "x": -1,
-      "y": -3,
-      "width": 1,
-      "height": 4
-    },
-    "tree": {
-      "x": 0,
-      "y": 2,
-      "width": 2,
-      "height": 2
-    }
   }
 }

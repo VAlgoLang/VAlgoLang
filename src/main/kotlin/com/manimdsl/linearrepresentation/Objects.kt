@@ -127,6 +127,7 @@ data class VariableBlock(
 sealed class DataStructureMObject(
     open val type: DataStructureType,
     open val ident: String,
+    open val uid: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : MObject {
 
@@ -156,9 +157,9 @@ data class InitTreeStructure(
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1,
     val text: String,
-    val root: BinaryTreeNodeValue
-
-) : DataStructureMObject(type, ident) {
+    val root: BinaryTreeNodeValue,
+    override val uid: String
+) : DataStructureMObject(type, ident, uid) {
     override var shape: Shape = NullShape
 
     override fun setShape() {
@@ -193,8 +194,9 @@ data class InitManimStack(
     val creationStyle: String? = null,
     val creationTime: Double? = null,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1
-) : DataStructureMObject(type, ident, boundaries) {
+    private var maxSize: Int = -1,
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -229,8 +231,9 @@ data class ArrayStructure(
     override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
@@ -268,8 +271,9 @@ data class Array2DStructure(
     override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
