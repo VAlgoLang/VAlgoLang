@@ -1088,7 +1088,7 @@ class VirtualMachine(
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
                     val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
@@ -1178,7 +1178,7 @@ class VirtualMachine(
                     dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
                     val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val initTreeStructure = InitTreeStructure(
@@ -1248,7 +1248,7 @@ class VirtualMachine(
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                     val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
@@ -1313,7 +1313,7 @@ class VirtualMachine(
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                 if (stylesheet.userDefinedPositions() && position == null) {
-                    return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                    return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                 }
                 val boundaries = getBoundaries(position)
                 val arrayStructure = Array2DStructure(
