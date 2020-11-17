@@ -43,10 +43,9 @@ class VirtualMachine(
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                if (fileLines[it].isEmpty()){
+                if (fileLines[it].isEmpty()) {
                     displayCode.add(" ")
-                }
-                else {
+                } else {
                     displayCode.add(fileLines[it])
                 }
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
@@ -834,12 +833,16 @@ class VirtualMachine(
                         EmptyMObject,
                         newArray
                     )
-
+                    val dsUID = functionNamePrefix + assignLHS.identifier
                     val ident = variableNameGenerator.generateNameFromPrefix("array")
-                    dataStructureBoundaries[ident] = WideBoundary(maxSize = newArray.size)
+                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = newArray.size)
                     arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                     arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
-                    //TODO ILONA
+                    val position = stylesheet.getPosition(dsUID)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
                         ArrayType(node.internalType),
                         ident,
@@ -850,7 +853,8 @@ class VirtualMachine(
                         creationString = arrayValue2.style.creationStyle,
                         runtime = arrayValue2.style.creationTime,
                         showLabel = arrayValue2.style.showLabel,
-                        uid = "TODO ILONA, MISSING POSITION USAGE"
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue2.manimObject = arrayStructure
@@ -1084,7 +1088,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = TallBoundary()
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
@@ -1176,7 +1180,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val initTreeStructure = InitTreeStructure(
@@ -1248,7 +1252,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
@@ -1316,7 +1320,7 @@ class VirtualMachine(
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 if (stylesheet.userDefinedPositions() && position == null) {
-                    return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
+                    return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
                 }
                 val boundaries = getBoundaries(position)
                 val arrayStructure = Array2DStructure(
