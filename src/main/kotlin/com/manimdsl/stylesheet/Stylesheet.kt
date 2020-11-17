@@ -57,6 +57,7 @@ data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
     val syntaxHighlighting: Boolean = true,
+    var syntaxHighlightingStyle: String = "inkpot",
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap(),
     val positions: Map<String, PositionProperties> = emptyMap()
@@ -125,6 +126,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getSyntaxHighlighting(): Boolean {
         return stylesheet.syntaxHighlighting
+    }
+
+    fun getSyntaxHighlightingStyle() : String {
+        return stylesheet.syntaxHighlightingStyle
     }
 }
 

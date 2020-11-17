@@ -80,7 +80,8 @@ class Rectangle(
 class CodeBlockShape(
     override val ident: String,
     textColor: String? = null,
-    val syntaxHighlighting: Boolean
+    val syntaxHighlighting: Boolean,
+    val syntaxHighlightingStyle: String
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -92,7 +93,7 @@ class CodeBlockShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}(code_lines$style, syntax_highlighting=${syntaxHighlighting.toString().capitalize()})"
+        return "$ident = ${className}(code_lines$style, syntax_highlighting=${syntaxHighlighting.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\")"
     }
 }
 

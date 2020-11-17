@@ -65,7 +65,8 @@ class VirtualMachine(
                     codeBlockVariable,
                     codeTextVariable,
                     pointerVariable,
-                    syntaxHighlighting = stylesheet.getSyntaxHighlighting()
+                    syntaxHighlighting = stylesheet.getSyntaxHighlighting(),
+                    syntaxHighlightingStyle = stylesheet.getSyntaxHighlightingStyle()
                 )
             )
         }
