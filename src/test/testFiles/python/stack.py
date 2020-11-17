@@ -6,7 +6,7 @@ class Main(Scene):
     code_end = 10
     def construct(self):
         # Building code visualisation pane
-        code_lines = [["let y = new Stack;"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
+        code_lines = [["let y = new Stack<number>();"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
         code_block = Code_block(code_lines)
         code_text = code_block.build()
         code_text.set_width(4.2)

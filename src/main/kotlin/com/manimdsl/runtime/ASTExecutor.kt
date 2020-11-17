@@ -997,9 +997,10 @@ class VirtualMachine(
                         return value
                     }
                     val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                    val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
+                    val dsUID = functionNamePrefix + node.instanceIdentifier
+                    val boundaryShape = dataStructureBoundaries[dsUID]!!
                     boundaryShape.maxSize++
-                    dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
+                    dataStructureBoundaries[dsUID] = boundaryShape
                     val hasOldMObject = value.manimObject !is EmptyMObject
                     val oldMObject = value.manimObject
                     val newObjectStyle = ds.animatedStyle ?: ds.style
