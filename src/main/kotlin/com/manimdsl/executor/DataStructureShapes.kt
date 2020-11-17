@@ -255,7 +255,7 @@ class Scene {
             val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
 
             if (availableWidth > shapesOverallWidth) {
-                sceneShapes.filter { it !is SquareBoundary }.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
+                sceneShapes.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
             }
             if (avaliableHeight > shapeOverallHeight) {
                 sceneShapes.forEach {
