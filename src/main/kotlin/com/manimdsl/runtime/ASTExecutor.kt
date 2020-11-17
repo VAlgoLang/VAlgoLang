@@ -997,7 +997,7 @@ class VirtualMachine(
                         return value
                     }
                     val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                    val dsUID = functionNamePrefix + node.instanceIdentifier
+                    val dsUID = (ds.manimObject as InitManimStack).uid
                     val boundaryShape = dataStructureBoundaries[dsUID]!!
                     boundaryShape.maxSize++
                     dataStructureBoundaries[dsUID] = boundaryShape
