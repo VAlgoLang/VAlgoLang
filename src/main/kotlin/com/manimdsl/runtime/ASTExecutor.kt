@@ -93,7 +93,7 @@ class VirtualMachine(
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
                 if (it is DataStructureMObject) {
-                    val boundaryShape = computedBoundaries[it.ident]!!
+                    val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
                 it
@@ -839,7 +839,7 @@ class VirtualMachine(
                     dataStructureBoundaries[ident] = WideBoundary(maxSize = newArray.size)
                     arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                     arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
-                    print(node.internalType)
+                    //TODO ILONA
                     val arrayStructure = ArrayStructure(
                         ArrayType(node.internalType),
                         ident,
@@ -849,7 +849,8 @@ class VirtualMachine(
                         textColor = arrayValue2.style.textColor,
                         creationString = arrayValue2.style.creationStyle,
                         runtime = arrayValue2.style.creationTime,
-                        showLabel = arrayValue2.style.showLabel
+                        showLabel = arrayValue2.style.showLabel,
+                        uid = "TODO ILONA, MISSING POSITION USAGE"
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue2.manimObject = arrayStructure
@@ -1073,14 +1074,15 @@ class VirtualMachine(
         }
 
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val dsUID = functionNamePrefix + assignLHS.identifier
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
-                    dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
-                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = TallBoundary()
                     if (stylesheet.userDefinedPositions() && position == null) {
                         return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
@@ -1098,7 +1100,8 @@ class VirtualMachine(
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime,
                             showLabel = stackValue.style.showLabel,
-                            boundaries = boundaries
+                            boundaries = boundaries,
+                            uid = dsUID
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -1115,7 +1118,8 @@ class VirtualMachine(
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime,
                             showLabel = stackValue.style.showLabel,
-                            boundaries = boundaries
+                            boundaries = boundaries,
+                            uid = dsUID
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -1169,8 +1173,8 @@ class VirtualMachine(
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
-                    dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
-                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
                     if (stylesheet.userDefinedPositions() && position == null) {
                         return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
@@ -1180,7 +1184,8 @@ class VirtualMachine(
                         ident,
                         text = assignLHS.identifier,
                         root = root,
-                        boundaries = boundaries
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
@@ -1236,11 +1241,12 @@ class VirtualMachine(
             }
             if (assignLHS !is ArrayElemNode) {
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
-                dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
                 if (arrayValue is ArrayValue) {
                     arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                    val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
+                    val dsUID = functionNamePrefix + assignLHS.identifier
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
                     if (stylesheet.userDefinedPositions() && position == null) {
                         return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
@@ -1255,7 +1261,8 @@ class VirtualMachine(
                         creationString = arrayValue.style.creationStyle,
                         runtime = arrayValue.style.creationTime,
                         showLabel = arrayValue.style.showLabel,
-                        boundaries = boundaries
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue.manimObject = arrayStructure
@@ -1299,13 +1306,15 @@ class VirtualMachine(
                 }
             }
 
-            val ident = variableNameGenerator.generateNameFromPrefix("array")
-            dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
+
 
             if (arrayValue is Array2DValue) {
+                val ident = variableNameGenerator.generateNameFromPrefix("array")
+                val dsUID = functionNamePrefix + assignLHS.identifier
+                val position = stylesheet.getPosition(dsUID)
+                dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                val position = stylesheet.getPosition(functionNamePrefix + assignLHS.identifier)
                 if (stylesheet.userDefinedPositions() && position == null) {
                     return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                 }
@@ -1320,7 +1329,8 @@ class VirtualMachine(
                     creationString = arrayValue.style.creationStyle,
                     runtime = arrayValue.style.creationTime,
                     showLabel = arrayValue.style.showLabel,
-                    boundaries = boundaries
+                    boundaries = boundaries,
+                    uid = dsUID
                 )
                 linearRepresentation.add(arrayStructure)
                 arrayValue.manimObject = arrayStructure

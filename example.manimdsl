@@ -1,9 +1,8 @@
-fun func() {
-    let x = Stack<number>();
-}
+let original = Array<number>(2,3){[1,2,3],[4,5,6]};
+let transpose = Array<number>(3, 2);
 
-let x = Stack<number>(){1};
-let y = Stack<number>();
-let head = Node<number>(4);
-let tree = Tree<Node<number>>(head);
-func();
+for i in range(3) {
+    for j in range(2) {
+        transpose[i][j]=original[j][i];
+    }
+}
