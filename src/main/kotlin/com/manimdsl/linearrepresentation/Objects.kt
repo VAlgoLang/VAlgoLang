@@ -49,8 +49,9 @@ data class CodeBlock(
     val codeTextName: String,
     val pointerName: String,
     val textColor: String? = null,
+    val syntaxHighlighting: Boolean = true
 ) : MObject {
-    override val shape: Shape = CodeBlockShape(ident, textColor)
+    override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlighting)
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()

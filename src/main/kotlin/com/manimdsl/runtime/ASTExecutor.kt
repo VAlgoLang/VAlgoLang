@@ -43,7 +43,7 @@ class VirtualMachine(
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                if (fileLines[it].isEmpty()) {
+                if (fileLines[it].isEmpty() && stylesheet.getSyntaxHighlighting()) {
                     displayCode.add(" ")
                 } else {
                     displayCode.add(fileLines[it])
@@ -64,7 +64,8 @@ class VirtualMachine(
                     wrapCode(displayCode),
                     codeBlockVariable,
                     codeTextVariable,
-                    pointerVariable
+                    pointerVariable,
+                    syntaxHighlighting = stylesheet.getSyntaxHighlighting()
                 )
             )
         }
