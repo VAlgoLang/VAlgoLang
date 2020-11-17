@@ -6,9 +6,9 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
-import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
@@ -1070,18 +1070,6 @@ class VirtualMachine(
 
                 else -> EmptyValue
             }
-        }
-
-        private fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
-            val boundaries = mutableListOf<Pair<Double, Double>>()
-            if (position != null) {
-                val left = position.x!!.toDouble()
-                val right = left + position.width!!.toDouble()
-                val bottom = position.y!!.toDouble()
-                val top = bottom + position.height!!.toDouble()
-                boundaries.addAll(listOf(Pair(left, top), Pair(right, top), Pair(left, bottom), Pair(right, bottom)))
-            }
-            return boundaries
         }
 
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
