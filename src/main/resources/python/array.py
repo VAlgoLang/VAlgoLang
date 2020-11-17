@@ -2,9 +2,12 @@ class Array:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE, padding=True):
         self.values = values
         boundary_width = boundaries[1][0] - boundaries[0][0]
+        boundary_height = boundaries[0][1] - boundaries[3][1]
+
         title_width = 1 if title != "" else 0
         width_per_element = (boundary_width - title_width) / len(values)
-        self.padding = 0.15 if padding else 0
+        self.padding = 0.2 if padding else 0
+
         square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
         self.array_elements = [
             Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val
@@ -12,7 +15,11 @@ class Array:
         offset = 0
         if ((square_dim * len(values)) + title_width) < boundary_width:
             offset = (boundary_width - ((square_dim * len(values)) + title_width)) / 2
+
         self.title = VGroup(Text(title).set_width(title_width))
+        if(self.title.get_height() > 0.5 * boundary_height):
+            self.title.scale(0.5 * boundary_height / self.title.get_height())
+
         self.title.move_to(
             np.array([boundaries[0][0] + (title_width / 2) + offset, (boundaries[0][1] + boundaries[3][1]) / 2, 0]))
         self.color = color

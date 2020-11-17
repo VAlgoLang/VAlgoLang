@@ -6,6 +6,7 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
@@ -42,7 +43,12 @@ class VirtualMachine(
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                displayCode.add(fileLines[it])
+                if (fileLines[it].isEmpty()){
+                    displayCode.add(" ")
+                }
+                else {
+                    displayCode.add(fileLines[it])
+                }
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
@@ -56,7 +62,7 @@ class VirtualMachine(
             linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
             linearRepresentation.add(
                 CodeBlock(
-                    displayCode.map { it.chunked(WRAP_LINE_LENGTH) },
+                    wrapCode(displayCode),
                     codeBlockVariable,
                     codeTextVariable,
                     pointerVariable
@@ -1090,7 +1096,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = TallBoundary()
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
@@ -1182,7 +1188,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val initTreeStructure = InitTreeStructure(
@@ -1254,7 +1260,7 @@ class VirtualMachine(
                     val position = stylesheet.getPosition(dsUID)
                     dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
                     if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                        return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                     }
                     val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
@@ -1322,7 +1328,7 @@ class VirtualMachine(
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 if (stylesheet.userDefinedPositions() && position == null) {
-                    return RuntimeError("Missing position values", lineNumber = node.lineNumber)
+                    return RuntimeError("Missing position values for ${functionNamePrefix + assignLHS.identifier}", lineNumber = node.lineNumber)
                 }
                 val boundaries = getBoundaries(position)
                 val arrayStructure = Array2DStructure(
