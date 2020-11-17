@@ -1,5 +1,6 @@
 package com.manimdsl.stylesheet
 
+import com.google.gson.JsonSyntaxException
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.errorhandling.warnings.invalidStyleAttribute
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
@@ -54,6 +55,8 @@ object StyleSheetValidator {
         checkValidAnimationStyles(stylesheet.dataStructures.values)
 
         ErrorHandler.checkWarnings()
+
+        checkValidPositions(stylesheet.positions.values)
     }
 
     private fun checkValidCreationStyles(styles: Collection<StyleProperties>) {
@@ -78,6 +81,14 @@ object StyleSheetValidator {
                         style.animate.animationStyle = "FadeToColor"
                     }
                 }
+            }
+        }
+    }
+
+    private fun checkValidPositions(positions: Collection<PositionProperties>) {
+        positions.forEach { position ->
+            if (position.width == 0.0 || position.height == 0.0) {
+                throw JsonSyntaxException("Missing field entry in position definition")
             }
         }
     }

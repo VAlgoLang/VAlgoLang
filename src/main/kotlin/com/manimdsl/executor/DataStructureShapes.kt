@@ -3,10 +3,12 @@ package com.manimdsl.executor
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
 
+data class Positioning(val x: Double, val y: Double, val width: Double, val height: Double)
+
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
-    abstract var width: Int
-    abstract var height: Int
+    abstract var width: Double
+    abstract var height: Double
 
     abstract var maxSize: Int
     abstract val priority: Int
@@ -29,7 +31,11 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
-    fun area(): Int {
+    fun positioning() : Positioning {
+        return Positioning(x1, y1, width, height)
+    }
+
+    fun area(): Double {
         return width * height
     }
 
@@ -71,8 +77,8 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
 data class SquareBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(4, 4),
-    override var width: Int = minDimensions.first,
-    override var height: Int = minDimensions.second, override var maxSize: Int = 0
+    override var width: Double = minDimensions.first.toDouble(),
+    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = true
@@ -95,8 +101,8 @@ data class SquareBoundary(
 
 data class TallBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(2, 4),
-    override var width: Int = minDimensions.first,
-    override var height: Int = minDimensions.second, override var maxSize: Int = 0
+    override var width: Double = minDimensions.first.toDouble(),
+    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
@@ -119,8 +125,8 @@ data class TallBoundary(
 
 data class WideBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(4, 2),
-    override var width: Int = minDimensions.first,
-    override var height: Int = minDimensions.second, override var maxSize: Int = 0
+    override var width: Double = minDimensions.first.toDouble(),
+    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
@@ -175,8 +181,8 @@ enum class ScanDir {
 
 class Scene {
 
-    private val sceneShape = WideBoundary(width = 9, height = 8, maxSize = -1)
-    private val fullSceneShape = WideBoundary(width = 14, height = 8, maxSize = -1)
+    private val sceneShape = WideBoundary(width = 9.0, height = 8.0, maxSize = -1)
+    private val fullSceneShape = WideBoundary(width = 14.0, height = 8.0, maxSize = -1)
 
     init {
         sceneShape.x1 = -2.0
@@ -188,7 +194,7 @@ class Scene {
     private val sceneShapes = mutableListOf<BoundaryShape>()
 
     fun compute(shapes: List<Pair<String, BoundaryShape>>, fullScreen: Boolean): Pair<ExitStatus, Map<String, BoundaryShape>> {
-        val total = shapes.sumBy { it.second.area() }
+        val total = shapes.sumByDouble { it.second.area() }
         if (total > sceneShape.area()) {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())

@@ -46,11 +46,19 @@ data class StyleProperties(
     val animate: AnimationProperties? = null
 ) : StylesheetProperty()
 
+data class PositionProperties(
+    val x: Double,
+    val y: Double,
+    val width: Double,
+    val height: Double,
+)
+
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
     val variables: Map<String, StyleProperties> = emptyMap(),
-    val dataStructures: Map<String, StyleProperties> = emptyMap()
+    val dataStructures: Map<String, StyleProperties> = emptyMap(),
+    val positions: Map<String, PositionProperties> = emptyMap()
 )
 
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
@@ -66,7 +74,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
-                if (e.message.let { it != null && it.startsWith("duplicate key") }) {
+                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field")) }) {
                     println(e.message)
                 } else {
                     println("Could not parse JSON")
@@ -90,10 +98,20 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE", animate = AnimationProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
-        val animationStyle = (style.animate ?: AnimationProperties()) merge (dataStructureStyle.animate ?: AnimationProperties())
+        val animationStyle = (style.animate
+            ?: AnimationProperties()) merge (dataStructureStyle.animate
+            ?: AnimationProperties())
 
         // Returns null if there is no style to make sure null checks work throughout executor
         return if (animationStyle == AnimationProperties()) null else animationStyle
+    }
+
+    fun getPosition(identifier: String): PositionProperties? {
+        return stylesheet.positions[identifier]
+    }
+
+    fun userDefinedPositions(): Boolean {
+        return stylesheet.positions.isNotEmpty()
     }
 
     fun getStepIntoIsDefault(): Boolean {

@@ -26,12 +26,13 @@ class TestLinearRepresentation {
             Coord(2.0, -1.0),
             Alignment.HORIZONTAL,
             "y",
-            boundary = emptyList()
+            boundaries = emptyList(),
+            uid = "y"
         )
 
         stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
 
-        val codeBlock = listOf(listOf("let y = new Stack;"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
+        val codeBlock = listOf(listOf("let y = new Stack<number>();"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
 
         val stackIR = listOf(
             CodeBlock(codeBlock, "code_block", "code_text", "pointer"),

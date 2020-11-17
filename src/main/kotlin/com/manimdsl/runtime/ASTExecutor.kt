@@ -1,10 +1,12 @@
 package com.manimdsl.runtime
 
+import com.google.gson.Gson
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
@@ -16,7 +18,8 @@ class VirtualMachine(
     private val symbolTableVisitor: SymbolTableVisitor,
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
-    private val stylesheet: Stylesheet
+    private val stylesheet: Stylesheet,
+    private val returnBoundaries: Boolean = false
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -40,10 +43,9 @@ class VirtualMachine(
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                if (fileLines[it].isEmpty()){
+                if (fileLines[it].isEmpty()) {
                     displayCode.add(" ")
-                }
-                else {
+                } else {
                     displayCode.add(fileLines[it])
                 }
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
@@ -79,19 +81,30 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else {
+        } else if (!stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
+            if (returnBoundaries) {
+                val gson = Gson()
+                println(gson.toJson(computedBoundaries.map { it.key to it.value.positioning() }.toMap()))
+            }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
                 if (it is DataStructureMObject) {
-                    val boundaryShape = computedBoundaries[it.ident]!!
+                    val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
                 it
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
+        } else {
+            linearRepresentation.forEach {
+                if (it is DataStructureMObject) {
+                    it.setShape()
+                }
+            }
+            Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
         }
     }
 
@@ -113,7 +126,8 @@ class VirtualMachine(
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
-        private val hideCode: Boolean = false
+        private val hideCode: Boolean = false,
+        private val functionNamePrefix: String = ""
     ) {
         private var previousStepIntoState = stepInto
 
@@ -265,7 +279,8 @@ class VirtualMachine(
                 showMoveToLine = stepInto,
                 stepInto = stepInto && previousStepIntoState,   // In the case of nested stepInto/stepOver
                 updateVariableState = updateVariableState,
-                hideCode = hideCode
+                hideCode = hideCode,
+                functionNamePrefix = "${functionNode.identifier}."
             ).runFrame()
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
@@ -432,14 +447,19 @@ class VirtualMachine(
                     }
                     is IdentifierNode -> {
                         if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
-                            linearRepresentation.add(TreeNodeRestyle(assignedValue.manimObject.shape.ident,
-                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!,
-                                                                     assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
-                                                                    ))
-                            linearRepresentation.add(TreeNodeRestyle(
+                            linearRepresentation.add(
+                                TreeNodeRestyle(
+                                    assignedValue.manimObject.shape.ident,
+                                    assignedValue.binaryTreeValue!!.animatedStyle!!,
+                                    assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                )
+                            )
+                            linearRepresentation.add(
+                                TreeNodeRestyle(
                                     assignedValue.manimObject.shape.ident,
                                     assignedValue.binaryTreeValue!!.style,
-                            ))
+                                )
+                            )
                         }
                         variables[node.identifier.identifier] = assignedValue
                     }
@@ -473,21 +493,22 @@ class VirtualMachine(
                 node.binaryTreeValue!!.value = btNodeValue
                 val instructions = mutableListOf<ManimInstr>(TreeEditValue(node, childValue, node.binaryTreeValue!!))
                 if (node.binaryTreeValue != null) {
-                    if(node.binaryTreeValue!!.animatedStyle != null) {
-                        instructions.add(0,
-                                TreeNodeRestyle(
-                                        node.manimObject.shape.ident,
-                                        node.binaryTreeValue!!.animatedStyle!!,
-                                        node.binaryTreeValue!!.animatedStyle!!.highlight,
-                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
-                                )
+                    if (node.binaryTreeValue!!.animatedStyle != null) {
+                        instructions.add(
+                            0,
+                            TreeNodeRestyle(
+                                node.manimObject.shape.ident,
+                                node.binaryTreeValue!!.animatedStyle!!,
+                                node.binaryTreeValue!!.animatedStyle!!.highlight,
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
                         )
                         instructions.add(
-                                TreeNodeRestyle(
-                                        node.manimObject.shape.ident,
-                                        node.binaryTreeValue!!.style,
-                                        animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
-                                )
+                            TreeNodeRestyle(
+                                node.manimObject.shape.ident,
+                                node.binaryTreeValue!!.style,
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
                         )
                     }
                     linearRepresentation.addAll(instructions)
@@ -527,12 +548,14 @@ class VirtualMachine(
 
                 if (parent.binaryTreeValue != null) {
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(TreeNodeRestyle(
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.animatedStyle!!,
                                 parent.binaryTreeValue!!.animatedStyle!!.highlight,
                                 animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
-                        ))
+                            )
+                        )
                     }
 
                     val boundary =
@@ -550,11 +573,13 @@ class VirtualMachine(
                         )
                     )
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(TreeNodeRestyle(
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.style,
                                 animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
-                        ))
+                            )
+                        )
                     }
                 } else {
                     linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft))
@@ -696,18 +721,22 @@ class VirtualMachine(
                 is NodeType.Right -> parentValue.right
                 is NodeType.Left -> parentValue.left
                 is NodeType.Value -> {
-                    if (parentValue.binaryTreeValue!!.animatedStyle != null){
-                    linearRepresentation.add(TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
-                            parentValue.binaryTreeValue!!.animatedStyle!!,
-                            parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
-                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
-                    ))
-                    linearRepresentation.add(TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
-                            parentValue.binaryTreeValue!!.style,
-                            animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
-                    ))
+                    if (parentValue.binaryTreeValue!!.animatedStyle != null) {
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
+                                parentValue.manimObject.shape.ident,
+                                parentValue.binaryTreeValue!!.animatedStyle!!,
+                                parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
+                        )
+                        linearRepresentation.add(
+                            TreeNodeRestyle(
+                                parentValue.manimObject.shape.ident,
+                                parentValue.binaryTreeValue!!.style,
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                            )
+                        )
                     }
                     val value = parentValue.value
                     value
@@ -804,12 +833,16 @@ class VirtualMachine(
                         EmptyMObject,
                         newArray
                     )
-
+                    val dsUID = functionNamePrefix + assignLHS.identifier
                     val ident = variableNameGenerator.generateNameFromPrefix("array")
-                    dataStructureBoundaries[ident] = WideBoundary(maxSize = newArray.size)
+                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = newArray.size)
                     arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                     arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
-                    print(node.internalType)
+                    val position = stylesheet.getPosition(dsUID)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
                         ArrayType(node.internalType),
                         ident,
@@ -819,7 +852,9 @@ class VirtualMachine(
                         textColor = arrayValue2.style.textColor,
                         creationString = arrayValue2.style.creationStyle,
                         runtime = arrayValue2.style.creationTime,
-                        showLabel = arrayValue2.style.showLabel
+                        showLabel = arrayValue2.style.showLabel,
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue2.manimObject = arrayStructure
@@ -962,9 +997,10 @@ class VirtualMachine(
                         return value
                     }
                     val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                    val boundaryShape = dataStructureBoundaries[dataStructureIdentifier]!!
+                    val dsUID = (ds.manimObject as InitManimStack).uid
+                    val boundaryShape = dataStructureBoundaries[dsUID]!!
                     boundaryShape.maxSize++
-                    dataStructureBoundaries[dataStructureIdentifier] = boundaryShape
+                    dataStructureBoundaries[dsUID] = boundaryShape
                     val hasOldMObject = value.manimObject !is EmptyMObject
                     val oldMObject = value.manimObject
                     val newObjectStyle = ds.animatedStyle ?: ds.style
@@ -1043,13 +1079,19 @@ class VirtualMachine(
         }
 
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val dsUID = functionNamePrefix + assignLHS.identifier
             return when (node.type) {
                 is StackType -> {
                     val stackValue = StackValue(EmptyMObject, Stack())
                     val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
-                    dataStructureBoundaries[initStructureIdent] = TallBoundary()
                     stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
                     stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = TallBoundary()
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
                     val (instructions, newObject) = if (numStack == null) {
                         val stackInit = InitManimStack(
@@ -1062,7 +1104,9 @@ class VirtualMachine(
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
                             creationTime = stackValue.style.creationTime,
-                            showLabel = stackValue.style.showLabel
+                            showLabel = stackValue.style.showLabel,
+                            boundaries = boundaries,
+                            uid = dsUID
                         )
                         // Add to stack of objects to keep track of identifier
                         Pair(listOf(stackInit), stackInit)
@@ -1077,7 +1121,10 @@ class VirtualMachine(
                             color = stackValue.style.borderColor,
                             textColor = stackValue.style.textColor,
                             creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime
+                            creationTime = stackValue.style.creationTime,
+                            showLabel = stackValue.style.showLabel,
+                            boundaries = boundaries,
+                            uid = dsUID
                         )
                         Pair(listOf(stackInit), stackInit)
                     }
@@ -1131,12 +1178,19 @@ class VirtualMachine(
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
                     val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
-                    dataStructureBoundaries[ident] = SquareBoundary(maxSize = 1)
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val initTreeStructure = InitTreeStructure(
                         node.type,
                         ident,
                         text = assignLHS.identifier,
-                        root = root
+                        root = root,
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
@@ -1192,10 +1246,16 @@ class VirtualMachine(
             }
             if (assignLHS !is ArrayElemNode) {
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
-                dataStructureBoundaries[ident] = WideBoundary(maxSize = arraySize.value.toInt())
                 if (arrayValue is ArrayValue) {
                     arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                     arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                    val dsUID = functionNamePrefix + assignLHS.identifier
+                    val position = stylesheet.getPosition(dsUID)
+                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
+                    if (stylesheet.userDefinedPositions() && position == null) {
+                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                    }
+                    val boundaries = getBoundaries(position)
                     val arrayStructure = ArrayStructure(
                         node.type,
                         ident,
@@ -1205,7 +1265,9 @@ class VirtualMachine(
                         textColor = arrayValue.style.textColor,
                         creationString = arrayValue.style.creationStyle,
                         runtime = arrayValue.style.creationTime,
-                        showLabel = arrayValue.style.showLabel
+                        showLabel = arrayValue.style.showLabel,
+                        boundaries = boundaries,
+                        uid = dsUID
                     )
                     linearRepresentation.add(arrayStructure)
                     arrayValue.manimObject = arrayStructure
@@ -1249,12 +1311,19 @@ class VirtualMachine(
                 }
             }
 
-            val ident = variableNameGenerator.generateNameFromPrefix("array")
-            dataStructureBoundaries[ident] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
+
 
             if (arrayValue is Array2DValue) {
+                val ident = variableNameGenerator.generateNameFromPrefix("array")
+                val dsUID = functionNamePrefix + assignLHS.identifier
+                val position = stylesheet.getPosition(dsUID)
+                dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
                 arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
+                if (stylesheet.userDefinedPositions() && position == null) {
+                    return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
+                }
+                val boundaries = getBoundaries(position)
                 val arrayStructure = Array2DStructure(
                     node.type,
                     ident,
@@ -1264,7 +1333,9 @@ class VirtualMachine(
                     textColor = arrayValue.style.textColor,
                     creationString = arrayValue.style.creationStyle,
                     runtime = arrayValue.style.creationTime,
-                    showLabel = arrayValue.style.showLabel
+                    showLabel = arrayValue.style.showLabel,
+                    boundaries = boundaries,
+                    uid = dsUID
                 )
                 linearRepresentation.add(arrayStructure)
                 arrayValue.manimObject = arrayStructure
@@ -1360,7 +1431,7 @@ class VirtualMachine(
                     variables,
                     depth,
                     showMoveToLine = showMoveToLine,
-                    stepInto =  stepInto,
+                    stepInto = stepInto,
                     hideCode = hideCode
                 ).runFrame()
 

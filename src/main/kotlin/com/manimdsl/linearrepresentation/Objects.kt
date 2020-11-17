@@ -127,10 +127,13 @@ data class VariableBlock(
 sealed class DataStructureMObject(
     open val type: DataStructureType,
     open val ident: String,
+    open val uid: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : MObject {
 
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+
+    abstract fun setShape()
 
 }
 
@@ -140,7 +143,7 @@ data class NodeStructure(
     val depth: Int,
     override val shape: Shape = NodeShape(ident, value)
 
-): MObject {
+) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = ${shape.getConstructor()}"
@@ -149,20 +152,24 @@ data class NodeStructure(
 }
 
 data class InitTreeStructure(
-        override val type: DataStructureType,
-        override val ident: String,
-        private var boundaries: List<Pair<Double, Double>> = emptyList(),
-        private var maxSize: Int = -1,
-        val text: String,
-        val root: BinaryTreeNodeValue,
-
-        ): DataStructureMObject(type, ident) {
+    override val type: DataStructureType,
+    override val ident: String,
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1,
+    val text: String,
+    val root: BinaryTreeNodeValue,
+    override val uid: String
+) : DataStructureMObject(type, ident, uid) {
     override var shape: Shape = NullShape
+
+    override fun setShape() {
+        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
+    }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = InitTreeShape(ident, "\"$text\"", root, boundaries)
+        setShape()
     }
 
     override fun toPython(): List<String> {
@@ -186,9 +193,10 @@ data class InitManimStack(
     val showLabel: Boolean? = null,
     val creationStyle: String? = null,
     val creationTime: Double? = null,
-    private var boundary: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1
-) : DataStructureMObject(type, ident, boundary) {
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1,
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -201,10 +209,14 @@ data class InitManimStack(
         return python
     }
 
+    override fun setShape() {
+        shape = InitManimStackShape(ident, text, boundaries, alignment, color, textColor)
+    }
+
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
-        boundary = corners
-        shape = InitManimStackShape(ident, text, boundary, alignment, color, textColor)
+        boundaries = corners
+        setShape()
     }
 }
 
@@ -219,8 +231,9 @@ data class ArrayStructure(
     override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
@@ -233,13 +246,17 @@ data class ArrayStructure(
             shape.getConstructor(),
             if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
             "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
-         )
+        )
+    }
+
+    override fun setShape() {
+        shape = ArrayShape(ident, values, text, boundaries, color, textColor, showLabel)
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = ArrayShape(ident, values, text, boundaries, color, textColor, showLabel)
+        setShape()
     }
 }
 
@@ -254,8 +271,9 @@ data class Array2DStructure(
     override val runtime: Double? = null,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : DataStructureMObject(type, ident, boundaries), ManimInstrWithRuntime {
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    override val uid: String
+) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
     override var shape: Shape = NullShape
 
     init {
@@ -272,10 +290,14 @@ data class Array2DStructure(
         )
     }
 
+    override fun setShape() {
+        shape = Array2DShape(ident, values, text, boundaries, color, textColor, showLabel)
+    }
+
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         maxSize = newMaxSize
         boundaries = corners
-        shape = Array2DShape(ident, values, text, boundaries, color, textColor, showLabel)
+        setShape()
     }
 }
 
