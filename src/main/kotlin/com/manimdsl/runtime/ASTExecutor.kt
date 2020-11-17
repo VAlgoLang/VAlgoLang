@@ -6,6 +6,7 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
@@ -42,7 +43,12 @@ class VirtualMachine(
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                displayCode.add(fileLines[it])
+                if (fileLines[it].isEmpty()){
+                    displayCode.add(" ")
+                }
+                else {
+                    displayCode.add(fileLines[it])
+                }
                 displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
@@ -56,7 +62,7 @@ class VirtualMachine(
             linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
             linearRepresentation.add(
                 CodeBlock(
-                    displayCode.map { it.chunked(WRAP_LINE_LENGTH) },
+                    wrapCode(displayCode),
                     codeBlockVariable,
                     codeTextVariable,
                     pointerVariable
