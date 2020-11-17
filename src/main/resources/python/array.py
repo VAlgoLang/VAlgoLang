@@ -17,7 +17,7 @@ class Array:
             offset = (boundary_width - ((square_dim * len(values)) + title_width)) / 2
 
         self.title = VGroup(Text(title).set_width(title_width))
-        if(self.title.get_height() > 0.5 * boundary_height):
+        if title_width != 0 and self.title.get_height() > 0.5 * boundary_height:
             self.title.scale(0.5 * boundary_height / self.title.get_height())
 
         self.title.move_to(

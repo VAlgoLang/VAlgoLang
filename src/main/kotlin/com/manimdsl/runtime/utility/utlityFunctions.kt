@@ -37,10 +37,10 @@ fun wrapLine(line : String): Int{
 fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
     val boundaries = mutableListOf<Pair<Double, Double>>()
     if (position != null) {
-        val left = position.x!!.toDouble()
-        val right = left + position.width!!.toDouble()
-        val bottom = position.y!!.toDouble()
-        val top = bottom + position.height!!.toDouble()
+        val left = position.x
+        val right = left + position.width
+        val bottom = position.y
+        val top = bottom + position.height
         boundaries.addAll(listOf(Pair(left, top), Pair(right, top), Pair(left, bottom), Pair(right, bottom)))
     }
     return boundaries

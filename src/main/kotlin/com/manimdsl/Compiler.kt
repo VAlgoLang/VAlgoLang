@@ -77,6 +77,7 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
 
 enum class AnimationQuality {
     LOW,
+    MEDIUM,
     HIGH;
 
     override fun toString(): String {
@@ -112,7 +113,6 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"])
     var boundaries: Boolean = false
 
-
     @Option(
         names = ["-q", "--quality"],
         defaultValue = "low",
@@ -122,6 +122,7 @@ class DSLCommandLineArguments : Callable<Int> {
         when (quality) {
             AnimationQuality.LOW -> manimArguments.add("-l")
             AnimationQuality.HIGH -> manimArguments.add("--high_quality")
+            AnimationQuality.MEDIUM -> manimArguments.add("-m")
         }
     }
 

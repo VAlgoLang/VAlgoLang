@@ -87,7 +87,7 @@ object StyleSheetValidator {
 
     private fun checkValidPositions(positions: Collection<PositionProperties>) {
         positions.forEach { position ->
-            if (position.x == null || position.y == null || position.width == null || position.height == null) {
+            if (position.width == 0.0 || position.height == 0.0) {
                 throw JsonSyntaxException("Missing field entry in position definition")
             }
         }

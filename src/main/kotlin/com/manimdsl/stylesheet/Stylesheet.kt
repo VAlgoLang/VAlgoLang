@@ -47,10 +47,10 @@ data class StyleProperties(
 ) : StylesheetProperty()
 
 data class PositionProperties(
-    val x: String? = null,
-    val y: String? = null,
-    val width: String? = null,
-    val height: String? = null,
+    val x: Double,
+    val y: Double,
+    val width: Double,
+    val height: Double,
 )
 
 data class StylesheetFromJSON(
@@ -74,7 +74,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
-                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing entry")) }) {
+                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field")) }) {
                     println(e.message)
                 } else {
                     println("Could not parse JSON")
@@ -107,9 +107,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     }
 
     fun getPosition(identifier: String): PositionProperties? {
-        val position = stylesheet.positions.getOrDefault(identifier, PositionProperties())
-
-        return if (position == PositionProperties()) null else position
+        return stylesheet.positions[identifier]
     }
 
     fun userDefinedPositions(): Boolean {
