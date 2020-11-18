@@ -5,7 +5,7 @@ import com.manimdsl.errorhandling.ErrorHandler
 
 data class Positioning(val x: Double, val y: Double, val width: Double, val height: Double)
 
-sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
+sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCentralise: Boolean = true) {
 
     abstract var width: Double
     abstract var height: Double
@@ -13,7 +13,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
     abstract var maxSize: Int
     abstract val priority: Int
 
-    abstract val minDimensions: Pair<Int, Int>
+    abstract val `minDimensions`: Pair<Double, Double>
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
     abstract val strictRatio: Boolean
@@ -31,7 +31,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
-    fun positioning() : Positioning {
+    fun positioning(): Positioning {
         return Positioning(x1, y1, width, height)
     }
 
@@ -76,7 +76,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 }
 
 data class SquareBoundary(
-    override val minDimensions: Pair<Int, Int> = Pair(4, 4),
+    override val minDimensions: Pair<Double, Double> = Pair(4.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
     override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
@@ -100,7 +100,7 @@ data class SquareBoundary(
 }
 
 data class TallBoundary(
-    override val minDimensions: Pair<Int, Int> = Pair(2, 4),
+    override val minDimensions: Pair<Double, Double> = Pair(2.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
     override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
@@ -124,7 +124,7 @@ data class TallBoundary(
 }
 
 data class WideBoundary(
-    override val minDimensions: Pair<Int, Int> = Pair(4, 2),
+    override val minDimensions: Pair<Double, Double> = Pair(4.0, 2.0),
     override var width: Double = minDimensions.first.toDouble(),
     override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
 ) : BoundaryShape() {
@@ -193,13 +193,19 @@ class Scene {
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
 
-    fun compute(shapes: List<Pair<String, BoundaryShape>>, fullScreen: Boolean): Pair<ExitStatus, Map<String, BoundaryShape>> {
+    fun compute(
+        shapes: List<Pair<String, BoundaryShape>>,
+        fullScreen: Boolean
+    ): Pair<ExitStatus, Map<String, BoundaryShape>> {
         val total = shapes.sumByDouble { it.second.area() }
         if (total > sceneShape.area()) {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
-            val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }
+            // TODO: Uncomment this when placement is done by boundaries on manim side
+//            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(true)
+//            sceneShapes.addAll(initialShapes.map { it.second })
+            val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }.toMutableList()
             sortedShapes.forEach {
                 val didAddToScene = when (it.second) {
                     is WideBoundary -> addToScene(Corner.BL, it.second)
@@ -210,8 +216,28 @@ class Scene {
             }
             sortedShapes.forEach { maximise(it.second) }
             centralise(fullScreen)
+//            sortedShapes.addAll(initialShapes)
             return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
         }
+    }
+
+
+    private fun initCodeAndVariableBlock(includeVariableBlock: Boolean = true): List<Pair<String, BoundaryShape>> {
+        val initialShapes = mutableListOf<Pair<String, BoundaryShape>>()
+        val codeHeight = if (includeVariableBlock) 2 * (8.0 / 3) else fullSceneShape.height
+        val codeShape = TallBoundary(minDimensions = Pair(5.0, codeHeight), maxSize = Int.MAX_VALUE)
+        codeShape.x1 = fullSceneShape.x1
+        codeShape.y1 = fullSceneShape.y1
+        codeShape.canCentralise = false
+        initialShapes.add(Pair("_code", codeShape))
+        if(includeVariableBlock) {
+            val variableShape = TallBoundary(minDimensions = Pair(5.0, (8.0 / 3.0)))
+            variableShape.x1 = fullSceneShape.x1
+            variableShape.y1 = fullSceneShape.y1 + codeShape.height
+            variableShape.canCentralise = false
+            initialShapes.add(Pair("_variables", variableShape))
+        }
+        return initialShapes.toList()
     }
 
     private fun addToScene(corner: Corner, boundaryShape: BoundaryShape, secondScan: Boolean = false): Boolean {
@@ -244,10 +270,12 @@ class Scene {
 
     private fun centralise(fullScreen: Boolean = false) {
         if (sceneShapes.isNotEmpty()) {
-            val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first}
-            val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
-            val topYCoord = sceneShapes.map { it.corners()[0] }.maxOf { it.second }
-            val bottomYCoord = sceneShapes.map { it.corners()[2] }.minOf { it.second }
+            val centeringShapes = sceneShapes.filter { it.canCentralise }
+
+            val leftXCoord = centeringShapes.map { it.corners()[0] }.minOf { it.first }
+            val rightXCoord = centeringShapes.map { it.corners()[1] }.maxOf { it.first }
+            val topYCoord = centeringShapes.map { it.corners()[0] }.maxOf { it.second }
+            val bottomYCoord = centeringShapes.map { it.corners()[2] }.minOf { it.second }
 
             val shapeOverallHeight = topYCoord - bottomYCoord
             val shapesOverallWidth = rightXCoord - leftXCoord
@@ -255,10 +283,10 @@ class Scene {
             val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
 
             if (availableWidth > shapesOverallWidth) {
-                sceneShapes.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
+                centeringShapes.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
             }
             if (avaliableHeight > shapeOverallHeight) {
-                sceneShapes.forEach {
+                centeringShapes.forEach {
                     when (it) {
                         !is SquareBoundary -> it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2)
                         else -> it.shiftVerticalUpwards(-(shapeOverallHeight - avaliableHeight) / 2)
