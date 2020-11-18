@@ -406,72 +406,70 @@ class VirtualMachine(
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
-
-            with(node.identifier) {
-                when (this) {
-                    is BinaryTreeRootAccessNode -> {
-                        if (assignedValue is EmptyValue) {
-                            return executeTreeDelete((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode)
-                        }
-                        if (assignedValue is DoubleValue) {
-                            return executeTreeEdit(
-                                (variables[identifier]!! as BinaryTreeValue).value,
-                                elemAccessNode,
-                                assignedValue
-                            )
-                        }
-                        return executeTreeAppend(
-                            (variables[identifier]!! as BinaryTreeValue).value,
-                            elemAccessNode,
-                            assignedValue as BinaryTreeNodeValue
-                        )
-                    }
-                    is BinaryTreeNodeElemAccessNode -> {
-                        if (assignedValue is NullValue) {
-                            return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
-                        }
-                        if (assignedValue is DoubleValue) {
-                            return executeTreeEdit(
-                                (variables[identifier]!! as BinaryTreeNodeValue),
-                                this,
-                                assignedValue
-                            )
-                        }
-                        if (assignedValue is BinaryTreeNodeValue) {
-                            return executeTreeAppend(
-                                (variables[identifier]!! as BinaryTreeNodeValue),
-                                this,
-                                assignedValue
-                            )
-                        }
-                    }
-                    is IdentifierNode -> {
-                        if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
-                            linearRepresentation.add(
-                                TreeNodeRestyle(
-                                    assignedValue.manimObject.shape.ident,
-                                    assignedValue.binaryTreeValue!!.animatedStyle!!,
-                                    assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
-                                )
-                            )
-                            linearRepresentation.add(
-                                TreeNodeRestyle(
-                                    assignedValue.manimObject.shape.ident,
-                                    assignedValue.binaryTreeValue!!.style,
-                                )
-                            )
-                        }
-                        variables[node.identifier.identifier] = assignedValue
-                    }
-                    is ArrayElemNode -> {
-
-                        return executeArrayElemAssignment(this, assignedValue)
-                    }
-                }
-            }
             return if (assignedValue is RuntimeError) {
                 assignedValue
             } else {
+                with(node.identifier) {
+                    when (this) {
+                        is BinaryTreeRootAccessNode -> {
+                            if (assignedValue is EmptyValue) {
+                                return executeTreeDelete((variables[identifier]!! as BinaryTreeValue).value, elemAccessNode)
+                            }
+                            if (assignedValue is DoubleValue) {
+                                return executeTreeEdit(
+                                    (variables[identifier]!! as BinaryTreeValue).value,
+                                    elemAccessNode,
+                                    assignedValue
+                                )
+                            }
+                            return executeTreeAppend(
+                                (variables[identifier]!! as BinaryTreeValue).value,
+                                elemAccessNode,
+                                assignedValue as BinaryTreeNodeValue
+                            )
+                        }
+                        is BinaryTreeNodeElemAccessNode -> {
+                            if (assignedValue is NullValue) {
+                                return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
+                            }
+                            if (assignedValue is DoubleValue) {
+                                return executeTreeEdit(
+                                    (variables[identifier]!! as BinaryTreeNodeValue),
+                                    this,
+                                    assignedValue
+                                )
+                            }
+                            if (assignedValue is BinaryTreeNodeValue) {
+                                return executeTreeAppend(
+                                    (variables[identifier]!! as BinaryTreeNodeValue),
+                                    this,
+                                    assignedValue
+                                )
+                            }
+                        }
+                        is IdentifierNode -> {
+                            if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
+                                linearRepresentation.add(
+                                    TreeNodeRestyle(
+                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.binaryTreeValue!!.animatedStyle!!,
+                                        assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                    )
+                                )
+                                linearRepresentation.add(
+                                    TreeNodeRestyle(
+                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.binaryTreeValue!!.style,
+                                    )
+                                )
+                            }
+                            variables[node.identifier.identifier] = assignedValue
+                        }
+                        is ArrayElemNode -> {
+                            return executeArrayElemAssignment(this, assignedValue)
+                        }
+                    }
+                }
                 if (node.identifier is IdentifierNode) {
                     insertVariable(node.identifier.identifier, assignedValue)
                     updateVariableState()
