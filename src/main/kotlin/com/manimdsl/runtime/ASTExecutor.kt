@@ -216,6 +216,8 @@ class VirtualMachine(
                 if (condition is BoolValue && factor is DoubleValue) {
                     if (condition.value) {
                         animationSpeeds.addFirst(1.0/factor.value)
+                    } else {
+                        animationSpeeds.addFirst(animationSpeeds.first)
                     }
                     EmptyValue
                 } else if (condition is BoolValue){
