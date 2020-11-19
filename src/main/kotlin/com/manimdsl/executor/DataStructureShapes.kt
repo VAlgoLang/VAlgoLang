@@ -2,8 +2,7 @@ package com.manimdsl.executor
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
-
-data class Positioning(val x: Double, val y: Double, val width: Double, val height: Double)
+import com.manimdsl.stylesheet.PositionProperties
 
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 
@@ -31,8 +30,8 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
-    fun positioning() : Positioning {
-        return Positioning(x1, y1, width, height)
+    fun positioning() : PositionProperties {
+        return PositionProperties(x1, y1, width, height)
     }
 
     fun area(): Double {

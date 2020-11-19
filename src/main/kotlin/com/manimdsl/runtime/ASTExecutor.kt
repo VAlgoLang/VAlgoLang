@@ -1,12 +1,13 @@
 package com.manimdsl.runtime
 
-import com.google.gson.Gson
+import com.manimdsl.BoundaryCalculationOptions
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
+import com.manimdsl.runtime.utility.printPositioning
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
@@ -19,7 +20,7 @@ class VirtualMachine(
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet,
-    private val returnBoundaries: Boolean = false
+    private val returnBoundaries: BoundaryCalculationOptions = BoundaryCalculationOptions.NONE
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -81,11 +82,10 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else if (!stylesheet.userDefinedPositions()) {
+        } else if (returnBoundaries == BoundaryCalculationOptions.AUTO || !stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
-            if (returnBoundaries) {
-                val gson = Gson()
-                println(gson.toJson(computedBoundaries.map { it.key to it.value.positioning() }.toMap()))
+            if (returnBoundaries != BoundaryCalculationOptions.NONE) {
+                printPositioning(computedBoundaries.mapValues { it.value.positioning() })
             }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
@@ -99,6 +99,9 @@ class VirtualMachine(
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         } else {
+            if(returnBoundaries == BoundaryCalculationOptions.STYLESHEET) {
+                printPositioning(stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys })
+            }
             linearRepresentation.forEach {
                 if (it is DataStructureMObject) {
                     it.setShape()
