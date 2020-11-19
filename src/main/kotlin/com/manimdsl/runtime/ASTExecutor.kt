@@ -30,7 +30,7 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
-    private val acceptableNonStatements = setOf("}", "{", "")
+    private var acceptableNonStatements = setOf("}", "{")
     private val MAX_DISPLAYED_VARIABLES = 4
     private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
@@ -39,16 +39,24 @@ class VirtualMachine(
     private val hideCode = stylesheet.getHideCode()
 
     init {
+        print(stylesheet.getDisplayNewLinesInCode())
+        if (stylesheet.getDisplayNewLinesInCode()) {
+            acceptableNonStatements = acceptableNonStatements.plus("")
+        }
         fileLines.indices.forEach {
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
-                if (fileLines[it].isEmpty() && stylesheet.getSyntaxHighlighting()) {
-                    displayCode.add(" ")
-                } else {
-                    displayCode.add(fileLines[it])
+                if (fileLines[it].isEmpty()){
+                    if (stylesheet.getDisplayNewLinesInCode()) {
+                        displayCode.add(" ")
+                        displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                    }
                 }
-                displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                 else {
+                    displayCode.add(fileLines[it])
+                    displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                }
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
             }
@@ -245,7 +253,7 @@ class VirtualMachine(
         }
 
         private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine && !hideCode) {
+            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
                 linearRepresentation.add(
                     MoveToLine(
                         displayLine[line - 1],

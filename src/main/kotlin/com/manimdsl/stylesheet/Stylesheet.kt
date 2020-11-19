@@ -58,6 +58,7 @@ data class StylesheetFromJSON(
     val hideCode: Boolean = false,
     val syntaxHighlighting: Boolean = true,
     var syntaxHighlightingStyle: String = "inkpot",
+    val displayNewLinesInCode: Boolean = true,
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap(),
     val positions: Map<String, PositionProperties> = emptyMap()
@@ -130,6 +131,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getSyntaxHighlightingStyle() : String {
         return stylesheet.syntaxHighlightingStyle
+    }
+
+    fun getDisplayNewLinesInCode() : Boolean {
+        return stylesheet.displayNewLinesInCode
     }
 }
 
