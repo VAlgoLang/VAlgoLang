@@ -94,7 +94,7 @@ class ASTExecutorTests {
             "fun f(x: number): number{\n" +
                     "    return x * 3;\n" +
                     "}\n" +
-                    "stepInto { \n" +
+                    "@stepInto { \n" +
                     "let ans = f(3);\n" +
                     "}\n"
 
@@ -136,7 +136,7 @@ class ASTExecutorTests {
             "fun f(x: number): number{\n" +
                     "    return x * 3;\n" +
                     "}\n" +
-                    "stepOver { \n" +
+                    "@stepOver { \n" +
                     "let ans = f(3);\n" +
                     "}\n"
 

@@ -422,14 +422,24 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): ASTNode {
         val isStepInto = ctx.step.type == STEP_INTO
+
+        val condition = if (ctx.condition == null) {
+            BoolNode(ctx.start.line, true)
+        } else {
+            val definedCondition = visit(ctx.condition) as ExpressionNode
+            semanticAnalyser.checkExpressionTypeWithExpectedType(definedCondition, BoolType, symbolTable, ctx)
+            definedCondition
+        }
+
         val statements = mutableListOf<StatementNode>()
 
-        val start = StartCodeTrackingNode(ctx.start.line, isStepInto)
+        val start = StartCodeTrackingNode(ctx.start.line, isStepInto, condition)
         val end = StopCodeTrackingNode(ctx.stop.line, isStepInto)
 
         statements.add(start)
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
+
 
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end

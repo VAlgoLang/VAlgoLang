@@ -6,7 +6,7 @@ COLON: ':';
 DOT: '.';
 EQUAL: '=';
 COMMA: ',';
-
+AT: '@';
 RIGHT: 'right';
 LEFT: 'left';
 VALUE: 'value';
