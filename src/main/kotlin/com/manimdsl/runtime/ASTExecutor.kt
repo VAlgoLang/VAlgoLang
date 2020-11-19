@@ -1,15 +1,15 @@
 package com.manimdsl.runtime
 
-import com.manimdsl.BoundaryCalculationOptions
+import com.google.gson.Gson
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
-import com.manimdsl.runtime.utility.printPositioning
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
@@ -20,7 +20,7 @@ class VirtualMachine(
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet,
-    private val returnBoundaries: BoundaryCalculationOptions = BoundaryCalculationOptions.NONE
+    private val returnBoundaries: Boolean
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
@@ -69,7 +69,6 @@ class VirtualMachine(
                 )
             )
         }
-
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(
             program.statements.first().lineNumber,
@@ -82,10 +81,14 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else if (returnBoundaries == BoundaryCalculationOptions.AUTO || !stylesheet.userDefinedPositions()) {
+        } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
-            if (returnBoundaries != BoundaryCalculationOptions.NONE) {
-                printPositioning(computedBoundaries.mapValues { it.value.positioning() })
+            if (returnBoundaries) {
+                val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
+                boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
+                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys }
+                val gson = Gson()
+                println(gson.toJson(boundaries))
             }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
@@ -99,9 +102,6 @@ class VirtualMachine(
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         } else {
-            if(returnBoundaries == BoundaryCalculationOptions.STYLESHEET) {
-                printPositioning(stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys })
-            }
             linearRepresentation.forEach {
                 if (it is DataStructureMObject) {
                     it.setShape()

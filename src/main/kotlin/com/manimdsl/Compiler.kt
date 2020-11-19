@@ -10,7 +10,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: BoundaryCalculationOptions) {
+private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: Boolean) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -42,7 +42,7 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
 
     val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet, boundaries).runProgram()
 
-    if(boundaries != BoundaryCalculationOptions.NONE) {
+    if(boundaries) {
         exitProcess(runtimeErrorStatus.code)
     }
 
@@ -85,17 +85,6 @@ enum class AnimationQuality {
     }
 }
 
-enum class BoundaryCalculationOptions {
-    STYLESHEET,
-    AUTO,
-    NONE;
-
-    override fun toString(): String {
-        return this.name.toLowerCase()
-    }
-}
-
-
 @Command(
     name = "manimdsl",
     mixinStandardHelpOptions = true,
@@ -122,7 +111,7 @@ class DSLCommandLineArguments : Callable<Int> {
     var manim: Boolean = false
 
     @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"], hidden = true)
-    var boundaries: BoundaryCalculationOptions = BoundaryCalculationOptions.NONE
+    var boundaries: Boolean = false
 
     @Option(
         names = ["-q", "--quality"],

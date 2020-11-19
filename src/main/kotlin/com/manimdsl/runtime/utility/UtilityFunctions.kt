@@ -1,6 +1,5 @@
 package com.manimdsl.runtime.utility
 
-import com.google.gson.Gson
 import com.manimdsl.stylesheet.PositionProperties
 
 private val WRAP_LINE_LENGTH = 50
@@ -45,9 +44,4 @@ fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
         boundaries.addAll(listOf(Pair(left, top), Pair(right, top), Pair(left, bottom), Pair(right, bottom)))
     }
     return boundaries
-}
-
-fun printPositioning(boundaries: Map<String, PositionProperties>) {
-    val gson = Gson()
-    println(gson.toJson(boundaries))
 }
