@@ -20,7 +20,7 @@ class VirtualMachine(
     private val statements: MutableMap<Int, StatementNode>,
     private val fileLines: List<String>,
     private val stylesheet: Stylesheet,
-    private val returnBoundaries: Boolean
+    private val returnBoundaries: Boolean = false
 ) {
 
     private val linearRepresentation = mutableListOf<ManimInstr>()
