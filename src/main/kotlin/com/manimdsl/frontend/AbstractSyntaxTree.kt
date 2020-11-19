@@ -34,12 +34,21 @@ data class CommentNode(override val lineNumber: Int, val content: String) : Anim
 data class CodeTrackingNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
     NoRenderAnimationNode(lineNumber)
 
-// Step into code and avoid additional animations
-data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, val condition: ExpressionNode) :
-    NoRenderAnimationNode(lineNumber)
+sealed class AnnotationBlockNode(override val lineNumber: Int, open val condition: ExpressionNode): NoRenderAnimationNode(lineNumber)
 
-data class StopCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean) :
-    NoRenderAnimationNode(lineNumber)
+// Step into code and avoid additional animations
+data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, override val condition: ExpressionNode) :
+    AnnotationBlockNode(lineNumber, condition)
+
+data class StopCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, override val condition: ExpressionNode) :
+        AnnotationBlockNode(lineNumber, condition)
+
+// Step into code and make speed changes
+data class StartSpeedChangeNode(override val lineNumber: Int, val speedChange: ExpressionNode, override val condition: ExpressionNode) :
+        AnnotationBlockNode(lineNumber, condition)
+
+data class StopSpeedChangeNode(override val lineNumber: Int, override val condition: ExpressionNode) :
+        AnnotationBlockNode(lineNumber, condition)
 
 // Code Specific Nodes holding line number
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)

@@ -218,6 +218,10 @@ fun forLoopIdentifierBeingReassignedError(identifier: String, ctx: ParserRuleCon
     addSemanticError("Cannot reassign to variable $identifier being used in for loop header", getErrorLinePos(ctx))
 }
 
+fun invalidArgumentsForAnnotationError(annotation: String, ctx: ParserRuleContext) {
+    addSemanticError("Invalid arguments supplied to annotation ${annotation}.", getErrorLinePos(ctx))
+}
+
 /* Helper function that returns line and character position for errors */
 private fun getErrorLinePos(ctx: ParserRuleContext): String {
     val line = ctx.getStart().line
