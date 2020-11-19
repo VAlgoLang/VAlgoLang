@@ -35,7 +35,7 @@ data class CodeTrackingNode(override val lineNumber: Int, val endLineNumber: Int
     NoRenderAnimationNode(lineNumber)
 
 // Step into code and avoid additional animations
-data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean) :
+data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, val condition: ExpressionNode) :
     NoRenderAnimationNode(lineNumber)
 
 data class StopCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean) :

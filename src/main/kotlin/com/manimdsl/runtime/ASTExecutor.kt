@@ -210,9 +210,16 @@ class VirtualMachine(
             is LoopStatementNode -> executeLoopStatement(statement)
             is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
             is StartCodeTrackingNode -> {
-                previousStepIntoState = stepInto
-                stepInto = statement.isStepInto
-                EmptyValue
+                val condition = executeExpression(statement.condition)
+                if (condition is BoolValue) {
+                    previousStepIntoState = stepInto
+                    if (condition.value) {
+                        stepInto = statement.isStepInto
+                    }
+                    EmptyValue
+                } else {
+                    condition
+                }
             }
             is StopCodeTrackingNode -> {
                 stepInto = previousStepIntoState
