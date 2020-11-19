@@ -65,7 +65,7 @@ BREAK: 'break';
 CONTINUE: 'continue';
 STEP_INTO: 'stepInto';
 STEP_OVER: 'stepOver';
-SPEED_UP: 'speedUp';
+SPEED: 'speed';
 TO_NUMBER: 'toNumber';
 TO_CHAR: 'toChar';
 

@@ -47,7 +47,8 @@ data class CodeBlock(
         val ident: String,
         val codeTextName: String,
         val pointerName: String,
-        val textColor: String? = null, override val runtime: Double,
+        val textColor: String? = null,
+        override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = CodeBlockShape(ident, textColor)
 
@@ -108,7 +109,8 @@ data class VariableBlock(
         val ident: String,
         val variableGroupName: String,
         val variableFrame: String,
-        val textColor: String? = null, override val runtime: Double,
+        val textColor: String? = null,
+        override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
 

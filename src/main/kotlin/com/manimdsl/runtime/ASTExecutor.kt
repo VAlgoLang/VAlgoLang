@@ -214,6 +214,9 @@ class VirtualMachine(
                 val condition = executeExpression(statement.condition)
                 val factor = executeExpression(statement.speedChange)
                 if (condition is BoolValue && factor is DoubleValue) {
+                    if (factor.value <= 0) {
+                        RuntimeError("Non positive speed change provided", lineNumber = statement.lineNumber)
+                    }
                     if (condition.value) {
                         animationSpeeds.addFirst(1.0/factor.value)
                     } else {
