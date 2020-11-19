@@ -205,7 +205,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private fun visitAssignLHS(ctx: Assignment_lhsContext): Pair<Type, AssignLHS> {
         return when (ctx) {
-//            is RootElemAssignmentContext -> visitNodeAssignmentLHS(ctx)
             is IdentifierAssignmentContext -> visitIdentifierAssignmentLHS(ctx)
             is ArrayElemAssignmentContext -> visitArrayAssignmentLHS(ctx)
             is NodeElemAssignmentContext -> visitNodeAssignmentLHS(ctx)

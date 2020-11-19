@@ -42,8 +42,9 @@ sealed class DataStructureType(
 
 interface DataStructureMethod {
     val returnType: Type
+
     // List of pairs containing type to whether it is a required argument
-    val argumentTypes:  List<Pair<Type, Boolean>>
+    val argumentTypes: List<Pair<Type, Boolean>>
 
     // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
@@ -90,7 +91,11 @@ data class ArrayType(
 
     data class Swap(
         override val returnType: Type = VoidType,
-        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(NumberType to true, NumberType to true, BoolType to false),
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(
+            NumberType to true,
+            NumberType to true,
+            BoolType to false
+        ),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
@@ -111,7 +116,8 @@ data class ArrayType(
 
     fun setTo2D() {
         is2D = true
-        methods["swap"] = Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
+        methods["swap"] =
+            Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
     }
 }
 
@@ -139,9 +145,9 @@ data class TreeType(
     }
 
     class Root(
-            override val returnType: Type,
-            override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
-            override val varargs: Boolean = false
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
     ) : DataStructureMethod {
         override fun toString(): String {
             return "root"
@@ -179,7 +185,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ): DataStructureMethod {
+    ) : DataStructureMethod {
         override fun toString(): String {
             return "left"
         }
@@ -189,7 +195,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ): DataStructureMethod {
+    ) : DataStructureMethod {
         override fun toString(): String {
             return "right"
         }
@@ -304,7 +310,7 @@ data class StackType(
     override fun toString(): String = "Stack<$internalType>"
 }
 
-object NullType: Type() {
+object NullType : Type() {
     override fun toString(): String {
         return "null"
     }
@@ -315,6 +321,7 @@ object ErrorType : Type() {
         return "error"
     }
 }
+
 object VoidType : Type() {
     override fun toString(): String {
         return "void"
