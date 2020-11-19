@@ -1,5 +1,5 @@
 class Code_block:
-    def __init__(self, code, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, code, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE, text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()
 
         if syntax_highlighting:
@@ -12,7 +12,7 @@ class Code_block:
             fp.close()
 
             self.paragraph = Code("sample.re", style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
-                              tab_width=2).code
+                              tab_width=tab_spacing).code
             group.add(self.paragraph)
             group.set_width(5)
             self.all = self.paragraph

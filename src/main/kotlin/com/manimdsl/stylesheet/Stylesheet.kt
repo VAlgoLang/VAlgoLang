@@ -56,9 +56,10 @@ data class PositionProperties(
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
-    val syntaxHighlighting: Boolean = true,
+    val syntaxHighlightingOn: Boolean = true,
     var syntaxHighlightingStyle: String = "inkpot",
     val displayNewLinesInCode: Boolean = true,
+    val tabSpacing: Int = 2,
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap(),
     val positions: Map<String, PositionProperties> = emptyMap()
@@ -91,7 +92,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE")
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
+                borderColor = "BLUE",
+                textColor = "WHITE"
+            )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
         return style merge dataStructureStyle
@@ -99,7 +103,11 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(borderColor = "BLUE", textColor = "WHITE", animate = AnimationProperties())
+            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
+                borderColor = "BLUE",
+                textColor = "WHITE",
+                animate = AnimationProperties()
+            )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (style.animate
             ?: AnimationProperties()) merge (dataStructureStyle.animate
@@ -109,33 +117,22 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
-    fun getPosition(identifier: String): PositionProperties? {
-        return stylesheet.positions[identifier]
-    }
+    fun getPosition(identifier: String): PositionProperties? = stylesheet.positions[identifier]
 
-    fun userDefinedPositions(): Boolean {
-        return stylesheet.positions.isNotEmpty()
-    }
+    fun userDefinedPositions(): Boolean = stylesheet.positions.isNotEmpty()
 
-    fun getStepIntoIsDefault(): Boolean {
-        return stylesheet.codeTracking == "stepInto"
-    }
+    fun getStepIntoIsDefault(): Boolean = stylesheet.codeTracking == "stepInto"
 
-    fun getHideCode(): Boolean {
-        return stylesheet.hideCode
-    }
+    fun getHideCode(): Boolean = stylesheet.hideCode
 
-    fun getSyntaxHighlighting(): Boolean {
-        return stylesheet.syntaxHighlighting
-    }
+    fun getSyntaxHighlighting(): Boolean = stylesheet.syntaxHighlightingOn
 
-    fun getSyntaxHighlightingStyle() : String {
-        return stylesheet.syntaxHighlightingStyle
-    }
+    fun getSyntaxHighlightingStyle(): String = stylesheet.syntaxHighlightingStyle
 
-    fun getDisplayNewLinesInCode() : Boolean {
-        return stylesheet.displayNewLinesInCode
-    }
+    fun getDisplayNewLinesInCode(): Boolean = stylesheet.displayNewLinesInCode
+
+    fun getTabSpacing(): Int = stylesheet.tabSpacing
+
 }
 
 // Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679

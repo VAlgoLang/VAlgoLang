@@ -39,7 +39,6 @@ class VirtualMachine(
     private val hideCode = stylesheet.getHideCode()
 
     init {
-        print(stylesheet.getDisplayNewLinesInCode())
         if (stylesheet.getDisplayNewLinesInCode()) {
             acceptableNonStatements = acceptableNonStatements.plus("")
         }
@@ -73,8 +72,9 @@ class VirtualMachine(
                     codeBlockVariable,
                     codeTextVariable,
                     pointerVariable,
-                    syntaxHighlighting = stylesheet.getSyntaxHighlighting(),
-                    syntaxHighlightingStyle = stylesheet.getSyntaxHighlightingStyle()
+                    syntaxHighlightingOn = stylesheet.getSyntaxHighlighting(),
+                    syntaxHighlightingStyle = stylesheet.getSyntaxHighlightingStyle(),
+                    tabSpacing = stylesheet.getTabSpacing()
                 )
             )
         }
