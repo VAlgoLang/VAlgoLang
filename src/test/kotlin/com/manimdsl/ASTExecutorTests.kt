@@ -82,8 +82,7 @@ class ASTExecutorTests {
             symbolTable,
             lineNodeMap,
             program.split("\n"),
-            Stylesheet(null, symbolTable),
-            false
+            Stylesheet(null, symbolTable)
         ).runProgram()
         assertEquals(expected.toString(), actual.toString())
     }
