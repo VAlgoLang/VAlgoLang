@@ -566,4 +566,18 @@ class SemanticAnalysis {
             forLoopIdentifierBeingReassignedError(identifier, ctx)
         }
     }
+
+    fun checkAnnotationArguments(ctx: ParserRuleContext, symbolTable: SymbolTableVisitor, arguments: List<ExpressionNode>) = when (ctx) {
+        is ManimParser.AnimationSpeedUpContext -> {
+            if (arguments.isEmpty() || arguments.size > 2) {
+                invalidArgumentsForAnnotationError("@${ctx.SPEED_UP().symbol.text}", ctx)
+            } else {
+                if (arguments.size == 2) {
+                    checkExpressionTypeWithExpectedType(arguments[1], BoolType, symbolTable, ctx)
+                }
+                checkExpressionTypeWithExpectedType(arguments.first(), NumberType, symbolTable, ctx)
+            }
+        }
+        else -> TODO()
+    }
 }

@@ -24,7 +24,7 @@ fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
     return head;
 }
 
-@speedUp('a', 3, 3) {
+@speedUp('a') {
 let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
 @stepOver {
 let head = Node<number>(4);

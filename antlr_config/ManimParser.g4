@@ -30,7 +30,8 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     | AT annotation                                                      #AnnotationStatement
     ;
 
-annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS condition=expr CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #CodeTrackingStatement;
+annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS condition=expr CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #CodeTrackingStatement
+          | SPEED_UP (OPEN_PARENTHESIS arg_list CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #AnimationSpeedUp;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
 

@@ -36,36 +36,37 @@ class VirtualMachine(
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
-    private val hideCode = stylesheet.getHideCode()
+    private var animationSpeeds = ArrayDeque(listOf(1.0))
 
-    init {
-        fileLines.indices.forEach {
-            if (statements[it + 1] !is NoRenderAnimationNode &&
-                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
-            ) {
-                if (fileLines[it].isEmpty()) {
-                    displayCode.add(" ")
-                } else {
-                    displayCode.add(fileLines[it])
+            init {
+                fileLines.indices.forEach {
+                    if (statements[it + 1] !is NoRenderAnimationNode &&
+                            (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
+                    ) {
+                        if (fileLines[it].isEmpty()) {
+                            displayCode.add(" ")
+                        } else {
+                            displayCode.add(fileLines[it])
+                        }
+                        displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                    } else {
+                        displayLine.add(displayLine.lastOrNull() ?: 0)
+                    }
                 }
-                displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
-            } else {
-                displayLine.add(displayLine.lastOrNull() ?: 0)
             }
-        }
-    }
+    private val hideCode = stylesheet.getHideCode()
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
             linearRepresentation.add(PartitionBlock("1/3", "2/3"))
-            linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame"))
+            linearRepresentation.add(VariableBlock(listOf(), "variable_block", "variable_vg", "variable_frame", runtime=animationSpeeds.first()))
             linearRepresentation.add(
                 CodeBlock(
                     wrapCode(displayCode),
                     codeBlockVariable,
                     codeTextVariable,
                     pointerVariable
-                )
+                        , runtime=animationSpeeds.first())
             )
         }
 
@@ -77,7 +78,7 @@ class VirtualMachine(
             hideCode = hideCode,
             updateVariableState = !hideCode
         ).runFrame()
-        linearRepresentation.add(Sleep(1.0))
+        linearRepresentation.add(Sleep(1.0, runtime = animationSpeeds.first()))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
@@ -209,6 +210,24 @@ class VirtualMachine(
             is ForStatementNode -> executeForStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
             is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
+            is StartSpeedChangeNode -> {
+                val condition = executeExpression(statement.condition)
+                val factor = executeExpression(statement.speedChange)
+                if (condition is BoolValue && factor is DoubleValue) {
+                    if (condition.value) {
+                        animationSpeeds.addFirst(1.0/factor.value)
+                    }
+                    EmptyValue
+                } else if (condition is BoolValue){
+                    factor
+                } else {
+                    condition
+                }
+            }
+            is StopSpeedChangeNode -> {
+                animationSpeeds.removeFirst()
+                EmptyValue
+            }
             is StartCodeTrackingNode -> {
                 val condition = executeExpression(statement.condition)
                 if (condition is BoolValue) {
@@ -241,12 +260,12 @@ class VirtualMachine(
 
 
         private fun executeSleep(statement: SleepNode): ExecValue {
-            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value))
+            linearRepresentation.add(Sleep((executeExpression(statement.sleepTime) as DoubleValue).value, runtime = animationSpeeds.first()))
             return EmptyValue
         }
 
         private fun addSleep(length: Double) {
-            linearRepresentation.add(Sleep(length))
+            linearRepresentation.add(Sleep(length, runtime = animationSpeeds.first()))
         }
 
         private fun moveToLine(line: Int = pc) {
@@ -256,7 +275,7 @@ class VirtualMachine(
                         displayLine[line - 1],
                         pointerVariable,
                         codeBlockVariable,
-                        codeTextVariable
+                        codeTextVariable, runtime = animationSpeeds.first()
                     )
                 )
             }
@@ -319,7 +338,7 @@ class VirtualMachine(
                                     ArrayReplaceRow(
                                         (arrayValue.manimObject as Array2DStructure).ident,
                                         index,
-                                        arrayValue.value[index]
+                                        arrayValue.value[index], runtime = animationSpeeds.first()
                                     )
                                 )
                                 EmptyValue
@@ -339,7 +358,7 @@ class VirtualMachine(
                                         it,
                                         it.pointer,
                                         animationString = it.animationStyle,
-                                        runtime = it.animationTime,
+                                        runtime = it.animationTime?:animationSpeeds.first(),
                                         secondIndices = listOf(index)
                                     )
                                 )
@@ -350,7 +369,7 @@ class VirtualMachine(
                                     index2,
                                     assignedValue,
                                     arrayValue.animatedStyle,
-                                    secondIndex = index
+                                    secondIndex = index, runtime = animationSpeeds.first()
                                 )
                             )
                             arrayValue.animatedStyle?.let {
@@ -359,7 +378,8 @@ class VirtualMachine(
                                         (arrayValue.manimObject as Array2DStructure).ident,
                                         listOf(index2),
                                         arrayValue.style,
-                                        secondIndices = listOf(index)
+                                        secondIndices = listOf(index),
+                                            runtime = animationSpeeds.first()
                                     )
                                 )
                             }
@@ -383,7 +403,7 @@ class VirtualMachine(
                                     it,
                                     it.pointer,
                                     animationString = it.animationStyle,
-                                    runtime = it.animationTime
+                                    runtime = it.animationTime?:animationSpeeds.first()
                                 )
                             )
                         }
@@ -392,7 +412,7 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 index.value.toInt(),
                                 assignedValue,
-                                arrayValue.animatedStyle
+                                arrayValue.animatedStyle, runtime = animationSpeeds.first()
                             )
                         )
                         arrayValue.animatedStyle?.let {
@@ -400,7 +420,7 @@ class VirtualMachine(
                                 ArrayElemRestyle(
                                     (arrayValue.manimObject as ArrayStructure).ident,
                                     listOf(index.value.toInt()),
-                                    arrayValue.style
+                                    arrayValue.style, runtime = animationSpeeds.first()
                                 )
                             )
                         }
@@ -461,12 +481,13 @@ class VirtualMachine(
                                         assignedValue.manimObject.shape.ident,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                            , runtime = animationSpeeds.first()
                                     )
                                 )
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
                                         assignedValue.manimObject.shape.ident,
-                                        assignedValue.binaryTreeValue!!.style,
+                                        assignedValue.binaryTreeValue!!.style, runtime = animationSpeeds.first()
                                     )
                                 )
                             }
@@ -496,7 +517,7 @@ class VirtualMachine(
             else if (node is BinaryTreeNodeValue) {
                 val btNodeValue = BinaryTreeNodeValue(node.left, node.right, childValue, node.manimObject, depth = 0)
                 node.binaryTreeValue!!.value = btNodeValue
-                val instructions = mutableListOf<ManimInstr>(TreeEditValue(node, childValue, node.binaryTreeValue!!))
+                val instructions = mutableListOf<ManimInstr>(TreeEditValue(node, childValue, node.binaryTreeValue!!, runtime = animationSpeeds.first()))
                 if (node.binaryTreeValue != null) {
                     if (node.binaryTreeValue!!.animatedStyle != null) {
                         instructions.add(
@@ -505,14 +526,14 @@ class VirtualMachine(
                                 node.manimObject.shape.ident,
                                 node.binaryTreeValue!!.animatedStyle!!,
                                 node.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                         instructions.add(
                             TreeNodeRestyle(
                                 node.manimObject.shape.ident,
                                 node.binaryTreeValue!!.style,
-                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                     }
@@ -558,7 +579,7 @@ class VirtualMachine(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.animatedStyle!!,
                                 parent.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                     }
@@ -575,19 +596,19 @@ class VirtualMachine(
                             childValue,
                             parent.binaryTreeValue!!,
                             isLeft
-                        )
+                                , runtime = animationSpeeds.first())
                     )
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
                         linearRepresentation.add(
                             TreeNodeRestyle(
                                 parent.manimObject.shape.ident,
                                 parent.binaryTreeValue!!.style,
-                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                     }
                 } else {
-                    linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft))
+                    linearRepresentation.add(NodeAppendObject(parent, childValue, isLeft, runtime = animationSpeeds.first()))
                 }
             }
 
@@ -607,7 +628,7 @@ class VirtualMachine(
 
         private fun updateVariableState() {
             if (showMoveToLine && !hideCode)
-                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block"))
+                linearRepresentation.add(UpdateVariableState(getVariableState(), "variable_block", runtime = animationSpeeds.first()))
         }
 
         private fun executeExpression(
@@ -675,13 +696,13 @@ class VirtualMachine(
                     is NodeType.Left -> {
                         parent.left = NullValue
                         if (parent.binaryTreeValue != null) {
-                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, true))
+                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, true, runtime = animationSpeeds.first()))
                         }
                     }
                     is NodeType.Right -> {
                         parent.right = NullValue
                         if (parent.binaryTreeValue != null) {
-                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, false))
+                            linearRepresentation.add(TreeDeleteObject(parent, parent.binaryTreeValue!!, false, runtime = animationSpeeds.first()))
                         }
                     }
                 }
@@ -732,14 +753,14 @@ class VirtualMachine(
                                 parentValue.manimObject.shape.ident,
                                 parentValue.binaryTreeValue!!.animatedStyle!!,
                                 parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                         linearRepresentation.add(
                             TreeNodeRestyle(
                                 parentValue.manimObject.shape.ident,
                                 parentValue.binaryTreeValue!!.style,
-                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle
+                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                     }
@@ -783,14 +804,14 @@ class VirtualMachine(
                                 listOf(index.value.toInt()),
                                 this,
                                 this.pointer,
-                                animationString = this.animationStyle
+                                animationString = this.animationStyle, runtime = animationSpeeds.first()
                             )
                         )
                         linearRepresentation.add(
                             ArrayElemRestyle(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
-                                arrayValue.style
+                                arrayValue.style, runtime = animationSpeeds.first()
                             )
                         )
                     }
@@ -814,7 +835,7 @@ class VirtualMachine(
                                     this,
                                     this.pointer,
                                     animationString = this.animationStyle,
-                                    secondIndices = listOf(indices.first().value.toInt())
+                                    secondIndices = listOf(indices.first().value.toInt()), runtime = animationSpeeds.first()
                                 )
                             )
                             linearRepresentation.add(
@@ -822,7 +843,7 @@ class VirtualMachine(
                                     (arrayValue.manimObject as Array2DStructure).ident,
                                     listOf(indices[1].value.toInt()),
                                     arrayValue.style,
-                                    secondIndices = listOf(indices.first().value.toInt())
+                                    secondIndices = listOf(indices.first().value.toInt()), runtime = animationSpeeds.first()
                                 )
                             )
                         }
@@ -856,7 +877,7 @@ class VirtualMachine(
                         color = arrayValue2.style.borderColor,
                         textColor = arrayValue2.style.textColor,
                         creationString = arrayValue2.style.creationStyle,
-                        runtime = arrayValue2.style.creationTime,
+                        runtime = arrayValue2.style.creationTime?:animationSpeeds.first(),
                         showLabel = arrayValue2.style.showLabel,
                         boundaries = boundaries,
                         uid = dsUID
@@ -907,16 +928,16 @@ class VirtualMachine(
                                 variableNameGenerator.generateNameFromPrefix("elem1"),
                                 variableNameGenerator.generateNameFromPrefix("elem2"),
                                 variableNameGenerator.generateNameFromPrefix("animations"),
-                                runtime = ds.animatedStyle?.animationTime
+                                runtime = ds.animatedStyle?.animationTime?:animationSpeeds.first()
                             )
                         } else {
-                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime)
+                            ArrayShortSwap(arrayIdent, Pair(index1, index2), runtime = ds.animatedStyle?.animationTime?:animationSpeeds.first())
                         }
                     val swap = mutableListOf(arraySwap)
                     with(ds.animatedStyle) {
                         if (this != null) {
-                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer))
-                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style))
+                            swap.add(0, ArrayElemRestyle(arrayIdent, listOf(index1, index2), this, this.pointer, runtime = animationSpeeds.first()))
+                            swap.add(ArrayElemRestyle(arrayIdent, listOf(index1, index2), ds.style, runtime = animationSpeeds.first()))
                         }
                     }
                     linearRepresentation.addAll(swap)
@@ -957,7 +978,7 @@ class VirtualMachine(
 
         private fun array2dSwap(ds: Array2DValue, indices: List<Int>): EmptyValue {
             val arrayIdent = (ds.manimObject as Array2DStructure).ident
-            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime)
+            val arraySwap = Array2DSwap(arrayIdent, indices, runtime = ds.animatedStyle?.animationTime ?:animationSpeeds.first())
             val swap = mutableListOf<ManimInstr>(arraySwap)
             with(ds.animatedStyle) {
                 if (this != null) {
@@ -968,7 +989,7 @@ class VirtualMachine(
                             listOf(indices[1], indices[3]),
                             this,
                             this.pointer,
-                            secondIndices = listOf(indices[0], indices[2])
+                            secondIndices = listOf(indices[0], indices[2]), runtime = animationSpeeds.first()
                         )
                     )
                     swap.add(
@@ -976,7 +997,7 @@ class VirtualMachine(
                             arrayIdent,
                             listOf(indices[1], indices[3]),
                             ds.style,
-                            secondIndices = listOf(indices[0], indices[2])
+                            secondIndices = listOf(indices[0], indices[2]), runtime = animationSpeeds.first()
                         )
                     )
                 }
@@ -1027,9 +1048,9 @@ class VirtualMachine(
                                 dataStructureIdentifier,
                                 hasOldMObject,
                                 creationStyle = ds.style.creationStyle,
-                                runtime = ds.animatedStyle?.animationTime
+                                runtime = ds.animatedStyle?.animationTime?:animationSpeeds.first()
                             ),
-                            RestyleObject(rectangle.shape, ds.style, ds.animatedStyle?.animationTime)
+                            RestyleObject(rectangle.shape, ds.style, ds.animatedStyle?.animationTime?:animationSpeeds.first())
                         )
                     if (!hasOldMObject) {
                         instructions.add(0, rectangle)
@@ -1057,10 +1078,10 @@ class VirtualMachine(
                             topOfStack.shape,
                             dataStructureIdentifier,
                             insideMethodCall,
-                            runtime = ds.animatedStyle?.animationTime
+                            runtime = ds.animatedStyle?.animationTime?:animationSpeeds.first()
                         )
                     )
-                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it, it.animationTime)) }
+                    ds.animatedStyle?.let { instructions.add(0, RestyleObject(topOfStack.shape, it, it.animationTime?:animationSpeeds.first())) }
                     linearRepresentation.addAll(instructions)
                     return if (isExpression) poppedValue else EmptyValue
                 }
@@ -1164,7 +1185,7 @@ class VirtualMachine(
                             StackPushObject(
                                 rectangle,
                                 initStructureIdent,
-                                runtime = newObjectStyle.animate?.animationTime
+                                runtime = newObjectStyle.animate?.animationTime?:animationSpeeds.first()
                             )
                         )
                     }
@@ -1195,7 +1216,7 @@ class VirtualMachine(
                         text = assignLHS.identifier,
                         root = root,
                         boundaries = boundaries,
-                        uid = dsUID
+                        uid = dsUID, runtime=animationSpeeds.first()
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
@@ -1269,7 +1290,7 @@ class VirtualMachine(
                         color = arrayValue.style.borderColor,
                         textColor = arrayValue.style.textColor,
                         creationString = arrayValue.style.creationStyle,
-                        runtime = arrayValue.style.creationTime,
+                        runtime = arrayValue.style.creationTime?: animationSpeeds.first(),
                         showLabel = arrayValue.style.showLabel,
                         boundaries = boundaries,
                         uid = dsUID
@@ -1337,7 +1358,7 @@ class VirtualMachine(
                     color = arrayValue.style.borderColor,
                     textColor = arrayValue.style.textColor,
                     creationString = arrayValue.style.creationStyle,
-                    runtime = arrayValue.style.creationTime,
+                    runtime = arrayValue.style.creationTime?: animationSpeeds.first(),
                     showLabel = arrayValue.style.showLabel,
                     boundaries = boundaries,
                     uid = dsUID
