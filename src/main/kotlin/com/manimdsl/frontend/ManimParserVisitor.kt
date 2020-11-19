@@ -401,7 +401,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return ifStatementNode
     }
 
-
     override fun visitElseIf(ctx: ElseIfContext): ASTNode {
         val elifScope = symbolTable.enterScope()
 
@@ -420,16 +419,54 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return elifNode
     }
 
-    override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): ASTNode {
+    override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): CodeTrackingNode {
         val isStepInto = ctx.step.type == STEP_INTO
+
+        val condition = if (ctx.condition == null) {
+            BoolNode(ctx.start.line, true)
+        } else {
+            val definedCondition = visit(ctx.condition) as ExpressionNode
+            semanticAnalyser.checkExpressionTypeWithExpectedType(definedCondition, BoolType, symbolTable, ctx)
+            definedCondition
+        }
+
         val statements = mutableListOf<StatementNode>()
 
-        val start = StartCodeTrackingNode(ctx.start.line, isStepInto)
-        val end = StopCodeTrackingNode(ctx.stop.line, isStepInto)
+        val start = StartCodeTrackingNode(ctx.start.line, isStepInto, condition)
+        val end = StopCodeTrackingNode(ctx.stop.line, isStepInto, condition)
 
         statements.add(start)
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
+
+
+        lineNumberNodeMap[ctx.start.line] = start
+        lineNumberNodeMap[ctx.stop.line] = end
+
+        return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
+    }
+
+    override fun visitAnimationSpeedUp(ctx: AnimationSpeedUpContext): CodeTrackingNode {
+        val arguments = (visit(ctx.arg_list()) as ArgumentNode).arguments
+        semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, arguments)
+
+        val speedChange = arguments.first()
+
+        val condition = if (arguments.size == 2) {
+            arguments[1]
+        } else {
+            BoolNode(ctx.start.line, true)
+        }
+
+        val statements = mutableListOf<StatementNode>()
+
+        val start = StartSpeedChangeNode(ctx.start.line, speedChange, condition)
+        val end = StopSpeedChangeNode(ctx.stop.line, condition)
+
+        statements.add(start)
+        statements.addAll(visitAndFlattenStatements(ctx.stat()))
+        statements.add(end)
+
 
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end

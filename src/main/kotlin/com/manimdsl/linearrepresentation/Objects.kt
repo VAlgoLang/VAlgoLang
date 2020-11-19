@@ -6,7 +6,6 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
 import comcreat.manimdsl.linearrepresentation.Alignment
 import comcreat.manimdsl.linearrepresentation.ManimInstr
-import comcreat.manimdsl.linearrepresentation.ManimInstrWithRuntime
 
 /** Objects **/
 
@@ -49,6 +48,7 @@ data class CodeBlock(
     val codeTextName: String,
     val pointerName: String,
     val textColor: String? = null,
+    override val runtime: Double = 1.0,
     val syntaxHighlightingOn: Boolean = true,
     val syntaxHighlightingStyle: String = "inkpot",
     val tabSpacing: Int = 2
@@ -78,7 +78,7 @@ data class CodeBlock(
             "$codeTextName.next_to(variable_frame, DOWN, buff=0.9)",
             "$codeTextName.to_edge(buff=MED_LARGE_BUFF)",
             "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
-            "self.play(FadeIn($codeTextName[self.code_start:self.code_end]))",
+            "self.play(FadeIn($codeTextName[self.code_start:self.code_end])${getRuntimeString()})",
             "# Constructing current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"
         )
@@ -86,8 +86,8 @@ data class CodeBlock(
 }
 
 data class PartitionBlock(
-    val scaleLeft: String,
-    val scaleRight: String,
+        val scaleLeft: String,
+        val scaleRight: String, override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = NullShape
     override fun toPython(): List<String> {
@@ -108,11 +108,12 @@ data class PartitionBlock(
 }
 
 data class VariableBlock(
-    val variables: List<String>,
-    val ident: String,
-    val variableGroupName: String,
-    val variableFrame: String,
-    val textColor: String? = null,
+        val variables: List<String>,
+        val ident: String,
+        val variableGroupName: String,
+        val variableFrame: String,
+        val textColor: String? = null,
+        override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
 
@@ -122,7 +123,7 @@ data class VariableBlock(
             shape.getConstructor(),
             "$variableGroupName = $ident.build()",
             "$variableGroupName.move_to($variableFrame)",
-            "self.play(FadeIn($variableGroupName))"
+            "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
         )
     }
 }
@@ -141,10 +142,12 @@ sealed class DataStructureMObject(
 }
 
 data class NodeStructure(
-    val ident: String,
-    val value: String,
-    val depth: Int,
-    override val shape: Shape = NodeShape(ident, value)
+        val ident: String,
+        val value: String,
+        val depth: Int,
+        override val shape: Shape = NodeShape(ident, value),
+        override val runtime: Double = 1.0
+
 
 ) : MObject {
     override fun toPython(): List<String> {
@@ -155,13 +158,13 @@ data class NodeStructure(
 }
 
 data class InitTreeStructure(
-    override val type: DataStructureType,
-    override val ident: String,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1,
-    val text: String,
-    val root: BinaryTreeNodeValue,
-    override val uid: String
+        override val type: DataStructureType,
+        override val ident: String,
+        private var boundaries: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1,
+        val text: String,
+        val root: BinaryTreeNodeValue,
+        override val uid: String, override val runtime: Double
 ) : DataStructureMObject(type, ident, uid) {
     override var shape: Shape = NullShape
 
@@ -179,26 +182,26 @@ data class InitTreeStructure(
         return listOf(
             "# Constructing a new tree: $ident",
             shape.getConstructor(),
-            "self.play($ident.create_init(0))"
+            "self.play($ident.create_init(0)${getRuntimeString()})"
         )
     }
 }
 
 data class InitManimStack(
-    override val type: DataStructureType,
-    override val ident: String,
-    val position: Position,
-    val alignment: Alignment,
-    val text: String,
-    val moveToShape: Shape? = null,
-    val color: String? = null,
-    val textColor: String? = null,
-    val showLabel: Boolean? = null,
-    val creationStyle: String? = null,
-    val creationTime: Double? = null,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1,
-    override val uid: String
+        override val type: DataStructureType,
+        override val ident: String,
+        val position: Position,
+        val alignment: Alignment,
+        val text: String,
+        val moveToShape: Shape? = null,
+        val color: String? = null,
+        val textColor: String? = null,
+        val showLabel: Boolean? = null,
+        val creationStyle: String? = null,
+        val creationTime: Double? = null,
+        private var boundaries: List<Pair<Double, Double>> = emptyList(),
+        private var maxSize: Int = -1,
+        override val uid: String, override val runtime: Double = 1.0
 ) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
@@ -231,12 +234,12 @@ data class ArrayStructure(
     val color: String? = null,
     val textColor: String? = null,
     var creationString: String? = null,
-    override val runtime: Double? = null,
+    override val runtime: Double = 1.0,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
+) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
     init {
@@ -271,12 +274,12 @@ data class Array2DStructure(
     val color: String? = null,
     val textColor: String? = null,
     var creationString: String? = null,
-    override val runtime: Double? = null,
+    override val runtime: Double = 1.0,
     val showLabel: Boolean? = null,
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries), ManimInstrWithRuntime {
+) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
     init {
@@ -304,7 +307,7 @@ data class Array2DStructure(
     }
 }
 
-data class NewMObject(override val shape: Shape, val codeBlockVariable: String) : MObject {
+data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) : MObject {
     override fun toPython(): List<String> {
         return listOf(
             "# Constructs a new ${shape.className} with value ${shape.text}",
@@ -315,5 +318,8 @@ data class NewMObject(override val shape: Shape, val codeBlockVariable: String) 
 
 object EmptyMObject : MObject {
     override val shape: Shape = NullShape
+    override val runtime: Double
+        get() = 1.0
+
     override fun toPython(): List<String> = emptyList()
 }

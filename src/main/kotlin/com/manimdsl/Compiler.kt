@@ -110,7 +110,7 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-m", "--manim"], description = ["Only output generated python & manim code (optional)."])
     var manim: Boolean = false
 
-    @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"])
+    @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"], hidden = true)
     var boundaries: Boolean = false
 
     @Option(

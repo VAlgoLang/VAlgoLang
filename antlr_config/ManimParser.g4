@@ -27,9 +27,11 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
     | RETURN expr? SEMI                                                  #ReturnStatement
-    | step=(STEP_INTO | STEP_OVER)
-    OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                          #CodeTrackingStatement
+    | AT annotation                                                      #AnnotationStatement
     ;
+
+annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS condition=expr CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #CodeTrackingStatement
+          | SPEED (OPEN_PARENTHESIS arg_list CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #AnimationSpeedUp;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
 

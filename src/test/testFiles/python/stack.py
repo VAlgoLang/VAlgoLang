@@ -12,7 +12,7 @@ class Main(Scene):
         code_text.next_to(variable_frame, DOWN, buff=0.9)
         code_text.to_edge(buff=MED_LARGE_BUFF)
         self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end
-        self.play(FadeIn(code_text[self.code_start:self.code_end]))
+        self.play(FadeIn(code_text[self.code_start:self.code_end]), run_time=1.0)
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         # Moves the current line pointer to line 1
@@ -23,15 +23,15 @@ class Main(Scene):
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
-        [self.play(*animation) for animation in stack.push(rectangle)]
+        [self.play(*animation, run_time=1.0) for animation in stack.push(rectangle)]
         stack.add(rectangle.all)
         self.move_arrow_to_line(3, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 3.0
         rectangle1 = Rectangle_block("3.0", stack)
-        [self.play(*animation) for animation in stack.push(rectangle1)]
+        [self.play(*animation, run_time=1.0) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
         self.move_arrow_to_line(4, pointer, code_block, code_text)
-        [self.play(*animation) for animation in stack.pop(rectangle1, fade_out=True)]
+        [self.play(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True, run_time=1.0)]
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
     def move_relative_to_edge(self, group, x, y):
@@ -191,7 +191,7 @@ class Rectangle_block:
         new_text_obj = Text(new_text, color=color, font=self.font)
         new_text_obj.set_width(self.width * 7/10)
         if(new_text_obj.get_height() > 0.6 * self.height):
-                    new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
+            new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
 class Stack(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
