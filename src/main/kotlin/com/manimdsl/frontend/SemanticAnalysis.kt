@@ -262,6 +262,18 @@ class SemanticAnalysis {
 
     }
 
+    fun checkArrayConstructorItemLengthsMatch(openConstructorSize: Int, closeConstructorSize: Int, ctx: ParserRuleContext) {
+        if (openConstructorSize != closeConstructorSize) {
+            incorrectConstructorItemSize(openConstructorSize, closeConstructorSize, ctx)
+        }
+    }
+
+    fun checkArrayDimensionsNotGreaterThanTwo(arrayDimension: Int, ctx: ParserRuleContext) {
+        if (arrayDimension > 2) {
+            incompatibleArrayDimension(arrayDimension, ctx)
+        }
+    }
+
     fun checkArrayElemHasCorrectNumberOfIndices(indices: List<ExpressionNode>, is2DArray: Boolean, ctx: ParserRuleContext) {
         val hasCorrectNumberOfIndices = is2DArray || indices.size == 1
         if (!hasCorrectNumberOfIndices) {

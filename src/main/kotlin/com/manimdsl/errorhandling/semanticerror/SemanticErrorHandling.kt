@@ -198,6 +198,14 @@ fun maxArrayIndexingExceededError(is2DArray: Boolean, indicesSize: Int, ctx: Par
     addSemanticError("Cannot index a ${if (is2DArray) "2D" else "1D"} array $indicesSize times", getErrorLinePos(ctx))
 }
 
+fun incorrectConstructorItemSize(openConstructorSize: Int, closeConstructorSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Array not constructed correctly: size of Array< ($openConstructorSize) does not match size of > ($closeConstructorSize)", getErrorLinePos(ctx))
+}
+
+fun incompatibleArrayDimension(arrayDimension: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot use array with dimension $arrayDimension: only 1D and 2D arrays supported", getErrorLinePos(ctx))
+}
+
 fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
     addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
 }

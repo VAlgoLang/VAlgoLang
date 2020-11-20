@@ -698,8 +698,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArrayType(ctx: ArrayTypeContext): ArrayType {
+        semanticAnalyser.checkArrayConstructorItemLengthsMatch(ctx.ARRAY().size, ctx.GT().size, ctx)
+        semanticAnalyser.checkArrayDimensionsNotGreaterThanTwo(ctx.ARRAY().size, ctx)
         val elementType = visit(ctx.primitive_type()) as Type
-        return ArrayType(elementType)
+        val arrayType = ArrayType(elementType)
+        if (ctx.ARRAY().size == 2) arrayType.setTo2D()
+        return arrayType
     }
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
