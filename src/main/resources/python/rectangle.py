@@ -22,5 +22,5 @@ class Rectangle_block:
         new_text_obj = Text(new_text, color=color, font=self.font)
         new_text_obj.set_width(self.width * 7/10)
         if(new_text_obj.get_height() > 0.6 * self.height):
-                    new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
+            new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))

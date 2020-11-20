@@ -2,11 +2,9 @@ fun inorder(head: Node<number>, arr2: Array<number>, i: number): number {
     if (head == null) {
         return i;
     } else {
-        @speedUp(5, i >= 3) {
         let j = inorder(head.left, arr2, i);
         arr2[j] = head.value;
         let ret = inorder(head.right, arr2, j+1);
-        }
         return ret;
     }
 }
@@ -26,7 +24,7 @@ fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
     return head;
 }
 
-@speed(2) {
+@speed('a') {
 let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
 @stepOver {
 let head = Node<number>(4);
