@@ -106,6 +106,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
+    fun getPositions(): Map<String, PositionProperties> {
+        return stylesheet.positions
+    }
+
     fun getPosition(identifier: String): PositionProperties? {
         return stylesheet.positions[identifier]
     }

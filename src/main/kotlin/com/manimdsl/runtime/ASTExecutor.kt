@@ -9,6 +9,7 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
@@ -69,7 +70,6 @@ class VirtualMachine(
                         , runtime=animationSpeeds.first())
             )
         }
-
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(
             program.statements.first().lineNumber,
@@ -82,11 +82,14 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else if (!stylesheet.userDefinedPositions()) {
+        } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
             if (returnBoundaries) {
+                val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
+                boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
+                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys }
                 val gson = Gson()
-                println(gson.toJson(computedBoundaries.map { it.key to it.value.positioning() }.toMap()))
+                println(gson.toJson(boundaries))
             }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
