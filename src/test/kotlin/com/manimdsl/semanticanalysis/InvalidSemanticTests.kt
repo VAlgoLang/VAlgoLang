@@ -298,7 +298,15 @@ class InvalidSemanticTests {
 
     @Test
     fun incorrectNumberOfIndicesFor1DArray() {
-        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesForArray.manimdsl")
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor1DArray.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
+        )
+    }
+
+    @Test
+    fun incorrectNumberOfIndicesFor2DArray() {
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor2DArray.manimdsl")
         assertTrue(
             outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
         )

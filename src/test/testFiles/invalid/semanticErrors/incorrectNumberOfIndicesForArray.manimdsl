@@ -1,2 +1,0 @@
-let arr = Array<number>(5);
-arr[0][0] = 1;
