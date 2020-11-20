@@ -685,7 +685,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
-        return visit(ctx.data_structure_type()) as DataStructureType
+        val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
+        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(dataStructureType.internalType, ctx)
+        return dataStructureType
     }
 
     override fun visitStackType(ctx: StackTypeContext): StackType {

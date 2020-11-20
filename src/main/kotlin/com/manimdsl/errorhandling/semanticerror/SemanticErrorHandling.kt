@@ -68,6 +68,10 @@ fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("$identifier is not a data structure", getErrorLinePos(ctx))
 }
 
+fun dataStructureInternalTypeNotPrimitiveError(internalType: Type, ctx: ParserRuleContext) {
+    addSemanticError("Data structure internal type must be primitive. Type given: $internalType", getErrorLinePos(ctx))
+}
+
 fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: Type? = null, ctx: ParserRuleContext) {
     val errorMessage =
         "Operator \'$operator\' is not compatible with type $expr1Type${if (expr2Type != null) " and $expr2Type" else ""}"
