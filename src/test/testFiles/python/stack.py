@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from manimlib.imports import *
+import tempfile
 class Main(Scene):
     code_start = 0
     code_end = 10
@@ -82,13 +83,14 @@ class Code_block:
     def __init__(self, code, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE, text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()
         if syntax_highlighting:
-            fp = open("sample.re", "w")
+            fp = tempfile.NamedTemporaryFile(suffix='.re')
             for c in code:
                 for sc in c:
-                    fp.write(sc + "\n")
-            fp.close()
-            self.paragraph = Code("sample.re", style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
+                    fp.write(bytes(sc + "\n", encoding='utf-8'))
+            fp.seek(0)
+            self.paragraph = Code(fp.name, style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
                               tab_width=tab_spacing).code
+            fp.close()
             group.add(self.paragraph)
             group.set_width(5)
             self.all = self.paragraph
