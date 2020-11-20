@@ -176,7 +176,7 @@ data class StackPopObject(
     override fun toPython(): List<String> {
         return listOf(
             "[self.play(*animation${getRuntimeString()}) for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
-                .capitalize()}${getRuntimeString()})]"
+                .capitalize()})]"
         )
     }
 }
