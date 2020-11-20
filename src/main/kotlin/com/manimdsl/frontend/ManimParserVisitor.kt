@@ -566,10 +566,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(emptyList(), emptyList())
         }
 
-        if (dataStructureType is ArrayType) {
-            dataStructureType.is2D = arguments.size == 2
-            if (dataStructureType.is2D) dataStructureType.setTo2D()
-        }
+        semanticAnalyser.checkArrayDimensionsMatchConstructorArguments(dataStructureType, arguments.size, ctx)
 
         val initialiser = if (ctx.data_structure_initialiser() != null) {
             visit(ctx.data_structure_initialiser()) as InitialiserNode
@@ -688,7 +685,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
-        return visit(ctx.data_structure_type()) as DataStructureType
+        val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
+        return dataStructureType
     }
 
     override fun visitStackType(ctx: StackTypeContext): StackType {
@@ -698,8 +696,13 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArrayType(ctx: ArrayTypeContext): ArrayType {
-        val elementType = visit(ctx.primitive_type()) as Type
-        return ArrayType(elementType)
+        semanticAnalyser.checkArrayConstructorItemLengthsMatch(ctx.ARRAY().size, ctx.GT().size, ctx)
+        semanticAnalyser.checkArrayDimensionsNotGreaterThanTwo(ctx.ARRAY().size, ctx)
+        val elementType = visit(ctx.type()) as Type
+        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(elementType, ctx)
+        val arrayType = ArrayType(elementType)
+        if (ctx.ARRAY().size == 2) arrayType.setTo2D()
+        return arrayType
     }
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
