@@ -566,10 +566,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             Pair(emptyList(), emptyList())
         }
 
-        if (dataStructureType is ArrayType) {
-            dataStructureType.is2D = arguments.size == 2
-            if (dataStructureType.is2D) dataStructureType.setTo2D()
-        }
+        semanticAnalyser.checkArrayDimensionsMatchConstructorArguments(dataStructureType, arguments.size, ctx)
 
         val initialiser = if (ctx.data_structure_initialiser() != null) {
             visit(ctx.data_structure_initialiser()) as InitialiserNode

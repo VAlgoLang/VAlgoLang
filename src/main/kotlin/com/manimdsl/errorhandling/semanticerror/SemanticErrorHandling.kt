@@ -206,6 +206,10 @@ fun incompatibleArrayDimension(arrayDimension: Int, ctx: ParserRuleContext) {
     addSemanticError("Cannot use array with dimension $arrayDimension: only 1D and 2D arrays supported", getErrorLinePos(ctx))
 }
 
+fun incompatibleArrayDimensionWithConstructorArguments(is2D: Boolean, argumentsSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot initialise ${if (is2D) "2" else "1"}D array with $argumentsSize constructor arguments", getErrorLinePos(ctx))
+}
+
 fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
     addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
 }
