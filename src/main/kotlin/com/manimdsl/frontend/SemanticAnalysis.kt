@@ -275,7 +275,7 @@ class SemanticAnalysis {
     }
 
     fun checkArrayElemHasCorrectNumberOfIndices(indices: List<ExpressionNode>, is2DArray: Boolean, ctx: ParserRuleContext) {
-        val hasCorrectNumberOfIndices = is2DArray || indices.size == 1
+        val hasCorrectNumberOfIndices = if (is2DArray) indices.size == 2 else indices.size == 1
         if (!hasCorrectNumberOfIndices) {
             maxArrayIndexingExceededError(is2DArray, indices.size, ctx)
         }
