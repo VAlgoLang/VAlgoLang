@@ -3,16 +3,17 @@ class Code_block:
         group = VGroup()
 
         if syntax_highlighting:
-            fp = open("sample.re", "w")
+            fp = tempfile.NamedTemporaryFile(suffix='.re')
 
             for c in code:
                 for sc in c:
-                    fp.write(sc + "\n")
+                    fp.write(bytes(sc + "\n", encoding='utf-8'))
 
-            fp.close()
+            fp.seek(0)
 
-            self.paragraph = Code("sample.re", style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
+            self.paragraph = Code(fp.name, style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
                               tab_width=tab_spacing).code
+            fp.close()
             group.add(self.paragraph)
             group.set_width(5)
             self.all = self.paragraph
