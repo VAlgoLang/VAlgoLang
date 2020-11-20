@@ -68,6 +68,10 @@ fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("$identifier is not a data structure", getErrorLinePos(ctx))
 }
 
+fun dataStructureInternalTypeNotPrimitiveError(internalType: Type, ctx: ParserRuleContext) {
+    addSemanticError("Data structure internal type must be primitive. Type given: $internalType", getErrorLinePos(ctx))
+}
+
 fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: Type? = null, ctx: ParserRuleContext) {
     val errorMessage =
         "Operator \'$operator\' is not compatible with type $expr1Type${if (expr2Type != null) " and $expr2Type" else ""}"
@@ -196,6 +200,18 @@ fun unableToInferType(nullType: String, ctx: ParserRuleContext) {
 
 fun maxArrayIndexingExceededError(is2DArray: Boolean, indicesSize: Int, ctx: ParserRuleContext) {
     addSemanticError("Cannot index a ${if (is2DArray) "2D" else "1D"} array $indicesSize times", getErrorLinePos(ctx))
+}
+
+fun incorrectConstructorItemSize(openConstructorSize: Int, closeConstructorSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Array not constructed correctly: size of Array< ($openConstructorSize) does not match size of > ($closeConstructorSize)", getErrorLinePos(ctx))
+}
+
+fun incompatibleArrayDimension(arrayDimension: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot use array with dimension $arrayDimension: only 1D and 2D arrays supported", getErrorLinePos(ctx))
+}
+
+fun incompatibleArrayDimensionWithConstructorArguments(is2D: Boolean, argumentsSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot initialise ${if (is2D) "2" else "1"}D array with $argumentsSize constructor arguments", getErrorLinePos(ctx))
 }
 
 fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
