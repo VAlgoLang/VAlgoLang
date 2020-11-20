@@ -40,8 +40,6 @@ open class AnimationProperties(
 data class DefaultAnimationProperties(override val borderColor: String? = "RED", override val textColor: String? = "YELLOW",
                                       override val pointer: Boolean = true, override val highlight: String? = "YELLOW",
                                       override var animationStyle: String? = "FadeToColor", override var animationTime: Double? = 1.0) : AnimationProperties()
-//    : AnimationProperties(borderColor = "RED", textColor = "YELLOW",
-//        pointer = true, highlight = "YELLOW", animationStyle = "FadeToColor", animationTime = 1.0)
 
 data class StyleProperties(
     override var borderColor: String? = null,
