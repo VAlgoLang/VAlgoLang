@@ -65,6 +65,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         return """
             from abc import ABC, abstractmethod
             from manimlib.imports import *
+            import tempfile
              
             class Main(Scene):
                 code_start = 0
