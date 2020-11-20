@@ -398,6 +398,22 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun arrayConstructorItemsDoNotMatch() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayConstructor.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Array not constructed correctly: size of Array< .* does not match size of > .*"))
+        )
+    }
+
+    @Test
+    fun arrayDimensionGreaterThanTwo() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayDimension.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot use array with dimension .*: only 1D and 2D arrays supported"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
