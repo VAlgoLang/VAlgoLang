@@ -117,9 +117,14 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return if (animationStyle == AnimationProperties()) null else animationStyle
     }
 
-    fun getPosition(identifier: String): PositionProperties? = stylesheet.positions[identifier]
 
     fun userDefinedPositions(): Boolean = stylesheet.positions.isNotEmpty()
+    fun getPositions(): Map<String, PositionProperties> {
+        return stylesheet.positions
+    }
+
+    fun getPosition(identifier: String): PositionProperties? = stylesheet.positions[identifier]
+
 
     fun getStepIntoIsDefault(): Boolean = stylesheet.codeTracking == "stepInto"
 
