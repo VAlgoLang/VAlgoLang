@@ -81,7 +81,7 @@ type: data_structure_type                                            #DataStruct
 
 node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
-    | (ARRAY LT)+ primitive_type GT+                                 #ArrayType
+    | (ARRAY LT)+ type GT+                                 #ArrayType
     | node_type                                                      #NodeType
     | TREE LT node_type GT                                           #TreeType
     ;

@@ -686,7 +686,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
         val dataStructureType = visit(ctx.data_structure_type()) as DataStructureType
-        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(dataStructureType.internalType, ctx)
         return dataStructureType
     }
 
@@ -699,7 +698,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitArrayType(ctx: ArrayTypeContext): ArrayType {
         semanticAnalyser.checkArrayConstructorItemLengthsMatch(ctx.ARRAY().size, ctx.GT().size, ctx)
         semanticAnalyser.checkArrayDimensionsNotGreaterThanTwo(ctx.ARRAY().size, ctx)
-        val elementType = visit(ctx.primitive_type()) as Type
+        val elementType = visit(ctx.type()) as Type
+        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(elementType, ctx)
         val arrayType = ArrayType(elementType)
         if (ctx.ARRAY().size == 2) arrayType.setTo2D()
         return arrayType
