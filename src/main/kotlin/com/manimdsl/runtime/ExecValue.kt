@@ -141,11 +141,8 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
 sealed class ITreeNodeValue : ExecValue()
 
 object NullValue : ITreeNodeValue() {
-    override var manimObject: MObject
-        get() = EmptyMObject
-        set(value) {}
-    override val value: Int
-        get() = 0
+    override var manimObject: MObject = EmptyMObject
+    override val value: Int = 0
 
     override fun clone(): ExecValue {
         return this
@@ -160,7 +157,7 @@ fun nodeCount(node: ITreeNodeValue): Int {
     return if (node is NullValue) {
         0
     } else {
-        1 + nodeCount((node as BinaryTreeNodeValue).left) + nodeCount((node as BinaryTreeNodeValue).right)
+        1 + nodeCount((node as BinaryTreeNodeValue).left) + nodeCount(node.right)
     }
 }
 

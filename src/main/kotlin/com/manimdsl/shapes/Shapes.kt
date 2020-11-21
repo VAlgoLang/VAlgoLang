@@ -98,7 +98,6 @@ class CodeBlockShape(
 class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
-    variable_frame: String,
     textColor: String? = null,
 ) : Shape() {
     override val classPath: String = "python/variable_block.py"
