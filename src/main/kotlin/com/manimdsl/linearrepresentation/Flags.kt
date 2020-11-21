@@ -22,4 +22,3 @@ class AnimationFlags(vararg activateFlags: Flag = emptyArray()) {
         flags[flag] = set
     }
 }
-

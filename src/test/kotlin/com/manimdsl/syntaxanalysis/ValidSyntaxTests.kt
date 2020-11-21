@@ -41,5 +41,4 @@ class ValidSyntaxTests {
         val (syntaxErrorStatus, _) = parser.parseFile()
         assertEquals(ExitStatus.EXIT_SUCCESS, syntaxErrorStatus)
     }
-
 }

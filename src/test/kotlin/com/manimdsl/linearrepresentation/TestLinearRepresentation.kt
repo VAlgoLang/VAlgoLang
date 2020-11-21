@@ -13,7 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
-
 class TestLinearRepresentation {
 
     @Test

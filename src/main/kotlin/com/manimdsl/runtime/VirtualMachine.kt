@@ -3,7 +3,6 @@ package com.manimdsl.runtime
 import com.google.gson.Gson
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
-import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
@@ -130,7 +129,6 @@ class VirtualMachine(
         }
     }
 
-
     private fun wrapString(text: String): String {
         val sb = StringBuilder(text)
         for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
@@ -203,7 +201,6 @@ class VirtualMachine(
 
                     val value = executeStatement(statement)
                     if (statement is ReturnNode || value !is EmptyValue) return value
-
                 }
 
                 fetchNextStatement()
@@ -284,7 +281,6 @@ class VirtualMachine(
             }
         }
 
-
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(
                 Sleep(
@@ -306,7 +302,8 @@ class VirtualMachine(
                         displayLine[line - 1],
                         pointerVariable,
                         codeBlockVariable,
-                        codeTextVariable, runtime = animationSpeeds.first()
+                        codeTextVariable,
+                        runtime = animationSpeeds.first()
                     )
                 )
             }
@@ -334,7 +331,7 @@ class VirtualMachine(
                 argumentVariables,
                 depth + 1,
                 showMoveToLine = stepInto,
-                stepInto = stepInto && previousStepIntoState,   // In the case of nested stepInto/stepOver
+                stepInto = stepInto && previousStepIntoState, // In the case of nested stepInto/stepOver
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
                 functionNamePrefix = "${functionNode.identifier}."
@@ -343,7 +340,6 @@ class VirtualMachine(
             if (stepInto) moveToLine()
             return returnValue
         }
-
 
         private fun fetchNextStatement() {
             ++pc
@@ -369,7 +365,8 @@ class VirtualMachine(
                                     ArrayReplaceRow(
                                         (arrayValue.manimObject as Array2DStructure).ident,
                                         index,
-                                        arrayValue.value[index], runtime = animationSpeeds.first()
+                                        arrayValue.value[index],
+                                        runtime = animationSpeeds.first()
                                     )
                                 )
                                 EmptyValue
@@ -400,7 +397,8 @@ class VirtualMachine(
                                     index2,
                                     assignedValue,
                                     arrayValue.animatedStyle,
-                                    secondIndex = index, runtime = animationSpeeds.first()
+                                    secondIndex = index,
+                                    runtime = animationSpeeds.first()
                                 )
                             )
                             arrayValue.animatedStyle?.let {
@@ -417,8 +415,6 @@ class VirtualMachine(
                             EmptyValue
                         }
                     }
-
-
                 }
                 is ArrayValue -> {
                     val index = indices.first()
@@ -443,7 +439,8 @@ class VirtualMachine(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 index.value.toInt(),
                                 assignedValue,
-                                arrayValue.animatedStyle, runtime = animationSpeeds.first()
+                                arrayValue.animatedStyle,
+                                runtime = animationSpeeds.first()
                             )
                         )
                         arrayValue.animatedStyle?.let {
@@ -451,7 +448,8 @@ class VirtualMachine(
                                 ArrayElemRestyle(
                                     (arrayValue.manimObject as ArrayStructure).ident,
                                     listOf(index.value.toInt()),
-                                    arrayValue.style, runtime = animationSpeeds.first()
+                                    arrayValue.style,
+                                    runtime = animationSpeeds.first()
                                 )
                             )
                         }
@@ -514,14 +512,15 @@ class VirtualMachine(
                                     TreeNodeRestyle(
                                         assignedValue.manimObject.shape.ident,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!,
-                                        assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
-                                        , runtime = animationSpeeds.first()
+                                        assignedValue.binaryTreeValue!!.animatedStyle!!.highlight,
+                                        runtime = animationSpeeds.first()
                                     )
                                 )
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
                                         assignedValue.manimObject.shape.ident,
-                                        assignedValue.binaryTreeValue!!.style, runtime = animationSpeeds.first()
+                                        assignedValue.binaryTreeValue!!.style,
+                                        runtime = animationSpeeds.first()
                                     )
                                 )
                             }
@@ -639,8 +638,8 @@ class VirtualMachine(
                             parent,
                             childValue,
                             parent.binaryTreeValue!!,
-                            isLeft
-                            , runtime = animationSpeeds.first()
+                            isLeft,
+                            runtime = animationSpeeds.first()
                         )
                     )
                     if (parent.binaryTreeValue!!.animatedStyle != null) {
@@ -737,7 +736,6 @@ class VirtualMachine(
             }
         }
 
-
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
             val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
             return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
@@ -779,7 +777,6 @@ class VirtualMachine(
                         }
                     }
                 }
-
             }
             insertVariable(binaryTreeElemNode.identifier, rootNode)
             updateVariableState()
@@ -794,33 +791,28 @@ class VirtualMachine(
                 return Pair(EmptyValue, rootNode)
             }
 
-            val parentValue = elemAccessNode.accessChain.take(elemAccessNode.accessChain.size - 1)
-                .foldRight(rootNode) { method, current ->
-                    if (method is NodeType.Left) {
-                        if (current.left is BinaryTreeNodeValue) {
-                            current.left as BinaryTreeNodeValue
-                        } else {
-                            return Pair(
-                                current,
-                                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
-                            )
-                        }
-                    } else {
-                        if (current.right is BinaryTreeNodeValue) {
-                            current.right as BinaryTreeNodeValue
-                        } else {
-                            return Pair(
-                                current,
-                                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
-                            )
-                        }
-                    }
+            var parentValue: BinaryTreeNodeValue? = rootNode
+            for (access in elemAccessNode.accessChain.take(elemAccessNode.accessChain.size - 1)) {
+                if (access is NodeType.Left && parentValue?.left is BinaryTreeNodeValue) {
+                    parentValue = parentValue.left as? BinaryTreeNodeValue
+                } else if (parentValue?.right is BinaryTreeNodeValue) {
+                    parentValue = parentValue.right as? BinaryTreeNodeValue
+                } else {
+                    parentValue = null
+                    break
                 }
+            }
+
+            parentValue ?: return Pair(
+                EmptyValue,
+                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
+            )
+
             val accessedValue = when (elemAccessNode.accessChain.last()) {
                 is NodeType.Right -> parentValue.right
                 is NodeType.Left -> parentValue.left
                 is NodeType.Value -> {
-                    if (parentValue.binaryTreeValue!!.animatedStyle != null) {
+                    if (parentValue.binaryTreeValue?.animatedStyle != null) {
                         linearRepresentation.add(
                             TreeNodeRestyle(
                                 parentValue.manimObject.shape.ident,
@@ -879,14 +871,16 @@ class VirtualMachine(
                                 listOf(index.value.toInt()),
                                 this,
                                 this.pointer,
-                                animationString = this.animationStyle, runtime = animationSpeeds.first()
+                                animationString = this.animationStyle,
+                                runtime = animationSpeeds.first()
                             )
                         )
                         linearRepresentation.add(
                             ArrayElemRestyle(
                                 (arrayValue.manimObject as ArrayStructure).ident,
                                 listOf(index.value.toInt()),
-                                arrayValue.style, runtime = animationSpeeds.first()
+                                arrayValue.style,
+                                runtime = animationSpeeds.first()
                             )
                         )
                     }
@@ -984,7 +978,6 @@ class VirtualMachine(
                 else -> EmptyValue
             }
         }
-
 
         private fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
             return when (node.dataStructureMethod) {
@@ -1087,7 +1080,8 @@ class VirtualMachine(
                             listOf(indices[1], indices[3]),
                             this,
                             this.pointer,
-                            secondIndices = listOf(indices[0], indices[2]), runtime = animationSpeeds.first()
+                            secondIndices = listOf(indices[0], indices[2]),
+                            runtime = animationSpeeds.first()
                         )
                     )
                     swap.add(
@@ -1095,7 +1089,8 @@ class VirtualMachine(
                             arrayIdent,
                             listOf(indices[1], indices[3]),
                             ds.style,
-                            secondIndices = listOf(indices[0], indices[2]), runtime = animationSpeeds.first()
+                            secondIndices = listOf(indices[0], indices[2]),
+                            runtime = animationSpeeds.first()
                         )
                     )
                 }
@@ -1106,7 +1101,6 @@ class VirtualMachine(
             ds.array[indices[2]][indices[3]] = temp
             return EmptyValue
         }
-
 
         private fun executeStackMethodCall(
             node: MethodCallNode,
@@ -1306,7 +1300,6 @@ class VirtualMachine(
                     } else {
                         execute1DArrayConstructor(node, assignLHS)
                     }
-
                 }
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
@@ -1323,7 +1316,8 @@ class VirtualMachine(
                         text = assignLHS.identifier,
                         root = root,
                         boundaries = boundaries,
-                        uid = dsUID, runtime = animationSpeeds.first()
+                        uid = dsUID,
+                        runtime = animationSpeeds.first()
                     )
                     linearRepresentation.add(initTreeStructure)
                     val binaryTreeValue = BinaryTreeValue(manimObject = initTreeStructure, value = root)
@@ -1344,7 +1338,6 @@ class VirtualMachine(
                     linearRepresentation.add(nodeStructure)
                     return BinaryTreeNodeValue(NullValue, NullValue, value, manimObject = nodeStructure, depth = 0)
                 }
-                else -> EmptyValue
             }
         }
 
@@ -1369,7 +1362,8 @@ class VirtualMachine(
                             node.type.internalType,
                             node.lineNumber
                         )
-                    })
+                    }
+                )
             } else {
                 if (initialiserExpressions.size != arraySize.value.toInt()) {
                     RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
@@ -1424,8 +1418,7 @@ class VirtualMachine(
                 Array2DValue(
                     EmptyMObject,
                     Array(arrayDimensions.first) { _ ->
-                        Array(arrayDimensions.second)
-                        { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+                        Array(arrayDimensions.second) { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
                     }
                 )
             } else {
@@ -1443,8 +1436,6 @@ class VirtualMachine(
                     )
                 }
             }
-
-
 
             if (arrayValue is Array2DValue) {
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
@@ -1536,7 +1527,6 @@ class VirtualMachine(
                 rightExpression
             )
         }
-
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
             if (showMoveToLine && !hideCode) addSleep(0.5)
@@ -1690,7 +1680,7 @@ class VirtualMachine(
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
 
-            //If
+            // If
             if (conditionValue.value) {
                 val execValue = Frame(
                     ifStatementNode.statements.first().lineNumber,
@@ -1754,5 +1744,4 @@ class VirtualMachine(
             return EmptyValue
         }
     }
-
 }

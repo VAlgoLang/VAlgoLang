@@ -46,5 +46,4 @@ class ValidRuntimeTests {
         val (exitStatus, _) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, inputFile.readLines(), Stylesheet(null, symbolTable)).runProgram()
         assertEquals(ExitStatus.EXIT_SUCCESS, exitStatus)
     }
-
 }

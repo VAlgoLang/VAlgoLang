@@ -58,11 +58,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val statements = visitAndFlattenStatements(ctx.statements)
         symbolTable.leaveScope()
 
-
         if (functionReturnType !is VoidType) {
             semanticAnalyser.missingReturnCheck(identifier, statements, functionReturnType, ctx)
         }
-
 
         inFunction = false
         functionReturnType = VoidType
@@ -162,8 +160,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             rhsType
         }
 
-
-
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(rhs.functionIdentifier) as FunctionData
             semanticAnalyser.incompatibleMultipleFunctionCall(rhs.functionIdentifier, functionData, lhsType, ctx)
@@ -205,7 +201,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     private fun visitAssignLHS(ctx: Assignment_lhsContext): Pair<Type, AssignLHS> {
         return when (ctx) {
-            is RootElemAssignmentContext -> visitNodeAssignmentLHS(ctx)
             is IdentifierAssignmentContext -> visitIdentifierAssignmentLHS(ctx)
             is ArrayElemAssignmentContext -> visitArrayAssignmentLHS(ctx)
             is NodeElemAssignmentContext -> visitNodeAssignmentLHS(ctx)
@@ -239,22 +234,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         }
     }
 
-    private fun visitNodeAssignmentLHS(ctx: RootElemAssignmentContext): Pair<Type, AssignLHS> {
-        val nodeElem = visit(ctx.root_elem()) as BinaryTreeRootAccessNode
-        val treeType = semanticAnalyser.inferType(symbolTable, nodeElem)
-        semanticAnalyser.invalidMemberAccess(nodeElem, symbolTable, ctx)
-        return Pair(treeType, nodeElem)
-
-    }
-
     private fun visitNodeAssignmentLHS(ctx: NodeElemAssignmentContext): Pair<Type, AssignLHS> {
-        val nodeElem = visit(ctx.node_elem()) as BinaryTreeNodeElemAccessNode
+        val nodeElem =
+            visit(ctx.node_elem()) as BinaryTreeNodeAccess
         val treeType = semanticAnalyser.inferType(symbolTable, nodeElem)
 
         return if (treeType is ErrorType) {
             Pair(ErrorType, EmptyLHS)
         } else {
-            Pair(treeType, nodeElem)
+            Pair(treeType, nodeElem as AssignLHS)
         }
     }
 
@@ -413,7 +401,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         }
         symbolTable.leaveScope()
 
-
         val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
         lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
         return elifNode
@@ -438,7 +425,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         statements.add(start)
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
-
 
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end
@@ -467,7 +453,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
 
-
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end
 
@@ -481,8 +466,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
-        return ArgumentNode((ctx?.expr()
-            ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode })
+        return ArgumentNode(
+            (
+                ctx?.expr()
+                    ?: listOf<ExprContext>()
+                ).map { visit(it) as ExpressionNode }
+        )
     }
 
     override fun visitMethodCall(ctx: MethodCallContext): ExpressionNode {
@@ -498,7 +487,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         var dataStructureType = symbolTable.getTypeOf(identifier)
 
-
         val index = if (ctx.expr() != null) {
             // array indexed method call
             val indexExpression = visit(ctx.expr()) as ExpressionNode
@@ -509,7 +497,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         } else {
             null
         }
-
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
@@ -523,7 +510,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                 ctx
             )
             method
-
         } else {
             ErrorMethod
         }
@@ -706,8 +692,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
-        return Array2DInitialiserNode((ctx.arg_list()
-            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments })
+        return Array2DInitialiserNode(
+            (
+                ctx.arg_list()
+                    ?: listOf<ArgumentListContext>()
+                ).map { visitArgumentList(it as ArgumentListContext?).arguments }
+        )
     }
 
     override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): InitialiserNode {
@@ -746,37 +736,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return TreeType(visit(ctx.node_type()) as NodeType)
     }
 
-    override fun visitRootElemAssignment(ctx: RootElemAssignmentContext): BinaryTreeRootAccessNode {
-        return visit(ctx.root_elem()) as BinaryTreeRootAccessNode
-    }
-
-    override fun visitRootElemExpr(ctx: RootElemExprContext): BinaryTreeRootAccessNode {
-        return visit(ctx.root_elem()) as BinaryTreeRootAccessNode
-    }
-
-    override fun visitRootElem(ctx: RootElemContext): BinaryTreeRootAccessNode {
-        val identifier = ctx.IDENT().symbol.text
-        semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
-
-        val identifierType = symbolTable.getTypeOf(identifier)
-        val isTree = semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, ctx.ROOT().symbol.text, ctx, identifierType)
-
-        val accessChain = if (isTree && ctx.node_elem_access() != null) {
-            val list = mutableListOf<DataStructureMethod>()
-            list.addAll(ctx.node_elem_access().map { visitNodeElemAccess(it, identifier, (identifierType as TreeType).internalType) })
-            list
-        } else {
-            mutableListOf()
-        }
-        if (ctx.VALUE() != null && identifierType is DataStructureType) {
-            val value = ctx.VALUE().symbol.text
-            accessChain.add(identifierType.getMethodByName(value))
-        }
-
-        return BinaryTreeRootAccessNode(ctx.start.line, identifier, BinaryTreeNodeElemAccessNode(ctx.start.line, "root", accessChain))
-    }
-
-    override fun visitNode_elem(ctx: Node_elemContext): BinaryTreeNodeElemAccessNode {
+    override fun visitNode_elem(ctx: Node_elemContext): ASTNode {
         val identifier = ctx.IDENT().symbol.text
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
@@ -786,23 +746,31 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         val accessChain = if (ctx.node_elem_access() != null) {
             val list = mutableListOf<DataStructureMethod>()
-            list.addAll(ctx.node_elem_access().map { visitNodeElemAccess(it, identifier, identifierType) })
+            var type = identifierType
+            for (m in ctx.node_elem_access()) {
+                val member = visitNodeElemAccess(m, identifier, type)
+                list.add(member)
+                type = member.returnType
+            }
             list
         } else {
             mutableListOf()
         }
 
-        if (ctx.VALUE() != null && identifierType is DataStructureType) {
-            val value = ctx.VALUE().symbol.text
-            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, identifier, value, ctx)
-            accessChain.add(identifierType.getMethodByName(value))
+        return if (accessChain.first() is TreeType.Root) {
+            accessChain.removeFirst()
+            BinaryTreeRootAccessNode(
+                ctx.start.line,
+                identifier,
+                BinaryTreeNodeElemAccessNode(ctx.start.line, "root", accessChain)
+            )
+        } else {
+            BinaryTreeNodeElemAccessNode(ctx.start.line, identifier, accessChain)
         }
-
-        return BinaryTreeNodeElemAccessNode(ctx.start.line, identifier, accessChain)
     }
 
     private fun visitNodeElemAccess(ctx: Node_elem_accessContext, ident: String, type: Type): DataStructureMethod {
-        val child = ctx.LEFT()?.symbol?.text ?: ctx.RIGHT().symbol.text
+        val child = ctx.IDENT().text
         return if (type is DataStructureType) {
             semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, ident, child, ctx, type)
             type.getMethodByName(child)
@@ -810,20 +778,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             ErrorMethod
         }
     }
-
-
-    override fun visitNodeElemAssignment(ctx: NodeElemAssignmentContext?): ASTNode {
-        return super.visitNodeElemAssignment(ctx)
-    }
-
-    override fun visitNodeElemExpr(ctx: NodeElemExprContext?): ASTNode {
-        return super.visitNodeElemExpr(ctx)
-    }
-
-    override fun visitNode_elem_access(ctx: Node_elem_accessContext?): ASTNode {
-        return super.visitNode_elem_access(ctx)
-    }
-
 
     override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
         return visit(ctx.loop_stat()) as LoopStatementNode

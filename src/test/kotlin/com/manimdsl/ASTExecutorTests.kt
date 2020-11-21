@@ -10,15 +10,13 @@ import comcreat.manimdsl.linearrepresentation.UpdateVariableState
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 
-
 class ASTExecutorTests {
-
 
     @Test
     fun checkBasicFunction() {
         val program =
-                "fun f(x: number): number{\n" +
-                        "    return x * 3;\n" +
+            "fun f(x: number): number{\n" +
+                "    return x * 3;\n" +
                 "}\n" +
                 "let ans = f(3);\n"
 
@@ -34,8 +32,8 @@ class ASTExecutorTests {
                 ident = "variable_block",
                 variableGroupName = "variable_vg",
                 textColor = null,
-                variableFrame = "variable_frame"
-                    , runtime = 1.0),
+                variableFrame = "variable_frame", runtime = 1.0
+            ),
             CodeBlock(
                 lines = listOf(
                     listOf("fun f(x: number): number{"),
@@ -46,34 +44,34 @@ class ASTExecutorTests {
                 ),
                 ident = "code_block",
                 codeTextName = "code_text",
-                pointerName = "pointer"
-                    , runtime = 1.0),
+                pointerName = "pointer", runtime = 1.0
+            ),
             UpdateVariableState(variables = emptyList(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 4,
                 pointerName = "pointer",
                 codeBlockName = "code_block",
-                codeTextVariable = "code_text"
-                    , runtime = 1.0),
+                codeTextVariable = "code_text", runtime = 1.0
+            ),
             UpdateVariableState(variables = listOf("x = 3.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 1,
                 pointerName = "pointer",
                 codeBlockName = "code_block",
-                codeTextVariable = "code_text"
-                    , runtime = 1.0),
+                codeTextVariable = "code_text", runtime = 1.0
+            ),
             MoveToLine(
                 lineNumber = 2,
                 pointerName = "pointer",
                 codeBlockName = "code_block",
-                codeTextVariable = "code_text"
-                    , runtime = 1.0),
+                codeTextVariable = "code_text", runtime = 1.0
+            ),
             MoveToLine(
                 lineNumber = 4,
                 pointerName = "pointer",
                 codeBlockName = "code_block",
-                codeTextVariable = "code_text"
-                    , runtime = 1.0),
+                codeTextVariable = "code_text", runtime = 1.0
+            ),
             UpdateVariableState(variables = listOf("ans = 9.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             Sleep(length = 1.0, runtime = 1.0)
         )
@@ -91,11 +89,11 @@ class ASTExecutorTests {
     fun checkStepInBlock() {
         val program =
             "fun f(x: number): number{\n" +
-                    "    return x * 3;\n" +
-                    "}\n" +
-                    "@stepInto { \n" +
-                    "let ans = f(3);\n" +
-                    "}\n"
+                "    return x * 3;\n" +
+                "}\n" +
+                "@stepInto { \n" +
+                "let ans = f(3);\n" +
+                "}\n"
 
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
@@ -106,15 +104,15 @@ class ASTExecutorTests {
                 lines = listOf(listOf("fun f(x: number): number{"), listOf("    return x * 3;"), listOf("}"), listOf("let ans = f(3);"), listOf(" ")),
                 ident = "code_block",
                 codeTextName = "code_text",
-                pointerName = "pointer"
-                    , runtime = 1.0),
-            UpdateVariableState(variables= listOf(), ident="variable_block", textColor=null, runtime = 1.0),
+                pointerName = "pointer", runtime = 1.0
+            ),
+            UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            UpdateVariableState(variables= listOf("x = 3.0"), ident="variable_block", textColor=null, runtime = 1.0),
+            UpdateVariableState(variables = listOf("x = 3.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
             MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            UpdateVariableState(variables= listOf("ans = 9.0"), ident="variable_block", textColor=null, runtime = 1.0),
+            UpdateVariableState(variables = listOf("ans = 9.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             Sleep(1.0, runtime = 1.0)
         )
         val (_, actual) = VirtualMachine(
@@ -126,18 +124,17 @@ class ASTExecutorTests {
         ).runProgram()
 
         assertEquals(expected.toString(), actual.toString())
-
     }
 
     @Test
     fun checkStepOverBlock() {
         val program =
             "fun f(x: number): number{\n" +
-                    "    return x * 3;\n" +
-                    "}\n" +
-                    "@stepOver { \n" +
-                    "let ans = f(3);\n" +
-                    "}\n"
+                "    return x * 3;\n" +
+                "}\n" +
+                "@stepOver { \n" +
+                "let ans = f(3);\n" +
+                "}\n"
 
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
@@ -161,15 +158,15 @@ class ASTExecutorTests {
                 ),
                 ident = "code_block",
                 codeTextName = "code_text",
-                pointerName = "pointer"
-                    , runtime = 1.0),
+                pointerName = "pointer", runtime = 1.0
+            ),
             UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 4,
                 pointerName = "pointer",
                 codeBlockName = "code_block",
-                codeTextVariable = "code_text"
-                    , runtime = 1.0),
+                codeTextVariable = "code_text", runtime = 1.0
+            ),
             UpdateVariableState(variables = listOf("ans = 9.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             Sleep(1.0, runtime = 1.0)
         )
@@ -182,7 +179,6 @@ class ASTExecutorTests {
         ).runProgram()
 
         assertEquals(expected.toString(), actual.toString())
-
     }
 
     @Test

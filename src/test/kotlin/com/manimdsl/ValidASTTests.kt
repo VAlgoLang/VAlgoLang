@@ -2,9 +2,7 @@ package com.manimdsl
 
 import com.manimdsl.frontend.*
 import junit.framework.TestCase.assertEquals
-
 import org.junit.jupiter.api.Test
-
 
 class ValidASTTests {
 
@@ -27,8 +25,8 @@ class ValidASTTests {
     @Test
     fun multiLineProgram() {
         val multiLineProgram = "let x: number = 1.5;\n" +
-                "# code comment\n" +
-                "let y: Stack<number> = Stack<number>();\n"
+            "# code comment\n" +
+            "let y: Stack<number> = Stack<number>();\n"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 1.5)),
             DeclarationNode(3, IdentifierNode(3, "y"), ConstructorNode(3, StackType(NumberType), emptyList(), EmptyInitialiserNode))
@@ -42,7 +40,7 @@ class ValidASTTests {
     @Test
     fun methodCallProgram() {
         val methodProgram = "let y: Stack<number> = Stack<number>();\n" +
-                "y.push(1);\n"
+            "y.push(1);\n"
         val statements = listOf(
             DeclarationNode(1, IdentifierNode(1, "y"), ConstructorNode(1, StackType(NumberType), emptyList(), EmptyInitialiserNode)),
             MethodCallNode(2, "y", StackType.PushMethod(argumentTypes = listOf(NumberType to true)), listOf(NumberNode(2, 1.0)))

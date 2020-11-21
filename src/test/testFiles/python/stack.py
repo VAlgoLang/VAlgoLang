@@ -32,7 +32,7 @@ class Main(Scene):
         [self.play(*animation, run_time=1.0) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
         self.move_arrow_to_line(4, pointer, code_block, code_text)
-        [self.play(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True, run_time=1.0)]
+        [self.play(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True)]
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
     def move_relative_to_edge(self, group, x, y):
