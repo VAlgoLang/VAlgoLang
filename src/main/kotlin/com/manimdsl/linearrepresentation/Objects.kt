@@ -9,8 +9,8 @@ import comcreat.manimdsl.linearrepresentation.ManimInstr
 
 /** Objects **/
 
-interface MObject : ManimInstr {
-    val shape: Shape
+sealed class MObject : ManimInstr() {
+    abstract val shape: Shape
 }
 
 /** Positioning **/
@@ -52,7 +52,7 @@ data class CodeBlock(
     val syntaxHighlightingOn: Boolean = true,
     val syntaxHighlightingStyle: String = "inkpot",
     val tabSpacing: Int = 2
-) : MObject {
+) : MObject() {
     override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
 
     override fun toPython(): List<String> {
@@ -89,7 +89,7 @@ data class PartitionBlock(
     val scaleLeft: String,
     val scaleRight: String,
     override val runtime: Double = 1.0,
-) : MObject {
+) : MObject() {
     override val shape: Shape = NullShape
     override fun toPython(): List<String> {
         return listOf(
@@ -115,7 +115,7 @@ data class VariableBlock(
     val variableFrame: String,
     val textColor: String? = null,
     override val runtime: Double = 1.0,
-) : MObject {
+) : MObject() {
     override val shape: Shape = VariableBlockShape(ident, variables, textColor)
 
     override fun toPython(): List<String> {
@@ -134,7 +134,7 @@ sealed class DataStructureMObject(
     open val ident: String,
     open val uid: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject {
+) : MObject() {
 
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
@@ -148,7 +148,7 @@ data class NodeStructure(
     override val shape: Shape = NodeShape(ident, value),
     override val runtime: Double = 1.0
 
-) : MObject {
+) : MObject() {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = ${shape.getConstructor()}"
@@ -307,7 +307,8 @@ data class Array2DStructure(
     }
 }
 
-data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) : MObject {
+data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) :
+    MObject() {
     override fun toPython(): List<String> {
         return listOf(
             "# Constructs a new ${shape.className} with value ${shape.text}",
@@ -316,7 +317,7 @@ data class NewMObject(override val shape: Shape, val codeBlockVariable: String, 
     }
 }
 
-object EmptyMObject : MObject {
+object EmptyMObject : MObject() {
     override val shape: Shape = NullShape
     override val runtime: Double
         get() = 1.0
