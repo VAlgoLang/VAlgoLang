@@ -71,3 +71,7 @@ class DataStructure(ABC):
     @abstractmethod
     def shrink_if_cross_border(self, obj):
         pass
+
+    @abstractmethod
+    def clean_up(self):
+        pass

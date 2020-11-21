@@ -629,9 +629,9 @@ class VirtualMachine(
                     }
 
                     val boundary =
-                        dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                        dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
                     boundary.maxSize += nodeCount(childValue)
-                    dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
+                    dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
                         boundary
                     childValue.attachTree(parent.binaryTreeValue!!)
                     linearRepresentation.add(

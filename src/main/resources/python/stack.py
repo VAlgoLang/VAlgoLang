@@ -59,6 +59,9 @@ class Stack(DataStructure, ABC):
         animation.append([ApplyMethod(obj.all.next_to, self.all, np.array([0, 0.25, 0]))])
         return animation
 
+    def clean_up(self):
+        return [FadeOut(self.all)]
+
 # Object representing a stack instantiation.
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
