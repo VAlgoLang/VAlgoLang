@@ -4,7 +4,6 @@ import com.manimdsl.shapes.Rectangle
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 
-
 class PythonStyleTests {
 
     @Test

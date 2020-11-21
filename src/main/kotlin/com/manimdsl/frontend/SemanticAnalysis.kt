@@ -85,11 +85,12 @@ class SemanticAnalysis {
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
             }
-            is EqExpression, is NeqExpression -> if (expr1Type == expr2Type || isEqualNullable(
-                    expr1Type,
-                    expr2Type
-                )
-            ) BoolType else ErrorType
+            is EqExpression, is NeqExpression ->
+                if (expr1Type == expr2Type || isEqualNullable(
+                        expr1Type,
+                        expr2Type
+                    )
+                ) BoolType else ErrorType
             is GtExpression, is LtExpression, is GeExpression, is LeExpression -> {
                 if (expr1Type == expr2Type) BoolType else ErrorType
             }
@@ -104,7 +105,6 @@ class SemanticAnalysis {
         return getExpressionType(expression, currentSymbolTable)
     }
 
-
     fun redeclaredVariableCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) != ErrorType) {
             redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
@@ -118,7 +118,6 @@ class SemanticAnalysis {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
     }
-
 
     fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
@@ -143,7 +142,6 @@ class SemanticAnalysis {
             currentSymbolTable.getTypeOf(identifier)
         } else {
             overrideType
-
         }
 
         if (dataStructureType is DataStructureType && !dataStructureType.containsMethod(method)) {
@@ -268,7 +266,6 @@ class SemanticAnalysis {
                 }
             }
         }
-
     }
 
     fun checkArrayConstructorItemLengthsMatch(
@@ -299,7 +296,6 @@ class SemanticAnalysis {
         }
     }
 
-
     fun checkArrayElemHasCorrectNumberOfIndices(
         indices: List<ExpressionNode>,
         is2DArray: Boolean,
@@ -329,7 +325,6 @@ class SemanticAnalysis {
     ) {
         checkExpressionTypeWithExpectedTypes(expression, setOf(expected), currentSymbolTable, ctx)
     }
-
 
     fun checkExpressionTypeWithExpectedTypes(
         expression: ExpressionNode,
@@ -422,9 +417,10 @@ class SemanticAnalysis {
         return statements.any {
             when (it) {
                 is ReturnNode -> true
-                is IfStatementNode -> checkStatementsHaveReturn(it.statements)
-                        && it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) }
-                        && checkStatementsHaveReturn(it.elseBlock.statements)
+                is IfStatementNode ->
+                    checkStatementsHaveReturn(it.statements) &&
+                        it.elifs.all { elif -> checkStatementsHaveReturn(elif.statements) } &&
+                        checkStatementsHaveReturn(it.elseBlock.statements)
                 is WhileStatementNode -> checkStatementsHaveReturn(it.statements)
                 is ForStatementNode -> checkStatementsHaveReturn(it.statements)
                 else -> false
@@ -600,8 +596,10 @@ class SemanticAnalysis {
     ) {
         val startExprType = inferType(symbolTable, startExpr)
         val endExprType = inferType(symbolTable, endExpr)
-        if (!(startExprType is NumberType && endExprType is NumberType
-                    || startExprType is CharType && endExprType is CharType)
+        if (!(
+            startExprType is NumberType && endExprType is NumberType ||
+                startExprType is CharType && endExprType is CharType
+            )
         ) {
             forLoopRangeNotNumberOrChar(startExprType.toString(), endExprType.toString(), ctx)
         }

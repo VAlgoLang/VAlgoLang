@@ -15,7 +15,6 @@ interface ManimInstr {
     val runtime: Double
     fun toPython(): List<String>
     fun getRuntimeString(): String = ", run_time=$runtime"
-
 }
 
 enum class Alignment(val angle: String) {
@@ -31,11 +30,11 @@ data class Sleep(val length: Double = 1.0, override val runtime: Double) : Manim
 }
 
 data class MoveToLine(
-        val lineNumber: Int,
-        val pointerName: String,
-        val codeBlockName: String,
-        val codeTextVariable: String,
-        override val runtime: Double
+    val lineNumber: Int,
+    val pointerName: String,
+    val codeBlockName: String,
+    val codeTextVariable: String,
+    override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
@@ -45,12 +44,12 @@ data class MoveToLine(
 }
 
 data class MoveObject(
-        val shape: Shape,
-        val moveToShape: Shape,
-        val objectSide: ObjectSide,
-        val offset: Int = 0,
-        val fadeOut: Boolean = false,
-        override val runtime: Double
+    val shape: Shape,
+    val moveToShape: Shape,
+    val objectSide: ObjectSide,
+    val offset: Int = 0,
+    val fadeOut: Boolean = false,
+    override val runtime: Double
 ) :
     ManimInstr {
     override fun toPython(): List<String> {
@@ -83,86 +82,89 @@ data class StackPushObject(
 }
 
 data class TreeDeleteObject(
-        val parentNodeValue: BinaryTreeNodeValue,
-        val treeValue: BinaryTreeValue,
-        val left: Boolean,
-        override val runtime: Double
+    val parentNodeValue: BinaryTreeNodeValue,
+    val treeValue: BinaryTreeValue,
+    val left: Boolean,
+    override val runtime: Double
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
-                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
+            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
 
         )
     }
 }
 
 data class TreeEditValue(
-        val nodeValue: BinaryTreeNodeValue,
-        val value: PrimitiveValue,
-        val treeValue: BinaryTreeValue,
-        override val runtime: Double
+    val nodeValue: BinaryTreeNodeValue,
+    val value: PrimitiveValue,
+    val treeValue: BinaryTreeValue,
+    override val runtime: Double
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         val methodName = "edit_node_value"
         return listOf(
-                "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
-)
+            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
+        )
     }
 }
 
 data class TreeAppendObject(
-        val parentNodeValue: BinaryTreeNodeValue,
-        val childNodeValue: BinaryTreeNodeValue,
-        val treeValue: BinaryTreeValue,
-        val left: Boolean,
-        override val runtime: Double
+    val parentNodeValue: BinaryTreeNodeValue,
+    val childNodeValue: BinaryTreeNodeValue,
+    val treeValue: BinaryTreeValue,
+    val left: Boolean,
+    override val runtime: Double
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
-                "[self.play(animation${getRuntimeString()}) for animation in ${treeValue.manimObject.shape.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident},${left.toString().capitalize()})]",
-                "[self.play(animation${getRuntimeString()}) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
-                )
+            "[self.play(animation${getRuntimeString()}) for animation in ${treeValue.manimObject.shape.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident},${left.toString().capitalize()})]",
+            "[self.play(animation${getRuntimeString()}) for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
+        )
     }
 }
 
 data class NodeFocusObject(
-        val parentNodeValue: BinaryTreeNodeValue, override val runtime: Double,
+    val parentNodeValue: BinaryTreeNodeValue,
+    override val runtime: Double,
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         return listOf(
-                "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
+            "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
         )
     }
 }
 
 data class NodeUnfocusObject(
-        val parentNodeValue: BinaryTreeNodeValue, override val runtime: Double,
+    val parentNodeValue: BinaryTreeNodeValue,
+    override val runtime: Double,
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         return listOf(
-                "self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
+            "self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
         )
     }
 }
 
 data class NodeAppendObject(
-        val parentNodeValue: BinaryTreeNodeValue,
-        val childNodeValue: BinaryTreeNodeValue,
-        val left: Boolean, override val runtime: Double,
+    val parentNodeValue: BinaryTreeNodeValue,
+    val childNodeValue: BinaryTreeNodeValue,
+    val left: Boolean,
+    override val runtime: Double,
 ) : ManimInstr {
 
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
-                "${parentNodeValue.manimObject.shape.ident}.$methodName(${childNodeValue.manimObject.shape.ident}, 1)",
-                )
+            "${parentNodeValue.manimObject.shape.ident}.$methodName(${childNodeValue.manimObject.shape.ident}, 1)",
+        )
     }
 }
 
@@ -182,11 +184,12 @@ data class StackPopObject(
 }
 
 data class ArrayElemAssignObject(
-        val arrayIdent: String,
-        val index: Int,
-        val newElemValue: ExecValue,
-        val animatedStyle: AnimationProperties?,
-        val secondIndex: Int? = null, override val runtime: Double
+    val arrayIdent: String,
+    val index: Int,
+    val newElemValue: ExecValue,
+    val animatedStyle: AnimationProperties?,
+    val secondIndex: Int? = null,
+    override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.handleColourValue(animatedStyle.textColor)}" else ""
@@ -252,8 +255,6 @@ data class ArrayElemRestyle(
         val instructions = mutableListOf<String>()
         val animationString = animationString ?: "FadeToColor"
 
-
-
         val animationStringTakesColorAsParameter =
             StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
@@ -264,7 +265,6 @@ data class ArrayElemRestyle(
                         it
                     )})"
                 )
-
             }
         }
 
@@ -272,7 +272,7 @@ data class ArrayElemRestyle(
             if (pointer == null || pointer) {
                 instructions.add(
                     "FadeIn($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer.next_to($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, TOP, 0.01)." +
-                            "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
+                        "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
                 )
             } else {
                 instructions.add("self.fade_out_if_needed($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer)")
@@ -284,14 +284,13 @@ data class ArrayElemRestyle(
                 if (!animationStringTakesColorAsParameter) {
                     instructions.add(
                         "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
-                                "color=${styleProperties.handleColourValue(it)})"
+                            "color=${styleProperties.handleColourValue(it)})"
                     )
                 }
                 instructions.add(
                     "$animationString($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
-                            "color=${styleProperties.handleColourValue(it)})"
+                        "color=${styleProperties.handleColourValue(it)})"
                 )
-
             }
         }
 
@@ -306,29 +305,29 @@ data class ArrayElemRestyle(
 }
 
 data class TreeNodeRestyle(
-        val nodeIdent: String,
-        val styleProperties: StylesheetProperty,
-        val highlightColor: String? = null,
-        val animationString: String? = null,
-        override val runtime: Double
+    val nodeIdent: String,
+    val styleProperties: StylesheetProperty,
+    val highlightColor: String? = null,
+    val animationString: String? = null,
+    override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
         var instructions = ""
         val animationString = animationString ?: "FadeToColor"
 
         val animationStringTakesColorAsParameter =
-                StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
+            StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
         if (highlightColor != null) {
-            instructions = "${nodeIdent}.highlight(${styleProperties.handleColourValue(highlightColor)})"
+            instructions = "$nodeIdent.highlight(${styleProperties.handleColourValue(highlightColor)})"
         } else {
-            instructions = "${nodeIdent}.unhighlight()"
+            instructions = "$nodeIdent.unhighlight()"
         }
 
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
             listOf(
-                    "self.play(*${instructions}${getRuntimeString()})"
+                "self.play(*${instructions}${getRuntimeString()})"
             )
         }
     }
@@ -347,14 +346,11 @@ data class RestyleObject(
 }
 
 data class UpdateVariableState(
-        val variables: List<String>,
-        val ident: String,
-        val textColor: String? = null, override val runtime: Double
+    val variables: List<String>,
+    val ident: String,
+    val textColor: String? = null,
+    override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> =
-        listOf("self.play(*${ident}.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+        listOf("self.play(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
 }
-
-
-
-

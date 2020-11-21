@@ -13,8 +13,11 @@ class SyntaxErrorListener : BaseErrorListener() {
     )
 
     override fun syntaxError(
-        recognizer: Recognizer<*, *>, offendingSymbol: Any,
-        line: Int, charPositionInLine: Int, msg: String,
+        recognizer: Recognizer<*, *>,
+        offendingSymbol: Any,
+        line: Int,
+        charPositionInLine: Int,
+        msg: String,
         e: RecognitionException?
     ) {
 
@@ -108,6 +111,3 @@ class SyntaxErrorListener : BaseErrorListener() {
         return OverflowInfo(type, text, line, char)
     }
 }
-
-
-

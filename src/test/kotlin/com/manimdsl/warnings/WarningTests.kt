@@ -42,7 +42,6 @@ class WarningTests {
         )
     }
 
-
     private fun runErrorAndWarningHandling(fileName: String, stylesheetName: String) {
         val inputFile = File("src/test/testFiles/valid/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

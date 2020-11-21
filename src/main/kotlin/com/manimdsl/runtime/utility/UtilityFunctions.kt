@@ -20,7 +20,7 @@ fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
     return wrappedCode
 }
 
-fun wrapLine(line : String): Int{
+fun wrapLine(line: String): Int {
     val list = line.split(" ")
     var counter = 0
     var prevCounter = 0

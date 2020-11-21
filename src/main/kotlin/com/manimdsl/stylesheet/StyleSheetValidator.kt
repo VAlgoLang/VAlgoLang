@@ -34,7 +34,6 @@ object StyleSheetValidator {
             "TurnInsideOut" to false
         )
 
-
     fun validateStyleSheet(stylesheet: StylesheetFromJSON, symbolTable: SymbolTableVisitor) {
         // Check variables
         stylesheet.variables.keys.forEach {
@@ -49,7 +48,6 @@ object StyleSheetValidator {
                 invalidStyleAttribute("dataStructures", dataStructureStrings, it)
             }
         }
-
 
         // Check code tracking
         if (!validCodeTracking.contains(stylesheet.codeTracking)) {
@@ -109,5 +107,4 @@ object StyleSheetValidator {
             }
         }
     }
-
 }

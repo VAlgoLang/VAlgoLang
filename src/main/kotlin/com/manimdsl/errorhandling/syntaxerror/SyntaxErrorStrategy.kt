@@ -12,7 +12,7 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         val msg = "rule " + ruleName + " " + e!!.message
         recognizer.notifyErrorListeners(
             e.offendingToken,
-            msg + "TOKEN${offendingToken}LINE${offendingTokenLine}CHAR${offendingTokenChar}",
+            msg + "TOKEN${offendingToken}LINE${offendingTokenLine}CHAR$offendingTokenChar",
             e
         )
     }
@@ -52,8 +52,8 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
             val expectedToken = expecting.toString(recognizer.vocabulary).trim('\'')
             val actualToken = getTokenErrorDisplay(t).trim('\'')
             var msg = "missing '$expectedToken' at ''$actualToken'"
-            if (expectedToken.toLowerCase().contains(actualToken.toLowerCase())
-                || actualToken.toLowerCase().contains(expectedToken.toLowerCase())
+            if (expectedToken.toLowerCase().contains(actualToken.toLowerCase()) ||
+                actualToken.toLowerCase().contains(expectedToken.toLowerCase())
             ) {
                 msg = "potential spelling error, did you mean: '$expectedToken'"
             }
@@ -67,5 +67,4 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         val msg = "mismatched input " + getTokenErrorDisplay(e.offendingToken) + expecting
         recognizer.notifyErrorListeners(e.offendingToken, msg, e)
     }
-
 }

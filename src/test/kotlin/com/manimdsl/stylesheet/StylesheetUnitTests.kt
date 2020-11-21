@@ -63,7 +63,4 @@ class StylesheetUnitTests {
         val stylesheet = Stylesheet(null, SymbolTableVisitor())
         assertTrue(stylesheet.getStepIntoIsDefault())
     }
-
-
-
 }

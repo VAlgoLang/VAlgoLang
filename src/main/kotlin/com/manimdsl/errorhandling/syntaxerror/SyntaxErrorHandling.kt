@@ -7,7 +7,7 @@ fun overflowError(info: SyntaxErrorListener.OverflowInfo, underlinedError: Strin
 }
 
 fun extraneousInputError(token: String, line: Int, char: Int, underlinedError: String) {
-    ErrorHandler.addSyntaxError("extraneous input '${token}'\n$underlinedError", "$line:$char")
+    ErrorHandler.addSyntaxError("extraneous input '$token'\n$underlinedError", "$line:$char")
 }
 
 fun otherError(msg: String, token: String, line: Int, char: Int, underlinedError: String) {

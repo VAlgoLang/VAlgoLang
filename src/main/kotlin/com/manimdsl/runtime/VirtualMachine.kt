@@ -3,7 +3,6 @@ package com.manimdsl.runtime
 import com.google.gson.Gson
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
-import com.manimdsl.executor.*
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
@@ -130,7 +129,6 @@ class VirtualMachine(
         }
     }
 
-
     private fun wrapString(text: String): String {
         val sb = StringBuilder(text)
         for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
@@ -203,7 +201,6 @@ class VirtualMachine(
 
                     val value = executeStatement(statement)
                     if (statement is ReturnNode || value !is EmptyValue) return value
-
                 }
 
                 fetchNextStatement()
@@ -284,7 +281,6 @@ class VirtualMachine(
             }
         }
 
-
         private fun executeSleep(statement: SleepNode): ExecValue {
             linearRepresentation.add(
                 Sleep(
@@ -335,7 +331,7 @@ class VirtualMachine(
                 argumentVariables,
                 depth + 1,
                 showMoveToLine = stepInto,
-                stepInto = stepInto && previousStepIntoState,   // In the case of nested stepInto/stepOver
+                stepInto = stepInto && previousStepIntoState, // In the case of nested stepInto/stepOver
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
                 functionNamePrefix = "${functionNode.identifier}."
@@ -344,7 +340,6 @@ class VirtualMachine(
             if (stepInto) moveToLine()
             return returnValue
         }
-
 
         private fun fetchNextStatement() {
             ++pc
@@ -420,8 +415,6 @@ class VirtualMachine(
                             EmptyValue
                         }
                     }
-
-
                 }
                 is ArrayValue -> {
                     val index = indices.first()
@@ -743,7 +736,6 @@ class VirtualMachine(
             }
         }
 
-
         private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
             val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
             return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
@@ -785,7 +777,6 @@ class VirtualMachine(
                         }
                     }
                 }
-
             }
             insertVariable(binaryTreeElemNode.identifier, rootNode)
             updateVariableState()
@@ -988,7 +979,6 @@ class VirtualMachine(
             }
         }
 
-
         private fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
             return when (node.dataStructureMethod) {
                 is ArrayType.Size -> {
@@ -1111,7 +1101,6 @@ class VirtualMachine(
             ds.array[indices[2]][indices[3]] = temp
             return EmptyValue
         }
-
 
         private fun executeStackMethodCall(
             node: MethodCallNode,
@@ -1311,7 +1300,6 @@ class VirtualMachine(
                     } else {
                         execute1DArrayConstructor(node, assignLHS)
                     }
-
                 }
                 is TreeType -> {
                     val ident = variableNameGenerator.generateNameFromPrefix("tree")
@@ -1375,7 +1363,8 @@ class VirtualMachine(
                             node.type.internalType,
                             node.lineNumber
                         )
-                    })
+                    }
+                )
             } else {
                 if (initialiserExpressions.size != arraySize.value.toInt()) {
                     RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
@@ -1430,8 +1419,7 @@ class VirtualMachine(
                 Array2DValue(
                     EmptyMObject,
                     Array(arrayDimensions.first) { _ ->
-                        Array(arrayDimensions.second)
-                        { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+                        Array(arrayDimensions.second) { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
                     }
                 )
             } else {
@@ -1449,8 +1437,6 @@ class VirtualMachine(
                     )
                 }
             }
-
-
 
             if (arrayValue is Array2DValue) {
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
@@ -1542,7 +1528,6 @@ class VirtualMachine(
                 rightExpression
             )
         }
-
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
             if (showMoveToLine && !hideCode) addSleep(0.5)
@@ -1696,7 +1681,7 @@ class VirtualMachine(
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
 
-            //If
+            // If
             if (conditionValue.value) {
                 val execValue = Frame(
                     ifStatementNode.statements.first().lineNumber,
@@ -1760,5 +1745,4 @@ class VirtualMachine(
             return EmptyValue
         }
     }
-
 }
