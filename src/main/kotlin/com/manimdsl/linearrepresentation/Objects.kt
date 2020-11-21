@@ -116,7 +116,7 @@ data class VariableBlock(
     val textColor: String? = null,
     override val runtime: Double = 1.0,
 ) : MObject {
-    override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
+    override val shape: Shape = VariableBlockShape(ident, variables, textColor)
 
     override fun toPython(): List<String> {
         return listOf(

@@ -312,15 +312,11 @@ data class TreeNodeRestyle(
     override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        var instructions = ""
-        val animationString = animationString ?: "FadeToColor"
 
-        val animationStringTakesColorAsParameter =
-            StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
-        if (highlightColor != null) {
-            instructions = "$nodeIdent.highlight(${styleProperties.handleColourValue(highlightColor)})"
+        val instructions = if (highlightColor != null) {
+            "$nodeIdent.highlight(${styleProperties.handleColourValue(highlightColor)})"
         } else {
-            instructions = "$nodeIdent.unhighlight()"
+            "$nodeIdent.unhighlight()"
         }
 
         return if (instructions.isEmpty()) {
