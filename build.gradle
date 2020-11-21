@@ -62,7 +62,7 @@ kotlinter {
     indentSize = 4
     reporters = ['checkstyle', 'plain']
     experimentalRules = false
-    disabledRules = []
+    disabledRules = ["no-wildcard-imports"]
 }
 
 test () {
