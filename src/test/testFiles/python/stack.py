@@ -170,6 +170,9 @@ class DataStructure(ABC):
     @abstractmethod
     def shrink_if_cross_border(self, obj):
         pass
+    @abstractmethod
+    def clean_up(self):
+        pass
 class Rectangle_block:
     def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
@@ -195,6 +198,8 @@ class Rectangle_block:
         if(new_text_obj.get_height() > 0.6 * self.height):
             new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
+    def clean_up(self):
+        return FadeOut(self.all)
 class Stack(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
@@ -249,6 +254,8 @@ class Stack(DataStructure, ABC):
             animation.append(sim_list)
         animation.append([ApplyMethod(obj.all.next_to, self.all, np.array([0, 0.25, 0]))])
         return animation
+    def clean_up(self):
+        return [FadeOut(self.all)]
 # Object representing a stack instantiation.
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
