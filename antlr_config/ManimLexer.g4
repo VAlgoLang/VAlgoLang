@@ -7,9 +7,6 @@ DOT: '.';
 EQUAL: '=';
 COMMA: ',';
 AT: '@';
-RIGHT: 'right';
-LEFT: 'left';
-VALUE: 'value';
 
 // boolean literals
 TRUE: 'true';
@@ -69,7 +66,6 @@ SPEED: 'speed';
 TO_NUMBER: 'toNumber';
 TO_CHAR: 'toChar';
 
-ROOT: 'root';
 NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;
 fragment DIGIT: '0'..'9' ;

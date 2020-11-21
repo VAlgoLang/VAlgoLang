@@ -1,39 +1,6 @@
-fun inorder(head: Node<number>, arr2: Array<number>, i: number): number {
-    if (head == null) {
-        return i;
-    } else {
-        @speedUp(5, i >= 3) {
-        let j = inorder(head.left, arr2, i);
-        arr2[j] = head.value;
-        let ret = inorder(head.right, arr2, j+1);
-        }
-        return ret;
-    }
-}
-
-fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
-    if (i == j) {
-        return Node<number>(arr[i]);
-    }
-    if (i > j) {
-        return null;
-    }
-    let m = i+j;
-    m = m/2;
-    let head = Node<number>(arr[m]);
-    head.left = buildBST(i, m-1, arr);
-    head.right = buildBST(m+1, j, arr);
-    return head;
-}
-
-@speed(2) {
-let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
-@stepOver {
-let head = Node<number>(4);
-let tree = Tree<Node<number>>(head);
-head.left = buildBST(0, 2, arr);
-head.right = buildBST(4, arr.size()-1, arr);
-}
-let arr2 = Array<number>(7) {-1, -1, -1, -1, -1, -1, -1};
-inorder(head, arr2, 0);
-}
+let y = Node<number>(1);
+y.left = Node<number>(2);
+y.left.right = Node<number>(5);
+let x = 7;
+y.left.right.right.value = x;
+y.left = y.left.right;

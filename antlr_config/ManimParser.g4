@@ -41,8 +41,7 @@ loop_stat: BREAK SEMI         #BreakStatement
 
 assignment_lhs: IDENT           #IdentifierAssignment
     | array_elem                #ArrayElemAssignment
-    | node_elem                 #NodeElemAssignment
-    | root_elem                 #RootElemAssignment;
+    | node_elem                 #NodeElemAssignment;
 
 elseIf: ELSE IF OPEN_PARENTHESIS elifCond=expr CLOSE_PARENTHESIS OPEN_CURLY_BRACKET elifStat=stat? CLOSE_CURLY_BRACKET;
 
@@ -55,7 +54,6 @@ expr: NUMBER                                                        #NumberLiter
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
     | node_elem                                                     #NodeElemExpr
-    | root_elem                                                     #RootElemExpr
     | data_structure_type
     OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS
     data_structure_initialiser?                                     #DataStructureConstructor
@@ -98,6 +96,5 @@ data_structure_initialiser: OPEN_CURLY_BRACKET (arg_list | initialiser_list) CLO
 initialiser_list: OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET (COMMA OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET)*;
 
 array_elem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+;
-node_elem: IDENT node_elem_access* (DOT VALUE)?;
-node_elem_access: (DOT (LEFT | RIGHT));
-root_elem: IDENT DOT ROOT node_elem_access* (DOT VALUE)? #RootElem;
+node_elem: IDENT node_elem_access*;
+node_elem_access: (DOT IDENT);

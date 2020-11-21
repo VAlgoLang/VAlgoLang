@@ -28,8 +28,8 @@ interface NullableDataStructure
 
 sealed class DataStructureType(
     open var internalType: Type,
-    open val methods: MutableMap<String, DataStructureMethod>
 ) : Type() {
+    abstract val methods: MutableMap<String, DataStructureMethod>
     abstract fun containsMethod(method: String): Boolean
     abstract fun getMethodByName(method: String): DataStructureMethod
     abstract fun getConstructor(): ConstructorMethod
@@ -42,8 +42,9 @@ sealed class DataStructureType(
 
 interface DataStructureMethod {
     val returnType: Type
+
     // List of pairs containing type to whether it is a required argument
-    val argumentTypes:  List<Pair<Type, Boolean>>
+    val argumentTypes: List<Pair<Type, Boolean>>
 
     // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
@@ -68,10 +69,11 @@ data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 data class ArrayType(
     override var internalType: Type,
     var is2D: Boolean = false,
+) : DataStructureType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
         "size" to Size(), "swap" to Swap()
     )
-) : DataStructureType(internalType, methods) {
+
     object ArrayConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
@@ -89,7 +91,11 @@ data class ArrayType(
 
     data class Swap(
         override val returnType: Type = VoidType,
-        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(NumberType to true, NumberType to true, BoolType to false),
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(
+            NumberType to true,
+            NumberType to true,
+            BoolType to false
+        ),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
@@ -110,16 +116,17 @@ data class ArrayType(
 
     fun setTo2D() {
         is2D = true
-        methods["swap"] = Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
+        methods["swap"] =
+            Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
     }
 }
 
 data class TreeType(
-        override var internalType: Type,
-        override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
-                "root" to Root(internalType as NodeType)
-        )
-        ): DataStructureType(internalType, methods) {
+    override var internalType: Type,
+) : DataStructureType(internalType) {
+    override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
+        "root" to Root(internalType as NodeType)
+    )
 
     override fun containsMethod(method: String): Boolean {
         return methods.containsKey(method)
@@ -138,9 +145,9 @@ data class TreeType(
     }
 
     class Root(
-            override val returnType: Type,
-            override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
-            override val varargs: Boolean = false
+        override val returnType: Type,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
     ) : DataStructureMethod {
         override fun toString(): String {
             return "root"
@@ -160,10 +167,11 @@ data class TreeType(
 
 data class NodeType(
     override var internalType: Type,
+) : DataStructureType(internalType), NullableDataStructure {
     override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
-        "left" to Left(internalType), "right" to Right(internalType), "value" to Value(internalType)
-    ),
-) : DataStructureType(internalType, methods), NullableDataStructure {
+        "left" to Left(this), "right" to Right(this), "value" to Value(internalType)
+    )
+
     class NodeConstructor(internalType: Type) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
@@ -177,7 +185,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ): DataStructureMethod {
+    ) : DataStructureMethod {
         override fun toString(): String {
             return "left"
         }
@@ -187,7 +195,7 @@ data class NodeType(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
-    ): DataStructureMethod {
+    ) : DataStructureMethod {
         override fun toString(): String {
             return "right"
         }
@@ -235,6 +243,7 @@ data class NodeType(
 
 data class StackType(
     override var internalType: Type,
+) : DataStructureType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
         "push" to PushMethod(
             argumentTypes = listOf(
@@ -246,7 +255,7 @@ data class StackType(
         "size" to SizeMethod(),
         "peek" to PeekMethod(internalType)
     )
-) : DataStructureType(internalType, methods) {
+
     object StackConstructor : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 0
         override val returnType: Type = VoidType
@@ -301,7 +310,7 @@ data class StackType(
     override fun toString(): String = "Stack<$internalType>"
 }
 
-object NullType: Type() {
+object NullType : Type() {
     override fun toString(): String {
         return "null"
     }
@@ -312,6 +321,7 @@ object ErrorType : Type() {
         return "error"
     }
 }
+
 object VoidType : Type() {
     override fun toString(): String {
         return "void"
