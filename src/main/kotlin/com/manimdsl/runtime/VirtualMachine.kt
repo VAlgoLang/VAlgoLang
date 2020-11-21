@@ -1338,7 +1338,6 @@ class VirtualMachine(
                     linearRepresentation.add(nodeStructure)
                     return BinaryTreeNodeValue(NullValue, NullValue, value, manimObject = nodeStructure, depth = 0)
                 }
-                else -> EmptyValue
             }
         }
 
