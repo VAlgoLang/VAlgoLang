@@ -13,8 +13,6 @@ repositories {
     mavenCentral()
 }
 
-
-
 task buildAntlr() {
     println 'Compiling Antlr Parser'
     exec {
