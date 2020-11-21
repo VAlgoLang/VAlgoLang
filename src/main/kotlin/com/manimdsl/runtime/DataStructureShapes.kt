@@ -1,9 +1,8 @@
-package com.manimdsl.executor
+package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
-
-data class Positioning(val x: Double, val y: Double, val width: Double, val height: Double)
+import com.manimdsl.stylesheet.PositionProperties
 
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCentralise: Boolean = true) {
 
@@ -31,8 +30,8 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
-    fun positioning(): Positioning {
-        return Positioning(x1, y1, width, height)
+    fun positioning(): PositionProperties {
+        return PositionProperties(x1, y1, width, height)
     }
 
     fun area(): Double {
@@ -78,7 +77,8 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
 data class SquareBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(4.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = true
@@ -102,7 +102,8 @@ data class SquareBoundary(
 data class TallBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(2.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
@@ -126,7 +127,8 @@ data class TallBoundary(
 data class WideBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(4.0, 2.0),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
@@ -351,5 +353,4 @@ class Scene {
     private fun withinScene(boundaryShape: BoundaryShape): Boolean {
         return boundaryShape.corners().all { sceneShape.coordInShape(it.first, it.second) }
     }
-
 }

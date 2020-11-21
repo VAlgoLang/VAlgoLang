@@ -14,7 +14,6 @@ import java.io.PrintStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-
 class InvalidSyntaxTests {
     private val standardOut = System.out
     private val outputStreamCaptor = ByteArrayOutputStream()
@@ -33,7 +32,6 @@ class InvalidSyntaxTests {
         internal fun initialiseBinFolder() {
             File("src/test/testFiles/bin").mkdir()
         }
-
 
         @JvmStatic
         @AfterAll
@@ -85,5 +83,4 @@ class InvalidSyntaxTests {
             outputStreamCaptor.toString().contains(Regex("Syntax error at \\d*:\\d*: mismatched input .* expecting .*"))
         )
     }
-
 }

@@ -6,7 +6,9 @@ import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 
 fun declareAssignError(
-    identifier: String, rhsType: Type, lhsType: Type,
+    identifier: String,
+    rhsType: Type,
+    lhsType: Type,
     ctx: ParserRuleContext
 ) {
     addSemanticError(
@@ -49,9 +51,9 @@ fun incorrectLHSForDataStructureElem(
     )
 }
 
-
 fun redeclarationError(
-    variable: String, variableType: Type,
+    variable: String,
+    variableType: Type,
     ctx: ParserRuleContext
 ) {
     addSemanticError("$variable of type $variableType is already declared", getErrorLinePos(ctx))
@@ -66,6 +68,10 @@ fun undeclaredAssignError(
 
 fun nonDataStructureMethodError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("$identifier is not a data structure", getErrorLinePos(ctx))
+}
+
+fun dataStructureInternalTypeNotPrimitiveError(internalType: Type, ctx: ParserRuleContext) {
+    addSemanticError("Data structure internal type must be primitive. Type given: $internalType", getErrorLinePos(ctx))
 }
 
 fun incompatibleOperatorTypeError(operator: String, expr1Type: Type, expr2Type: Type? = null, ctx: ParserRuleContext) {
@@ -198,6 +204,18 @@ fun maxArrayIndexingExceededError(is2DArray: Boolean, indicesSize: Int, ctx: Par
     addSemanticError("Cannot index a ${if (is2DArray) "2D" else "1D"} array $indicesSize times", getErrorLinePos(ctx))
 }
 
+fun incorrectConstructorItemSize(openConstructorSize: Int, closeConstructorSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Array not constructed correctly: size of Array< ($openConstructorSize) does not match size of > ($closeConstructorSize)", getErrorLinePos(ctx))
+}
+
+fun incompatibleArrayDimension(arrayDimension: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot use array with dimension $arrayDimension: only 1D and 2D arrays supported", getErrorLinePos(ctx))
+}
+
+fun incompatibleArrayDimensionWithConstructorArguments(is2D: Boolean, argumentsSize: Int, ctx: ParserRuleContext) {
+    addSemanticError("Cannot initialise ${if (is2D) "2" else "1"}D array with $argumentsSize constructor arguments", getErrorLinePos(ctx))
+}
+
 fun incompatibleInitialisation(dataStructureType: String, ctx: ParserRuleContext) {
     addSemanticError("Incompatible initialisation with $dataStructureType type", getErrorLinePos(ctx))
 }
@@ -216,6 +234,10 @@ fun forLoopRangeUpdateNotNumber(actual: String, ctx: ParserRuleContext) {
 
 fun forLoopIdentifierBeingReassignedError(identifier: String, ctx: ParserRuleContext) {
     addSemanticError("Cannot reassign to variable $identifier being used in for loop header", getErrorLinePos(ctx))
+}
+
+fun invalidArgumentsForAnnotationError(annotation: String, ctx: ParserRuleContext) {
+    addSemanticError("Invalid arguments supplied to annotation $annotation.", getErrorLinePos(ctx))
 }
 
 /* Helper function that returns line and character position for errors */

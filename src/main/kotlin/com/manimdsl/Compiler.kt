@@ -10,7 +10,7 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile:String, generatePython: Boolean, onlyGenerateManim : Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: Boolean) {
+private fun compile(filename: String, outputVideoFile: String, generatePython: Boolean, onlyGenerateManim: Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: Boolean) {
     val file = File(filename)
     if (!file.isFile) {
         // File argument was not valid
@@ -42,7 +42,7 @@ private fun compile(filename: String, outputVideoFile:String, generatePython: Bo
 
     val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet, boundaries).runProgram()
 
-    if(boundaries) {
+    if (boundaries) {
         exitProcess(runtimeErrorStatus.code)
     }
 
@@ -143,4 +143,3 @@ class DSLCommandLineArguments : Callable<Int> {
 }
 
 fun main(args: Array<String>): Unit = exitProcess(CommandLine(DSLCommandLineArguments()).execute(*args))
-

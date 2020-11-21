@@ -27,9 +27,11 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
     | RETURN expr? SEMI                                                  #ReturnStatement
-    | step=(STEP_INTO | STEP_OVER)
-    OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                          #CodeTrackingStatement
+    | AT annotation                                                      #AnnotationStatement
     ;
+
+annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS condition=expr CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #CodeTrackingStatement
+          | SPEED (OPEN_PARENTHESIS arg_list CLOSE_PARENTHESIS)? OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET #AnimationSpeedUp;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
 
@@ -39,8 +41,7 @@ loop_stat: BREAK SEMI         #BreakStatement
 
 assignment_lhs: IDENT           #IdentifierAssignment
     | array_elem                #ArrayElemAssignment
-    | node_elem                 #NodeElemAssignment
-    | root_elem                 #RootElemAssignment;
+    | node_elem                 #NodeElemAssignment;
 
 elseIf: ELSE IF OPEN_PARENTHESIS elifCond=expr CLOSE_PARENTHESIS OPEN_CURLY_BRACKET elifStat=stat? CLOSE_CURLY_BRACKET;
 
@@ -53,7 +54,6 @@ expr: NUMBER                                                        #NumberLiter
     | IDENT                                                         #Identifier
     | array_elem                                                    #ArrayElemExpr
     | node_elem                                                     #NodeElemExpr
-    | root_elem                                                     #RootElemExpr
     | data_structure_type
     OPEN_PARENTHESIS arg_list? CLOSE_PARENTHESIS
     data_structure_initialiser?                                     #DataStructureConstructor
@@ -79,7 +79,7 @@ type: data_structure_type                                            #DataStruct
 
 node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
-    | ARRAY LT primitive_type GT                                     #ArrayType
+    | (ARRAY LT)+ type GT+                                 #ArrayType
     | node_type                                                      #NodeType
     | TREE LT node_type GT                                           #TreeType
     ;
@@ -95,7 +95,6 @@ bool: TRUE | FALSE;
 data_structure_initialiser: OPEN_CURLY_BRACKET (arg_list | initialiser_list) CLOSE_CURLY_BRACKET;
 initialiser_list: OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET (COMMA OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET)*;
 
-array_elem: IDENT OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)?;
-node_elem: IDENT node_elem_access* (DOT VALUE)?;
-node_elem_access: (DOT (LEFT | RIGHT));
-root_elem: IDENT DOT ROOT node_elem_access* (DOT VALUE)? #RootElem;
+array_elem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+;
+node_elem: IDENT node_elem_access*;
+node_elem_access: (DOT IDENT);

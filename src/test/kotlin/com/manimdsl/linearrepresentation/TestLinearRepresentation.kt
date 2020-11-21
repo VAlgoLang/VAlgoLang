@@ -13,7 +13,6 @@ import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
-
 class TestLinearRepresentation {
 
     @Test
@@ -35,17 +34,17 @@ class TestLinearRepresentation {
         val codeBlock = listOf(listOf("let y = new Stack<number>();"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
 
         val stackIR = listOf(
-            CodeBlock(codeBlock, "code_block", "code_text", "pointer"),
-            MoveToLine(1, "pointer", "code_block", "code_text"),
+            CodeBlock(codeBlock, "code_block", "code_text", "pointer", runtime = 1.0),
+            MoveToLine(1, "pointer", "code_block", "code_text", runtime = 1.0),
             stackIS,
-            MoveToLine(2, "pointer", "code_block", "code_text"),
+            MoveToLine(2, "pointer", "code_block", "code_text", runtime = 1.0),
             NewMObject(rectangle, "code_text"),
-            StackPushObject(rectangle, "stack"),
-            MoveToLine(3, "pointer", "code_block", "code_text"),
+            StackPushObject(rectangle, "stack", runtime = 1.0),
+            MoveToLine(3, "pointer", "code_block", "code_text", runtime = 1.0),
             NewMObject(rectangle1, "code_text"),
-            StackPushObject(rectangle1, "stack"),
-            MoveToLine(4, "pointer", "code_block", "code_text"),
-            StackPopObject(rectangle1, "stack", false)
+            StackPushObject(rectangle1, "stack", runtime = 1.0),
+            MoveToLine(4, "pointer", "code_block", "code_text", runtime = 1.0),
+            StackPopObject(rectangle1, "stack", false, runtime = 1.0)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())

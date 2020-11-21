@@ -14,7 +14,6 @@ import java.io.PrintStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-
 class InvalidSemanticTests {
     private val standardOut = System.out
     private val outputStreamCaptor = ByteArrayOutputStream()
@@ -33,7 +32,6 @@ class InvalidSemanticTests {
         internal fun initialiseBinFolder() {
             File("src/test/testFiles/bin").mkdir()
         }
-
 
         @JvmStatic
         @AfterAll
@@ -295,10 +293,17 @@ class InvalidSemanticTests {
         )
     }
 
-
     @Test
     fun incorrectNumberOfIndicesFor1DArray() {
-        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesForArray.manimdsl")
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor1DArray.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
+        )
+    }
+
+    @Test
+    fun incorrectNumberOfIndicesFor2DArray() {
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor2DArray.manimdsl")
         assertTrue(
             outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
         )
@@ -320,7 +325,6 @@ class InvalidSemanticTests {
             outputStreamCaptor.toString().contains(Regex("Expected expression of type number but found .*"))
         )
     }
-
 
     @Test
     fun stackTooManyArgumentsInConstructor() {
@@ -381,7 +385,6 @@ class InvalidSemanticTests {
         )
     }
 
-
     @Test
     fun invalidForLoopRange() {
         runSyntaxAndSemanticAnalysis("invalidForLoopRange.manimdsl")
@@ -398,12 +401,26 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun arrayConstructorItemsDoNotMatch() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayConstructor.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Array not constructed correctly: size of Array< .* does not match size of > .*"))
+        )
+    }
+
+    @Test
+    fun arrayDimensionGreaterThanTwo() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayDimension.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot use array with dimension .*: only 1D and 2D arrays supported"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())
         val program = parser.parseFile().second
         parser.convertToAst(program)
     }
-
-
 }

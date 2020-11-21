@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jmailen.kotlinter' version '3.2.0'
 }
 
 group 'org.example'
@@ -48,6 +49,18 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+check {
+    dependsOn "installKotlinterPrePushHook"
+}
+
+kotlinter {
+    ignoreFailures = false
+    indentSize = 4
+    reporters = ['checkstyle', 'plain']
+    experimentalRules = false
+    disabledRules = ["no-wildcard-imports"]
 }
 
 test () {

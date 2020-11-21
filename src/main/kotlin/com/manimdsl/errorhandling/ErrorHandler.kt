@@ -37,7 +37,7 @@ object ErrorHandler {
         if (syntaxErrors.isNotEmpty()) {
             println(
                 "Errors detected during compilation \n" +
-                        "Exit code: ${ExitStatus.SYNTAX_ERROR.code}"
+                    "Exit code: ${ExitStatus.SYNTAX_ERROR.code}"
             )
             syntaxErrors.forEach { println(it) }
             syntaxErrors.clear()
@@ -47,7 +47,7 @@ object ErrorHandler {
         if (semanticErrors.isNotEmpty()) {
             println(
                 "Errors detected during compilation \n" +
-                        "Exit code: ${ExitStatus.SEMANTIC_ERROR.code}"
+                    "Exit code: ${ExitStatus.SEMANTIC_ERROR.code}"
             )
             semanticErrors.forEach { println(it) }
             semanticErrors.clear()
@@ -67,7 +67,7 @@ object ErrorHandler {
     fun printPathError(path: String, linePos: String = "") {
         println(
             "Errors detected during compilation \n" +
-                    "Exit code: ${ExitStatus.PATH_ERROR.code}"
+                "Exit code: ${ExitStatus.PATH_ERROR.code}"
         )
 
         if (linePos == "") {
@@ -77,4 +77,3 @@ object ErrorHandler {
         }
     }
 }
-

@@ -3,7 +3,6 @@ package com.manimdsl.animation
 import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.MObject
 import com.manimdsl.linearrepresentation.NodeStructure
-
 import com.manimdsl.shapes.NullShape
 import comcreat.manimdsl.linearrepresentation.ManimInstr
 import comcreat.manimdsl.linearrepresentation.MoveToLine
@@ -22,7 +21,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                 is NodeStructure -> {
                     shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
                 }
-                is DataStructureMObject  -> {
+                is DataStructureMObject -> {
                     shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
                 }
                 is MObject -> {
@@ -48,7 +47,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
         pythonCode += "\n" + printWithIndent(
             0,
-            shapeClassPaths.map { getResourceAsText(it) })
+            shapeClassPaths.map { getResourceAsText(it) }
+        )
 
         return pythonCode
     }
@@ -65,6 +65,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         return """
             from abc import ABC, abstractmethod
             from manimlib.imports import *
+            import tempfile
              
             class Main(Scene):
                 code_start = 0
@@ -75,8 +76,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
     }
 
     private fun printWithIndent(identSize: Int, lines: List<String>): String {
-        return lines.map { line -> "${"    ".repeat(identSize)}${line}" }.joinToString("\n")
+        return lines.map { line -> "${"    ".repeat(identSize)}$line" }.joinToString("\n")
     }
-
-
 }

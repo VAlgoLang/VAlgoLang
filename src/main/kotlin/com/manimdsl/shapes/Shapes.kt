@@ -5,7 +5,6 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
 import comcreat.manimdsl.linearrepresentation.Alignment
 
-
 sealed class Shape {
     abstract val ident: String
     abstract val text: String
@@ -15,7 +14,7 @@ sealed class Shape {
     val style = PythonStyle()
 
     open fun getConstructor(): String {
-        return "$ident = ${className}(\"${text}\"$style)"
+        return "$ident = $className(\"${text}\"$style)"
     }
 
     override fun toString(): String {
@@ -71,15 +70,16 @@ class Rectangle(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}(\"${text}\", ${dataStructureIdentifier}$style)"
+        return "$ident = $className(\"${text}\", ${dataStructureIdentifier}$style)"
     }
-
-
 }
 
 class CodeBlockShape(
     override val ident: String,
     textColor: String? = null,
+    val syntaxHighlightingOn: Boolean,
+    val syntaxHighlightingStyle: String,
+    val tabSpacing: Int
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -91,11 +91,9 @@ class CodeBlockShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}(code_lines$style)"
+        return "$ident = $className(code_lines$style, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
     }
 }
-
-
 
 class VariableBlockShape(
     override val ident: String,
@@ -113,17 +111,17 @@ class VariableBlockShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = ${className}($text$style)"
+        return "$ident = $className($text$style)"
     }
 }
 
 class InitManimStackShape(
-        override val ident: String,
-        override val text: String,
-        private val boundary: List<Pair<Double, Double>>,
-        private val alignment: Alignment,
-        val color: String? = null,
-        val textColor: String? = null,
+    override val ident: String,
+    override val text: String,
+    private val boundary: List<Pair<Double, Double>>,
+    private val alignment: Alignment,
+    val color: String? = null,
+    val textColor: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/stack.py"
     override val className: String = "Stack"
@@ -136,28 +134,28 @@ class InitManimStackShape(
 
     override fun getConstructor(): String {
         val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = ${className}(${coordinatesString}, DOWN${style})"
+        return "$ident = $className($coordinatesString, DOWN$style)"
     }
 }
 class NodeShape(
-        override val ident: String,
-        override val text: String,
-        override val classPath: String = "python/binary_tree.py",
-        override val className: String = "Node",
-        override val pythonVariablePrefix: String ="",
-): Shape() {
+    override val ident: String,
+    override val text: String,
+    override val classPath: String = "python/binary_tree.py",
+    override val className: String = "Node",
+    override val pythonVariablePrefix: String = "",
+) : Shape() {
     override fun getConstructor(): String {
         return "Node(\"$text\")"
     }
 }
 
 class InitTreeShape(
-        override val ident: String,
-        override val text: String,
-        private val root: BinaryTreeNodeValue,
-        private val boundaries: List<Pair<Double, Double>>,
-        val color: String? = null,
-        val textColor: String? = null,
+    override val ident: String,
+    override val text: String,
+    private val root: BinaryTreeNodeValue,
+    private val boundaries: List<Pair<Double, Double>>,
+    val color: String? = null,
+    val textColor: String? = null,
 ) : ShapeWithText() {
     override val classPath: String = "python/binary_tree.py"
     override val className: String = "Tree"
@@ -170,7 +168,7 @@ class InitTreeShape(
 
     override fun getConstructor(): String {
         val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = ${className}(${coordinatesString}, ${root.manimObject.shape.ident}, ${text})"
+        return "$ident = $className($coordinatesString, ${root.manimObject.shape.ident}, $text)"
     }
 }
 
@@ -194,7 +192,7 @@ class ArrayShape(
 
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = ${className}([${values.joinToString(",") { "\"${it.value}\"" }}], \"$arrayTitle\", [${boundaries.joinToString(
+        return "$ident = $className([${values.joinToString(",") { "\"${it.value}\"" }}], \"$arrayTitle\", [${boundaries.joinToString(
             ","
         )}]$style).build()"
     }
@@ -204,7 +202,7 @@ class Array2DShape(
     override val ident: String,
     private val values: Array<Array<ExecValue>>,
     override val text: String,
-    private val boundaries : List<Pair<Double, Double>>,
+    private val boundaries: List<Pair<Double, Double>>,
     color: String? = null,
     textColor: String? = null,
     private val showLabel: Boolean? = null
@@ -220,10 +218,9 @@ class Array2DShape(
 
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = ${className}([${values.map { array -> "[ ${array.map { "\"${it.value}\"" }.joinToString(",")}]" }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
+        return "$ident = $className([${values.map { array -> "[ ${array.map { "\"${it.value}\"" }.joinToString(",")}]" }.joinToString(",")}], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
     }
 }
-
 
 object NullShape : Shape() {
     override val ident: String = ""
@@ -231,5 +228,4 @@ object NullShape : Shape() {
     override val classPath: String = ""
     override val className: String = ""
     override val pythonVariablePrefix: String = ""
-
 }

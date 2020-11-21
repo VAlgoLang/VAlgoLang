@@ -18,7 +18,6 @@ import java.io.PrintStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-
 class InvalidRuntimeTests {
     private val standardOut = System.out
     private val outputStreamCaptor = ByteArrayOutputStream()
@@ -37,7 +36,6 @@ class InvalidRuntimeTests {
         internal fun initialiseBinFolder() {
             File("src/test/testFiles/bin").mkdir()
         }
-
 
         @JvmStatic
         @AfterAll
@@ -68,5 +66,4 @@ class InvalidRuntimeTests {
         val (exitStatus, _) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, inputFile.readLines(), Stylesheet(null, symbolTable)).runProgram()
         assertEquals(ExitStatus.RUNTIME_ERROR, exitStatus)
     }
-
 }
