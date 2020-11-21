@@ -122,7 +122,7 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
     }
 
     override fun toString(): String {
-        return "Stack"
+        return stack.joinToString(" -> ", "[", "]")
     }
 }
 
@@ -134,7 +134,7 @@ data class ArrayValue(override var manimObject: MObject, val array: Array<ExecVa
     }
 
     override fun toString(): String {
-        return "Array"
+        return array.joinToString(", ", "[", "]")
     }
 }
 

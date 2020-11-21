@@ -1,8 +1,1 @@
-let original = Array<Array<number>>(){[1,2,3],[4,5,6]};
-let transpose = Array<number>(3, 2);
-
-for i in range(3) {
-    for j in range(2) {
-        transpose[i][j]=original[j][i];
-    }
-}
+let arr = Array<number>(4);
