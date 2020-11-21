@@ -86,8 +86,9 @@ data class CodeBlock(
 }
 
 data class PartitionBlock(
-        val scaleLeft: String,
-        val scaleRight: String, override val runtime: Double = 1.0,
+    val scaleLeft: String,
+    val scaleRight: String,
+    override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = NullShape
     override fun toPython(): List<String> {
@@ -108,12 +109,12 @@ data class PartitionBlock(
 }
 
 data class VariableBlock(
-        val variables: List<String>,
-        val ident: String,
-        val variableGroupName: String,
-        val variableFrame: String,
-        val textColor: String? = null,
-        override val runtime: Double = 1.0,
+    val variables: List<String>,
+    val ident: String,
+    val variableGroupName: String,
+    val variableFrame: String,
+    val textColor: String? = null,
+    override val runtime: Double = 1.0,
 ) : MObject {
     override val shape: Shape = VariableBlockShape(ident, variables, variableFrame, textColor)
 
@@ -138,16 +139,14 @@ sealed class DataStructureMObject(
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 
     abstract fun setShape()
-
 }
 
 data class NodeStructure(
-        val ident: String,
-        val value: String,
-        val depth: Int,
-        override val shape: Shape = NodeShape(ident, value),
-        override val runtime: Double = 1.0
-
+    val ident: String,
+    val value: String,
+    val depth: Int,
+    override val shape: Shape = NodeShape(ident, value),
+    override val runtime: Double = 1.0
 
 ) : MObject {
     override fun toPython(): List<String> {
@@ -158,13 +157,14 @@ data class NodeStructure(
 }
 
 data class InitTreeStructure(
-        override val type: DataStructureType,
-        override val ident: String,
-        private var boundaries: List<Pair<Double, Double>> = emptyList(),
-        private var maxSize: Int = -1,
-        val text: String,
-        val root: BinaryTreeNodeValue,
-        override val uid: String, override val runtime: Double
+    override val type: DataStructureType,
+    override val ident: String,
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1,
+    val text: String,
+    val root: BinaryTreeNodeValue,
+    override val uid: String,
+    override val runtime: Double
 ) : DataStructureMObject(type, ident, uid) {
     override var shape: Shape = NullShape
 
@@ -188,20 +188,21 @@ data class InitTreeStructure(
 }
 
 data class InitManimStack(
-        override val type: DataStructureType,
-        override val ident: String,
-        val position: Position,
-        val alignment: Alignment,
-        val text: String,
-        val moveToShape: Shape? = null,
-        val color: String? = null,
-        val textColor: String? = null,
-        val showLabel: Boolean? = null,
-        val creationStyle: String? = null,
-        val creationTime: Double? = null,
-        private var boundaries: List<Pair<Double, Double>> = emptyList(),
-        private var maxSize: Int = -1,
-        override val uid: String, override val runtime: Double = 1.0
+    override val type: DataStructureType,
+    override val ident: String,
+    val position: Position,
+    val alignment: Alignment,
+    val text: String,
+    val moveToShape: Shape? = null,
+    val color: String? = null,
+    val textColor: String? = null,
+    val showLabel: Boolean? = null,
+    val creationStyle: String? = null,
+    val creationTime: Double? = null,
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+    private var maxSize: Int = -1,
+    override val uid: String,
+    override val runtime: Double = 1.0
 ) : DataStructureMObject(type, ident, uid, boundaries) {
     override var shape: Shape = NullShape
 
@@ -209,7 +210,7 @@ data class InitManimStack(
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
-            mutableListOf("# Constructing new ${type} \"${text}\"", shape.getConstructor())
+            mutableListOf("# Constructing new $type \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
         python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
         return python
@@ -285,7 +286,6 @@ data class Array2DStructure(
     init {
         if (creationString == null) creationString = "FadeIn"
     }
-
 
     override fun toPython(): List<String> {
         return listOf(

@@ -82,4 +82,3 @@ class GlobalScopeSymbolTable : SymbolTable(id = 0) {
         return table[identifier] ?: ErrorIdentifierData
     }
 }
-

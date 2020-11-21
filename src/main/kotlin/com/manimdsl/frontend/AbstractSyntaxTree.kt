@@ -34,21 +34,21 @@ data class CommentNode(override val lineNumber: Int, val content: String) : Anim
 data class CodeTrackingNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
     NoRenderAnimationNode(lineNumber)
 
-sealed class AnnotationBlockNode(override val lineNumber: Int, open val condition: ExpressionNode): NoRenderAnimationNode(lineNumber)
+sealed class AnnotationBlockNode(override val lineNumber: Int, open val condition: ExpressionNode) : NoRenderAnimationNode(lineNumber)
 
 // Step into code and avoid additional animations
 data class StartCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, override val condition: ExpressionNode) :
     AnnotationBlockNode(lineNumber, condition)
 
 data class StopCodeTrackingNode(override val lineNumber: Int, val isStepInto: Boolean, override val condition: ExpressionNode) :
-        AnnotationBlockNode(lineNumber, condition)
+    AnnotationBlockNode(lineNumber, condition)
 
 // Step into code and make speed changes
 data class StartSpeedChangeNode(override val lineNumber: Int, val speedChange: ExpressionNode, override val condition: ExpressionNode) :
-        AnnotationBlockNode(lineNumber, condition)
+    AnnotationBlockNode(lineNumber, condition)
 
 data class StopSpeedChangeNode(override val lineNumber: Int, override val condition: ExpressionNode) :
-        AnnotationBlockNode(lineNumber, condition)
+    AnnotationBlockNode(lineNumber, condition)
 
 // Code Specific Nodes holding line number
 sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
@@ -103,7 +103,7 @@ data class ForStatementNode(
     val endCondition: ExpressionNode,
     val updateCounter: AssignmentNode,
     override val statements: List<StatementNode>,
-    ) : StatementBlock(lineNumber)
+) : StatementBlock(lineNumber)
 
 data class IfStatementNode(
     override val lineNumber: Int,
@@ -128,10 +128,9 @@ data class ElseNode(
     override val statements: List<StatementNode>
 ) : StatementBlock(lineNumber)
 
-
-sealed class LoopStatementNode(override val lineNumber: Int): CodeNode(lineNumber)
+sealed class LoopStatementNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class BreakNode(override val lineNumber: Int, val loopEndLineNumber: Int) : LoopStatementNode(lineNumber)
-data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int): LoopStatementNode(lineNumber)
+data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int) : LoopStatementNode(lineNumber)
 
 interface AssignLHS {
     val identifier: String
@@ -143,7 +142,8 @@ object EmptyLHS : AssignLHS {
 
 // Expressions
 sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
-data class IdentifierNode(override val lineNumber: Int, override val identifier: String) : ExpressionNode(lineNumber),
+data class IdentifierNode(override val lineNumber: Int, override val identifier: String) :
+    ExpressionNode(lineNumber),
     AssignLHS {
     override fun toString(): String {
         return identifier
@@ -189,11 +189,11 @@ data class BoolNode(override val lineNumber: Int, val value: Boolean) : Expressi
 data class CharNode(override val lineNumber: Int, val value: Char) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 data class MethodCallNode(
-        override val lineNumber: Int,
-        val instanceIdentifier: String,
-        val dataStructureMethod: DataStructureMethod,
-        val arguments: List<ExpressionNode>,
-        override val identifier: String = ""
+    override val lineNumber: Int,
+    val instanceIdentifier: String,
+    val dataStructureMethod: DataStructureMethod,
+    val arguments: List<ExpressionNode>,
+    override val identifier: String = ""
 ) : ExpressionNode(lineNumber), AssignLHS
 
 data class InternalArrayMethodCallNode(
@@ -213,9 +213,9 @@ data class ConstructorNode(
 
 data class NullNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
 
-sealed class InitialiserNode: ASTNode()
+sealed class InitialiserNode : ASTNode()
 
-object EmptyInitialiserNode: InitialiserNode()
+object EmptyInitialiserNode : InitialiserNode()
 
 data class DataStructureInitialiserNode(
     val expressions: List<ExpressionNode>

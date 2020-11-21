@@ -58,11 +58,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val statements = visitAndFlattenStatements(ctx.statements)
         symbolTable.leaveScope()
 
-
         if (functionReturnType !is VoidType) {
             semanticAnalyser.missingReturnCheck(identifier, statements, functionReturnType, ctx)
         }
-
 
         inFunction = false
         functionReturnType = VoidType
@@ -161,8 +159,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
             semanticAnalyser.unableToInferTypeCheck(rhsType, ctx)
             rhsType
         }
-
-
 
         if (rhs is FunctionCallNode && symbolTable.getTypeOf(rhs.functionIdentifier) != ErrorType) {
             val functionData = symbolTable.getData(rhs.functionIdentifier) as FunctionData
@@ -405,7 +401,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         }
         symbolTable.leaveScope()
 
-
         val elifNode = ElifNode(ctx.elifCond.start.line, elifScope, elifCondition, elifStatements)
         lineNumberNodeMap[ctx.elifCond.start.line] = elifNode
         return elifNode
@@ -430,7 +425,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         statements.add(start)
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
-
 
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end
@@ -459,7 +453,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         statements.addAll(visitAndFlattenStatements(ctx.stat()))
         statements.add(end)
 
-
         lineNumberNodeMap[ctx.start.line] = start
         lineNumberNodeMap[ctx.stop.line] = end
 
@@ -473,8 +466,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
-        return ArgumentNode((ctx?.expr()
-            ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode })
+        return ArgumentNode(
+            (
+                ctx?.expr()
+                    ?: listOf<ExprContext>()
+                ).map { visit(it) as ExpressionNode }
+        )
     }
 
     override fun visitMethodCall(ctx: MethodCallContext): ExpressionNode {
@@ -490,7 +487,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
         var dataStructureType = symbolTable.getTypeOf(identifier)
 
-
         val index = if (ctx.expr() != null) {
             // array indexed method call
             val indexExpression = visit(ctx.expr()) as ExpressionNode
@@ -501,7 +497,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         } else {
             null
         }
-
 
         val dataStructureMethod = if (dataStructureType is DataStructureType) {
             val method = dataStructureType.getMethodByName(methodName)
@@ -515,7 +510,6 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                 ctx
             )
             method
-
         } else {
             ErrorMethod
         }
@@ -698,8 +692,12 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
-        return Array2DInitialiserNode((ctx.arg_list()
-            ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments })
+        return Array2DInitialiserNode(
+            (
+                ctx.arg_list()
+                    ?: listOf<ArgumentListContext>()
+                ).map { visitArgumentList(it as ArgumentListContext?).arguments }
+        )
     }
 
     override fun visitData_structure_initialiser(ctx: Data_structure_initialiserContext): InitialiserNode {

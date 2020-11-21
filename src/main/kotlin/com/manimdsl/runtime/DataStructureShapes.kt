@@ -1,4 +1,4 @@
-package com.manimdsl.executor
+package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
@@ -30,7 +30,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
-    fun positioning() : PositionProperties {
+    fun positioning(): PositionProperties {
         return PositionProperties(x1, y1, width, height)
     }
 
@@ -77,7 +77,8 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0) {
 data class SquareBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(4, 4),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = true
@@ -101,7 +102,8 @@ data class SquareBoundary(
 data class TallBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(2, 4),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
@@ -125,7 +127,8 @@ data class TallBoundary(
 data class WideBoundary(
     override val minDimensions: Pair<Int, Int> = Pair(4, 2),
     override var width: Double = minDimensions.first.toDouble(),
-    override var height: Double = minDimensions.second.toDouble(), override var maxSize: Int = 0
+    override var height: Double = minDimensions.second.toDouble(),
+    override var maxSize: Int = 0
 ) : BoundaryShape() {
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
@@ -243,7 +246,7 @@ class Scene {
 
     private fun centralise(fullScreen: Boolean = false) {
         if (sceneShapes.isNotEmpty()) {
-            val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first}
+            val leftXCoord = sceneShapes.map { it.corners()[0] }.minOf { it.first }
             val rightXCoord = sceneShapes.map { it.corners()[1] }.maxOf { it.first }
             val topYCoord = sceneShapes.map { it.corners()[0] }.maxOf { it.second }
             val bottomYCoord = sceneShapes.map { it.corners()[2] }.minOf { it.second }
@@ -322,5 +325,4 @@ class Scene {
     private fun withinScene(boundaryShape: BoundaryShape): Boolean {
         return boundaryShape.corners().all { sceneShape.coordInShape(it.first, it.second) }
     }
-
 }

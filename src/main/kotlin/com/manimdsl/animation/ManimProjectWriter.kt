@@ -32,5 +32,4 @@ class ManimProjectWriter(private val pythonCode: String) {
             .start().waitFor()
         return copyExitCode + manimExitCode + removeTempExitCode
     }
-
 }

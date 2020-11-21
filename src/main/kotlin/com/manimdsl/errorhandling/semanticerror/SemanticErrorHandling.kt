@@ -6,7 +6,9 @@ import com.manimdsl.frontend.Type
 import org.antlr.v4.runtime.ParserRuleContext
 
 fun declareAssignError(
-    identifier: String, rhsType: Type, lhsType: Type,
+    identifier: String,
+    rhsType: Type,
+    lhsType: Type,
     ctx: ParserRuleContext
 ) {
     addSemanticError(
@@ -49,9 +51,9 @@ fun incorrectLHSForDataStructureElem(
     )
 }
 
-
 fun redeclarationError(
-    variable: String, variableType: Type,
+    variable: String,
+    variableType: Type,
     ctx: ParserRuleContext
 ) {
     addSemanticError("$variable of type $variableType is already declared", getErrorLinePos(ctx))
@@ -235,7 +237,7 @@ fun forLoopIdentifierBeingReassignedError(identifier: String, ctx: ParserRuleCon
 }
 
 fun invalidArgumentsForAnnotationError(annotation: String, ctx: ParserRuleContext) {
-    addSemanticError("Invalid arguments supplied to annotation ${annotation}.", getErrorLinePos(ctx))
+    addSemanticError("Invalid arguments supplied to annotation $annotation.", getErrorLinePos(ctx))
 }
 
 /* Helper function that returns line and character position for errors */

@@ -42,5 +42,4 @@ class ValidSemanticTests {
         val semanticErrorStatus = parser.convertToAst(program).exitStatus
         assertEquals(ExitStatus.EXIT_SUCCESS, semanticErrorStatus)
     }
-
 }

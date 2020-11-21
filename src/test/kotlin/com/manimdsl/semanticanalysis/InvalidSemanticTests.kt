@@ -14,7 +14,6 @@ import java.io.PrintStream
 import java.util.stream.Stream
 import kotlin.streams.asStream
 
-
 class InvalidSemanticTests {
     private val standardOut = System.out
     private val outputStreamCaptor = ByteArrayOutputStream()
@@ -33,7 +32,6 @@ class InvalidSemanticTests {
         internal fun initialiseBinFolder() {
             File("src/test/testFiles/bin").mkdir()
         }
-
 
         @JvmStatic
         @AfterAll
@@ -295,7 +293,6 @@ class InvalidSemanticTests {
         )
     }
 
-
     @Test
     fun incorrectNumberOfIndicesFor1DArray() {
         runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor1DArray.manimdsl")
@@ -328,7 +325,6 @@ class InvalidSemanticTests {
             outputStreamCaptor.toString().contains(Regex("Expected expression of type number but found .*"))
         )
     }
-
 
     @Test
     fun stackTooManyArgumentsInConstructor() {
@@ -389,7 +385,6 @@ class InvalidSemanticTests {
         )
     }
 
-
     @Test
     fun invalidForLoopRange() {
         runSyntaxAndSemanticAnalysis("invalidForLoopRange.manimdsl")
@@ -428,6 +423,4 @@ class InvalidSemanticTests {
         val program = parser.parseFile().second
         parser.convertToAst(program)
     }
-
-
 }

@@ -41,6 +41,4 @@ class StylesheetIntegrationTests {
         ).runProgram().second
         return stylesheet
     }
-
-
 }

@@ -39,7 +39,6 @@ sealed class DataStructureType(
     }
 }
 
-
 interface DataStructureMethod {
     val returnType: Type
 
@@ -48,10 +47,7 @@ interface DataStructureMethod {
 
     // When true last type in argumentTypes will be used to as type of varargs
     val varargs: Boolean
-
-
 }
-
 
 interface ConstructorMethod : DataStructureMethod {
     val minRequiredArgsWithoutInitialValue: Int
@@ -113,7 +109,6 @@ data class ArrayType(
 
     override fun toString(): String = "Array<$internalType>"
 
-
     fun setTo2D() {
         is2D = true
         methods["swap"] =
@@ -162,7 +157,6 @@ data class TreeType(
 
         override fun toString(): String = "constructor"
     }
-
 }
 
 data class NodeType(
@@ -210,7 +204,6 @@ data class NodeType(
             return "value"
         }
     }
-
 
     override fun containsMethod(method: String): Boolean {
         return methods.containsKey(method)
