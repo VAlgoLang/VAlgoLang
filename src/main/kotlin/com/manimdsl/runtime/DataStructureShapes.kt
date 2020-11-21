@@ -223,7 +223,6 @@ class Scene {
         }
     }
 
-
     private fun initCodeAndVariableBlock(includeVariableBlock: Boolean = true): List<Pair<String, BoundaryShape>> {
         val initialShapes = mutableListOf<Pair<String, BoundaryShape>>()
         val codeHeight = if (includeVariableBlock) 2 * (8.0 / 3) else fullSceneShape.height
@@ -232,7 +231,7 @@ class Scene {
         codeShape.y1 = fullSceneShape.y1
         codeShape.canCentralise = false
         initialShapes.add(Pair("_code", codeShape))
-        if(includeVariableBlock) {
+        if (includeVariableBlock) {
             val variableShape = TallBoundary(minDimensions = Pair(5.0, (8.0 / 3.0)))
             variableShape.x1 = fullSceneShape.x1
             variableShape.y1 = fullSceneShape.y1 + codeShape.height
