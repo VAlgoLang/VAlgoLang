@@ -298,7 +298,15 @@ class InvalidSemanticTests {
 
     @Test
     fun incorrectNumberOfIndicesFor1DArray() {
-        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesForArray.manimdsl")
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor1DArray.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
+        )
+    }
+
+    @Test
+    fun incorrectNumberOfIndicesFor2DArray() {
+        runSyntaxAndSemanticAnalysis("incorrectNumberOfIndicesFor2DArray.manimdsl")
         assertTrue(
             outputStreamCaptor.toString().contains(Regex("Cannot index a .* array .* times"))
         )
@@ -395,6 +403,22 @@ class InvalidSemanticTests {
         runSyntaxAndSemanticAnalysis("nestedForLoopRedeclarationOfVariables.manimdsl")
         assertTrue(
             outputStreamCaptor.toString().contains(Regex(".* of type .* is already declared"))
+        )
+    }
+
+    @Test
+    fun arrayConstructorItemsDoNotMatch() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayConstructor.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Array not constructed correctly: size of Array< .* does not match size of > .*"))
+        )
+    }
+
+    @Test
+    fun arrayDimensionGreaterThanTwo() {
+        runSyntaxAndSemanticAnalysis("incompatibleArrayDimension.manimdsl")
+        assertTrue(
+            outputStreamCaptor.toString().contains(Regex("Cannot use array with dimension .*: only 1D and 2D arrays supported"))
         )
     }
 

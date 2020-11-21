@@ -79,7 +79,7 @@ type: data_structure_type                                            #DataStruct
 
 node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
-    | ARRAY LT primitive_type GT                                     #ArrayType
+    | (ARRAY LT)+ type GT+                                 #ArrayType
     | node_type                                                      #NodeType
     | TREE LT node_type GT                                           #TreeType
     ;
@@ -95,6 +95,6 @@ bool: TRUE | FALSE;
 data_structure_initialiser: OPEN_CURLY_BRACKET (arg_list | initialiser_list) CLOSE_CURLY_BRACKET;
 initialiser_list: OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET (COMMA OPEN_SQUARE_BRACKET arg_list CLOSE_SQUARE_BRACKET)*;
 
-array_elem: IDENT OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)?;
+array_elem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+;
 node_elem: IDENT node_elem_access*;
 node_elem_access: (DOT IDENT);

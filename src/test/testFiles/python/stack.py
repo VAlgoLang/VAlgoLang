@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from manimlib.imports import *
+import tempfile
 class Main(Scene):
     code_start = 0
     code_end = 10
     def construct(self):
         # Building code visualisation pane
         code_lines = [["let y = new Stack<number>();"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
-        code_block = Code_block(code_lines)
+        code_block = Code_block(code_lines, syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         code_text.set_width(4.2)
         code_text.next_to(variable_frame, DOWN, buff=0.9)
@@ -31,7 +32,7 @@ class Main(Scene):
         [self.play(*animation, run_time=1.0) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
         self.move_arrow_to_line(4, pointer, code_block, code_text)
-        [self.play(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True, run_time=1.0)]
+        [self.play(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True)]
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
     def move_relative_to_edge(self, group, x, y):
@@ -53,12 +54,12 @@ class Main(Scene):
             animation = self.fade_out_if_needed(pointer)
             if animation is not None:
                 self.play(animation, runtime=0.1)
-            self.scroll_down(code_block.paragraph, (idx - self.code_end))
+            self.scroll_down(code_text, (idx - self.code_end))
         elif idx - 1 < self.code_start:
             animation = self.fade_out_if_needed(pointer)
             if animation is not None:
                 self.play(animation, runtime=0.1)
-            self.scroll_up(code_block.paragraph, (self.code_start - idx+len(code_block.code[line_number-1])))
+            self.scroll_up(code_text, (self.code_start - idx+len(code_block.code[line_number-1])))
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
     def scroll_down(self, group, scrolls):
@@ -79,25 +80,35 @@ class Main(Scene):
         self.code_start = self.code_start - scrolls
         self.code_end = self.code_end - scrolls
 class Code_block:
-    def __init__(self, code, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, code, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE, text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()
-        fp = open("sample.re", "w")
-        for c in code:
-            for sc in c:
-                fp.write(sc + "\n")
-        fp.close()
-        self.paragraph = Code("sample.re", style="inkpot", language="reasonml", line_spacing=0.2,
-                              tab_width=2).code
-        group.add(self.paragraph)
-        group.set_width(5)
+        if syntax_highlighting:
+            fp = tempfile.NamedTemporaryFile(suffix='.re')
+            for c in code:
+                for sc in c:
+                    fp.write(bytes(sc + "\n", encoding='utf-8'))
+            fp.seek(0)
+            self.paragraph = Code(fp.name, style=syntax_highlighting_style, language="reasonml", line_spacing=0.2,
+                              tab_width=tab_spacing).code
+            fp.close()
+            group.add(self.paragraph)
+            group.set_width(5)
+            self.all = self.paragraph
+        else:
+            for c in code:
+                for sc in c:
+                    text = Text(sc, color=text_color, weight=text_weight, font=font)
+                    group.add(text)
+            group.set_width(5)
+            self.all = group
         self.code = code
     def build(self):
-        return self.paragraph.arrange(DOWN, aligned_edge=LEFT, center=True)
+        return self.all.arrange(DOWN, aligned_edge=LEFT, center=True)
     def get_line_at(self, line_number):
         idx = 0
         for i in range(line_number):
             idx += len(self.code[i])
-        return self.paragraph[idx-1]
+        return self.all[idx-1]
 class DataStructure(ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.ul = ul

@@ -11,6 +11,17 @@ object StyleSheetValidator {
     private val validCodeTracking = setOf("stepOver", "stepInto")
     private val validCreationStrings =
         setOf("FadeIn", "FadeInFromLarge", "Write", "GrowFromCenter", "ShowCreation", "DrawBorderThenFill")
+    private val validPygmentsStyles = setOf(
+        "inkpot",
+        "solarized-dark",
+        "paraiso-dark",
+        "vim",
+        "fruity",
+        "native",
+        "monokai"
+    )
+
+    private val DEFAULT_PYGMENT_STYLE = "inkpot"
 
     // Map of valid animations to whether they accept a color as a parameter
     val validAnimationStrings =
@@ -44,6 +55,12 @@ object StyleSheetValidator {
         if (!validCodeTracking.contains(stylesheet.codeTracking)) {
             // throw warning
             invalidStyleAttribute("codeTracking", validCodeTracking, stylesheet.codeTracking)
+        }
+
+        // Check syntax highlighting style is correct
+        if (!validPygmentsStyles.contains(stylesheet.syntaxHighlightingStyle)) {
+            invalidStyleAttribute("syntaxHighlightingStyle", validPygmentsStyles, stylesheet.syntaxHighlightingStyle)
+            stylesheet.syntaxHighlightingStyle = DEFAULT_PYGMENT_STYLE
         }
 
         // Check creation style strings

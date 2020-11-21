@@ -9,6 +9,7 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
@@ -30,32 +31,37 @@ class VirtualMachine(
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
-    private val acceptableNonStatements = setOf("}", "{", "")
+    private var acceptableNonStatements = setOf("}", "{")
     private val MAX_DISPLAYED_VARIABLES = 4
     private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
+    private val hideCode = stylesheet.getHideCode()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
 
     init {
+        if (stylesheet.getDisplayNewLinesInCode()) {
+            acceptableNonStatements = acceptableNonStatements.plus("")
+        }
         fileLines.indices.forEach {
             if (statements[it + 1] !is NoRenderAnimationNode &&
                 (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
                 if (fileLines[it].isEmpty()) {
-                    displayCode.add(" ")
+                    if (stylesheet.getDisplayNewLinesInCode()) {
+                        displayCode.add(" ")
+                        displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                    }
                 } else {
                     displayCode.add(fileLines[it])
+                    displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                 }
-                displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
             } else {
                 displayLine.add(displayLine.lastOrNull() ?: 0)
             }
         }
     }
-
-    private val hideCode = stylesheet.getHideCode()
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
@@ -74,11 +80,14 @@ class VirtualMachine(
                     wrapCode(displayCode),
                     codeBlockVariable,
                     codeTextVariable,
-                    pointerVariable, runtime = animationSpeeds.first()
+                    pointerVariable,
+                    runtime = animationSpeeds.first(),
+                    syntaxHighlightingOn = stylesheet.getSyntaxHighlighting(),
+                    syntaxHighlightingStyle = stylesheet.getSyntaxHighlightingStyle(),
+                    tabSpacing = stylesheet.getTabSpacing()
                 )
             )
         }
-
         val variables = mutableMapOf<String, ExecValue>()
         val result = Frame(
             program.statements.first().lineNumber,
@@ -91,11 +100,14 @@ class VirtualMachine(
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
-        } else if (!stylesheet.userDefinedPositions()) {
+        } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
             if (returnBoundaries) {
+                val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
+                boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
+                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys }
                 val gson = Gson()
-                println(gson.toJson(computedBoundaries.map { it.key to it.value.positioning() }.toMap()))
+                println(gson.toJson(boundaries))
             }
             if (exitStatus != ExitStatus.EXIT_SUCCESS) {
                 return Pair(exitStatus, linearRepresentation)
@@ -288,7 +300,7 @@ class VirtualMachine(
         }
 
         private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine && !hideCode) {
+            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
                 linearRepresentation.add(
                     MoveToLine(
                         displayLine[line - 1],
@@ -502,8 +514,8 @@ class VirtualMachine(
                                     TreeNodeRestyle(
                                         assignedValue.manimObject.shape.ident,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!,
-                                        assignedValue.binaryTreeValue!!.animatedStyle!!.highlight,
-                                        runtime = animationSpeeds.first()
+                                        assignedValue.binaryTreeValue!!.animatedStyle!!.highlight
+                                        , runtime = animationSpeeds.first()
                                     )
                                 )
                                 linearRepresentation.add(
@@ -627,7 +639,8 @@ class VirtualMachine(
                             parent,
                             childValue,
                             parent.binaryTreeValue!!,
-                            isLeft, runtime = animationSpeeds.first()
+                            isLeft,
+                            runtime = animationSpeeds.first()
                         )
                     )
                     if (parent.binaryTreeValue!!.animatedStyle != null) {

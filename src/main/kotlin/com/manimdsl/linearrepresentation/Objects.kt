@@ -43,14 +43,17 @@ enum class ObjectSide(var coord: Coord) {
 
 /** MObjects **/
 data class CodeBlock(
-        val lines: List<List<String>>,
-        val ident: String,
-        val codeTextName: String,
-        val pointerName: String,
-        val textColor: String? = null,
-        override val runtime: Double = 1.0,
+    val lines: List<List<String>>,
+    val ident: String,
+    val codeTextName: String,
+    val pointerName: String,
+    val textColor: String? = null,
+    override val runtime: Double = 1.0,
+    val syntaxHighlightingOn: Boolean = true,
+    val syntaxHighlightingStyle: String = "inkpot",
+    val tabSpacing: Int = 2
 ) : MObject {
-    override val shape: Shape = CodeBlockShape(ident, textColor)
+    override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()
