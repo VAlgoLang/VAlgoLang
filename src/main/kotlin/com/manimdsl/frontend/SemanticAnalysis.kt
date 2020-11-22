@@ -631,9 +631,9 @@ class SemanticAnalysis {
         symbolTable: SymbolTableVisitor,
         arguments: List<ExpressionNode>
     ) = when (ctx) {
-        is ManimParser.AnimationSpeedUpContext -> {
+        is ManimParser.AnimationSpeedUpAnnotationContext -> {
             if (arguments.isEmpty() || arguments.size > 2) {
-                invalidArgumentsForAnnotationError("@${ctx.SPEED().symbol.text}", ctx)
+                invalidArgumentsForAnnotationError(ctx.SPEED().symbol.text, ctx)
             } else {
                 if (arguments.size == 2) {
                     checkExpressionTypeWithExpectedType(arguments[1], BoolType, symbolTable, ctx)
@@ -641,6 +641,15 @@ class SemanticAnalysis {
                 checkExpressionTypeWithExpectedType(arguments.first(), NumberType, symbolTable, ctx)
             }
         }
-        else -> TODO()
+        is ManimParser.SubtitleAnnotationContext -> {
+            if (arguments.size > 1) {
+                invalidArgumentsForAnnotationError(ctx.show.text, ctx)
+            } else {
+                arguments.forEach {
+                    checkExpressionTypeWithExpectedType(it, BoolType, symbolTable, ctx)
+                }
+            }
+        }
+        else -> throw NotImplementedError("Annotation argument check not implemented")
     }
 }

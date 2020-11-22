@@ -406,7 +406,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return elifNode
     }
 
-    override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): CodeTrackingNode {
+    /** Annotations **/
+    override fun visitCodeTrackingAnnotation(ctx: CodeTrackingAnnotationContext): CodeTrackingNode {
         val isStepInto = ctx.step.type == STEP_INTO
 
         val condition = if (ctx.condition == null) {
@@ -432,7 +433,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
     }
 
-    override fun visitAnimationSpeedUp(ctx: AnimationSpeedUpContext): CodeTrackingNode {
+    override fun visitAnimationSpeedUpAnnotation(ctx: AnimationSpeedUpAnnotationContext): CodeTrackingNode {
         val arguments = (visit(ctx.arg_list()) as ArgumentNode).arguments
         semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, arguments)
 
@@ -459,6 +460,20 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
     }
 
+    override fun visitSubtitleAnnotation(ctx: SubtitleAnnotationContext): SubtitleAnnotationNode {
+        val text = ctx.subtitle_text.text.trim('\"')
+        var condition: ExpressionNode = BoolNode(ctx.start.line, true)
+        if (ctx.arg_list() != null) {
+            val args = visit(ctx.arg_list()) as ArgumentNode
+            semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, args.arguments)
+            condition = args.arguments.first()
+        }
+
+        val node = SubtitleAnnotationNode(ctx.start.line, condition, text, ctx.show.type == SUBTITLE_ONCE)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
+    }
+
     /** Expressions **/
 
     override fun visitMethodCallExpression(ctx: MethodCallExpressionContext): ASTNode {
@@ -468,9 +483,9 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
         return ArgumentNode(
             (
-                ctx?.expr()
-                    ?: listOf<ExprContext>()
-                ).map { visit(it) as ExpressionNode }
+                    ctx?.expr()
+                        ?: listOf<ExprContext>()
+                    ).map { visit(it) as ExpressionNode }
         )
     }
 
