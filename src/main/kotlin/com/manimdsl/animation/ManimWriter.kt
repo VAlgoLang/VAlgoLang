@@ -1,11 +1,7 @@
 package com.manimdsl.animation
 
-import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.MObject
-import com.manimdsl.linearrepresentation.NodeStructure
+import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.NullShape
-import comcreat.manimdsl.linearrepresentation.ManimInstr
-import comcreat.manimdsl.linearrepresentation.MoveToLine
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 

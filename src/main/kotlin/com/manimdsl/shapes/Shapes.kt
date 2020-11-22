@@ -1,9 +1,9 @@
 package com.manimdsl.shapes
 
+import com.manimdsl.linearrepresentation.Alignment
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
-import comcreat.manimdsl.linearrepresentation.Alignment
 
 sealed class Shape {
     abstract val ident: String

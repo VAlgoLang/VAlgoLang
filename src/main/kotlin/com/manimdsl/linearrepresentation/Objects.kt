@@ -4,8 +4,6 @@ import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
-import comcreat.manimdsl.linearrepresentation.Alignment
-import comcreat.manimdsl.linearrepresentation.ManimInstr
 
 /** Objects **/
 

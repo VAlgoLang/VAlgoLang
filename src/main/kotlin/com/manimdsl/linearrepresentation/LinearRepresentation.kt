@@ -1,6 +1,5 @@
-package comcreat.manimdsl.linearrepresentation
+package com.manimdsl.linearrepresentation
 
-import com.manimdsl.linearrepresentation.ObjectSide
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
@@ -91,8 +90,7 @@ data class TreeDeleteObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
-            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
-
+            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})"
         )
     }
 }
@@ -356,7 +354,7 @@ data class CleanUpLocalDataStructures(
     override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        val instr = "self.play(${dataStructures.joinToString(", ") { "*${it}.clean_up()" }}${getRuntimeString()})"
+        val instr = "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
         println(instr)
         return listOf(instr)
     }

@@ -1,12 +1,8 @@
 package com.manimdsl
-import com.manimdsl.linearrepresentation.CodeBlock
-import com.manimdsl.linearrepresentation.PartitionBlock
-import com.manimdsl.linearrepresentation.VariableBlock
+
+import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
-import comcreat.manimdsl.linearrepresentation.MoveToLine
-import comcreat.manimdsl.linearrepresentation.Sleep
-import comcreat.manimdsl.linearrepresentation.UpdateVariableState
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 
