@@ -482,10 +482,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
         return ArgumentNode(
-            (
-                    ctx?.expr()
-                        ?: listOf<ExprContext>()
-                    ).map { visit(it) as ExpressionNode }
+            (ctx?.expr() ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode }
         )
     }
 
@@ -708,10 +705,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
         return Array2DInitialiserNode(
-            (
-                ctx.arg_list()
-                    ?: listOf<ArgumentListContext>()
-                ).map { visitArgumentList(it as ArgumentListContext?).arguments }
+            (ctx.arg_list()
+                ?: listOf<ArgumentListContext>()).map { visitArgumentList(it as ArgumentListContext?).arguments }
         )
     }
 
