@@ -10,7 +10,6 @@ import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
-import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
 
 class VirtualMachine(
