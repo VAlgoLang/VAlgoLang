@@ -350,3 +350,14 @@ data class UpdateVariableState(
     override fun toPython(): List<String> =
         listOf("self.play(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
 }
+
+data class CleanUpLocalDataStructures(
+    val dataStructures: Set<String>,
+    override val runtime: Double
+) : ManimInstr {
+    override fun toPython(): List<String> {
+        val instr = "self.play(${dataStructures.joinToString(", ") { "*${it}.clean_up()" }}${getRuntimeString()})"
+        println(instr)
+        return listOf(instr)
+    }
+}
