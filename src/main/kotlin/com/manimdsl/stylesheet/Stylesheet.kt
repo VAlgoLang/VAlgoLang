@@ -103,7 +103,6 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
 
-
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.name, StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)

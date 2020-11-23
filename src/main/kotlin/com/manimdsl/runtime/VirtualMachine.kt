@@ -842,7 +842,7 @@ class VirtualMachine(
                                 parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
                                 animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle,
                                 runtime = animationSpeeds.first(),
-                                render =    parentValue.binaryTreeValue!!.style.render!!
+                                render = parentValue.binaryTreeValue!!.style.render!!
                             )
                         )
                         linearRepresentation.add(
