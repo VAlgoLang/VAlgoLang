@@ -34,6 +34,7 @@ open class AnimationProperties(
     open val highlight: String? = "YELLOW",
     open var animationStyle: String? = null,
     open var animationTime: Double? = null,
+    open val render: Boolean? = true,
 ) : StylesheetProperty()
 
 data class DefaultAnimationProperties(
@@ -42,7 +43,8 @@ data class DefaultAnimationProperties(
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
     override var animationStyle: String? = "FadeToColor",
-    override var animationTime: Double? = 1.0
+    override var animationTime: Double? = 1.0,
+    override val render: Boolean? = true,
 ) : AnimationProperties()
 
 data class StyleProperties(
@@ -51,7 +53,8 @@ data class StyleProperties(
     val showLabel: Boolean? = null,
     var creationStyle: String? = null,
     var creationTime: Double? = null,
-    val animate: AnimationProperties? = null
+    val animate: AnimationProperties? = null,
+    val render: Boolean? = true,
 ) : StylesheetProperty()
 
 data class PositionProperties(
@@ -99,23 +102,22 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     }
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
+
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
-                borderColor = "BLUE",
-                textColor = "WHITE",
-                animate = DefaultAnimationProperties()
-            )
+            stylesheet.dataStructures.getOrDefault(value.name, StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
-        return style merge dataStructureStyle
+        val styleProperties = style merge dataStructureStyle
+        return styleProperties
     }
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
+            stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
                 borderColor = "BLUE",
                 textColor = "WHITE",
-                animate = DefaultAnimationProperties()
+                animate = DefaultAnimationProperties(),
+                render = true
             )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (
