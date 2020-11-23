@@ -130,7 +130,7 @@ class SubtitleBlockShape(
     }
 
     override fun getConstructor(): String {
-        val coordinatesString = if(boundary.isEmpty()) "" else boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        val coordinatesString = if (boundary.isEmpty()) "" else boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
 
         return "$ident = $className($coordinatesString$style)"
     }

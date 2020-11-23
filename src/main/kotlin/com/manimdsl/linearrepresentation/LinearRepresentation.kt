@@ -333,17 +333,16 @@ data class UpdateSubtitle(
     val shape: Shape,
     val text: String,
     override val runtime: Double
-): ManimInstr {
+) : ManimInstr {
     override fun toPython(): List<String> {
         val instr = mutableListOf("self.play(${shape.ident}.clear())")
 
-        if(!text.isBlank()) {
+        if (!text.isBlank()) {
             instr.add("self.play(${shape.ident}.display($text))")
         }
 
         return instr
     }
-
 }
 
 data class RestyleObject(

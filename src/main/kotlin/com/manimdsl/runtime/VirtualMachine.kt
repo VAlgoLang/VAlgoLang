@@ -270,8 +270,8 @@ class VirtualMachine(
             }
             is SubtitleAnnotationNode -> {
                 val condition = executeExpression(statement.condition) as BoolValue
-                if(condition.value) {
-                    if(statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
+                if (condition.value) {
+                    if (statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
                     updateSubtitle(statement.text)
                     EmptyValue
                 } else {
@@ -282,8 +282,8 @@ class VirtualMachine(
         }
 
         private fun updateSubtitle(text: String) {
-            if(subtitleBlockVariable is EmptyMObject) {
-                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first()) //TODO(aesthetics stuff)
+            if (subtitleBlockVariable is EmptyMObject) {
+                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first()) // TODO(aesthetics stuff)
                 linearRepresentation.add(subtitleBlockVariable)
             }
             linearRepresentation.add(UpdateSubtitle(subtitleBlockVariable.shape, text, runtime = animationSpeeds.first()))
