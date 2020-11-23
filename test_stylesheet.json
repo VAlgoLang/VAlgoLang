@@ -5,14 +5,13 @@
   "variables": {
     "st": {
       "render": false,
-      "textColor": "blue",
+      "textColor": "YELLOW",
       "animate": {
       }
     }
   },
   "dataStructures": {
     "Array": {
-      "render": true,
       "creationStyle": "Write",
       "animate": {
         "textColor": "RED",
