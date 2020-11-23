@@ -85,6 +85,22 @@ data class CodeBlock(
     }
 }
 
+/** MObjects **/
+data class SubtitleBlock(
+    val variableNameGenerator: VariableNameGenerator,
+    private val boundary: List<Pair<Double, Double>> = emptyList(),
+    val textColor: String? = null,
+    override val runtime: Double = 1.0,
+) : MObject {
+    override val shape: Shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
+
+    override fun toPython(): List<String> {
+        return listOf(
+            shape.getConstructor()
+        )
+    }
+}
+
 data class PartitionBlock(
     val scaleLeft: String,
     val scaleRight: String,

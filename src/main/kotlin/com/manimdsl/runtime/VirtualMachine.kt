@@ -26,6 +26,7 @@ class VirtualMachine(
     private val variableNameGenerator = VariableNameGenerator(symbolTableVisitor)
     private val codeBlockVariable: String = variableNameGenerator.generateNameFromPrefix("code_block")
     private val codeTextVariable: String = variableNameGenerator.generateNameFromPrefix("code_text")
+    private var subtitleBlockVariable: MObject = EmptyMObject
     private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
@@ -281,7 +282,11 @@ class VirtualMachine(
         }
 
         private fun updateSubtitle(text: String) {
-            TODO()
+            if(subtitleBlockVariable is EmptyMObject) {
+                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first()) //TODO(aesthetics stuff)
+                linearRepresentation.add(subtitleBlockVariable)
+            }
+            linearRepresentation.add(UpdateSubtitle(subtitleBlockVariable.shape, text, runtime = animationSpeeds.first()))
         }
 
         private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {

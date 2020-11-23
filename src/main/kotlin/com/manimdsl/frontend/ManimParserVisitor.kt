@@ -461,7 +461,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitSubtitleAnnotation(ctx: SubtitleAnnotationContext): SubtitleAnnotationNode {
-        val text = ctx.subtitle_text.text.trim('\"')
+        val text = ctx.subtitle_text.text
         var condition: ExpressionNode = BoolNode(ctx.start.line, true)
         if (ctx.arg_list() != null) {
             val args = visit(ctx.arg_list()) as ArgumentNode
