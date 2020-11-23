@@ -65,8 +65,7 @@ sealed class DoubleAlias : PrimitiveValue() {
 
 data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
 
-    override val name: String
-        get() = "Double"
+    override val name: String = "Double"
 
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
     override fun toDouble(): Double = value
@@ -86,8 +85,7 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
 
 data class CharValue(override val value: Char, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
 
-    override val name: String
-        get() = "Char"
+    override val name: String = "Char"
 
     override fun equals(other: Any?): Boolean = other is CharValue && this.value == other.value
     override fun toDouble(): Double = value.toDouble()
@@ -107,8 +105,7 @@ data class CharValue(override val value: Char, override var manimObject: MObject
 
 data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
 
-    override val name: String
-        get() = "Bool"
+    override val name: String = "Bool"
 
     override fun equals(other: Any?): Boolean = other is BoolValue && this.value == other.value
     override fun hashCode(): Int {
@@ -128,8 +125,7 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
 
 data class StackValue(override var manimObject: MObject, val stack: Stack<ExecValue>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
     override val value: Stack<ExecValue> = stack
-    override val name: String
-        get() = "Stack"
+    override val name: String = "Stack"
     override fun clone(): ExecValue {
         return StackValue(manimObject, stack, style, animatedStyle)
     }
@@ -141,8 +137,7 @@ data class StackValue(override var manimObject: MObject, val stack: Stack<ExecVa
 
 data class ArrayValue(override var manimObject: MObject, val array: Array<ExecValue>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
     override val value: Array<ExecValue> = array
-    override val name: String
-        get() = "Array"
+    override val name: String = "Array"
     override fun clone(): ExecValue {
         return ArrayValue(manimObject, array, style, animatedStyle)
     }
@@ -156,8 +151,7 @@ sealed class ITreeNodeValue : ExecValue()
 
 object NullValue : ITreeNodeValue() {
 
-    override val name: String
-        get() = "Null"
+    override val name: String = "Null"
     override var manimObject: MObject = EmptyMObject
     override val value: Int = 0
 
@@ -192,8 +186,7 @@ data class BinaryTreeNodeValue(
         return BinaryTreeNodeValue(left, right, value, manimObject, depth = depth)
     }
 
-    override val name: String
-        get() = "Tree"
+    override val name: String = "Tree"
     fun attachTree(tree: BinaryTreeValue, prefix: String = "${tree.manimObject.shape.ident}.root") {
         binaryTreeValue = tree
         pathFromRoot = prefix
@@ -225,8 +218,7 @@ data class BinaryTreeNodeValue(
 // value is root
 data class BinaryTreeValue(override var manimObject: MObject, override var value: BinaryTreeNodeValue, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
 
-    override val name: String
-        get() = "Tree"
+    override val name: String = "Tree"
     override fun clone(): ExecValue {
         return BinaryTreeValue(manimObject, value, style, animatedStyle)
     }
@@ -238,14 +230,15 @@ data class BinaryTreeValue(override var manimObject: MObject, override var value
 
 data class Array2DValue(override var manimObject: MObject, val array: Array<Array<ExecValue>>, var style: StyleProperties = StyleProperties(), var animatedStyle: AnimationProperties? = null) : ExecValue() {
     override val value: Array<Array<ExecValue>> = array
-    override val name: String
-        get() = "Array"
+    override val name: String = "Array"
     override fun clone(): ExecValue {
         return Array2DValue(manimObject, array, style, animatedStyle)
     }
 
     override fun toString(): String {
-        return "Array"
+        return array.joinToString(", ", "[", "]", transform = {
+            it.joinToString(", ", "[", "]")
+        })
     }
 }
 
@@ -257,8 +250,7 @@ object EmptyValue : ExecValue() {
         return this
     }
 
-    override val name: String
-        get() = "Empty"
+    override val name: String = "Empty"
 }
 
 // For use to terminate a void function with a return of no expression.
@@ -270,8 +262,7 @@ object VoidValue : ExecValue() {
         return this
     }
 
-    override val name: String
-        get() = "Void"
+    override val name: String = "Void"
 }
 
 object BreakValue : ExecValue() {
@@ -282,8 +273,7 @@ object BreakValue : ExecValue() {
         return this
     }
 
-    override val name: String
-        get() = "Break"
+    override val name: String = "Break"
 }
 
 object ContinueValue : ExecValue() {
@@ -294,8 +284,7 @@ object ContinueValue : ExecValue() {
         return this
     }
 
-    override val name: String
-        get() = "Continue"
+    override val name: String = "Continue"
 }
 
 // Used to propagate runtime error up scope
@@ -304,6 +293,5 @@ data class RuntimeError(override val value: String, override var manimObject: MO
         return RuntimeError(value, manimObject, lineNumber)
     }
 
-    override val name: String
-        get() = "RuntimeError"
+    override val name: String = "RuntimeError"
 }

@@ -113,7 +113,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
+            stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
                 borderColor = "BLUE",
                 textColor = "WHITE",
                 animate = DefaultAnimationProperties(),

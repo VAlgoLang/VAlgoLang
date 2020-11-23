@@ -55,7 +55,7 @@ class StylesheetUnitTests {
 
         val stack1AnimationStyle = stack1Stylesheet.getAnimatedStyle("stack1", StackValue(EmptyMObject, Stack()))!!
         assertThat(stack1AnimationStyle.borderColor, `is`("RED"))
-        assertThat(stack1AnimationStyle.textColor, `is`("YELLOW"))
+        assertThat(stack1AnimationStyle.textColor, `is`("RED"))
         assertThat(stack1AnimationStyle.animationStyle, `is`("ApplyWave"))
     }
 
