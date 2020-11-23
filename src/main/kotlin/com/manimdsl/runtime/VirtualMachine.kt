@@ -1703,6 +1703,7 @@ class VirtualMachine(
             }
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
+            val localDataStructure = mutableSetOf<String>()
 
             // If
             if (conditionValue.value) {
@@ -1714,10 +1715,14 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
                     updateVariableState = updateVariableState,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
+                }
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                 }
                 return execValue
             }
@@ -1737,10 +1742,14 @@ class VirtualMachine(
                         showMoveToLine = showMoveToLine,
                         stepInto = stepInto,
                         updateVariableState = updateVariableState,
-                        hideCode = hideCode
+                        hideCode = hideCode,
+                        localDataStructure = localDataStructure
                     ).runFrame()
                     if (execValue is EmptyValue) {
                         pc = ifStatementNode.endLineNumber
+                    }
+                    if (localDataStructure.isNotEmpty()) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                     }
                     return execValue
                 }
@@ -1758,10 +1767,14 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
                     updateVariableState = updateVariableState,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
+                }
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                 }
                 return execValue
             }
