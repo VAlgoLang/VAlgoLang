@@ -267,7 +267,21 @@ class VirtualMachine(
                 stepInto = previousStepIntoState
                 EmptyValue
             }
+            is SubtitleAnnotationNode -> {
+                val condition = executeExpression(statement.condition) as BoolValue
+                if(condition.value) {
+                    if(statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
+                    updateSubtitle(statement.text)
+                    EmptyValue
+                } else {
+                    EmptyValue
+                }
+            }
             else -> EmptyValue
+        }
+
+        private fun updateSubtitle(text: String) {
+            TODO()
         }
 
         private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {

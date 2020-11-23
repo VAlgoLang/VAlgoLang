@@ -114,6 +114,26 @@ class VariableBlockShape(
     }
 }
 
+class SubtitleBlockShape(
+    override val ident: String,
+    override val text: String,
+    private val boundary: List<Pair<Double, Double>>,
+    textColor: String? = null,
+) : Shape() {
+    override val classPath: String = "python/subtitles.py"
+    override val className: String = "Subtitle_block"
+    override val pythonVariablePrefix: String = "subtitle_block"
+
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        return "$ident = $className(text=$text, boundary=$coordinatesString$style)"
+    }
+}
+
 class InitManimStackShape(
     override val ident: String,
     override val text: String,
