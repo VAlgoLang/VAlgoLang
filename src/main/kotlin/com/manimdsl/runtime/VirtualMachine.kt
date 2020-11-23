@@ -1560,6 +1560,8 @@ class VirtualMachine(
                     }
                 }
 
+                val localDataStructure = mutableSetOf<String>()
+
                 execValue = Frame(
                     whileStatementNode.statements.first().lineNumber,
                     whileStatementNode.statements.last().lineNumber,
@@ -1567,7 +1569,8 @@ class VirtualMachine(
                     depth,
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
@@ -1586,6 +1589,9 @@ class VirtualMachine(
                     }
                 }
 
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+                }
                 pc = whileStatementNode.lineNumber
                 moveToLine()
                 loopCount++
