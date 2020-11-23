@@ -236,9 +236,12 @@ data class Array2DValue(override var manimObject: MObject, val array: Array<Arra
     }
 
     override fun toString(): String {
-        return array.joinToString(", ", "[", "]", transform = {
-            it.joinToString(", ", "[", "]")
-        })
+        return array.joinToString(
+            ", ", "[", "]",
+            transform = {
+                it.joinToString(", ", "[", "]")
+            }
+        )
     }
 }
 
