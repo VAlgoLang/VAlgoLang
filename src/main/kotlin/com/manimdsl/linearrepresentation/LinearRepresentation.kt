@@ -191,7 +191,8 @@ data class StackPopObject(
     val shape: Shape,
     val dataStructureIdentifier: String,
     val insideMethodCall: Boolean,
-    override val runtime: Double
+    override val runtime: Double,
+    override val render: Boolean,
 ) : ManimInstr(){
 
     override fun toPython(): List<String> {

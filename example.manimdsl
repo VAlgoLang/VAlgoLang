@@ -1,1 +1,2 @@
-let arr = Array<number>(4);
+let st = Stack<number>(){1, 2, 3};
+let arr = Array<number>(3);

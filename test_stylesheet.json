@@ -3,7 +3,7 @@
   "syntaxHighlightingStyle": "monokai",
   "tabSpacing": 1,
   "variables": {
-    "arr": {
+    "st": {
       "render": false,
       "textColor": "blue",
       "animate": {
@@ -12,6 +12,7 @@
   },
   "dataStructures": {
     "Array": {
+      "render": true,
       "creationStyle": "Write",
       "animate": {
         "textColor": "RED",
