@@ -37,7 +37,6 @@ class StylesheetUnitTests {
                 symbolTable
         )
         val stack1Style = stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
-        // These tests only fail because of merge function
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("GREEN"))
         assertThat(stack1Style.animate!!.animationStyle, `is`("CircleIndicate"))
