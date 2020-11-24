@@ -49,7 +49,11 @@ class VirtualMachine(
             ) {
                 if (fileLines[it].isEmpty()) {
                     if (stylesheet.getDisplayNewLinesInCode()) {
-                        displayCode.add(" ")
+                        if (stylesheet.getSyntaxHighlighting()) {
+                            displayCode.add(" ")
+                        } else {
+                            displayCode.add("")
+                        }
                         displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                     }
                 } else {
