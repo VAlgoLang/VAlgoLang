@@ -45,14 +45,13 @@ class VirtualMachine(
         }
         fileLines.indices.forEach {
             if (statements[it + 1] !is NoRenderAnimationNode &&
-                    (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
+                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
             ) {
                 if (fileLines[it].isEmpty()) {
                     if (stylesheet.getDisplayNewLinesInCode()) {
-                        if (stylesheet.getSyntaxHighlighting()){
+                        if (stylesheet.getSyntaxHighlighting()) {
                             displayCode.add(" ")
-                        }
-                        else {
+                        } else {
                             displayCode.add("")
                         }
                         displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
