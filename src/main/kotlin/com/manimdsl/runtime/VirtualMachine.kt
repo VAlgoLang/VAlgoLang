@@ -180,6 +180,17 @@ class VirtualMachine(
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
         }
 
+        fun convertToIdent(dataStructureVariable: MutableSet<String>?) {
+            if (dataStructureVariable != null) {
+                val idents = dataStructureVariable.map { (variables[it]!!.manimObject as DataStructureMObject).ident }
+                dataStructureVariable.forEach {
+                    variables[it] = EmptyValue
+                }
+                dataStructureVariable.clear()
+                dataStructureVariable.addAll(idents)
+            }
+        }
+
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
@@ -200,11 +211,15 @@ class VirtualMachine(
                     }
 
                     val value = executeStatement(statement)
-                    if (statement is ReturnNode || value !is EmptyValue) return value
+                    if (statement is ReturnNode || value !is EmptyValue) {
+                        convertToIdent(localDataStructure)
+                        return value
+                    }
                 }
 
                 fetchNextStatement()
             }
+            convertToIdent(localDataStructure)
             return EmptyValue
         }
 
@@ -347,6 +362,7 @@ class VirtualMachine(
 
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
+//            if (updateVariableState) updateVariableState()
             return returnValue
         }
 
@@ -470,6 +486,14 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
+            if (variables.containsKey(node.identifier.identifier)) {
+                with(variables[node.identifier.identifier]?.manimObject) {
+                    if (this is DataStructureMObject) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
+                    }
+                }
+            }
+
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
@@ -534,7 +558,7 @@ class VirtualMachine(
                                 )
                             }
                             if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
-                                localDataStructure.add((assignedValue.manimObject as DataStructureMObject).ident)
+                                localDataStructure.add(node.identifier.identifier)
                             }
                             variables[node.identifier.identifier] = assignedValue
                         }
