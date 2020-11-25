@@ -271,25 +271,26 @@ class Scene {
     private fun centralise(fullScreen: Boolean = false) {
         if (sceneShapes.isNotEmpty()) {
             val centeringShapes = sceneShapes.filter { it.canCentralise }
+            if (centeringShapes.isNotEmpty()) {
+                val leftXCoord = centeringShapes.map { it.corners()[0] }.minOf { it.first }
+                val rightXCoord = centeringShapes.map { it.corners()[1] }.maxOf { it.first }
+                val topYCoord = centeringShapes.map { it.corners()[0] }.maxOf { it.second }
+                val bottomYCoord = centeringShapes.map { it.corners()[2] }.minOf { it.second }
 
-            val leftXCoord = centeringShapes.map { it.corners()[0] }.minOfOrNull { it.first }
-            val rightXCoord = centeringShapes.map { it.corners()[1] }.maxOfOrNull { it.first }
-            val topYCoord = centeringShapes.map { it.corners()[0] }.maxOfOrNull { it.second }
-            val bottomYCoord = centeringShapes.map { it.corners()[2] }.minOfOrNull { it.second }
+                val shapeOverallHeight = topYCoord - bottomYCoord
+                val shapesOverallWidth = rightXCoord - leftXCoord
+                val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
+                val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
 
-            val shapeOverallHeight = (topYCoord ?: 0.0) - (bottomYCoord ?: 0.0)
-            val shapesOverallWidth = (rightXCoord ?: 0.0) - (leftXCoord ?: 0.0)
-            val availableWidth = if (fullScreen) fullSceneShape.width else sceneShape.width
-            val avaliableHeight = if (fullScreen) fullSceneShape.height else sceneShape.height
-
-            if (availableWidth > shapesOverallWidth) {
-                centeringShapes.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
-            }
-            if (avaliableHeight > shapeOverallHeight) {
-                centeringShapes.forEach {
-                    when (it) {
-                        !is SquareBoundary -> it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2)
-                        else -> it.shiftVerticalUpwards(-(shapeOverallHeight - avaliableHeight) / 2)
+                if (availableWidth > shapesOverallWidth) {
+                    centeringShapes.forEach { it.shiftHorizontalToRight(((shapesOverallWidth - availableWidth) / 2)) }
+                }
+                if (avaliableHeight > shapeOverallHeight) {
+                    centeringShapes.forEach {
+                        when (it) {
+                            !is SquareBoundary -> it.shiftVerticalUpwards((shapeOverallHeight - avaliableHeight) / 2)
+                            else -> it.shiftVerticalUpwards(-(shapeOverallHeight - avaliableHeight) / 2)
+                        }
                     }
                 }
             }
