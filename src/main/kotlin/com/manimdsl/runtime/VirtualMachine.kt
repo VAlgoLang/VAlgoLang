@@ -113,7 +113,7 @@ class VirtualMachine(
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
-                if (it is DataStructureMObject) {
+                if (it is ShapeWithBoundary) {
                     val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }

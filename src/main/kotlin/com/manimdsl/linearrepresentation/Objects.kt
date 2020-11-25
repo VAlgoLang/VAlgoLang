@@ -157,8 +157,8 @@ data class VariableBlock(
 
 interface ShapeWithBoundary {
     val uid: String
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-    abstract fun setShape()
+    fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+    fun setShape()
 }
 
 sealed class DataStructureMObject(
