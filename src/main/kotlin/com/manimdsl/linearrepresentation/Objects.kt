@@ -88,17 +88,29 @@ data class CodeBlock(
 /** MObjects **/
 data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
-    private val boundary: List<Pair<Double, Double>> = emptyList(),
+    private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
+    override val uid: String,
     override val runtime: Double = 1.0,
-) : MObject {
-    override val shape: Shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
+) : MObject, ShapeWithBoundary {
+    override var shape: Shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
 
     override fun toPython(): List<String> {
         return listOf(
             shape.getConstructor()
         )
     }
+
+    override fun setShape() {
+        shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
+    }
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        boundary = corners
+        setShape()
+    }
+
+
 }
 
 data class PartitionBlock(
@@ -145,17 +157,18 @@ data class VariableBlock(
     }
 }
 
+interface ShapeWithBoundary {
+    val uid: String
+    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+    abstract fun setShape()
+}
+
 sealed class DataStructureMObject(
     open val type: DataStructureType,
     open val ident: String,
-    open val uid: String,
+    override val uid: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject {
-
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-
-    abstract fun setShape()
-}
+) : MObject, ShapeWithBoundary
 
 data class NodeStructure(
     val ident: String,
