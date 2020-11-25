@@ -68,13 +68,11 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
-            linearRepresentation.add(PartitionBlock("1/3", "2/3"))
             linearRepresentation.add(
                 VariableBlock(
                     listOf(),
                     "variable_block",
                     "variable_vg",
-                    "variable_frame",
                     runtime = animationSpeeds.first()
                 )
             )
@@ -108,7 +106,8 @@ class VirtualMachine(
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
-                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys }
+                val genericShapeIDs = setOf("_variables", "_code")
+                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
                 val gson = Gson()
                 println(gson.toJson(boundaries))
             }
@@ -116,7 +115,7 @@ class VirtualMachine(
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
-                if (it is DataStructureMObject) {
+                if (it is ShapeWithBoundary) {
                     val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
@@ -125,7 +124,10 @@ class VirtualMachine(
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         } else {
             linearRepresentation.forEach {
-                if (it is DataStructureMObject) {
+                if (it is ShapeWithBoundary) {
+                    if (it is CodeBlock || it is VariableBlock) {
+                        it.setNewBoundary(stylesheet.getPosition(it.uid)!!.calculateManimCoord(), -1)
+                    }
                     it.setShape()
                 }
             }
