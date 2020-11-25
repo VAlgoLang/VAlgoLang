@@ -7,6 +7,7 @@ import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
+import com.manimdsl.runtime.utility.wrapString
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
@@ -33,12 +34,12 @@ class VirtualMachine(
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private var acceptableNonStatements = setOf("}", "{")
     private val MAX_DISPLAYED_VARIABLES = 4
-    private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
     private val hideCode = stylesheet.getHideCode()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
+    private val SUBTITLE_TIMEOUT = 3
 
     init {
         if (stylesheet.getDisplayNewLinesInCode()) {
@@ -128,13 +129,6 @@ class VirtualMachine(
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
         }
-    }
-
-    private fun wrapString(text: String): String {
-        val sb = StringBuilder(text)
-        for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
-            sb.insert(index, "\\n")
-        return sb.toString()
     }
 
     private inner class Frame(
@@ -283,11 +277,26 @@ class VirtualMachine(
 
         private fun updateSubtitle(text: String) {
             if (subtitleBlockVariable is EmptyMObject) {
-                dataStructureBoundaries["_subtitles"] = WideBoundary(maxSize = Int.MAX_VALUE)
-                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first(), uid = "_subtitles") // TODO(aesthetics stuff)
+                val dsUID = "_subtitles"
+                dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)
+                val position = stylesheet.getPosition(dsUID)
+                val boundaries = if (position == null) emptyList() else getBoundaries(position)
+                subtitleBlockVariable = SubtitleBlock(
+                    linearRepresentation.size,
+                    variableNameGenerator,
+                    runtime = animationSpeeds.first(),
+                    uid = dsUID,
+                    boundary = boundaries
+                ) // TODO(aesthetics stuff)
                 linearRepresentation.add(subtitleBlockVariable)
             }
-            linearRepresentation.add(UpdateSubtitle(subtitleBlockVariable.shape, text, runtime = animationSpeeds.first()))
+            linearRepresentation.add(
+                UpdateSubtitle(
+                    subtitleBlockVariable.shape,
+                    wrapString(text, 30),
+                    runtime = animationSpeeds.first()
+                )
+            )
         }
 
         private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {
@@ -1438,7 +1447,12 @@ class VirtualMachine(
                 Array2DValue(
                     EmptyMObject,
                     Array(arrayDimensions.first) { _ ->
-                        Array(arrayDimensions.second) { _ -> getDefaultValueForType(node.type.internalType, node.lineNumber) }
+                        Array(arrayDimensions.second) { _ ->
+                            getDefaultValueForType(
+                                node.type.internalType,
+                                node.lineNumber
+                            )
+                        }
                     }
                 )
             } else {

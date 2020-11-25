@@ -87,13 +87,15 @@ data class CodeBlock(
 
 /** MObjects **/
 data class SubtitleBlock(
+    var time: Int,
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
     override val uid: String,
     override val runtime: Double = 1.0,
 ) : MObject, ShapeWithBoundary {
-    override var shape: Shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
+
+    override var shape: Shape = SubtitleBlockShape(variableNameGenerator.generateNameFromPrefix("subtitle_block"), boundary, textColor)
 
     override fun toPython(): List<String> {
         return listOf(
@@ -102,7 +104,7 @@ data class SubtitleBlock(
     }
 
     override fun setShape() {
-        shape = SubtitleBlockShape(variableNameGenerator, boundary, textColor)
+        shape = SubtitleBlockShape(shape.ident, boundary, textColor)
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {

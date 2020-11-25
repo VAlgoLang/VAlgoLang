@@ -1,6 +1,5 @@
 package com.manimdsl.shapes
 
-import com.manimdsl.linearrepresentation.VariableNameGenerator
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
@@ -116,21 +115,20 @@ class VariableBlockShape(
 }
 
 class SubtitleBlockShape(
-    variableNameGenerator: VariableNameGenerator,
+    override val ident: String,
     private val boundary: List<Pair<Double, Double>> = emptyList(),
     textColor: String? = null
 ) : Shape() {
     override val classPath: String = "python/subtitles.py"
     override val className: String = "Subtitle_block"
     override val pythonVariablePrefix: String = "subtitle_block"
-    override val ident: String = variableNameGenerator.generateNameFromPrefix(pythonVariablePrefix)
     override val text: String = ""
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
     override fun getConstructor(): String {
-        val coordinatesString = if (boundary.isEmpty()) "" else boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
+        val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
 
         return "$ident = $className($coordinatesString$style)"
     }

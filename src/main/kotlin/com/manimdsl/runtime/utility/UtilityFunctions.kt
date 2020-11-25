@@ -45,3 +45,10 @@ fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
     }
     return boundaries
 }
+
+fun wrapString(text: String, max_length: Int = WRAP_LINE_LENGTH): String {
+    val sb = StringBuilder(text)
+    for (index in max_length until text.length step max_length)
+        sb.insert(index, "\\n")
+    return sb.toString()
+}
