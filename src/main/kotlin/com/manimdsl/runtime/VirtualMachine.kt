@@ -182,11 +182,11 @@ class VirtualMachine(
 
         private fun shouldRenderInVariableState(value: ExecValue, identifier: String) =
             (value is BinaryTreeNodeValue && value.binaryTreeValue == null) || value is PrimitiveValue || (
-                value is BinaryTreeValue && stylesheet.renderDataStructure(
+                value is BinaryTreeValue && !stylesheet.renderDataStructure(
                     identifier
                 )
-                ) || (value is ArrayValue && stylesheet.renderDataStructure(identifier)) || (
-                value is StackValue && stylesheet.renderDataStructure(
+                ) || (value is ArrayValue && !stylesheet.renderDataStructure(identifier)) || (
+                value is StackValue && !stylesheet.renderDataStructure(
                     identifier
                 )
                 )
