@@ -131,6 +131,7 @@ sealed class DataStructureMObject(
     open val type: DataStructureType,
     open val ident: String,
     open val uid: String,
+    open var text: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : MObject() {
 
@@ -159,12 +160,12 @@ data class InitTreeStructure(
     override val ident: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1,
-    val text: String,
+    override var text: String,
     val root: BinaryTreeNodeValue,
     override val uid: String,
     override val runtime: Double,
     override val render: Boolean
-) : DataStructureMObject(type, ident, uid) {
+) : DataStructureMObject(type, ident, uid, text) {
     override var shape: Shape = NullShape
 
     override fun setShape() {
@@ -191,7 +192,7 @@ data class InitManimStack(
     override val ident: String,
     val position: Position,
     val alignment: Alignment,
-    val text: String,
+    override var text: String,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
@@ -203,7 +204,7 @@ data class InitManimStack(
     override val uid: String,
     override val runtime: Double = 1.0,
     override val render: Boolean
-) : DataStructureMObject(type, ident, uid, boundaries) {
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -231,7 +232,7 @@ data class ArrayStructure(
     override val type: DataStructureType,
     override val ident: String,
     override val render: Boolean,
-    val text: String,
+    override var text: String,
     val values: Array<ExecValue>,
     val color: String? = null,
     val textColor: String? = null,
@@ -241,7 +242,7 @@ data class ArrayStructure(
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries) {
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     init {
@@ -272,7 +273,7 @@ data class Array2DStructure(
     override val type: DataStructureType,
     override val ident: String,
     override val render: Boolean,
-    val text: String,
+    override var text: String,
     val values: Array<Array<ExecValue>>,
     val color: String? = null,
     val textColor: String? = null,
@@ -282,7 +283,7 @@ data class Array2DStructure(
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries) {
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     init {

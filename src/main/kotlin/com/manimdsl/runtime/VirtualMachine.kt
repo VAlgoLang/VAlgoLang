@@ -508,6 +508,14 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
+            if (variables.containsKey(node.identifier.identifier)) {
+                with(variables[node.identifier.identifier]?.manimObject) {
+                    if (this is DataStructureMObject) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
+                    }
+                }
+            }
+
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
@@ -576,6 +584,13 @@ class VirtualMachine(
                             if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
                                 localDataStructure.add(node.identifier.identifier)
                             }
+                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject) {
+                                // TODO - clone the MObject instead of the ExecValue
+                                val rhs = assignedValue.clone()
+                                (rhs.manimObject as DataStructureMObject).text = node.identifier.identifier
+                                linearRepresentation.add(rhs.manimObject)
+                            }
+
                             variables[node.identifier.identifier] = assignedValue
                         }
                         is ArrayElemNode -> {
