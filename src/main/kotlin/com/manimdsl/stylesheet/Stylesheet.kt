@@ -147,13 +147,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getTabSpacing(): Int = stylesheet.tabSpacing
 
-    fun renderDataStructure(identifier: String): Boolean {
-        return if (stylesheet.positions.containsKey(identifier)) {
-            stylesheet.positions[identifier]!!.height != 0.0
-        } else {
-            true
-        }
-    }
+    fun renderDataStructure(identifier: String) = !stylesheet.positions.containsKey(identifier) || stylesheet.positions[identifier]!!.height != 0.0
 }
 
 // Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679
