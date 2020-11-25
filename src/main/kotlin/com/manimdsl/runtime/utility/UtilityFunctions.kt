@@ -2,7 +2,7 @@ package com.manimdsl.runtime.utility
 
 import com.manimdsl.stylesheet.PositionProperties
 
-private val WRAP_LINE_LENGTH = 50
+private const val WRAP_LINE_LENGTH = 50
 
 fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
     val wrappedCode = mutableListOf<MutableList<String>>()

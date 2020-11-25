@@ -1,10 +1,11 @@
 class Subtitle_block:
-    def __init__(self, boundaries, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, end_time, boundaries, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.text = Text("", color=text_color, weight=text_weight, font=font)
         self.text_color = text_color
         self.text_weight = text_weight
         self.boundaries = boundaries
         self.font = font
+        self.end_time = end_time
         self.width = boundaries[1][0] - boundaries[0][0]
         self.height = boundaries[0][1] - boundaries[3][1]
         self.position = np.array([(boundaries[0][0] + boundaries[1][0]) / 2, (boundaries[0][1] + boundaries[3][1]) / 2, 0])
@@ -15,9 +16,10 @@ class Subtitle_block:
         if self.text.get_height() > self.height:
             self.text.scale(self.height / self.text.get_height())
 
-    def display(self, text):
+    def display(self, text, end_time):
         self.change_text(text)
         self.text.move_to(self.position)
+        self.end_time = end_time
         return ShowCreation(self.text)
 
     def clear(self):

@@ -116,6 +116,7 @@ class VariableBlockShape(
 
 class SubtitleBlockShape(
     override val ident: String,
+    val duration: Int = 3,
     private val boundary: List<Pair<Double, Double>> = emptyList(),
     textColor: String? = null
 ) : Shape() {
@@ -130,7 +131,7 @@ class SubtitleBlockShape(
     override fun getConstructor(): String {
         val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
 
-        return "$ident = $className($coordinatesString$style)"
+        return "$ident = $className(self.get_time() + $duration, $coordinatesString$style)"
     }
 }
 

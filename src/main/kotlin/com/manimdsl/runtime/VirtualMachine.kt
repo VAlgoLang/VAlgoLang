@@ -9,6 +9,7 @@ import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.runtime.utility.wrapString
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
@@ -39,7 +40,6 @@ class VirtualMachine(
     private val MAX_NUMBER_OF_LOOPS = 10000
     private val hideCode = stylesheet.getHideCode()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
-    private val SUBTITLE_TIMEOUT = 3
 
     init {
         if (stylesheet.getDisplayNewLinesInCode()) {
@@ -297,7 +297,7 @@ class VirtualMachine(
             }
             linearRepresentation.add(
                 UpdateSubtitle(
-                    subtitleBlockVariable.shape,
+                    subtitleBlockVariable.shape as SubtitleBlockShape,
                     wrapString(text, 30),
                     runtime = animationSpeeds.first()
                 )

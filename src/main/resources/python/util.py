@@ -11,22 +11,19 @@ def move_relative_to_obj(self, group, target, x, y):
 def place_relative_to_obj(self, group, target, x, y):
     group.next_to(target, np.array([x, y, 0]))
 
-
 def fade_out_if_needed(self, mobject):
     if mobject in self.mobjects:
         return FadeOut(mobject)
     else:
         return None
 
-
 def play_animation(self, *args, run_time=1.0):
     time_elapsed = round(self.get_time())
     for time_object in self.time_objects:
         if time_object.end_time <= time_elapsed:
             self.play(time_object.action())
-            self.time_objects.remove(time_object)
+#             self.time_objects.remove(time_object)
     self.play(*args, runtime=run_time)
-
 
 def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
     idx = 0
