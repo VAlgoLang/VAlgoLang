@@ -13,6 +13,18 @@ sealed class MObject : ManimInstr() {
     abstract val shape: Shape
 }
 
+sealed class ShapeWithBoundary(open val uid: String) : MObject() {
+    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+    abstract fun setShape()
+}
+
+sealed class DataStructureMObject(
+    open val type: DataStructureType,
+    open val ident: String,
+    override val uid: String,
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
+) : ShapeWithBoundary(uid)
+
 /** Positioning **/
 interface Position
 object RelativeToMoveIdent : Position
@@ -52,8 +64,17 @@ data class CodeBlock(
     val syntaxHighlightingOn: Boolean = true,
     val syntaxHighlightingStyle: String = "inkpot",
     val tabSpacing: Int = 2
-) : MObject() {
-    override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
+) : ShapeWithBoundary(uid = "_code") {
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun setShape() {
+        TODO("Not yet implemented")
+    }
+
+    override val shape: Shape =
+        CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()
@@ -115,8 +136,18 @@ data class VariableBlock(
     val variableFrame: String,
     val textColor: String? = null,
     override val runtime: Double = 1.0,
-) : MObject() {
-    override val shape: Shape = VariableBlockShape(ident, variables, textColor)
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+) : ShapeWithBoundary(uid = "_variables") {
+    override var shape: Shape = NullShape
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        boundaries = corners
+        setShape()
+    }
+
+    override fun setShape() {
+        shape = VariableBlockShape(ident, variables, textColor)
+    }
 
     override fun toPython(): List<String> {
         return listOf(
@@ -129,17 +160,6 @@ data class VariableBlock(
     }
 }
 
-sealed class DataStructureMObject(
-    open val type: DataStructureType,
-    open val ident: String,
-    open val uid: String,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject() {
-
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-
-    abstract fun setShape()
-}
 
 data class NodeStructure(
     val ident: String,
@@ -255,7 +275,10 @@ data class ArrayStructure(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
             if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title))" else "",
-            getInstructionString("[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements]", true)
+            getInstructionString(
+                "[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements]",
+                true
+            )
         )
     }
 
@@ -311,7 +334,8 @@ data class Array2DStructure(
     }
 }
 
-data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) : MObject() {
+data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) :
+    MObject() {
     override fun toPython(): List<String> {
         return listOf(
             "# Constructs a new ${shape.className} with value ${shape.text}",
