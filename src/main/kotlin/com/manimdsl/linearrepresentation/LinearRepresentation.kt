@@ -92,9 +92,9 @@ data class TreeDeleteObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
-                "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
+            "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
 
-                )
+        )
     }
 }
 
@@ -108,7 +108,7 @@ data class TreeEditValue(
     override fun toPython(): List<String> {
         val methodName = "edit_node_value"
         return listOf(
-                "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
+            "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
         )
     }
 }
@@ -137,7 +137,7 @@ data class NodeFocusObject(
 
     override fun toPython(): List<String> {
         return listOf(
-                "self.play_animation(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
+            "self.play_animation(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
         )
     }
 }
@@ -149,7 +149,7 @@ data class NodeUnfocusObject(
 
     override fun toPython(): List<String> {
         return listOf(
-                "self.play_animation(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
+            "self.play_animation(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
         )
     }
 }
@@ -230,10 +230,10 @@ data class ArrayLongSwap(
 ) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-                "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
-                "[self.play_animation(*animation) for animation in $animations]",
-                "$arrayIdent.array_elements[${indices.first}].text = $elem2",
-                "$arrayIdent.array_elements[${indices.second}].text = $elem1"
+            "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
+            "[self.play_animation(*animation) for animation in $animations]",
+            "$arrayIdent.array_elements[${indices.first}].text = $elem2",
+            "$arrayIdent.array_elements[${indices.second}].text = $elem1"
         )
     }
 }
@@ -299,7 +299,7 @@ data class ArrayElemRestyle(
             emptyList()
         } else {
             listOf(
-                    "self.play_animation(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
+                "self.play_animation(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
             )
         }
     }
@@ -324,7 +324,7 @@ data class TreeNodeRestyle(
             emptyList()
         } else {
             listOf(
-                    "self.play_animation(*${instructions}${getRuntimeString()})"
+                "self.play_animation(*${instructions}${getRuntimeString()})"
             )
         }
     }
@@ -364,5 +364,5 @@ data class UpdateVariableState(
     override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> =
-            listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+        listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
 }

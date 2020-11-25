@@ -70,16 +70,16 @@ class VirtualMachine(
                 PartitionBlock("1/3", "2/3")
             )
             linearRepresentation.add(
-                    InitTimeDependentObjectList()
+                InitTimeDependentObjectList()
             )
             linearRepresentation.add(
-                    VariableBlock(
-                            listOf(),
-                            "variable_block",
-                            "variable_vg",
-                            "variable_frame",
-                            runtime = animationSpeeds.first()
-                    )
+                VariableBlock(
+                    listOf(),
+                    "variable_block",
+                    "variable_vg",
+                    "variable_frame",
+                    runtime = animationSpeeds.first()
+                )
             )
             linearRepresentation.add(
                 CodeBlock(
