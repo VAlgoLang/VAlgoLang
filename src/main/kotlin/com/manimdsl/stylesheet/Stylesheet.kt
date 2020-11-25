@@ -60,7 +60,12 @@ data class PositionProperties(
     val y: Double,
     val width: Double,
     val height: Double,
-)
+){
+    fun calculateManimCoord(): List<Pair<Double, Double>> {
+        // UL, UR, LL, LR
+        return listOf(Pair(x, y + height), Pair(x + width, y + height), Pair(x, y), Pair(x + width, y))
+    }
+}
 
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
