@@ -1565,7 +1565,7 @@ class VirtualMachine(
         }
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
 
             var conditionValue: ExecValue
             var execValue: ExecValue
@@ -1704,7 +1704,7 @@ class VirtualMachine(
                     }
                 }
 
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 executeAssignment(forStatementNode.updateCounter)
                 if (localDataStructure.isNotEmpty()) {
                     linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
@@ -1718,7 +1718,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
             var conditionValue = executeExpression(ifStatementNode.condition)
             if (conditionValue is RuntimeError) {
                 return conditionValue
@@ -1754,7 +1754,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -1782,7 +1782,7 @@ class VirtualMachine(
             // Else
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 val execValue = Frame(
                     ifStatementNode.elseBlock.statements.first().lineNumber,
                     ifStatementNode.elseBlock.statements.last().lineNumber,

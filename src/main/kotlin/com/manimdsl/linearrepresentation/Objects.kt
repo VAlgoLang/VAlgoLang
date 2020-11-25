@@ -249,7 +249,7 @@ data class ArrayStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
+            if (showLabel == null || showLabel) "self.play($creationString($ident.title)${getRuntimeString()})" else "",
             "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
         )
     }
