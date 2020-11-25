@@ -1,7 +1,7 @@
 class Array:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE, padding=True):
         self.values = values
-        boundary_width = boundaries[1][0] - boundaries[0][0]
+        boundary_width = boundaries[1][0] - boundaries[0][0] - 0.1
         boundary_height = boundaries[0][1] - boundaries[3][1]
 
         title_width = 1 if title != "" else 0

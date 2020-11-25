@@ -71,7 +71,9 @@ object StyleSheetValidator {
 
         ErrorHandler.checkWarnings()
 
+        // JSON exceptions
         checkValidPositions(stylesheet.positions.values)
+        checkMinHeightOfCodeAndVariableBlocks(stylesheet.positions)
     }
 
     private fun checkValidCreationStyles(styles: Collection<StyleProperties>) {
@@ -105,6 +107,17 @@ object StyleSheetValidator {
             if (position.width != position.height && (position.width == 0.0 || position.height == 0.0)) {
                 throw JsonSyntaxException("Missing field entry in position definition")
             }
+        }
+    }
+
+    private fun checkMinHeightOfCodeAndVariableBlocks(positions: Map<String, PositionProperties>) {
+        val codeBlockPosition = positions["_code"]
+        val variableBlockPosition = positions["_variables"]
+        if (codeBlockPosition != null && codeBlockPosition.height < 1) {
+            throw JsonSyntaxException("Cannot create code block with height smaller than 1")
+        }
+        if (variableBlockPosition != null && variableBlockPosition.height < 2) {
+            throw JsonSyntaxException("Cannot create variable block with height smaller than 2")
         }
     }
 }
