@@ -197,14 +197,15 @@ class Scene {
 
     fun compute(
         shapes: List<Pair<String, BoundaryShape>>,
-        fullScreen: Boolean
+        fullScreen: Boolean,
+        expandCodeBlock: Boolean
     ): Pair<ExitStatus, Map<String, BoundaryShape>> {
         val total = shapes.sumByDouble { it.second.area() }
         if (total > sceneShape.area()) {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
-            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(true)
+            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(!expandCodeBlock)
             sceneShapes.addAll(initialShapes.map { it.second })
             val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }.toMutableList()
             sortedShapes.forEach {

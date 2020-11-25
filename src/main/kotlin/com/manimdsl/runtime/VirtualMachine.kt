@@ -37,6 +37,7 @@ class VirtualMachine(
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
     private val hideCode = stylesheet.getHideCode()
+    private val hideVariables = stylesheet.getHideVariables()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
 
     init {
@@ -68,14 +69,16 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
-            linearRepresentation.add(
-                VariableBlock(
-                    listOf(),
-                    "variable_block",
-                    "variable_vg",
-                    runtime = animationSpeeds.first()
+            if (!hideVariables) {
+                linearRepresentation.add(
+                    VariableBlock(
+                        listOf(),
+                        "variable_block",
+                        "variable_vg",
+                        runtime = animationSpeeds.first()
+                    )
                 )
-            )
+            }
             linearRepresentation.add(
                 CodeBlock(
                     wrapCode(displayCode),
@@ -95,14 +98,14 @@ class VirtualMachine(
             fileLines.size,
             variables,
             hideCode = hideCode,
-            updateVariableState = !hideCode
+            updateVariableState = !(hideCode || hideVariables)
         ).runFrame()
         linearRepresentation.add(Sleep(1.0, runtime = animationSpeeds.first()))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
-            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
+            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode, hideVariables)
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
@@ -713,7 +716,7 @@ class VirtualMachine(
         }
 
         private fun updateVariableState() {
-            if (showMoveToLine && !hideCode)
+            if (showMoveToLine && !hideCode && !hideVariables)
                 linearRepresentation.add(
                     UpdateVariableState(
                         getVariableState(),
