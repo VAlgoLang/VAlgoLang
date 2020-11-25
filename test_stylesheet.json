@@ -19,5 +19,13 @@
         "animationTime": 0.1
       }
     }
+  },
+  "positions": {
+    "original": {
+      "x": 0,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    }
   }
 }
