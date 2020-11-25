@@ -8,7 +8,7 @@ class Main(Scene):
     def construct(self):
         # Building code visualisation pane
         code_lines = [["let y = new Stack<number>();"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
-         = ("")
+        code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
         self.code_end = min(len(code_lines), self.code_end)
@@ -77,6 +77,46 @@ class Main(Scene):
                       group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
         self.code_start = self.code_start - scrolls
         self.code_end = self.code_end - scrolls
+class Code_block:
+    def __init__(self, code, boundaries, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE,
+                 text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
+        group = VGroup()
+        self.boundaries = boundaries
+        self.move_position = np.array(
+            [(boundaries[0][0] + boundaries[1][0]) / 2 + SMALL_BUFF, (boundaries[0][1] + boundaries[3][1]) / 2, 0])
+        self.boundary_width = boundaries[1][0] - boundaries[0][0]
+        arrow_size = self.boundary_width * 0.7 / 5.0
+        self.boundary_width -= arrow_size
+        self.boundary_height = boundaries[0][1] - boundaries[3][1]
+        self.code_end = max(math.floor(self.boundary_height * 12.0 / self.boundary_width), 2)
+        if syntax_highlighting:
+            fp = tempfile.NamedTemporaryFile(suffix='.re')
+            for c in code:
+                for sc in c:
+                    fp.write(bytes(sc + "\n", encoding='utf-8'))
+            fp.seek(0)
+            self.paragraph = Code(fp.name, style=syntax_highlighting_style, language="reasonml",
+                                  tab_width=tab_spacing).code
+            fp.close()
+            group.add(self.paragraph)
+            self.all = self.paragraph
+        else:
+            for c in code:
+                for sc in c:
+                    text = Text(sc, color=text_color, weight=text_weight, font=font)
+                    group.add(text)
+            self.all = group
+        self.code = code
+    def build(self):
+        self.all.arrange_submobjects(DOWN*0.1, aligned_edge=LEFT)
+        ratio = 4.2 / 5.0
+        self.all.set_width(self.boundary_width * ratio)
+        return self.all
+    def get_line_at(self, line_number):
+        idx = 0
+        for i in range(line_number):
+            idx += len(self.code[i])
+        return self.all[idx - 1]
 class DataStructure(ABC):
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.ul = ul

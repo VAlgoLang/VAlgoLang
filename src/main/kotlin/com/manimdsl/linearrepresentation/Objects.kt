@@ -67,6 +67,8 @@ data class CodeBlock(
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid = "_code") {
 
+    override var shape: Shape = NullShape
+
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
         setShape()
@@ -75,8 +77,6 @@ data class CodeBlock(
     override fun setShape() {
         shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing, boundaries)
     }
-
-    override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()
