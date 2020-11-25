@@ -38,7 +38,6 @@ open class AnimationProperties(
 ) : StylesheetProperty()
 
 data class DefaultAnimationProperties(
-    override val borderColor: String? = "RED",
     override val textColor: String? = "YELLOW",
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
@@ -54,7 +53,6 @@ data class StyleProperties(
     var creationStyle: String? = null,
     var creationTime: Double? = null,
     val animate: AnimationProperties? = null,
-    val render: Boolean? = true,
 ) : StylesheetProperty()
 
 data class PositionProperties(
@@ -117,7 +115,6 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 borderColor = "BLUE",
                 textColor = "WHITE",
                 animate = DefaultAnimationProperties(),
-                render = true
             )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (
@@ -149,6 +146,14 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     fun getDisplayNewLinesInCode(): Boolean = stylesheet.displayNewLinesInCode
 
     fun getTabSpacing(): Int = stylesheet.tabSpacing
+
+    fun renderDataStructure(identifier: String): Boolean {
+        return if (stylesheet.positions.containsKey(identifier)) {
+            stylesheet.positions[identifier]!!.height != 0.0
+        } else {
+            true
+        }
+    }
 }
 
 // Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679
