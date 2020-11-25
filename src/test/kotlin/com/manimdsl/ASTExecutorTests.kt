@@ -1,7 +1,6 @@
 package com.manimdsl
 
-import com.manimdsl.linearrepresentation.CodeBlock
-import com.manimdsl.linearrepresentation.VariableBlock
+import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import junit.framework.TestCase.assertEquals
