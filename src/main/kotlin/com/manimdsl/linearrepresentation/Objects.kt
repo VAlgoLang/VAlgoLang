@@ -109,8 +109,6 @@ data class SubtitleBlock(
         boundary = corners
         setShape()
     }
-
-
 }
 
 data class PartitionBlock(

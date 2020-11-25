@@ -284,7 +284,7 @@ class VirtualMachine(
         private fun updateSubtitle(text: String) {
             if (subtitleBlockVariable is EmptyMObject) {
                 dataStructureBoundaries["_subtitles"] = WideBoundary(maxSize = Int.MAX_VALUE)
-                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first(), uid="_subtitles") // TODO(aesthetics stuff)
+                subtitleBlockVariable = SubtitleBlock(variableNameGenerator, runtime = animationSpeeds.first(), uid = "_subtitles") // TODO(aesthetics stuff)
                 linearRepresentation.add(subtitleBlockVariable)
             }
             linearRepresentation.add(UpdateSubtitle(subtitleBlockVariable.shape, text, runtime = animationSpeeds.first()))
