@@ -1,6 +1,8 @@
+import tempfile
 from abc import ABC, abstractmethod
 from manimlib.imports import *
-import tempfile
+
+
 class Main(Scene):
     code_start = 0
     code_end = 10
@@ -13,14 +15,14 @@ class Main(Scene):
         code_text.next_to(variable_frame, DOWN, buff=0.9)
         code_text.to_edge(buff=MED_LARGE_BUFF)
         self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end
-        self.play(FadeIn(code_text[self.code_start:self.code_end]), run_time=1.0)
+        self.play_animation(FadeIn(code_text[self.code_start:self.code_end]), run_time=1.0)
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)
         # Moves the current line pointer to line 1
         self.move_arrow_to_line(1, pointer, code_block, code_text)
         # Constructing new Stack<number> "y"
         stack = Stack([5.0, 4.0, 0], [7.0, 4.0, 0], [5.0, -4.0, 0], [7.0, -4.0, 0], DOWN)
-        self.play(*stack.create_init("y"))
+        self.play_animation(*stack.create_init("y"))
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
@@ -36,16 +38,28 @@ class Main(Scene):
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
     def move_relative_to_edge(self, group, x, y):
-        self.play(ApplyMethod(group.to_edge, np.array([x, y, 0])))
+        self.play_animation(ApplyMethod(group.to_edge, np.array([x, y, 0])))
+
     def move_relative_to_obj(self, group, target, x, y):
-        self.play(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
+        self.play_animation(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
+
     def place_relative_to_obj(self, group, target, x, y):
         group.next_to(target, np.array([x, y, 0]))
+
     def fade_out_if_needed(self, mobject):
         if mobject in self.mobjects:
             return FadeOut(mobject)
         else:
             return None
+
+    def play_animation(self, *args, run_time=1.0):
+        time_elapsed = self.get_time()
+        for time_object in self.time_objects:
+            if time_object.end_time <= time_elapsed:
+                self.play(time_object.action())
+                self.time_objects.remove(time_object)
+        self.play(*args, runtime=run_time)
+
     def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
         idx = 0
         for i in range(line_number):
@@ -74,9 +88,8 @@ class Main(Scene):
         sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
         for i in range(1, 1 + scrolls):
             group[self.code_start - i].next_to(group[self.code_start - i + 1], UP, aligned_edge=LEFT)
-            # self.play(ReplacementTransform())
-            self.play(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
-                      group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
+            self.play_animation(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
+                                group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
         self.code_start = self.code_start - scrolls
         self.code_end = self.code_end - scrolls
 class Code_block:

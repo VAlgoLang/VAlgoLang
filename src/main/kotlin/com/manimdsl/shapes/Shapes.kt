@@ -65,7 +65,7 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(${instructions.joinToString(", ")}$runtimeString)")
+            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
         }
     }
 

@@ -1,8 +1,10 @@
 package com.manimdsl
 import com.manimdsl.linearrepresentation.CodeBlock
+import com.manimdsl.linearrepresentation.InitTimeDependentObjectList
 import com.manimdsl.linearrepresentation.PartitionBlock
 import com.manimdsl.linearrepresentation.VariableBlock
 import com.manimdsl.runtime.VirtualMachine
+import com.manimdsl.shapes.NullShape
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.MoveToLine
 import comcreat.manimdsl.linearrepresentation.Sleep
@@ -23,20 +25,21 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            PartitionBlock(
-                scaleLeft = "1/3",
-                scaleRight = "2/3"
-            ),
-            VariableBlock(
-                variables = listOf(),
-                ident = "variable_block",
-                variableGroupName = "variable_vg",
-                textColor = null,
-                variableFrame = "variable_frame", runtime = 1.0
-            ),
-            CodeBlock(
-                lines = listOf(
-                    listOf("fun f(x: number): number{"),
+                PartitionBlock(
+                        scaleLeft = "1/3",
+                        scaleRight = "2/3"
+                ),
+                InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
+                VariableBlock(
+                        variables = listOf(),
+                        ident = "variable_block",
+                        variableGroupName = "variable_vg",
+                        textColor = null,
+                        variableFrame = "variable_frame", runtime = 1.0
+                ),
+                CodeBlock(
+                        lines = listOf(
+                                listOf("fun f(x: number): number{"),
                     listOf("    return x * 3;"),
                     listOf("}"),
                     listOf("let ans = f(3);"),
@@ -98,17 +101,18 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
-            VariableBlock(listOf(), ident = "variable_block", variableGroupName = "variable_vg", variableFrame = "variable_frame", textColor = null, runtime = 1.0),
-            CodeBlock(
-                lines = listOf(listOf("fun f(x: number): number{"), listOf("    return x * 3;"), listOf("}"), listOf("let ans = f(3);"), listOf(" ")),
-                ident = "code_block",
-                codeTextName = "code_text",
-                pointerName = "pointer", runtime = 1.0
-            ),
-            UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
-            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            UpdateVariableState(variables = listOf("x = 3.0"), ident = "variable_block", textColor = null, runtime = 1.0),
+                PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
+                InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
+                VariableBlock(listOf(), ident = "variable_block", variableGroupName = "variable_vg", variableFrame = "variable_frame", textColor = null, runtime = 1.0),
+                CodeBlock(
+                        lines = listOf(listOf("fun f(x: number): number{"), listOf("    return x * 3;"), listOf("}"), listOf("let ans = f(3);"), listOf(" ")),
+                        ident = "code_block",
+                        codeTextName = "code_text",
+                        pointerName = "pointer", runtime = 1.0
+                ),
+                UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
+                MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
+                UpdateVariableState(variables = listOf("x = 3.0"), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
             MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
             MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
@@ -139,17 +143,18 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
-            VariableBlock(
-                listOf(),
-                ident = "variable_block",
-                variableGroupName = "variable_vg",
-                variableFrame = "variable_frame",
-                textColor = null,
-                runtime = 1.0
-            ),
-            CodeBlock(
-                lines = listOf(
+                PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
+                InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
+                VariableBlock(
+                        listOf(),
+                        ident = "variable_block",
+                        variableGroupName = "variable_vg",
+                        variableFrame = "variable_frame",
+                        textColor = null,
+                        runtime = 1.0
+                ),
+                CodeBlock(
+                        lines = listOf(
                     listOf("fun f(x: number): number{"),
                     listOf("    return x * 3;"),
                     listOf("}"),
@@ -195,17 +200,18 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
-            VariableBlock(
-                listOf(),
-                ident = "variable_block",
-                variableGroupName = "variable_vg",
-                variableFrame = "variable_frame",
-                textColor = null,
-                runtime = 1.0
-            ),
-            CodeBlock(
-                lines = listOf(
+                PartitionBlock(scaleLeft = "1/3", scaleRight = "2/3"),
+                InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
+                VariableBlock(
+                        listOf(),
+                        ident = "variable_block",
+                        variableGroupName = "variable_vg",
+                        variableFrame = "variable_frame",
+                        textColor = null,
+                        runtime = 1.0
+                ),
+                CodeBlock(
+                        lines = listOf(
                     listOf("let x = 'a';"),
                     listOf("let y = toNumber(x);"),
                     listOf("let z = toChar(y);"),

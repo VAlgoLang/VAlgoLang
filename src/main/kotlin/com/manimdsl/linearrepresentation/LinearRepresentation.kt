@@ -56,7 +56,7 @@ data class MoveObject(
         val instructions =
             mutableListOf("self.move_relative_to_obj($shape, $moveToShape, ${objectSide.addOffset(offset)})")
         if (fadeOut) {
-            instructions.add("self.play(FadeOut($shape)${getRuntimeString()})")
+            instructions.add("self.play_animation(FadeOut($shape)${getRuntimeString()})")
         }
         return instructions
     }
@@ -91,9 +91,9 @@ data class TreeDeleteObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
-            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
+                "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})${getRuntimeString()})",
 
-        )
+                )
     }
 }
 
@@ -107,7 +107,7 @@ data class TreeEditValue(
     override fun toPython(): List<String> {
         val methodName = "edit_node_value"
         return listOf(
-            "self.play(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
+                "self.play_animation(*${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")${getRuntimeString()})",
         )
     }
 }
@@ -136,7 +136,7 @@ data class NodeFocusObject(
 
     override fun toPython(): List<String> {
         return listOf(
-            "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
+                "self.play_animation(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
         )
     }
 }
@@ -148,7 +148,7 @@ data class NodeUnfocusObject(
 
     override fun toPython(): List<String> {
         return listOf(
-            "self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
+                "self.play_animation(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})",
         )
     }
 }
@@ -194,28 +194,28 @@ data class ArrayElemAssignObject(
     override fun toPython(): List<String> {
         val animationString = if (animatedStyle?.textColor != null) ", color=${animatedStyle.handleColourValue(animatedStyle.textColor)}" else ""
         val assignIndex2D = if (secondIndex == null) "" else ".rows[$secondIndex]"
-        return listOf("self.play($arrayIdent$assignIndex2D.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString)${getRuntimeString()})")
+        return listOf("self.play_animation($arrayIdent$assignIndex2D.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString)${getRuntimeString()})")
     }
 }
 
 data class ArrayReplaceRow(val arrayIdent: String, val index: Int, val newArray: Array<ExecValue>, override val runtime: Double) :
     ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.play(*$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])${getRuntimeString()})")
+        return listOf("self.play_animation(*$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])${getRuntimeString()})")
     }
 }
 
 data class Array2DSwap(val arrayIdent: String, val indices: List<Int>, override val runtime: Double) :
     ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("[self.play(*animations${getRuntimeString()}) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
+        return listOf("[self.play_animation(*animations${getRuntimeString()}) for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
     }
 }
 
 data class ArrayShortSwap(val arrayIdent: String, val indices: Pair<Int, Int>, override val runtime: Double) :
     ManimInstr {
     override fun toPython(): List<String> {
-        return listOf("self.play(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})${getRuntimeString()})")
+        return listOf("self.play_animation(*$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})${getRuntimeString()})")
     }
 }
 
@@ -229,10 +229,10 @@ data class ArrayLongSwap(
 ) : ManimInstr {
     override fun toPython(): List<String> {
         return listOf(
-            "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
-            "[self.play(*animation) for animation in $animations]",
-            "$arrayIdent.array_elements[${indices.first}].text = $elem2",
-            "$arrayIdent.array_elements[${indices.second}].text = $elem1"
+                "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
+                "[self.play_animation(*animation) for animation in $animations]",
+                "$arrayIdent.array_elements[${indices.first}].text = $elem2",
+                "$arrayIdent.array_elements[${indices.second}].text = $elem1"
         )
     }
 }
@@ -298,7 +298,7 @@ data class ArrayElemRestyle(
             emptyList()
         } else {
             listOf(
-                "self.play(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
+                    "self.play_animation(*[animation for animation in [${instructions.joinToString(", ")}] if animation]${getRuntimeString()})"
             )
         }
     }
@@ -323,7 +323,7 @@ data class TreeNodeRestyle(
             emptyList()
         } else {
             listOf(
-                "self.play(*${instructions}${getRuntimeString()})"
+                    "self.play_animation(*${instructions}${getRuntimeString()})"
             )
         }
     }
@@ -335,10 +335,10 @@ data class UpdateSubtitle(
     override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> {
-        val instr = mutableListOf("self.play(${shape.ident}.clear())")
+        val instr = mutableListOf("self.play_animation(${shape.ident}.clear())")
 
         if (!text.isBlank()) {
-            instr.add("self.play(${shape.ident}.display($text))")
+            instr.add("self.play_animation(${shape.ident}.display($text))")
         }
 
         return instr
@@ -364,5 +364,5 @@ data class UpdateVariableState(
     override val runtime: Double
 ) : ManimInstr {
     override fun toPython(): List<String> =
-        listOf("self.play(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+            listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
 }

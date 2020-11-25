@@ -24,4 +24,4 @@ class Subtitle_block:
         return Uncreate(self.text)
 
     def action(self):
-        self.clear()
+        return self.clear()

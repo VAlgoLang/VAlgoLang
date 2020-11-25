@@ -66,15 +66,20 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
-            linearRepresentation.add(PartitionBlock("1/3", "2/3"))
             linearRepresentation.add(
-                VariableBlock(
-                    listOf(),
-                    "variable_block",
-                    "variable_vg",
-                    "variable_frame",
-                    runtime = animationSpeeds.first()
-                )
+                    PartitionBlock("1/3", "2/3")
+            )
+            linearRepresentation.add(
+                    InitTimeDependentObjectList()
+            )
+            linearRepresentation.add(
+                    VariableBlock(
+                            listOf(),
+                            "variable_block",
+                            "variable_vg",
+                            "variable_frame",
+                            runtime = animationSpeeds.first()
+                    )
             )
             linearRepresentation.add(
                 CodeBlock(
