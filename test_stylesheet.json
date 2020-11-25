@@ -2,6 +2,14 @@
   "hideCode": false,
   "syntaxHighlightingStyle": "monokai",
   "tabSpacing": 1,
+  "variables": {
+    "st": {
+      "render": false,
+      "textColor": "YELLOW",
+      "animate": {
+      }
+    }
+  },
   "dataStructures": {
     "Array": {
       "creationStyle": "Write",

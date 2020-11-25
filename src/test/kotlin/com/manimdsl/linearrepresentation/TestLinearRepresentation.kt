@@ -22,7 +22,8 @@ class TestLinearRepresentation {
             Alignment.HORIZONTAL,
             "y",
             boundaries = emptyList(),
-            uid = "y"
+            uid = "y",
+            render = true
         )
 
         stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
@@ -35,12 +36,12 @@ class TestLinearRepresentation {
             stackIS,
             MoveToLine(2, "pointer", "code_block", "code_text", runtime = 1.0),
             NewMObject(rectangle, "code_text"),
-            StackPushObject(rectangle, "stack", runtime = 1.0),
+            StackPushObject(rectangle, "stack", runtime = 1.0, render = true),
             MoveToLine(3, "pointer", "code_block", "code_text", runtime = 1.0),
             NewMObject(rectangle1, "code_text"),
-            StackPushObject(rectangle1, "stack", runtime = 1.0),
+            StackPushObject(rectangle1, "stack", runtime = 1.0, render = true),
             MoveToLine(4, "pointer", "code_block", "code_text", runtime = 1.0),
-            StackPopObject(rectangle1, "stack", false, runtime = 1.0)
+            StackPopObject(rectangle1, "stack", false, runtime = 1.0, render = true)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())

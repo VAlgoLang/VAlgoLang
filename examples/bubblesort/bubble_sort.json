@@ -7,5 +7,6 @@
         "textColor": "red"
       }
     }
-  }
+  },
+  "syntaxHighlightingOn": true
 }
