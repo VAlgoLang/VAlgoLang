@@ -124,7 +124,10 @@ class VirtualMachine(
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentationWithBoundaries)
         } else {
             linearRepresentation.forEach {
-                if (it is DataStructureMObject) {
+                if (it is ShapeWithBoundary) {
+                    if (it is CodeBlock || it is VariableBlock){
+                        it.setNewBoundary(stylesheet.getPosition(it.uid)!!.calculateManimCoord(), -1)
+                    }
                     it.setShape()
                 }
             }
