@@ -182,14 +182,14 @@ class VirtualMachine(
 
         private fun shouldRenderInVariableState(value: ExecValue, identifier: String) =
             (value is BinaryTreeNodeValue && value.binaryTreeValue == null) || value is PrimitiveValue || (
-                    value is BinaryTreeValue && !stylesheet.renderDataStructure(
-                            identifier
-                    )
-                    ) || (value is ArrayValue && !stylesheet.renderDataStructure(identifier)) || (
-                    value is StackValue && !stylesheet.renderDataStructure(
-                            identifier
-                    )
-                    )
+                value is BinaryTreeValue && !stylesheet.renderDataStructure(
+                    identifier
+                )
+                ) || (value is ArrayValue && !stylesheet.renderDataStructure(identifier)) || (
+                value is StackValue && !stylesheet.renderDataStructure(
+                    identifier
+                )
+                )
 
         fun removeVariable(identifier: String) {
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
