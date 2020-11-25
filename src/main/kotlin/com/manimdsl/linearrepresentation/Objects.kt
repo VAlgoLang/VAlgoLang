@@ -99,9 +99,9 @@ data class CodeBlock(
             "$codeTextName = $ident.build()",
             "self.code_end = $ident.code_end",
             "self.code_end = min(len(code_lines), self.code_end)",
-            "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to(${ident}.move_position)${getRuntimeString()}))",
+            "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to($ident.move_position)${getRuntimeString()}))",
             "# Constructing current line pointer",
-            "$pointerName = ArrowTip(color=YELLOW).scale(${ident}.boundary_width * 0.7/5.0).flip(TOP)"
+            "$pointerName = ArrowTip(color=YELLOW).scale($ident.boundary_width * 0.7/5.0).flip(TOP)"
         )
     }
 }
@@ -153,7 +153,6 @@ data class VariableBlock(
         )
     }
 }
-
 
 data class NodeStructure(
     val ident: String,

@@ -8,7 +8,6 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
-import com.manimdsl.shapes.Shape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
@@ -125,7 +124,7 @@ class VirtualMachine(
         } else {
             linearRepresentation.forEach {
                 if (it is ShapeWithBoundary) {
-                    if (it is CodeBlock || it is VariableBlock){
+                    if (it is CodeBlock || it is VariableBlock) {
                         it.setNewBoundary(stylesheet.getPosition(it.uid)!!.calculateManimCoord(), -1)
                     }
                     it.setShape()
