@@ -24,9 +24,9 @@ class ASTExecutorTests {
     fun checkBasicFunction() {
         val program =
             "fun f(x: number): number{\n" +
-                    "    return x * 3;\n" +
-                    "}\n" +
-                    "let ans = f(3);\n"
+                "    return x * 3;\n" +
+                "}\n" +
+                "let ans = f(3);\n"
 
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
@@ -104,11 +104,11 @@ class ASTExecutorTests {
     fun checkStepInBlock() {
         val program =
             "fun f(x: number): number{\n" +
-                    "    return x * 3;\n" +
-                    "}\n" +
-                    "@stepInto { \n" +
-                    "let ans = f(3);\n" +
-                    "}\n"
+                "    return x * 3;\n" +
+                "}\n" +
+                "@stepInto { \n" +
+                "let ans = f(3);\n" +
+                "}\n"
 
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
@@ -192,11 +192,11 @@ class ASTExecutorTests {
     fun checkStepOverBlock() {
         val program =
             "fun f(x: number): number{\n" +
-                    "    return x * 3;\n" +
-                    "}\n" +
-                    "@stepOver { \n" +
-                    "let ans = f(3);\n" +
-                    "}\n"
+                "    return x * 3;\n" +
+                "}\n" +
+                "@stepOver { \n" +
+                "let ans = f(3);\n" +
+                "}\n"
 
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
