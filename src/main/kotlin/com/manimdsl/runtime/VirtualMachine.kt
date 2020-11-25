@@ -106,7 +106,8 @@ class VirtualMachine(
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
-                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys }
+                val genericShapeIDs = setOf("_variables", "_code")
+                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
                 val gson = Gson()
                 println(gson.toJson(boundaries))
             }
