@@ -417,7 +417,7 @@ data class UpdateVariableState(
 data class CleanUpLocalDataStructures(
     val dataStructures: Set<String>,
     override val runtime: Double
-) : ManimInstr {
+) : ManimInstr() {
     override fun toPython(): List<String> {
         val instr = "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
         println(instr)
