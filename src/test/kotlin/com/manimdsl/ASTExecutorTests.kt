@@ -40,16 +40,16 @@ class ASTExecutorTests {
                 CodeBlock(
                         lines = listOf(
                                 listOf("fun f(x: number): number{"),
-                    listOf("    return x * 3;"),
-                    listOf("}"),
-                    listOf("let ans = f(3);"),
-                    listOf(" ")
+                                listOf("    return x * 3;"),
+                                listOf("}"),
+                                listOf("let ans = f(3);"),
+                                listOf(" ")
+                        ),
+                        ident = "code_block",
+                        codeTextName = "code_text",
+                        pointerName = "pointer", runtime = 1.0
                 ),
-                ident = "code_block",
-                codeTextName = "code_text",
-                pointerName = "pointer", runtime = 1.0
-            ),
-            UpdateVariableState(variables = emptyList(), ident = "variable_block", textColor = null, runtime = 1.0),
+                UpdateVariableState(variables = emptyList(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 4,
                 pointerName = "pointer",
@@ -113,11 +113,11 @@ class ASTExecutorTests {
                 UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
                 MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
                 UpdateVariableState(variables = listOf("x = 3.0"), ident = "variable_block", textColor = null, runtime = 1.0),
-            MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
-            UpdateVariableState(variables = listOf("ans = 9.0"), ident = "variable_block", textColor = null, runtime = 1.0),
-            Sleep(1.0, runtime = 1.0)
+                MoveToLine(lineNumber = 1, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
+                MoveToLine(lineNumber = 2, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
+                MoveToLine(lineNumber = 4, pointerName = "pointer", codeBlockName = "code_block", codeTextVariable = "code_text", runtime = 1.0),
+                UpdateVariableState(variables = listOf("ans = 9.0"), ident = "variable_block", textColor = null, runtime = 1.0),
+                Sleep(1.0, runtime = 1.0)
         )
         val (_, actual) = VirtualMachine(
             abstractSyntaxTree,
@@ -155,16 +155,16 @@ class ASTExecutorTests {
                 ),
                 CodeBlock(
                         lines = listOf(
-                    listOf("fun f(x: number): number{"),
-                    listOf("    return x * 3;"),
-                    listOf("}"),
-                    listOf("let ans = f(3);"),
-                    listOf(" ")
+                                listOf("fun f(x: number): number{"),
+                                listOf("    return x * 3;"),
+                                listOf("}"),
+                                listOf("let ans = f(3);"),
+                                listOf(" ")
+                        ),
+                        ident = "code_block",
+                        codeTextName = "code_text",
+                        pointerName = "pointer", runtime = 1.0
                 ),
-                ident = "code_block",
-                codeTextName = "code_text",
-                pointerName = "pointer", runtime = 1.0
-            ),
             UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 4,
@@ -212,16 +212,16 @@ class ASTExecutorTests {
                 ),
                 CodeBlock(
                         lines = listOf(
-                    listOf("let x = 'a';"),
-                    listOf("let y = toNumber(x);"),
-                    listOf("let z = toChar(y);"),
-                    listOf("let a = toNumber(toChar(toNumber('a')));"),
-                    listOf("let shouldBeTrue = x == z;")
+                                listOf("let x = 'a';"),
+                                listOf("let y = toNumber(x);"),
+                                listOf("let z = toChar(y);"),
+                                listOf("let a = toNumber(toChar(toNumber('a')));"),
+                                listOf("let shouldBeTrue = x == z;")
+                        ),
+                        ident = "code_block",
+                        codeTextName = "code_text",
+                        pointerName = "pointer", runtime = 1.0
                 ),
-                ident = "code_block",
-                codeTextName = "code_text",
-                pointerName = "pointer", runtime = 1.0
-            ),
             UpdateVariableState(variables = listOf(), ident = "variable_block", textColor = null, runtime = 1.0),
             MoveToLine(
                 lineNumber = 1,

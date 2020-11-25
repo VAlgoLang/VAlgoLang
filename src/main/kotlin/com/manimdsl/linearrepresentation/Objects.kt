@@ -58,8 +58,8 @@ data class CodeBlock(
         val textColor: String? = null,
         override val runtime: Double = 1.0,
         val syntaxHighlightingOn: Boolean = true,
-    val syntaxHighlightingStyle: String = "inkpot",
-    val tabSpacing: Int = 2
+        val syntaxHighlightingStyle: String = "inkpot",
+        val tabSpacing: Int = 2
 ) : MObject {
     override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
 
