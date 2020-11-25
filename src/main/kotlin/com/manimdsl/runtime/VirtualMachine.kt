@@ -8,6 +8,7 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.shapes.Shape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.*
@@ -68,13 +69,11 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
-            linearRepresentation.add(PartitionBlock("1/3", "2/3"))
             linearRepresentation.add(
                 VariableBlock(
                     listOf(),
                     "variable_block",
                     "variable_vg",
-                    "variable_frame",
                     runtime = animationSpeeds.first()
                 )
             )
@@ -116,7 +115,7 @@ class VirtualMachine(
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
-                if (it is DataStructureMObject) {
+                if (it is ShapeWithBoundary) {
                     val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }

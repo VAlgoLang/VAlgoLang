@@ -63,18 +63,20 @@ data class CodeBlock(
     override val runtime: Double = 1.0,
     val syntaxHighlightingOn: Boolean = true,
     val syntaxHighlightingStyle: String = "inkpot",
-    val tabSpacing: Int = 2
+    val tabSpacing: Int = 2,
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid = "_code") {
+
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
-        TODO("Not yet implemented")
+        boundaries = corners
+        setShape()
     }
 
     override fun setShape() {
-        TODO("Not yet implemented")
+        shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing, boundaries)
     }
 
-    override val shape: Shape =
-        CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
+    override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()
@@ -95,13 +97,11 @@ data class CodeBlock(
             "code_lines = $codeLines",
             shape.getConstructor(),
             "$codeTextName = $ident.build()",
-            "$codeTextName.set_width(4.2)",
-            "$codeTextName.next_to(variable_frame, DOWN, buff=0.9)",
-            "$codeTextName.to_edge(buff=MED_LARGE_BUFF)",
-            "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
-            "self.play(FadeIn($codeTextName[self.code_start:self.code_end])${getRuntimeString()})",
+            "self.code_end = $ident.code_end",
+            "self.code_end = min(len(code_lines), self.code_end)",
+            "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to(${ident}.move_position)${getRuntimeString()}))",
             "# Constructing current line pointer",
-            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"
+            "$pointerName = ArrowTip(color=YELLOW).scale(${ident}.boundary_width * 0.7/5.0).flip(TOP)"
         )
     }
 }
@@ -121,10 +121,6 @@ data class PartitionBlock(
             "rhs_width = width * $scaleRight",
             "variable_height = (height - SMALL_BUFF) * $scaleLeft",
             "code_height = (height - SMALL_BUFF) * $scaleRight",
-            "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
-            "variable_frame.to_corner(UL, buff=0)",
-            "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
-            "code_frame.next_to(variable_frame, DOWN, buff=0) \n"
         )
     }
 }
@@ -133,7 +129,6 @@ data class VariableBlock(
     val variables: List<String>,
     val ident: String,
     val variableGroupName: String,
-    val variableFrame: String,
     val textColor: String? = null,
     override val runtime: Double = 1.0,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
@@ -146,7 +141,7 @@ data class VariableBlock(
     }
 
     override fun setShape() {
-        shape = VariableBlockShape(ident, variables, textColor)
+        shape = VariableBlockShape(ident, variables, textColor, boundaries)
     }
 
     override fun toPython(): List<String> {
@@ -154,7 +149,6 @@ data class VariableBlock(
             "# Building variable visualisation pane",
             shape.getConstructor(),
             "$variableGroupName = $ident.build()",
-            "$variableGroupName.move_to($variableFrame)",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
         )
     }

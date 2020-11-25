@@ -204,9 +204,8 @@ class Scene {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
-            // TODO: Uncomment this when placement is done by boundaries on manim side
-//            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(true)
-//            sceneShapes.addAll(initialShapes.map { it.second })
+            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(true)
+            sceneShapes.addAll(initialShapes.map { it.second })
             val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }.toMutableList()
             sortedShapes.forEach {
                 val didAddToScene = when (it.second) {
@@ -218,7 +217,7 @@ class Scene {
             }
             sortedShapes.forEach { maximise(it.second) }
             centralise(fullScreen)
-//            sortedShapes.addAll(initialShapes)
+            sortedShapes.addAll(initialShapes)
             return Pair(ExitStatus.EXIT_SUCCESS, sortedShapes.toMap())
         }
     }
