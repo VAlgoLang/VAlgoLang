@@ -1,6 +1,7 @@
 package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
+import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
 
@@ -55,15 +56,6 @@ fun wrapString(text: String, max_length: Int = WRAP_LINE_LENGTH): String {
     return sb.toString()
 }
 
-private fun inferType(value: ExecValue): Type {
-    return when (value) {
-        is CharValue -> CharType
-        is DoubleValue -> NumberType
-        is BoolValue -> BoolType
-        else -> NullType
-    }
-}
-
 private fun makeExpressionNode(value: ExecValue, lineNumber: Int): ExpressionNode {
     return when (value) {
         is CharValue -> CharNode(lineNumber, value.value)
@@ -80,7 +72,7 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
             val initialiser = DataStructureInitialiserNode(
                 assignedValue.array.map { makeExpressionNode(it, lineNumber) }
             )
-            val type = inferType(assignedValue.array[0])
+            val type = (assignedValue.manimObject as DataStructureMObject).type
             ConstructorNode(lineNumber, ArrayType(type, false), listOf(dim), initialiser)
         }
         is Array2DValue -> {
@@ -91,18 +83,18 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
                     it.map { v -> makeExpressionNode(v, lineNumber) }
                 }
             )
-            val type = inferType(assignedValue.array[0][0])
+            val type = (assignedValue.manimObject as DataStructureMObject).type
             ConstructorNode(lineNumber, ArrayType(type, true), listOf(dimY, dimX), initialiser)
         }
         is StackValue -> {
-            val type = inferType(assignedValue.value[0])
+            val type = (assignedValue.manimObject as DataStructureMObject).type
             val initialiser = DataStructureInitialiserNode(
                 assignedValue.stack.map { makeExpressionNode(it, lineNumber) }
             )
-            ConstructorNode(lineNumber, StackType(type), listOf(), initialiser)
+            ConstructorNode(lineNumber, type, listOf(), initialiser)
         }
         is BinaryTreeValue -> {
-            val type = inferType(assignedValue.value.value)
+            val type = (assignedValue.manimObject as DataStructureMObject).type
             ConstructorNode(lineNumber, TreeType(type), listOf(), EmptyInitialiserNode)
         }
         else -> ConstructorNode(lineNumber, ArrayType(NullType), listOf(), EmptyInitialiserNode)
