@@ -60,11 +60,15 @@ IN: 'in';
 RANGE: 'range';
 BREAK: 'break';
 CONTINUE: 'continue';
-STEP_INTO: 'stepInto';
-STEP_OVER: 'stepOver';
-SPEED: 'speed';
 TO_NUMBER: 'toNumber';
 TO_CHAR: 'toChar';
+
+// annotations
+STEP_INTO: '@stepInto';
+STEP_OVER: '@stepOver';
+SPEED: '@speed';
+SUBTITLE: '@subtitle';
+SUBTITLE_ONCE: '@subtitleOnce';
 
 NULL: 'null';
 IDENT: ('a'..'z' | 'A'..'Z')('0'..'9' | 'a'..'z' | 'A'..'Z' | '_')* ;

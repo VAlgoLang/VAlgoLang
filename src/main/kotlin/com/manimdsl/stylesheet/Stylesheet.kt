@@ -53,6 +53,7 @@ data class StyleProperties(
     var creationStyle: String? = null,
     var creationTime: Double? = null,
     val animate: AnimationProperties? = null,
+    val duration: Int? = null
 ) : StylesheetProperty()
 
 data class PositionProperties(
@@ -75,6 +76,7 @@ data class StylesheetFromJSON(
     var syntaxHighlightingStyle: String = "inkpot",
     val displayNewLinesInCode: Boolean = true,
     val tabSpacing: Int = 2,
+    val subtitles: StyleProperties = StyleProperties(),
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap(),
     val positions: Map<String, PositionProperties> = emptyMap()
@@ -114,6 +116,8 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val styleProperties = style merge dataStructureStyle
         return styleProperties
     }
+
+    fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
 
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
         val dataStructureStyle =

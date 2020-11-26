@@ -65,7 +65,7 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(${instructions.joinToString(", ")}$runtimeString)")
+            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
         }
     }
 
@@ -113,6 +113,27 @@ class VariableBlockShape(
 
     override fun getConstructor(): String {
         return "$ident = $className($text, $boundaries$style)"
+    }
+}
+
+class SubtitleBlockShape(
+    override val ident: String,
+    val duration: Int = 5,
+    private val boundary: List<Pair<Double, Double>> = emptyList(),
+    textColor: String? = null
+) : Shape() {
+    override val classPath: String = "python/subtitles.py"
+    override val className: String = "Subtitle_block"
+    override val pythonVariablePrefix: String = "subtitle_block"
+    override val text: String = ""
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
+
+        return "$ident = $className(self.get_time() + $duration, $coordinatesString$style)"
     }
 }
 
