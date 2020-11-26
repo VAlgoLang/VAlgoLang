@@ -40,6 +40,7 @@ class VirtualMachine(
     private val MAX_NUMBER_OF_LOOPS = 10000
     private val SUBTITLE_DEFAULT_DURATION = 5
     private val hideCode = stylesheet.getHideCode()
+    private val hideVariables = stylesheet.getHideVariables()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
 
     init {
@@ -71,14 +72,16 @@ class VirtualMachine(
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
-            linearRepresentation.add(
-                VariableBlock(
-                    listOf(),
-                    "variable_block",
-                    "variable_vg",
-                    runtime = animationSpeeds.first()
+            if (!hideVariables) {
+                linearRepresentation.add(
+                    VariableBlock(
+                        listOf(),
+                        "variable_block",
+                        "variable_vg",
+                        runtime = animationSpeeds.first()
+                    )
                 )
-            )
+            }
             linearRepresentation.add(
                 CodeBlock(
                     wrapCode(displayCode),
@@ -98,18 +101,22 @@ class VirtualMachine(
             fileLines.size,
             variables,
             hideCode = hideCode,
-            updateVariableState = !hideCode
+            updateVariableState = !(hideCode || hideVariables)
         ).runFrame()
         linearRepresentation.add(Sleep(1.0, runtime = animationSpeeds.first()))
         return if (result is RuntimeError) {
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
-            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode)
+            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode, hideVariables)
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
+                val genericShapeIDs = mutableSetOf<String>()
+                if (!stylesheet.getHideCode()) {
+                    genericShapeIDs.add("_code")
+                    if (!stylesheet.getHideVariables()) genericShapeIDs.add("_variables")
+                }
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
-                val genericShapeIDs = setOf("_variables", "_code")
                 boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
                 val gson = Gson()
                 println(gson.toJson(boundaries))
@@ -129,7 +136,12 @@ class VirtualMachine(
             linearRepresentation.forEach {
                 if (it is ShapeWithBoundary) {
                     if (it is CodeBlock || it is VariableBlock) {
-                        it.setNewBoundary(stylesheet.getPosition(it.uid)!!.calculateManimCoord(), -1)
+                        val position = stylesheet.getPosition(it.uid)
+                        if (position == null) {
+                            addRuntimeError("Missing positional parameter for ${it.uid}", 1)
+                            return Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
+                        }
+                        it.setNewBoundary(position.calculateManimCoord(), -1)
                     }
                     it.setShape()
                 }
@@ -751,7 +763,7 @@ class VirtualMachine(
         }
 
         private fun updateVariableState() {
-            if (showMoveToLine && !hideCode)
+            if (showMoveToLine && !hideCode && !hideVariables)
                 linearRepresentation.add(
                     UpdateVariableState(
                         getVariableState(),

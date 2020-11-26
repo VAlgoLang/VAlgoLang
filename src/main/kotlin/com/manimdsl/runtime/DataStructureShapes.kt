@@ -197,14 +197,15 @@ class Scene {
 
     fun compute(
         shapes: List<Pair<String, BoundaryShape>>,
-        fullScreen: Boolean
+        fullScreen: Boolean,
+        expandCodeBlock: Boolean
     ): Pair<ExitStatus, Map<String, BoundaryShape>> {
         val total = shapes.sumByDouble { it.second.area() }
         if (total > sceneShape.area()) {
             ErrorHandler.addTooManyDatastructuresError()
             return Pair(ExitStatus.RUNTIME_ERROR, emptyMap())
         } else {
-            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(true)
+            val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(!fullScreen, !expandCodeBlock)
             sceneShapes.addAll(initialShapes.map { it.second })
             val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }.toMutableList()
             sortedShapes.forEach {
@@ -222,20 +223,22 @@ class Scene {
         }
     }
 
-    private fun initCodeAndVariableBlock(includeVariableBlock: Boolean = true): List<Pair<String, BoundaryShape>> {
+    private fun initCodeAndVariableBlock(includeCodeBlock: Boolean = true, includeVariableBlock: Boolean = true): List<Pair<String, BoundaryShape>> {
         val initialShapes = mutableListOf<Pair<String, BoundaryShape>>()
-        val codeHeight = if (includeVariableBlock) 2 * (8.0 / 3) else fullSceneShape.height
-        val codeShape = TallBoundary(minDimensions = Pair(5.0, codeHeight), maxSize = Int.MAX_VALUE)
-        codeShape.x1 = fullSceneShape.x1
-        codeShape.y1 = fullSceneShape.y1
-        codeShape.canCentralise = false
-        initialShapes.add(Pair("_code", codeShape))
-        if (includeVariableBlock) {
-            val variableShape = TallBoundary(minDimensions = Pair(5.0, (8.0 / 3.0)))
-            variableShape.x1 = fullSceneShape.x1
-            variableShape.y1 = fullSceneShape.y1 + codeShape.height
-            variableShape.canCentralise = false
-            initialShapes.add(Pair("_variables", variableShape))
+        if (includeCodeBlock) {
+            val codeHeight = if (includeVariableBlock) 2 * (8.0 / 3) else fullSceneShape.height
+            val codeShape = TallBoundary(minDimensions = Pair(5.0, codeHeight), maxSize = Int.MAX_VALUE)
+            codeShape.x1 = fullSceneShape.x1
+            codeShape.y1 = fullSceneShape.y1
+            codeShape.canCentralise = false
+            initialShapes.add(Pair("_code", codeShape))
+            if (includeVariableBlock) {
+                val variableShape = TallBoundary(minDimensions = Pair(5.0, (8.0 / 3.0)))
+                variableShape.x1 = fullSceneShape.x1
+                variableShape.y1 = fullSceneShape.y1 + codeShape.height
+                variableShape.canCentralise = false
+                initialShapes.add(Pair("_variables", variableShape))
+            }
         }
         return initialShapes.toList()
     }

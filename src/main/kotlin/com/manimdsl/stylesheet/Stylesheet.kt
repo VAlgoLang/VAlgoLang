@@ -71,6 +71,7 @@ data class PositionProperties(
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
+    val hideVariables: Boolean = false,
     val syntaxHighlightingOn: Boolean = true,
     var syntaxHighlightingStyle: String = "inkpot",
     val displayNewLinesInCode: Boolean = true,
@@ -147,6 +148,8 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     fun getStepIntoIsDefault(): Boolean = stylesheet.codeTracking == "stepInto"
 
     fun getHideCode(): Boolean = stylesheet.hideCode
+
+    fun getHideVariables(): Boolean = stylesheet.hideVariables
 
     fun getSyntaxHighlighting(): Boolean = stylesheet.syntaxHighlightingOn
 
