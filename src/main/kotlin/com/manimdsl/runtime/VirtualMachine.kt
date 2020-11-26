@@ -314,7 +314,7 @@ class VirtualMachine(
 
         private fun updateSubtitle(text: String, duration: Int) {
             if (subtitleBlockVariable is EmptyMObject) {
-                val dsUID = "_subtitles"
+                val dsUID = "_subtitle"
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)
                 val position = stylesheet.getPosition(dsUID)
                 val boundaries = if (position == null) emptyList() else getBoundaries(position)
