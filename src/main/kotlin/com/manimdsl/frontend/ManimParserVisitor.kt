@@ -467,8 +467,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         if (ctx.arg_list() != null) {
             val args = visit(ctx.arg_list()) as ArgumentNode
             val argTypes = semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, args.arguments)
-            if(argTypes.contains(BoolType)) condition = args.arguments[argTypes.indexOf(BoolType)]
-            if(argTypes.contains(NumberType)) duration = args.arguments[argTypes.indexOf(NumberType)]
+            if (argTypes.contains(BoolType)) condition = args.arguments[argTypes.indexOf(BoolType)]
+            if (argTypes.contains(NumberType)) duration = args.arguments[argTypes.indexOf(NumberType)]
         }
 
         val node = SubtitleAnnotationNode(ctx.start.line, text, duration, condition, ctx.show.type == SUBTITLE_ONCE)

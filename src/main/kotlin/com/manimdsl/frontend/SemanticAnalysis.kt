@@ -653,7 +653,7 @@ class SemanticAnalysis {
                 val expectedTypes = mutableSetOf(NumberType, BoolType)
                 // Order independent type checking
                 types.forEach {
-                    if(!expectedTypes.contains(it)) {
+                    if (!expectedTypes.contains(it)) {
                         unexpectedExpressionTypeError(expectedTypes, it, ctx)
                     }
                     expectedTypes.remove(it)

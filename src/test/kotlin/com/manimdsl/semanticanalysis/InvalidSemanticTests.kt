@@ -422,8 +422,8 @@ class InvalidSemanticTests {
         runSyntaxAndSemanticAnalysis("subtitlesInvalid.manimdsl")
         val output = outputStreamCaptor.toString()
         assertTrue(
-            output.contains(Regex("Expected expression of type .* but found .*"))
-                    && outputStreamCaptor.toString().contains(Regex("Invalid arguments supplied to annotation @subtitle."))
+            output.contains(Regex("Expected expression of type .* but found .*")) &&
+                outputStreamCaptor.toString().contains(Regex("Invalid arguments supplied to annotation @subtitle."))
         )
     }
 
