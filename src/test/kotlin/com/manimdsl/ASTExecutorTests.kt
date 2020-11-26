@@ -1,11 +1,8 @@
 package com.manimdsl
 
 import com.manimdsl.linearrepresentation.CodeBlock
-import com.manimdsl.linearrepresentation.InitTimeDependentObjectList
-import com.manimdsl.linearrepresentation.PartitionBlock
 import com.manimdsl.linearrepresentation.VariableBlock
 import com.manimdsl.runtime.VirtualMachine
-import com.manimdsl.shapes.NullShape
 import com.manimdsl.stylesheet.Stylesheet
 import comcreat.manimdsl.linearrepresentation.MoveToLine
 import comcreat.manimdsl.linearrepresentation.Sleep
@@ -34,7 +31,6 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
             VariableBlock(
                 variables = listOf(),
                 ident = "variable_block",
@@ -117,7 +113,6 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
             VariableBlock(
                 listOf(),
                 ident = "variable_block",
@@ -206,7 +201,6 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
             VariableBlock(
                 listOf(),
                 ident = "variable_block",
@@ -268,7 +262,6 @@ class ASTExecutorTests {
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = buildAST(program)
 
         val expected = listOf(
-            InitTimeDependentObjectList(shape = NullShape, runtime = 0.0),
             VariableBlock(
                 listOf(),
                 ident = "variable_block",

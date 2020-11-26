@@ -118,7 +118,7 @@ class VariableBlockShape(
 
 class SubtitleBlockShape(
     override val ident: String,
-    val duration: Int = 3,
+    val duration: Int = 5,
     private val boundary: List<Pair<Double, Double>> = emptyList(),
     textColor: String? = null
 ) : Shape() {

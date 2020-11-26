@@ -71,9 +71,6 @@ class VirtualMachine(
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
         if (!hideCode) {
             linearRepresentation.add(
-                InitTimeDependentObjectList()
-            )
-            linearRepresentation.add(
                 VariableBlock(
                     listOf(),
                     "variable_block",
@@ -302,7 +299,6 @@ class VirtualMachine(
                 val position = stylesheet.getPosition(dsUID)
                 val boundaries = if (position == null) emptyList() else getBoundaries(position)
                 subtitleBlockVariable = SubtitleBlock(
-                    linearRepresentation.size,
                     variableNameGenerator,
                     runtime = animationSpeeds.first(),
                     uid = dsUID,
