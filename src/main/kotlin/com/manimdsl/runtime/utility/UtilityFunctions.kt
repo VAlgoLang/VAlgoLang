@@ -4,7 +4,7 @@ import com.manimdsl.frontend.*
 import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
 
-private val WRAP_LINE_LENGTH = 50
+private const val WRAP_LINE_LENGTH = 50
 
 fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
     val wrappedCode = mutableListOf<MutableList<String>>()
@@ -46,6 +46,13 @@ fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
         boundaries.addAll(listOf(Pair(left, top), Pair(right, top), Pair(left, bottom), Pair(right, bottom)))
     }
     return boundaries
+}
+
+fun wrapString(text: String, max_length: Int = WRAP_LINE_LENGTH): String {
+    val sb = StringBuilder(text)
+    for (index in max_length until text.length step max_length)
+        sb.insert(index, "\\n")
+    return sb.toString()
 }
 
 private fun inferType(value: ExecValue): Type {

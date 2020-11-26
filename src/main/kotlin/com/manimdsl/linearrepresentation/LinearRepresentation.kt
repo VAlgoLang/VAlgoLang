@@ -6,6 +6,7 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
+import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StyleSheetValidator
 import com.manimdsl.stylesheet.StylesheetProperty
@@ -15,7 +16,7 @@ abstract class ManimInstr {
     abstract val runtime: Double
     abstract fun toPython(): List<String>
     fun getInstructionString(instruction: String, spread: Boolean): String = if (render) {
-        "self.play(${if (spread) "*" else ""}${instruction}${getRuntimeString()})"
+        "self.play_animation(${if (spread) "*" else ""}${instruction}${getRuntimeString()})"
     } else {
         instruction
     }
@@ -61,7 +62,7 @@ data class MoveObject(
         val instructions =
             mutableListOf("self.move_relative_to_obj($shape, $moveToShape, ${objectSide.addOffset(offset)})")
         if (fadeOut) {
-            instructions.add("self.play(FadeOut($shape)${getRuntimeString()})")
+            instructions.add("self.play_animation(FadeOut($shape)${getRuntimeString()})")
         }
         return instructions
     }
@@ -170,7 +171,7 @@ data class NodeUnfocusObject(
 
     override fun toPython(): List<String> {
         return if (render) {
-            listOf("self.play(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})")
+            listOf("self.play_animation(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})")
         } else {
             emptyList()
         }
@@ -385,9 +386,24 @@ data class TreeNodeRestyle(
             emptyList()
         } else {
             listOf(
-                "self.play(*${instructions}${getRuntimeString()})"
+                "self.play_animation(*${instructions}${getRuntimeString()})"
             )
         }
+    }
+}
+
+data class UpdateSubtitle(
+    val shape: SubtitleBlockShape,
+    val text: String,
+    override val runtime: Double
+) : ManimInstr() {
+    override fun toPython(): List<String> {
+        val instr = mutableListOf("self.play_animation(${shape.ident}.clear())")
+        if (!text.isBlank()) {
+            instr.add("self.play_animation(${shape.ident}.display($text, self.get_time() + ${shape.duration}))")
+        }
+
+        return instr
     }
 }
 
@@ -411,7 +427,7 @@ data class UpdateVariableState(
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> =
-        listOf("self.play(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+        listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
 }
 
 data class CleanUpLocalDataStructures(

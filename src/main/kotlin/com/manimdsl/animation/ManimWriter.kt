@@ -67,6 +67,8 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                 code_start = 0
                 code_end = 10
                 line_spacing = 0.1
+                time_objects = []
+
                 def construct(self):
 
         """.trimIndent()

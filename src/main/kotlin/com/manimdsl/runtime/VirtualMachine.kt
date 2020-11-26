@@ -8,7 +8,9 @@ import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.makeConstructorNode
 import com.manimdsl.runtime.utility.wrapCode
+import com.manimdsl.runtime.utility.wrapString
 import com.manimdsl.shapes.Rectangle
+import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
@@ -26,16 +28,17 @@ class VirtualMachine(
     private val variableNameGenerator = VariableNameGenerator(symbolTableVisitor)
     private val codeBlockVariable: String = variableNameGenerator.generateNameFromPrefix("code_block")
     private val codeTextVariable: String = variableNameGenerator.generateNameFromPrefix("code_text")
+    private var subtitleBlockVariable: MObject = EmptyMObject
     private val pointerVariable: String = variableNameGenerator.generateNameFromPrefix("pointer")
     private val displayLine: MutableList<Int> = mutableListOf()
     private val displayCode: MutableList<String> = mutableListOf()
     private val dataStructureBoundaries = mutableMapOf<String, BoundaryShape>()
     private var acceptableNonStatements = setOf("}", "{")
     private val MAX_DISPLAYED_VARIABLES = 4
-    private val WRAP_LINE_LENGTH = 50
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
+    private val SUBTITLE_DEFAULT_DURATION = 5
     private val hideCode = stylesheet.getHideCode()
     private val hideVariables = stylesheet.getHideVariables()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
@@ -132,7 +135,7 @@ class VirtualMachine(
         } else {
             linearRepresentation.forEach {
                 if (it is ShapeWithBoundary) {
-                    if (it is CodeBlock || it is VariableBlock) {
+                    if (it is CodeBlock || it is VariableBlock || it is SubtitleBlock) {
                         val position = stylesheet.getPosition(it.uid)
                         if (position == null) {
                             addRuntimeError("Missing positional parameter for ${it.uid}", 1)
@@ -145,13 +148,6 @@ class VirtualMachine(
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
         }
-    }
-
-    private fun wrapString(text: String): String {
-        val sb = StringBuilder(text)
-        for (index in WRAP_LINE_LENGTH until text.length step WRAP_LINE_LENGTH)
-            sb.insert(index, "\\n")
-        return sb.toString()
     }
 
     private inner class Frame(
@@ -312,7 +308,48 @@ class VirtualMachine(
                 stepInto = previousStepIntoState
                 EmptyValue
             }
+            is SubtitleAnnotationNode -> {
+                val condition = executeExpression(statement.condition) as BoolValue
+                if (condition.value) {
+                    if (statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
+
+                    val duration: Int = if (statement.duration != null) {
+                        (executeExpression(statement.duration) as DoubleValue).value.toInt()
+                    } else {
+                        stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
+                    }
+
+                    updateSubtitle(statement.text, duration)
+                    EmptyValue
+                } else {
+                    EmptyValue
+                }
+            }
             else -> EmptyValue
+        }
+
+        private fun updateSubtitle(text: String, duration: Int) {
+            if (subtitleBlockVariable is EmptyMObject) {
+                val dsUID = "_subtitle"
+                dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)
+                val position = stylesheet.getPosition(dsUID)
+                val boundaries = if (position == null) emptyList() else getBoundaries(position)
+                subtitleBlockVariable = SubtitleBlock(
+                    variableNameGenerator,
+                    runtime = animationSpeeds.first(),
+                    boundary = boundaries,
+                    textColor = stylesheet.getSubtitleStyle().textColor,
+                    duration = duration
+                )
+                linearRepresentation.add(subtitleBlockVariable)
+            }
+            linearRepresentation.add(
+                UpdateSubtitle(
+                    subtitleBlockVariable.shape as SubtitleBlockShape,
+                    wrapString(text, 30),
+                    runtime = animationSpeeds.first()
+                )
+            )
         }
 
         private fun executeLoopStatement(statement: LoopStatementNode): ExecValue = when (statement) {
