@@ -6,13 +6,13 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
+import com.manimdsl.runtime.utility.makeConstructorNode
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.runtime.utility.wrapString
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
-import comcreat.manimdsl.linearrepresentation.*
 import java.util.*
 
 class VirtualMachine(
@@ -161,7 +161,8 @@ class VirtualMachine(
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
         private val hideCode: Boolean = false,
-        private val functionNamePrefix: String = ""
+        private val functionNamePrefix: String = "",
+        private val localDataStructure: MutableSet<String> ? = null
     ) {
         private var previousStepIntoState = stepInto
 
@@ -205,6 +206,17 @@ class VirtualMachine(
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
         }
 
+        fun convertToIdent(dataStructureVariable: MutableSet<String>?) {
+            if (dataStructureVariable != null) {
+                val idents = dataStructureVariable.map { (variables[it]!!.manimObject as DataStructureMObject).ident }
+                dataStructureVariable.forEach {
+                    variables[it] = EmptyValue
+                }
+                dataStructureVariable.clear()
+                dataStructureVariable.addAll(idents)
+            }
+        }
+
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
@@ -225,11 +237,15 @@ class VirtualMachine(
                     }
 
                     val value = executeStatement(statement)
-                    if (statement is ReturnNode || value !is EmptyValue) return value
+                    if (statement is ReturnNode || value !is EmptyValue) {
+                        convertToIdent(localDataStructure)
+                        return value
+                    }
                 }
 
                 fetchNextStatement()
             }
+            convertToIdent(localDataStructure)
             return EmptyValue
         }
 
@@ -390,6 +406,9 @@ class VirtualMachine(
             val argumentVariables = (argumentNames zip executedArguments).toMap().toMutableMap()
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
+
+            val localDataStructure = mutableSetOf<String>()
+
             // program counter will forward in loop, we have popped out of stack
             val returnValue = Frame(
                 functionNode.lineNumber,
@@ -400,8 +419,14 @@ class VirtualMachine(
                 stepInto = stepInto && previousStepIntoState, // In the case of nested stepInto/stepOver
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
-                functionNamePrefix = "${functionNode.identifier}."
+                functionNamePrefix = "${functionNode.identifier}.",
+                localDataStructure = localDataStructure
             ).runFrame()
+
+            if (localDataStructure.isNotEmpty()) {
+                linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+            }
+
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
             return returnValue
@@ -534,6 +559,14 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
+            if (node.identifier is IdentifierNode && variables.containsKey(node.identifier.identifier)) {
+                with(variables[node.identifier.identifier]?.manimObject) {
+                    if (this is DataStructureMObject) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
+                    }
+                }
+            }
+
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
@@ -599,7 +632,16 @@ class VirtualMachine(
                                     )
                                 )
                             }
-                            variables[node.identifier.identifier] = assignedValue
+                            if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
+                                localDataStructure.add(node.identifier.identifier)
+                            }
+                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject) {
+                                val constructor = makeConstructorNode(assignedValue, node.lineNumber)
+                                val rhs = executeConstructor(constructor, node.identifier)
+                                variables[node.identifier.identifier] = rhs
+                            } else {
+                                variables[node.identifier.identifier] = assignedValue
+                            }
                         }
                         is ArrayElemNode -> {
                             return executeArrayElemAssignment(this, assignedValue)
@@ -707,9 +749,9 @@ class VirtualMachine(
                     }
                     if (stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)) {
                         val boundary =
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident]!!
+                            dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
                         boundary.maxSize += nodeCount(childValue)
-                        dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).ident] =
+                        dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
                             boundary
                     }
                     childValue.attachTree(parent.binaryTreeValue!!)
@@ -1653,7 +1695,7 @@ class VirtualMachine(
         }
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
 
             var conditionValue: ExecValue
             var execValue: ExecValue
@@ -1672,6 +1714,8 @@ class VirtualMachine(
                     }
                 }
 
+                val localDataStructure = mutableSetOf<String>()
+
                 execValue = Frame(
                     whileStatementNode.statements.first().lineNumber,
                     whileStatementNode.statements.last().lineNumber,
@@ -1679,7 +1723,8 @@ class VirtualMachine(
                     depth,
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
@@ -1698,6 +1743,9 @@ class VirtualMachine(
                     }
                 }
 
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+                }
                 pc = whileStatementNode.lineNumber
                 moveToLine()
                 loopCount++
@@ -1754,6 +1802,8 @@ class VirtualMachine(
                     }
                 }
 
+                val localDataStructure = mutableSetOf<String>()
+
                 execValue = Frame(
                     forStatementNode.statements.first().lineNumber,
                     forStatementNode.statements.last().lineNumber,
@@ -1762,7 +1812,8 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
                     hideCode = hideCode,
-                    displayedDataMap = displayedDataMap
+                    displayedDataMap = displayedDataMap,
+                    localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
@@ -1783,8 +1834,11 @@ class VirtualMachine(
                     }
                 }
 
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 executeAssignment(forStatementNode.updateCounter)
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+                }
                 pc = forStatementNode.lineNumber
                 moveToLine()
                 loopCount++
@@ -1794,7 +1848,7 @@ class VirtualMachine(
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(0.5)
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
             var conditionValue = executeExpression(ifStatementNode.condition)
             if (conditionValue is RuntimeError) {
                 return conditionValue
@@ -1803,6 +1857,7 @@ class VirtualMachine(
             }
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
+            val localDataStructure = mutableSetOf<String>()
 
             // If
             if (conditionValue.value) {
@@ -1814,10 +1869,14 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
                     updateVariableState = updateVariableState,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
+                }
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                 }
                 return execValue
             }
@@ -1825,7 +1884,7 @@ class VirtualMachine(
             // Elif
             for (elif in ifStatementNode.elifs) {
                 moveToLine(elif.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
@@ -1837,10 +1896,14 @@ class VirtualMachine(
                         showMoveToLine = showMoveToLine,
                         stepInto = stepInto,
                         updateVariableState = updateVariableState,
-                        hideCode = hideCode
+                        hideCode = hideCode,
+                        localDataStructure = localDataStructure
                     ).runFrame()
                     if (execValue is EmptyValue) {
                         pc = ifStatementNode.endLineNumber
+                    }
+                    if (localDataStructure.isNotEmpty()) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                     }
                     return execValue
                 }
@@ -1849,7 +1912,7 @@ class VirtualMachine(
             // Else
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(0.5)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
                 val execValue = Frame(
                     ifStatementNode.elseBlock.statements.first().lineNumber,
                     ifStatementNode.elseBlock.statements.last().lineNumber,
@@ -1858,10 +1921,14 @@ class VirtualMachine(
                     showMoveToLine = showMoveToLine,
                     stepInto = stepInto,
                     updateVariableState = updateVariableState,
-                    hideCode = hideCode
+                    hideCode = hideCode,
+                    localDataStructure = localDataStructure
                 ).runFrame()
                 if (execValue is EmptyValue) {
                     pc = ifStatementNode.endLineNumber
+                }
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                 }
                 return execValue
             }

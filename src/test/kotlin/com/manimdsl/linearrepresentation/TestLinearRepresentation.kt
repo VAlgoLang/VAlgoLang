@@ -5,10 +5,6 @@ import com.manimdsl.animation.ManimWriter
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
 import com.manimdsl.shapes.Rectangle
-import comcreat.manimdsl.linearrepresentation.Alignment
-import comcreat.manimdsl.linearrepresentation.MoveToLine
-import comcreat.manimdsl.linearrepresentation.StackPopObject
-import comcreat.manimdsl.linearrepresentation.StackPushObject
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File

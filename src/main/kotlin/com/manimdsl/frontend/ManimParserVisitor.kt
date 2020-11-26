@@ -728,12 +728,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val indices = ctx.expr().map { visit(it) as ExpressionNode }
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
-        val type = symbolTable.getTypeOf(arrayIdentifier) as ArrayType
+        val type = symbolTable.getTypeOf(arrayIdentifier)
 
-        semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        if (type is ArrayType) {
+            semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        }
         semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
 
-        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, type.internalType)
+        val internalType = if (type is ArrayType) type.internalType else ErrorType
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
     }
 
     override fun visitNodeType(ctx: NodeTypeContext): NodeType {

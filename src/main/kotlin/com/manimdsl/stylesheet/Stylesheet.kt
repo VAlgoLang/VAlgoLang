@@ -95,7 +95,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
-                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field")) }) {
+                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field") || it.startsWith("Cannot")) }) {
                     println(e.message)
                 } else {
                     println("Could not parse JSON")
@@ -119,7 +119,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
 
-    fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
+    fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties {
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
                 borderColor = "BLUE",

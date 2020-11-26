@@ -1,6 +1,5 @@
-package comcreat.manimdsl.linearrepresentation
+package com.manimdsl.linearrepresentation
 
-import com.manimdsl.linearrepresentation.ObjectSide
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
@@ -429,4 +428,14 @@ data class UpdateVariableState(
 ) : ManimInstr() {
     override fun toPython(): List<String> =
         listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+}
+
+data class CleanUpLocalDataStructures(
+    val dataStructures: Set<String>,
+    override val runtime: Double
+) : ManimInstr() {
+    override fun toPython(): List<String> {
+        val instr = "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
+        return listOf(instr)
+    }
 }
