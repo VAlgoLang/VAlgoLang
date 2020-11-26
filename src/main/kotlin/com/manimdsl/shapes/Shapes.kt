@@ -79,7 +79,8 @@ class CodeBlockShape(
     textColor: String? = null,
     val syntaxHighlightingOn: Boolean,
     val syntaxHighlightingStyle: String,
-    val tabSpacing: Int
+    val tabSpacing: Int,
+    val boundaries: List<Pair<Double, Double>>
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -91,7 +92,7 @@ class CodeBlockShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = $className(code_lines$style, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
+        return "$ident = $className(code_lines, $boundaries, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
     }
 }
 
@@ -99,18 +100,19 @@ class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
     textColor: String? = null,
+    val boundaries: List<Pair<Double, Double>>
 ) : Shape() {
     override val classPath: String = "python/variable_block.py"
     override val className: String = "Variable_block"
     override val pythonVariablePrefix: String = "variable_block"
-    override val text: String = "[\"${variables.joinToString("\",\"")}\"], variable_frame"
+    override val text: String = "[\"${variables.joinToString("\",\"")}\"]"
 
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
     override fun getConstructor(): String {
-        return "$ident = $className($text$style)"
+        return "$ident = $className($text, $boundaries$style)"
     }
 }
 
