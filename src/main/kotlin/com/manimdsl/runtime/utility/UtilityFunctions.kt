@@ -2,6 +2,7 @@ package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.DataStructureMObject
+import com.manimdsl.linearrepresentation.InitTreeStructure
 import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
 
@@ -73,7 +74,7 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
                 assignedValue.array.map { makeExpressionNode(it, lineNumber) }
             )
             val type = (assignedValue.manimObject as DataStructureMObject).type
-            ConstructorNode(lineNumber, ArrayType(type, false), listOf(dim), initialiser)
+            ConstructorNode(lineNumber, type, listOf(dim), initialiser)
         }
         is Array2DValue -> {
             val dimY = NumberNode(lineNumber, assignedValue.array.size.toDouble())
@@ -84,7 +85,7 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
                 }
             )
             val type = (assignedValue.manimObject as DataStructureMObject).type
-            ConstructorNode(lineNumber, ArrayType(type, true), listOf(dimY, dimX), initialiser)
+            ConstructorNode(lineNumber, type, listOf(dimY, dimX), initialiser)
         }
         is StackValue -> {
             val type = (assignedValue.manimObject as DataStructureMObject).type
@@ -94,8 +95,11 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
             ConstructorNode(lineNumber, type, listOf(), initialiser)
         }
         is BinaryTreeValue -> {
-            val type = (assignedValue.manimObject as DataStructureMObject).type
-            ConstructorNode(lineNumber, TreeType(type), listOf(), EmptyInitialiserNode)
+            with(assignedValue.manimObject as InitTreeStructure) {
+                val internalType = this.type.internalType
+                val root = ConstructorNode(lineNumber, NodeType(internalType), listOf(makeExpressionNode(assignedValue.value.value, lineNumber)), EmptyInitialiserNode)
+                ConstructorNode(lineNumber, TreeType(internalType), listOf(root), EmptyInitialiserNode)
+            }
         }
         else -> ConstructorNode(lineNumber, ArrayType(NullType), listOf(), EmptyInitialiserNode)
     }

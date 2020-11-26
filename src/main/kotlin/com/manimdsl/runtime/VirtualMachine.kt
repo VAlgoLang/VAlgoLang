@@ -754,9 +754,9 @@ class VirtualMachine(
                     }
                     if (stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)) {
                         val boundary =
-                            dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
+                            dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
                         boundary.maxSize += nodeCount(childValue)
-                        dataStructureBoundaries[(parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
+                        dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
                             boundary
                     }
                     childValue.attachTree(parent.binaryTreeValue!!)

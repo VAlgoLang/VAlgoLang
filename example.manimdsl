@@ -10,9 +10,11 @@ fun get_transpose(original: Array<Array<number>>): Array<Array<number>> {
     return transpose;
 }
 
-fun test(): Stack<number> {
-    let x = Stack<number>();
-    return x;
+fun test(): Tree<Node<number>> {
+    let x = Node<number>(2);
+    let tree = Tree<Node<number>>(x);
+    x.left = Node<number>(3);
+    return tree;
 }
 
 # let original = Array<Array<number>>(2,3){[1,2,3],[4,5,6]};
