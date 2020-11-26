@@ -429,7 +429,6 @@ class VirtualMachine(
 
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
-//            if (updateVariableState) updateVariableState()
             return returnValue
         }
 
