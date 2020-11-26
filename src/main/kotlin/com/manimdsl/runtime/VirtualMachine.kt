@@ -635,14 +635,10 @@ class VirtualMachine(
                             if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
                                 localDataStructure.add(node.identifier.identifier)
                             }
-                            if (node.expression is FunctionCallNode) {
-                                with(assignedValue.manimObject) {
-                                    if (this is DataStructureMObject) {
-                                        val constructor = makeConstructorNode(assignedValue, node.lineNumber)
-                                        val rhs = executeConstructor(constructor, node.identifier)
-                                        variables[node.identifier.identifier] = rhs
-                                    }
-                                }
+                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject) {
+                                val constructor = makeConstructorNode(assignedValue, node.lineNumber)
+                                val rhs = executeConstructor(constructor, node.identifier)
+                                variables[node.identifier.identifier] = rhs
                             } else {
                                 variables[node.identifier.identifier] = assignedValue
                             }
