@@ -38,6 +38,7 @@ class VirtualMachine(
     private val ALLOCATED_STACKS = Runtime.getRuntime().freeMemory() / 1000000
     private val STEP_INTO_DEFAULT = stylesheet.getStepIntoIsDefault()
     private val MAX_NUMBER_OF_LOOPS = 10000
+    private val SUBTITLE_DEFAULT_DURATION = 5
     private val hideCode = stylesheet.getHideCode()
     private var animationSpeeds = ArrayDeque(listOf(1.0))
 
@@ -302,7 +303,9 @@ class VirtualMachine(
                     variableNameGenerator,
                     runtime = animationSpeeds.first(),
                     uid = dsUID,
-                    boundary = boundaries
+                    boundary = boundaries,
+                    textColor = stylesheet.getSubtitleStyle().textColor,
+                    duration = stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
                 ) // TODO(aesthetics stuff)
                 linearRepresentation.add(subtitleBlockVariable)
             }

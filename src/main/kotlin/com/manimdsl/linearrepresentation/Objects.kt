@@ -113,7 +113,7 @@ data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
-    var duration: Int = 3,
+    var duration: Int,
     override val uid: String,
     override val runtime: Double = 1.0,
 ) : MObject(), ShapeWithBoundary {
