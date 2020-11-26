@@ -284,7 +284,14 @@ class VirtualMachine(
                 val condition = executeExpression(statement.condition) as BoolValue
                 if (condition.value) {
                     if (statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
-                    updateSubtitle(statement.text)
+
+                    val duration: Int = if (statement.duration != null) {
+                        (executeExpression(statement.duration) as DoubleValue).value.toInt()
+                    } else {
+                        stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
+                    }
+
+                    updateSubtitle(statement.text, duration)
                     EmptyValue
                 } else {
                     EmptyValue
@@ -293,7 +300,7 @@ class VirtualMachine(
             else -> EmptyValue
         }
 
-        private fun updateSubtitle(text: String) {
+        private fun updateSubtitle(text: String, duration: Int) {
             if (subtitleBlockVariable is EmptyMObject) {
                 val dsUID = "_subtitles"
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)
@@ -305,7 +312,7 @@ class VirtualMachine(
                     uid = dsUID,
                     boundary = boundaries,
                     textColor = stylesheet.getSubtitleStyle().textColor,
-                    duration = stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
+                    duration = duration
                 ) // TODO(aesthetics stuff)
                 linearRepresentation.add(subtitleBlockVariable)
             }

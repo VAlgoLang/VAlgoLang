@@ -65,8 +65,9 @@ data class StopSpeedChangeNode(override val lineNumber: Int, override val condit
 
 data class SubtitleAnnotationNode(
     override val lineNumber: Int,
-    override var condition: ExpressionNode,
     val text: String,
+    val duration: ExpressionNode? = null,
+    override var condition: ExpressionNode,
     val showOnce: Boolean,
 ) : AnnotationBlockNode(lineNumber, condition)
 

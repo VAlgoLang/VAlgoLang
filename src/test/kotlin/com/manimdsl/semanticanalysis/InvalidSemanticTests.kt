@@ -417,6 +417,16 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun subtitlesInvalid() {
+        runSyntaxAndSemanticAnalysis("subtitlesInvalid.manimdsl")
+        val output = outputStreamCaptor.toString()
+        assertTrue(
+            output.contains(Regex("Expected expression of type .* but found .*"))
+                    && outputStreamCaptor.toString().contains(Regex("Invalid arguments supplied to annotation @subtitle."))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

@@ -446,26 +446,26 @@ class ASTConstructionTests {
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 4.0)),
             SubtitleAnnotationNode(
                 2,
-                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 4.0)),
                 "\"x is 4\"",
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 4.0)),
                 showOnce = false
             ),
             SubtitleAnnotationNode(
                 3,
-                condition = NeqExpression(3, IdentifierNode(3, "x"), NumberNode(3, 4.0)),
                 "\"x is not 4\"",
+                condition = NeqExpression(3, IdentifierNode(3, "x"), NumberNode(3, 4.0)),
                 showOnce = true
             ),
             SubtitleAnnotationNode(
                 4,
-                condition = BoolNode(4, true),
                 "\"x is not 4\"",
+                condition = BoolNode(4, true),
                 showOnce = true
             ),
             SubtitleAnnotationNode(
                 5,
-                condition = BoolNode(5, true),
                 "\"x is 4\"",
+                condition = BoolNode(5, true),
                 showOnce = false
             )
         )

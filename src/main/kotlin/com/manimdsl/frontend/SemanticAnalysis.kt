@@ -630,7 +630,7 @@ class SemanticAnalysis {
         ctx: ParserRuleContext,
         symbolTable: SymbolTableVisitor,
         arguments: List<ExpressionNode>
-    ) = when (ctx) {
+    ): List<Type> = when (ctx) {
         is ManimParser.AnimationSpeedUpAnnotationContext -> {
             if (arguments.isEmpty() || arguments.size > 2) {
                 invalidArgumentsForAnnotationError(ctx.SPEED().symbol.text, ctx)
@@ -640,14 +640,25 @@ class SemanticAnalysis {
                 }
                 checkExpressionTypeWithExpectedType(arguments.first(), NumberType, symbolTable, ctx)
             }
+            emptyList()
         }
         is ManimParser.SubtitleAnnotationContext -> {
-            if (arguments.size > 1) {
+            if (arguments.size > 2) {
                 invalidArgumentsForAnnotationError(ctx.show.text, ctx)
+                emptyList()
             } else {
-                arguments.forEach {
-                    checkExpressionTypeWithExpectedType(it, BoolType, symbolTable, ctx)
+                val types = arguments.map {
+                    inferType(symbolTable, it)
                 }
+                val expectedTypes = mutableSetOf(NumberType, BoolType)
+                // Order independent type checking
+                types.forEach {
+                    if(!expectedTypes.contains(it)) {
+                        unexpectedExpressionTypeError(expectedTypes, it, ctx)
+                    }
+                    expectedTypes.remove(it)
+                }
+                types
             }
         }
         else -> throw NotImplementedError("Annotation argument check not implemented")
