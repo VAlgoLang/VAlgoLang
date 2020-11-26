@@ -129,7 +129,12 @@ class VirtualMachine(
             linearRepresentation.forEach {
                 if (it is ShapeWithBoundary) {
                     if (it is CodeBlock || it is VariableBlock) {
-                        it.setNewBoundary(stylesheet.getPosition(it.uid)!!.calculateManimCoord(), -1)
+                        val position = stylesheet.getPosition(it.uid)
+                        if (position == null) {
+                            addRuntimeError("Missing positional parameter for ${it.uid}", 1)
+                            return Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
+                        }
+                        it.setNewBoundary(position.calculateManimCoord(), -1)
                     }
                     it.setShape()
                 }
