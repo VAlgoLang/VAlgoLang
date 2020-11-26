@@ -420,7 +420,6 @@ data class CleanUpLocalDataStructures(
 ) : ManimInstr() {
     override fun toPython(): List<String> {
         val instr = "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
-        println(instr)
         return listOf(instr)
     }
 }

@@ -6,6 +6,7 @@ import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.utility.getBoundaries
+import com.manimdsl.runtime.utility.makeConstructorNode
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.PositionProperties
@@ -510,7 +511,7 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
-            if (variables.containsKey(node.identifier.identifier)) {
+            if (node.identifier is IdentifierNode && variables.containsKey(node.identifier.identifier)) {
                 with(variables[node.identifier.identifier]?.manimObject) {
                     if (this is DataStructureMObject) {
                         linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
@@ -586,14 +587,17 @@ class VirtualMachine(
                             if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
                                 localDataStructure.add(node.identifier.identifier)
                             }
-                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject) {
-                                // TODO - clone the MObject instead of the ExecValue
-                                val rhs = assignedValue.clone()
-                                (rhs.manimObject as DataStructureMObject).text = node.identifier.identifier
-                                linearRepresentation.add(rhs.manimObject)
+                            if (node.expression is FunctionCallNode) {
+                                with(assignedValue.manimObject) {
+                                    if (this is DataStructureMObject) {
+                                        val constructor = makeConstructorNode(assignedValue, node.lineNumber)
+                                        val rhs = executeConstructor(constructor, node.identifier)
+                                        variables[node.identifier.identifier] = rhs
+                                    }
+                                }
+                            } else {
+                                variables[node.identifier.identifier] = assignedValue
                             }
-
-                            variables[node.identifier.identifier] = assignedValue
                         }
                         is ArrayElemNode -> {
                             return executeArrayElemAssignment(this, assignedValue)
