@@ -11,7 +11,7 @@ class Main(Scene):
         code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
-        self.code_end = min(len(code_lines), self.code_end)
+        self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)
         self.play(FadeIn(code_text[self.code_start:self.code_end].move_to(code_block.move_position), run_time=1.0))
         # Constructing current line pointer
         pointer = ArrowTip(color=YELLOW).scale(code_block.boundary_width * 0.7/5.0).flip(TOP)
@@ -109,7 +109,7 @@ class Code_block:
         self.code = code
     def build(self):
         self.all.arrange_submobjects(DOWN*0.1, aligned_edge=LEFT)
-        ratio = 4.2 / 5.0
+        ratio = 4.6 / 5.0
         self.all.set_width(self.boundary_width * ratio)
         return self.all
     def get_line_at(self, line_number):

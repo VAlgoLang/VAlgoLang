@@ -98,29 +98,10 @@ data class CodeBlock(
             shape.getConstructor(),
             "$codeTextName = $ident.build()",
             "self.code_end = $ident.code_end",
-            "self.code_end = min(len(code_lines), self.code_end)",
+            "self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)",
             "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to($ident.move_position)${getRuntimeString()}))",
             "# Constructing current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale($ident.boundary_width * 0.7/5.0).flip(TOP)"
-        )
-    }
-}
-
-data class PartitionBlock(
-    val scaleLeft: String,
-    val scaleRight: String,
-    override val runtime: Double = 1.0,
-) : MObject() {
-    override val shape: Shape = NullShape
-    override fun toPython(): List<String> {
-        return listOf(
-            "# Building partition of scene",
-            "width = FRAME_WIDTH",
-            "height = FRAME_HEIGHT",
-            "lhs_width = width * $scaleLeft",
-            "rhs_width = width * $scaleRight",
-            "variable_height = (height - SMALL_BUFF) * $scaleLeft",
-            "code_height = (height - SMALL_BUFF) * $scaleRight",
         )
     }
 }
