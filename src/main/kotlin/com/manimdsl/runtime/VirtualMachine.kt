@@ -135,7 +135,7 @@ class VirtualMachine(
         } else {
             linearRepresentation.forEach {
                 if (it is ShapeWithBoundary) {
-                    if (it is CodeBlock || it is VariableBlock) {
+                    if (it is CodeBlock || it is VariableBlock || it is SubtitleBlock) {
                         val position = stylesheet.getPosition(it.uid)
                         if (position == null) {
                             addRuntimeError("Missing positional parameter for ${it.uid}", 1)
@@ -321,7 +321,6 @@ class VirtualMachine(
                 subtitleBlockVariable = SubtitleBlock(
                     variableNameGenerator,
                     runtime = animationSpeeds.first(),
-                    uid = dsUID,
                     boundary = boundaries,
                     textColor = stylesheet.getSubtitleStyle().textColor,
                     duration = duration

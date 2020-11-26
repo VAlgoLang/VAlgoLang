@@ -112,9 +112,8 @@ data class SubtitleBlock(
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
     var duration: Int,
-    override val uid: String,
     override val runtime: Double = 1.0,
-) : ShapeWithBoundary(uid) {
+) : ShapeWithBoundary("_subtitle") {
 
     override var shape: Shape = SubtitleBlockShape(variableNameGenerator.generateNameFromPrefix("subtitle_block"), duration, boundary, textColor)
 
