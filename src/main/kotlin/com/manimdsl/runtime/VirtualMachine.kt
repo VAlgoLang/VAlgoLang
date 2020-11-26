@@ -313,7 +313,7 @@ class VirtualMachine(
                     boundary = boundaries,
                     textColor = stylesheet.getSubtitleStyle().textColor,
                     duration = duration
-                ) // TODO(aesthetics stuff)
+                )
                 linearRepresentation.add(subtitleBlockVariable)
             }
             linearRepresentation.add(

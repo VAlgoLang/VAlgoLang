@@ -13,10 +13,9 @@ sealed class MObject : ManimInstr() {
     abstract val shape: Shape
 }
 
-interface ShapeWithBoundary {
-    val uid: String
-    fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-    fun setShape()
+sealed class ShapeWithBoundary(open val uid: String) : MObject() {
+    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+    abstract fun setShape()
 }
 
 sealed class DataStructureMObject(
@@ -24,7 +23,7 @@ sealed class DataStructureMObject(
     open val ident: String,
     override val uid: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject(), ShapeWithBoundary
+) : ShapeWithBoundary(uid)
 
 /** Positioning **/
 interface Position
@@ -66,10 +65,9 @@ data class CodeBlock(
     val syntaxHighlightingStyle: String = "inkpot",
     val tabSpacing: Int = 2,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject(), ShapeWithBoundary {
+) : ShapeWithBoundary(uid = "_code") {
 
     override var shape: Shape = NullShape
-    override val uid: String = "_code"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
@@ -116,7 +114,7 @@ data class SubtitleBlock(
     var duration: Int,
     override val uid: String,
     override val runtime: Double = 1.0,
-) : MObject(), ShapeWithBoundary {
+) : ShapeWithBoundary(uid) {
 
     override var shape: Shape = SubtitleBlockShape(variableNameGenerator.generateNameFromPrefix("subtitle_block"), duration, boundary, textColor)
 
@@ -144,9 +142,8 @@ data class VariableBlock(
     val textColor: String? = null,
     override val runtime: Double = 1.0,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
-) : MObject(), ShapeWithBoundary {
+) : ShapeWithBoundary("_variables") {
     override var shape: Shape = NullShape
-    override val uid: String = "_variables"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
