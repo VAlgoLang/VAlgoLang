@@ -36,7 +36,7 @@ class Code_block:
 
     def build(self):
         self.all.arrange_submobjects(DOWN*0.1, aligned_edge=LEFT)
-        ratio = 4.2 / 5.0
+        ratio = 4.6 / 5.0
         self.all.set_width(self.boundary_width * ratio)
         return self.all
 

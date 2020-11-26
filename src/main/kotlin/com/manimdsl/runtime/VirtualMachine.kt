@@ -108,8 +108,12 @@ class VirtualMachine(
             val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode, hideVariables)
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
+                val genericShapeIDs = mutableSetOf<String>()
+                if (!stylesheet.getHideCode()) {
+                    genericShapeIDs.add("_code")
+                    if (!stylesheet.getHideVariables()) genericShapeIDs.add("_variables")
+                }
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
-                val genericShapeIDs = setOf("_variables", "_code")
                 boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
                 val gson = Gson()
                 println(gson.toJson(boundaries))
