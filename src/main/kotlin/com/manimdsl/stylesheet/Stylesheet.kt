@@ -38,7 +38,6 @@ open class AnimationProperties(
 ) : StylesheetProperty()
 
 data class DefaultAnimationProperties(
-    override val borderColor: String? = "RED",
     override val textColor: String? = "YELLOW",
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
