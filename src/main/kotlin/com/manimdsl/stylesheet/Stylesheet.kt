@@ -38,6 +38,7 @@ open class AnimationProperties(
 ) : StylesheetProperty()
 
 data class DefaultAnimationProperties(
+    override val borderColor: String? = "RED",
     override val textColor: String? = "YELLOW",
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
@@ -46,7 +47,7 @@ data class DefaultAnimationProperties(
     override val render: Boolean? = true,
 ) : AnimationProperties()
 
-data class StyleProperties(
+open class StyleProperties(
     override var borderColor: String? = null,
     override var textColor: String? = null,
     val showLabel: Boolean? = null,
@@ -55,6 +56,11 @@ data class StyleProperties(
     val animate: AnimationProperties? = null,
     val duration: Int? = null
 ) : StylesheetProperty()
+
+data class DefaultStyleProperties(
+    override var textColor: String? = "YELLOW",
+    override var borderColor: String? = "BLUE"
+) : StyleProperties()
 
 data class PositionProperties(
     val x: Double,
@@ -114,7 +120,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
         val styleProperties = style merge dataStructureStyle
-        return styleProperties
+        return styleProperties merge DefaultStyleProperties()
     }
 
     fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
@@ -124,7 +130,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
                 borderColor = "BLUE",
                 textColor = "WHITE",
-                animate = DefaultAnimationProperties(),
+                animate = AnimationProperties(),
             )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (
