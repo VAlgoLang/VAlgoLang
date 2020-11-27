@@ -61,7 +61,7 @@ class Main(Scene):
             if time_object.end_time <= time_elapsed:
                 self.play(time_object.action())
     #             self.time_objects.remove(time_object)
-        self.play(*args, runtime=run_time)
+        self.play(*args, run_time=run_time)
 
     def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
         idx = 0
