@@ -155,7 +155,7 @@ class VirtualMachine(
         private var finalLine: Int,
         private var variables: MutableMap<String, ExecValue>,
         val depth: Int = 1,
-        private val showMoveToLine: Boolean = true,
+        private var showMoveToLine: Boolean = true,
         private var stepInto: Boolean = STEP_INTO_DEFAULT,
         private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
@@ -1700,6 +1700,7 @@ class VirtualMachine(
             var conditionValue: ExecValue
             var execValue: ExecValue
             var loopCount = 0
+            val prevShowMoveToLine = showMoveToLine
 
             while (loopCount < MAX_NUMBER_OF_LOOPS) {
                 conditionValue = executeExpression(whileStatementNode.condition)
@@ -1707,9 +1708,11 @@ class VirtualMachine(
                     return conditionValue
                 } else if (conditionValue is BoolValue) {
                     if (!conditionValue.value) {
+                        showMoveToLine = prevShowMoveToLine
                         pc = whileStatementNode.endLineNumber
                         return EmptyValue
                     } else {
+                        showMoveToLine = stepInto
                         pc = whileStatementNode.lineNumber
                     }
                 }
@@ -1721,14 +1724,15 @@ class VirtualMachine(
                     whileStatementNode.statements.last().lineNumber,
                     variables,
                     depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
+                    showMoveToLine = stepInto,
+                    stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
                     localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
                     is BreakValue -> {
+                        showMoveToLine = prevShowMoveToLine
                         pc = whileStatementNode.endLineNumber
                         moveToLine()
                         return EmptyValue
@@ -1766,6 +1770,7 @@ class VirtualMachine(
             var conditionValue: ExecValue
             var execValue: ExecValue
             var loopCount = 0
+            val prevShowMoveToLine = showMoveToLine
 
             executeAssignment(forStatementNode.beginStatement)
 
@@ -1793,11 +1798,13 @@ class VirtualMachine(
                     return conditionValue
                 } else if (conditionValue is BoolValue) {
                     if (!conditionValue.value) {
+                        showMoveToLine = prevShowMoveToLine
                         removeForLoopCounter(forStatementNode)
                         pc = forStatementNode.endLineNumber
                         moveToLine()
                         return EmptyValue
                     } else {
+                        showMoveToLine = stepInto
                         pc = forStatementNode.lineNumber
                     }
                 }
@@ -1809,8 +1816,8 @@ class VirtualMachine(
                     forStatementNode.statements.last().lineNumber,
                     variables,
                     depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
+                    showMoveToLine = stepInto,
+                    stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
                     displayedDataMap = displayedDataMap,
                     localDataStructure = localDataStructure
@@ -1818,6 +1825,7 @@ class VirtualMachine(
 
                 when (execValue) {
                     is BreakValue -> {
+                        showMoveToLine = prevShowMoveToLine
                         removeForLoopCounter(forStatementNode)
                         pc = forStatementNode.endLineNumber
                         moveToLine()
