@@ -12,7 +12,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
     abstract var maxSize: Int
     abstract val priority: Int
 
-    abstract val `minDimensions`: Pair<Double, Double>
+    abstract val minDimensions: Pair<Double, Double>
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
     abstract val strictRatio: Boolean
