@@ -1,11 +1,7 @@
 package com.manimdsl.animation
 
-import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.MObject
-import com.manimdsl.linearrepresentation.NodeStructure
+import com.manimdsl.linearrepresentation.*
 import com.manimdsl.shapes.NullShape
-import comcreat.manimdsl.linearrepresentation.ManimInstr
-import comcreat.manimdsl.linearrepresentation.MoveToLine
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -63,13 +59,16 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
     private fun initialPythonSetup(): String {
         return """
+            import tempfile
             from abc import ABC, abstractmethod
             from manimlib.imports import *
-            import tempfile
              
             class Main(Scene):
                 code_start = 0
                 code_end = 10
+                line_spacing = 0.1
+                time_objects = []
+
                 def construct(self):
 
         """.trimIndent()

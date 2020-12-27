@@ -323,7 +323,10 @@ class ASTConstructionTests {
                         endLineNumber = 7,
                         scope = 2,
                         condition = EqExpression(4, IdentifierNode(4, "x"), NumberNode(4, 1.0)),
-                        statements = listOf(AssignmentNode(5, IdentifierNode(5, "x"), NumberNode(5, 3.0)), ContinueNode(6, 2)),
+                        statements = listOf(
+                            AssignmentNode(5, IdentifierNode(5, "x"), NumberNode(5, 3.0)),
+                            ContinueNode(6, 2)
+                        ),
                         elifs = emptyList(),
                         elseBlock = ElseNode(7, 0, emptyList())
                     )
@@ -349,7 +352,11 @@ class ASTConstructionTests {
                 scope = 1,
                 beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
                 endCondition = NumberNode(2, 3.0),
-                updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
+                updateCounter = AssignmentNode(
+                    2,
+                    IdentifierNode(2, "i"),
+                    AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))
+                ),
                 statements = listOf(
                     AssignmentNode(
                         3,
@@ -383,7 +390,11 @@ class ASTConstructionTests {
                 scope = 1,
                 beginStatement = DeclarationNode(2, IdentifierNode(2, "i"), NumberNode(2, 0.0)),
                 endCondition = NumberNode(2, 3.0),
-                updateCounter = AssignmentNode(2, IdentifierNode(2, "i"), AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))),
+                updateCounter = AssignmentNode(
+                    2,
+                    IdentifierNode(2, "i"),
+                    AddExpression(2, IdentifierNode(3, "i"), NumberNode(2, 1.0))
+                ),
                 statements = listOf(
                     ForStatementNode(
                         lineNumber = 3,
@@ -391,7 +402,11 @@ class ASTConstructionTests {
                         scope = 2,
                         beginStatement = DeclarationNode(3, IdentifierNode(3, "j"), IdentifierNode(3, "i")),
                         endCondition = NumberNode(3, 5.0),
-                        updateCounter = AssignmentNode(3, IdentifierNode(3, "j"), AddExpression(3, IdentifierNode(3, "j"), NumberNode(3, 1.0))),
+                        updateCounter = AssignmentNode(
+                            3,
+                            IdentifierNode(3, "j"),
+                            AddExpression(3, IdentifierNode(3, "j"), NumberNode(3, 1.0))
+                        ),
                         statements = listOf(
                             IfStatementNode(
                                 lineNumber = 4,
@@ -412,6 +427,49 @@ class ASTConstructionTests {
                 )
             )
         )
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun subtitleAnnotations() {
+        val methodProgram = """
+            let x = 4;
+            @subtitle("x is 4", x == 4)
+            @subtitleOnce("x is not 4", x != 4)
+            @subtitleOnce("x is not 4")
+            @subtitle("x is 4")
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 4.0)),
+            SubtitleAnnotationNode(
+                2,
+                "\"x is 4\"",
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 4.0)),
+                showOnce = false
+            ),
+            SubtitleAnnotationNode(
+                3,
+                "\"x is not 4\"",
+                condition = NeqExpression(3, IdentifierNode(3, "x"), NumberNode(3, 4.0)),
+                showOnce = true
+            ),
+            SubtitleAnnotationNode(
+                4,
+                "\"x is not 4\"",
+                condition = BoolNode(4, true),
+                showOnce = true
+            ),
+            SubtitleAnnotationNode(
+                5,
+                "\"x is 4\"",
+                condition = BoolNode(5, true),
+                showOnce = false
+            )
+        )
+
         val reference = ProgramNode(listOf(), statements)
         val actual = buildAST(methodProgram)
         assertEquals(reference.toString(), actual.toString())

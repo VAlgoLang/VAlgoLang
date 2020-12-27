@@ -1,7 +1,7 @@
 class Array:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE, padding=True):
         self.values = values
-        boundary_width = boundaries[1][0] - boundaries[0][0]
+        boundary_width = boundaries[1][0] - boundaries[0][0] - 0.1
         boundary_height = boundaries[0][1] - boundaries[3][1]
 
         title_width = 1 if title != "" else 0
@@ -60,6 +60,11 @@ class Array:
                                         [ClockwiseTransform(elem2_copy, elem2_copy2), FadeOut(self.array_elements[i1].text)],
                                         [ClockwiseTransform(elem1_copy, elem1_copy2), FadeOut(self.array_elements[i2].text)]]
 
+    def clean_up(self):
+        animations = [FadeOut(self.title)]
+        animations.extend([elem.clean_up() for elem in self.array_elements])
+        return animations
+
 class Array2D:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE):
         self.values = values
@@ -78,6 +83,8 @@ class Array2D:
                               (new_ll[0] + sub_array_width, new_ll[1])]
             self.rows.append(Array(values[len(values) - 1 - i], "",new_boundaries, color=color, text_color=text_color, padding=False).build())
         self.title = VGroup(Text(title).set_width(title_width))
+        if title_width != 0 and self.title.get_height() > (boundary_height - square_dim * len(values)) / 2:
+                    self.title.scale((boundary_height - square_dim * len(values)) / 2 / self.title.get_height())
         self.title.move_to(
             np.array([boundaries[0][0] + (boundary_width/ 2), (boundaries[0][1] - 0.5), 0]))
         self.color = color
@@ -117,3 +124,8 @@ class Array2D:
         swap_animations = [CounterclockwiseTransform(o1, o1_copy), CounterclockwiseTransform(o2, o2_copy)]
 
         return [fade_to_grey_animations, swap_animations, fade_to_original_animations]
+
+    def clean_up(self):
+        animations = [FadeOut(self.title)]
+        animations.extend([animation for elem in self.rows for animation in elem.clean_up()])
+        return animations

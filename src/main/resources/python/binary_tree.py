@@ -125,6 +125,9 @@ class Node:
         self.rline = None
         return animation
 
+    def clean_up(self):
+        return [FadeOut(self.all)]
+
 
 class Tree(DataStructure, ABC):
     def __init__(self, ul, ur, ll, lr, root, identifier, color=RED, text_color=BLUE, text_weight=NORMAL,
@@ -358,3 +361,6 @@ class Tree(DataStructure, ABC):
         animations.extend(right_animations)
 
         return animations, min(left_scale, right_scale)
+
+    def clean_up(self):
+        return [FadeOut(self.all)]

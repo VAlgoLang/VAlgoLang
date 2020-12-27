@@ -34,40 +34,54 @@ open class AnimationProperties(
     open val highlight: String? = "YELLOW",
     open var animationStyle: String? = null,
     open var animationTime: Double? = null,
+    open val render: Boolean? = true,
 ) : StylesheetProperty()
 
 data class DefaultAnimationProperties(
-    override val borderColor: String? = "RED",
     override val textColor: String? = "YELLOW",
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
     override var animationStyle: String? = "FadeToColor",
-    override var animationTime: Double? = 1.0
+    override var animationTime: Double? = 1.0,
+    override val render: Boolean? = true,
 ) : AnimationProperties()
 
-data class StyleProperties(
+open class StyleProperties(
     override var borderColor: String? = null,
     override var textColor: String? = null,
     val showLabel: Boolean? = null,
     var creationStyle: String? = null,
     var creationTime: Double? = null,
-    val animate: AnimationProperties? = null
+    val animate: AnimationProperties? = null,
+    val duration: Int? = null
 ) : StylesheetProperty()
+
+data class DefaultStyleProperties(
+    override var textColor: String? = "YELLOW",
+    override var borderColor: String? = "BLUE"
+) : StyleProperties()
 
 data class PositionProperties(
     val x: Double,
     val y: Double,
     val width: Double,
     val height: Double,
-)
+) {
+    fun calculateManimCoord(): List<Pair<Double, Double>> {
+        // UL, UR, LL, LR
+        return listOf(Pair(x, y + height), Pair(x + width, y + height), Pair(x, y), Pair(x + width, y))
+    }
+}
 
 data class StylesheetFromJSON(
     val codeTracking: String = "stepInto",
     val hideCode: Boolean = false,
+    val hideVariables: Boolean = false,
     val syntaxHighlightingOn: Boolean = true,
     var syntaxHighlightingStyle: String = "inkpot",
     val displayNewLinesInCode: Boolean = true,
     val tabSpacing: Int = 2,
+    val subtitles: StyleProperties = StyleProperties(),
     val variables: Map<String, StyleProperties> = emptyMap(),
     val dataStructures: Map<String, StyleProperties> = emptyMap(),
     val positions: Map<String, PositionProperties> = emptyMap()
@@ -86,7 +100,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
-                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field")) }) {
+                if (e.message.let { it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field") || it.startsWith("Cannot")) }) {
                     println(e.message)
                 } else {
                     println("Could not parse JSON")
@@ -99,23 +113,23 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     }
 
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
+
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
-                borderColor = "BLUE",
-                textColor = "WHITE",
-                animate = DefaultAnimationProperties()
-            )
+            stylesheet.dataStructures.getOrDefault(value.name, StyleProperties())
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
 
-        return style merge dataStructureStyle
+        val styleProperties = style merge dataStructureStyle
+        return styleProperties merge DefaultStyleProperties()
     }
 
-    fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties? {
+    fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
+
+    fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties {
         val dataStructureStyle =
-            stylesheet.dataStructures.getOrDefault(value.toString(), StyleProperties()) merge StyleProperties(
+            stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
                 borderColor = "BLUE",
                 textColor = "WHITE",
-                animate = DefaultAnimationProperties()
+                animate = AnimationProperties(),
             )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (
@@ -140,6 +154,8 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
     fun getHideCode(): Boolean = stylesheet.hideCode
 
+    fun getHideVariables(): Boolean = stylesheet.hideVariables
+
     fun getSyntaxHighlighting(): Boolean = stylesheet.syntaxHighlightingOn
 
     fun getSyntaxHighlightingStyle(): String = stylesheet.syntaxHighlightingStyle
@@ -147,6 +163,8 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     fun getDisplayNewLinesInCode(): Boolean = stylesheet.displayNewLinesInCode
 
     fun getTabSpacing(): Int = stylesheet.tabSpacing
+
+    fun renderDataStructure(identifier: String) = !stylesheet.positions.containsKey(identifier) || stylesheet.positions[identifier]!!.height != 0.0
 }
 
 // Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679

@@ -1,6 +1,7 @@
 {
   "dataStructures": {
     "Stack": {
+      "render": false,
       "borderColor": "YELLOW",
       "animate": {
         "animationStyle": "RandomWrongTransform",

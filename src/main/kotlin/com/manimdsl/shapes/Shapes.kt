@@ -1,9 +1,9 @@
 package com.manimdsl.shapes
 
+import com.manimdsl.linearrepresentation.Alignment
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.StylesheetProperty
-import comcreat.manimdsl.linearrepresentation.Alignment
 
 sealed class Shape {
     abstract val ident: String
@@ -65,7 +65,7 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play(${instructions.joinToString(", ")}$runtimeString)")
+            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
         }
     }
 
@@ -79,7 +79,8 @@ class CodeBlockShape(
     textColor: String? = null,
     val syntaxHighlightingOn: Boolean,
     val syntaxHighlightingStyle: String,
-    val tabSpacing: Int
+    val tabSpacing: Int,
+    val boundaries: List<Pair<Double, Double>>
 ) : Shape() {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
@@ -91,7 +92,7 @@ class CodeBlockShape(
     }
 
     override fun getConstructor(): String {
-        return "$ident = $className(code_lines$style, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
+        return "$ident = $className(code_lines, $boundaries, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
     }
 }
 
@@ -99,18 +100,40 @@ class VariableBlockShape(
     override val ident: String,
     variables: List<String>,
     textColor: String? = null,
+    val boundaries: List<Pair<Double, Double>>
 ) : Shape() {
     override val classPath: String = "python/variable_block.py"
     override val className: String = "Variable_block"
     override val pythonVariablePrefix: String = "variable_block"
-    override val text: String = "[\"${variables.joinToString("\",\"")}\"], variable_frame"
+    override val text: String = "[\"${variables.joinToString("\",\"")}\"]"
 
     init {
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
     override fun getConstructor(): String {
-        return "$ident = $className($text$style)"
+        return "$ident = $className($text, $boundaries$style)"
+    }
+}
+
+class SubtitleBlockShape(
+    override val ident: String,
+    val duration: Int = 5,
+    private val boundary: List<Pair<Double, Double>> = emptyList(),
+    textColor: String? = null
+) : Shape() {
+    override val classPath: String = "python/subtitles.py"
+    override val className: String = "Subtitle_block"
+    override val pythonVariablePrefix: String = "subtitle_block"
+    override val text: String = ""
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
+
+        return "$ident = $className(self.get_time() + $duration, $coordinatesString$style)"
     }
 }
 

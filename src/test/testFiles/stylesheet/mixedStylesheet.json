@@ -3,7 +3,7 @@
     "stack1": {
       "textColor": "BLUE",
       "animate": {
-        "borderColor": "BLUE",
+        "borderColor": "RED",
         "animationStyle": "ApplyWave"
       }
     }

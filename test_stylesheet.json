@@ -1,7 +1,11 @@
 {
-  "hideCode": false,
   "syntaxHighlightingStyle": "monokai",
   "tabSpacing": 1,
+  "variables": {
+    "transpose": {
+      "borderColor": "ORANGE"
+    }
+  },
   "dataStructures": {
     "Array": {
       "creationStyle": "Write",

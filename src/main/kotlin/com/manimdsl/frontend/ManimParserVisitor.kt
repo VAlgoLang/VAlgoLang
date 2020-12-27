@@ -406,7 +406,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return elifNode
     }
 
-    override fun visitCodeTrackingStatement(ctx: CodeTrackingStatementContext): CodeTrackingNode {
+    /** Annotations **/
+    override fun visitCodeTrackingAnnotation(ctx: CodeTrackingAnnotationContext): CodeTrackingNode {
         val isStepInto = ctx.step.type == STEP_INTO
 
         val condition = if (ctx.condition == null) {
@@ -432,7 +433,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
     }
 
-    override fun visitAnimationSpeedUp(ctx: AnimationSpeedUpContext): CodeTrackingNode {
+    override fun visitAnimationSpeedUpAnnotation(ctx: AnimationSpeedUpAnnotationContext): CodeTrackingNode {
         val arguments = (visit(ctx.arg_list()) as ArgumentNode).arguments
         semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, arguments)
 
@@ -459,6 +460,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CodeTrackingNode(ctx.start.line, ctx.stop.line, statements)
     }
 
+    override fun visitSubtitleAnnotation(ctx: SubtitleAnnotationContext): SubtitleAnnotationNode {
+        val text = ctx.subtitle_text.text
+        var condition: ExpressionNode = BoolNode(ctx.start.line, true)
+        var duration: ExpressionNode? = null
+        if (ctx.arg_list() != null) {
+            val args = visit(ctx.arg_list()) as ArgumentNode
+            val argTypes = semanticAnalyser.checkAnnotationArguments(ctx, symbolTable, args.arguments)
+            if (argTypes.contains(BoolType)) condition = args.arguments[argTypes.indexOf(BoolType)]
+            if (argTypes.contains(NumberType)) duration = args.arguments[argTypes.indexOf(NumberType)]
+        }
+
+        val node = SubtitleAnnotationNode(ctx.start.line, text, duration, condition, ctx.show.type == SUBTITLE_ONCE)
+        lineNumberNodeMap[ctx.start.line] = node
+        return node
+    }
+
     /** Expressions **/
 
     override fun visitMethodCallExpression(ctx: MethodCallExpressionContext): ASTNode {
@@ -467,10 +484,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitArgumentList(ctx: ArgumentListContext?): ArgumentNode {
         return ArgumentNode(
-            (
-                ctx?.expr()
-                    ?: listOf<ExprContext>()
-                ).map { visit(it) as ExpressionNode }
+            (ctx?.expr() ?: listOf<ExprContext>()).map { visit(it) as ExpressionNode }
         )
     }
 
@@ -694,8 +708,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
         return Array2DInitialiserNode(
             (
-                ctx.arg_list()
-                    ?: listOf<ArgumentListContext>()
+                ctx.arg_list() ?: listOf<ArgumentListContext>()
                 ).map { visitArgumentList(it as ArgumentListContext?).arguments }
         )
     }
@@ -715,12 +728,15 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val indices = ctx.expr().map { visit(it) as ExpressionNode }
 
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
-        val type = symbolTable.getTypeOf(arrayIdentifier) as ArrayType
+        val type = symbolTable.getTypeOf(arrayIdentifier)
 
-        semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        if (type is ArrayType) {
+            semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        }
         semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
 
-        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, type.internalType)
+        val internalType = if (type is ArrayType) type.internalType else ErrorType
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
     }
 
     override fun visitNodeType(ctx: NodeTypeContext): NodeType {

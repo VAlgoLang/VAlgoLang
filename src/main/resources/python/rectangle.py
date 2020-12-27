@@ -24,3 +24,7 @@ class Rectangle_block:
         if(new_text_obj.get_height() > 0.6 * self.height):
             new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
+
+    def clean_up(self):
+        return FadeOut(self.all)
+

@@ -1,0 +1,7 @@
+@subtitle("hei", 4, 5)
+let x = Stack<number>() {3,2,1};
+@subtitle("hei1", x.size(), true, false)
+let y = Stack<number>() {3,2,1};
+@subtitleOnce("hei2", y.size() > 3, 3 > 3)
+let z = Stack<number>() {3,2,1};
+@subtitle("hei3")

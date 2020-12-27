@@ -32,10 +32,11 @@ class StylesheetUnitTests {
     fun dataStructureStyleIsPassedToVariableWhenNoOtherStyleExists() {
         val symbolTable = SymbolTableVisitor()
         symbolTable.addVariable("stack1", IdentifierData(StackType(NumberType)))
-        val stack1Style = Stylesheet(
+        val stylesheet = Stylesheet(
             "$stylesheetPath/stackTypeStylesheet.json",
             symbolTable
-        ).getStyle("stack1", StackValue(EmptyMObject, Stack()))
+        )
+        val stack1Style = stylesheet.getStyle("stack1", StackValue(EmptyMObject, Stack()))
         assertThat(stack1Style.borderColor, `is`("YELLOW"))
         assertThat(stack1Style.textColor, `is`("GREEN"))
         assertThat(stack1Style.animate!!.animationStyle, `is`("CircleIndicate"))
@@ -53,7 +54,7 @@ class StylesheetUnitTests {
         assertThat(stack1Style.creationStyle, `is`("GrowFromCenter"))
 
         val stack1AnimationStyle = stack1Stylesheet.getAnimatedStyle("stack1", StackValue(EmptyMObject, Stack()))!!
-        assertThat(stack1AnimationStyle.borderColor, `is`("BLUE"))
+        assertThat(stack1AnimationStyle.borderColor, `is`("RED"))
         assertThat(stack1AnimationStyle.textColor, `is`("RED"))
         assertThat(stack1AnimationStyle.animationStyle, `is`("ApplyWave"))
     }

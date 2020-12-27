@@ -4,14 +4,25 @@ import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.shapes.*
-import comcreat.manimdsl.linearrepresentation.Alignment
-import comcreat.manimdsl.linearrepresentation.ManimInstr
 
 /** Objects **/
 
-interface MObject : ManimInstr {
-    val shape: Shape
+sealed class MObject : ManimInstr() {
+    abstract val shape: Shape
 }
+
+sealed class ShapeWithBoundary(open val uid: String) : MObject() {
+    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+    abstract fun setShape()
+}
+
+sealed class DataStructureMObject(
+    open val type: DataStructureType,
+    open val ident: String,
+    override val uid: String,
+    open var text: String,
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
+) : ShapeWithBoundary(uid)
 
 /** Positioning **/
 interface Position
@@ -51,9 +62,20 @@ data class CodeBlock(
     override val runtime: Double = 1.0,
     val syntaxHighlightingOn: Boolean = true,
     val syntaxHighlightingStyle: String = "inkpot",
-    val tabSpacing: Int = 2
-) : MObject {
-    override val shape: Shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing)
+    val tabSpacing: Int = 2,
+    private var boundaries: List<Pair<Double, Double>> = emptyList()
+) : ShapeWithBoundary(uid = "_code") {
+
+    override var shape: Shape = NullShape
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        boundaries = corners
+        setShape()
+    }
+
+    override fun setShape() {
+        shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing, boundaries)
+    }
 
     override fun toPython(): List<String> {
         val codeLines = StringBuilder()
@@ -74,37 +96,40 @@ data class CodeBlock(
             "code_lines = $codeLines",
             shape.getConstructor(),
             "$codeTextName = $ident.build()",
-            "$codeTextName.set_width(4.2)",
-            "$codeTextName.next_to(variable_frame, DOWN, buff=0.9)",
-            "$codeTextName.to_edge(buff=MED_LARGE_BUFF)",
-            "self.code_end = len(code_lines) if self.code_end > len(code_lines) else self.code_end",
-            "self.play(FadeIn($codeTextName[self.code_start:self.code_end])${getRuntimeString()})",
+            "self.code_end = $ident.code_end",
+            "self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)",
+            "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to($ident.move_position)${getRuntimeString()}))",
             "# Constructing current line pointer",
-            "$pointerName = ArrowTip(color=YELLOW).scale(0.7).flip(TOP)"
+            "$pointerName = ArrowTip(color=YELLOW).scale($ident.boundary_width * 0.7/5.0).flip(TOP)"
         )
     }
 }
 
-data class PartitionBlock(
-    val scaleLeft: String,
-    val scaleRight: String,
+/** MObjects **/
+data class SubtitleBlock(
+    val variableNameGenerator: VariableNameGenerator,
+    private var boundary: List<Pair<Double, Double>> = emptyList(),
+    val textColor: String? = null,
+    var duration: Int,
     override val runtime: Double = 1.0,
-) : MObject {
-    override val shape: Shape = NullShape
+) : ShapeWithBoundary("_subtitle") {
+
+    override var shape: Shape = SubtitleBlockShape(variableNameGenerator.generateNameFromPrefix("subtitle_block"), duration, boundary, textColor)
+
     override fun toPython(): List<String> {
         return listOf(
-            "# Building partition of scene",
-            "width = FRAME_WIDTH",
-            "height = FRAME_HEIGHT",
-            "lhs_width = width * $scaleLeft",
-            "rhs_width = width * $scaleRight",
-            "variable_height = (height - SMALL_BUFF) * $scaleLeft",
-            "code_height = (height - SMALL_BUFF) * $scaleRight",
-            "variable_frame = Rectangle(height=variable_height, width=lhs_width, color=BLACK)",
-            "variable_frame.to_corner(UL, buff=0)",
-            "code_frame = Rectangle(height=code_height, width=lhs_width, color=BLACK)",
-            "code_frame.next_to(variable_frame, DOWN, buff=0) \n"
+            shape.getConstructor(),
+            "self.time_objects.append(${shape.ident})"
         )
+    }
+
+    override fun setShape() {
+        shape = SubtitleBlockShape(shape.ident, duration, boundary, textColor)
+    }
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        boundary = corners
+        setShape()
     }
 }
 
@@ -112,33 +137,29 @@ data class VariableBlock(
     val variables: List<String>,
     val ident: String,
     val variableGroupName: String,
-    val variableFrame: String,
     val textColor: String? = null,
     override val runtime: Double = 1.0,
-) : MObject {
-    override val shape: Shape = VariableBlockShape(ident, variables, textColor)
+    private var boundaries: List<Pair<Double, Double>> = emptyList(),
+) : ShapeWithBoundary(uid = "_variables") {
+    override var shape: Shape = NullShape
+
+    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
+        boundaries = corners
+        setShape()
+    }
+
+    override fun setShape() {
+        shape = VariableBlockShape(ident, variables, textColor, boundaries)
+    }
 
     override fun toPython(): List<String> {
         return listOf(
             "# Building variable visualisation pane",
             shape.getConstructor(),
             "$variableGroupName = $ident.build()",
-            "$variableGroupName.move_to($variableFrame)",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
         )
     }
-}
-
-sealed class DataStructureMObject(
-    open val type: DataStructureType,
-    open val ident: String,
-    open val uid: String,
-    private var boundaries: List<Pair<Double, Double>> = emptyList()
-) : MObject {
-
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-
-    abstract fun setShape()
 }
 
 data class NodeStructure(
@@ -148,7 +169,7 @@ data class NodeStructure(
     override val shape: Shape = NodeShape(ident, value),
     override val runtime: Double = 1.0
 
-) : MObject {
+) : MObject() {
     override fun toPython(): List<String> {
         return listOf(
             "$ident = ${shape.getConstructor()}"
@@ -161,11 +182,12 @@ data class InitTreeStructure(
     override val ident: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1,
-    val text: String,
+    override var text: String,
     val root: BinaryTreeNodeValue,
     override val uid: String,
-    override val runtime: Double
-) : DataStructureMObject(type, ident, uid) {
+    override val runtime: Double,
+    override val render: Boolean
+) : DataStructureMObject(type, ident, uid, text) {
     override var shape: Shape = NullShape
 
     override fun setShape() {
@@ -182,7 +204,7 @@ data class InitTreeStructure(
         return listOf(
             "# Constructing a new tree: $ident",
             shape.getConstructor(),
-            "self.play($ident.create_init(0)${getRuntimeString()})"
+            getInstructionString("$ident.create_init(0)", false)
         )
     }
 }
@@ -192,7 +214,7 @@ data class InitManimStack(
     override val ident: String,
     val position: Position,
     val alignment: Alignment,
-    val text: String,
+    override var text: String,
     val moveToShape: Shape? = null,
     val color: String? = null,
     val textColor: String? = null,
@@ -202,8 +224,9 @@ data class InitManimStack(
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     private var maxSize: Int = -1,
     override val uid: String,
-    override val runtime: Double = 1.0
-) : DataStructureMObject(type, ident, uid, boundaries) {
+    override val runtime: Double = 1.0,
+    override val render: Boolean
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
@@ -212,7 +235,7 @@ data class InitManimStack(
         val python =
             mutableListOf("# Constructing new $type \"${text}\"", shape.getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
-        python.add("self.play(*$ident.create_init($newIdent$creationString)$runtimeString)")
+        python.add(getInstructionString("$ident.create_init($newIdent$creationString)$runtimeString", true))
         return python
     }
 
@@ -230,7 +253,8 @@ data class InitManimStack(
 data class ArrayStructure(
     override val type: DataStructureType,
     override val ident: String,
-    val text: String,
+    override val render: Boolean,
+    override var text: String,
     val values: Array<ExecValue>,
     val color: String? = null,
     val textColor: String? = null,
@@ -240,7 +264,7 @@ data class ArrayStructure(
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries) {
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     init {
@@ -251,8 +275,11 @@ data class ArrayStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements])"
+            if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title)${getRuntimeString()})" else "",
+            getInstructionString(
+                "[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements]",
+                true
+            )
         )
     }
 
@@ -270,7 +297,8 @@ data class ArrayStructure(
 data class Array2DStructure(
     override val type: DataStructureType,
     override val ident: String,
-    val text: String,
+    override val render: Boolean,
+    override var text: String,
     val values: Array<Array<ExecValue>>,
     val color: String? = null,
     val textColor: String? = null,
@@ -280,7 +308,7 @@ data class Array2DStructure(
     var maxSize: Int = -1,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
     override val uid: String
-) : DataStructureMObject(type, ident, uid, boundaries) {
+) : DataStructureMObject(type, ident, uid, text, boundaries) {
     override var shape: Shape = NullShape
 
     init {
@@ -291,8 +319,8 @@ data class Array2DStructure(
         return listOf(
             "# Constructing new $type \"$text\"",
             shape.getConstructor(),
-            if (showLabel == null || showLabel) "self.play($creationString($ident.title))" else "",
-            "self.play(*$ident.build(\"$creationString\")${getRuntimeString()})"
+            if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title))" else "",
+            getInstructionString("$ident.build(\"$creationString\")", true)
         )
     }
 
@@ -307,7 +335,8 @@ data class Array2DStructure(
     }
 }
 
-data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) : MObject {
+data class NewMObject(override val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) :
+    MObject() {
     override fun toPython(): List<String> {
         return listOf(
             "# Constructs a new ${shape.className} with value ${shape.text}",
@@ -316,7 +345,7 @@ data class NewMObject(override val shape: Shape, val codeBlockVariable: String, 
     }
 }
 
-object EmptyMObject : MObject {
+object EmptyMObject : MObject() {
     override val shape: Shape = NullShape
     override val runtime: Double
         get() = 1.0
