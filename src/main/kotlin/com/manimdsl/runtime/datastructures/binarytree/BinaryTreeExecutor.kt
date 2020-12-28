@@ -3,7 +3,7 @@ package com.manimdsl.runtime.datastructures.binarytree
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.*
-import com.manimdsl.runtime.datastructures.DSMethodExecutor
+import com.manimdsl.runtime.datastructures.DSExecutor
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
 
@@ -16,7 +16,7 @@ class BinaryTreeExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String
-) : DSMethodExecutor {
+) : DSExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
         if (node.type is TreeType) {
@@ -199,7 +199,7 @@ class BinaryTreeExecutor(
                 if (stylesheet.renderDataStructure(frame.functionNamePrefix + binaryTreeElemNode.identifier)) {
                     val boundary =
                         dataStructureBoundaries[frame.functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
-                    boundary.maxSize += nodeCount(childValue)
+                    boundary.maxSize += childValue.nodeCount()
                     dataStructureBoundaries[frame.functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
                         boundary
                 }

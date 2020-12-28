@@ -3,7 +3,7 @@ package com.manimdsl.runtime.datastructures.array
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.*
-import com.manimdsl.runtime.datastructures.DSMethodExecutor
+import com.manimdsl.runtime.datastructures.DSExecutor
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
 
@@ -16,7 +16,7 @@ class ArrayExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String
-) : DSMethodExecutor {
+) : DSExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
         val is2DArray = node.arguments.size == 2

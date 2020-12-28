@@ -1,8 +1,8 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.shapes.*
 
 /** Objects **/

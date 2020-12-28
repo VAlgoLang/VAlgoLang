@@ -2,8 +2,8 @@ package com.manimdsl.stylesheet
 
 import com.manimdsl.ManimDSLParser
 import com.manimdsl.linearrepresentation.EmptyMObject
-import com.manimdsl.runtime.StackValue
 import com.manimdsl.runtime.VirtualMachine
+import com.manimdsl.runtime.datastructures.stack.StackValue
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.jupiter.api.Test

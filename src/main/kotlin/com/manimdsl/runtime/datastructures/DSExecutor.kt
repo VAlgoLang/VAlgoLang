@@ -9,7 +9,7 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 
-interface DSMethodExecutor {
+interface DSExecutor {
     val variables: MutableMap<String, ExecValue>
     val linearRepresentation: MutableList<ManimInstr>
     val frame: VirtualMachine.Frame

@@ -1,8 +1,8 @@
 package com.manimdsl.shapes
 
 import com.manimdsl.linearrepresentation.Alignment
-import com.manimdsl.runtime.BinaryTreeNodeValue
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.stylesheet.StylesheetProperty
 
 sealed class Shape {

@@ -3,7 +3,7 @@ package com.manimdsl.runtime.datastructures.stack
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.*
-import com.manimdsl.runtime.datastructures.DSMethodExecutor
+import com.manimdsl.runtime.datastructures.DSExecutor
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
@@ -18,7 +18,7 @@ class StackExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String
-) : DSMethodExecutor {
+) : DSExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
         val stackValue = StackValue(EmptyMObject, Stack())

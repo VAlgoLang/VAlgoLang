@@ -5,7 +5,7 @@ import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
 import com.manimdsl.frontend.SymbolTableVisitor
 import com.manimdsl.linearrepresentation.EmptyMObject
-import com.manimdsl.runtime.StackValue
+import com.manimdsl.runtime.datastructures.stack.StackValue
 import org.hamcrest.CoreMatchers.`is`
 import org.junit.Assert.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
