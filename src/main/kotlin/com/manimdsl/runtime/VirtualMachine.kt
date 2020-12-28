@@ -829,24 +829,7 @@ class VirtualMachine(
 
             // If
             if (conditionValue.value) {
-                val execValue = Frame(
-                    ifStatementNode.statements.first().lineNumber,
-                    ifStatementNode.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
-                    updateVariableState = updateVariableState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-                if (execValue is EmptyValue) {
-                    pc = ifStatementNode.endLineNumber
-                }
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                return execValue
+                return executeIfBranchingStatements(ifStatementNode.statements, ifStatementNode.endLineNumber, localDataStructure)
             }
 
             // Elif
@@ -856,29 +839,7 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    val execValue = Frame(
-                        elif.statements.first().lineNumber,
-                        elif.statements.last().lineNumber,
-                        variables,
-                        depth,
-                        showMoveToLine = showMoveToLine,
-                        stepInto = stepInto,
-                        updateVariableState = updateVariableState,
-                        hideCode = hideCode,
-                        localDataStructure = localDataStructure
-                    ).runFrame()
-                    if (execValue is EmptyValue) {
-                        pc = ifStatementNode.endLineNumber
-                    }
-                    if (localDataStructure.isNotEmpty()) {
-                        linearRepresentation.add(
-                            CleanUpLocalDataStructures(
-                                localDataStructure,
-                                animationSpeeds.first()
-                            )
-                        )
-                    }
-                    return execValue
+                    return executeIfBranchingStatements(elif.statements, ifStatementNode.endLineNumber, localDataStructure)
                 }
             }
 
@@ -886,26 +847,37 @@ class VirtualMachine(
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
                 if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                val execValue = Frame(
-                    ifStatementNode.elseBlock.statements.first().lineNumber,
-                    ifStatementNode.elseBlock.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
-                    updateVariableState = updateVariableState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-                if (execValue is EmptyValue) {
-                    pc = ifStatementNode.endLineNumber
-                }
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                return execValue
+                return executeIfBranchingStatements(ifStatementNode.elseBlock.statements, ifStatementNode.endLineNumber, localDataStructure)
             }
             return EmptyValue
+        }
+
+        private fun executeIfBranchingStatements(statements: List<StatementNode>, endLineNumber: Int, localDataStructure: MutableSet<String>): ExecValue {
+            val execValue = Frame(
+                statements.first().lineNumber,
+                statements.last().lineNumber,
+                variables,
+                depth,
+                showMoveToLine = showMoveToLine,
+                stepInto = stepInto,
+                updateVariableState = updateVariableState,
+                hideCode = hideCode,
+                localDataStructure = localDataStructure
+            ).runFrame()
+
+            if (execValue is EmptyValue) {
+                pc = endLineNumber
+            }
+
+            if (localDataStructure.isNotEmpty()) {
+                linearRepresentation.add(
+                    CleanUpLocalDataStructures(
+                        localDataStructure,
+                        animationSpeeds.first()
+                    )
+                )
+            }
+            return execValue
         }
     }
 }
