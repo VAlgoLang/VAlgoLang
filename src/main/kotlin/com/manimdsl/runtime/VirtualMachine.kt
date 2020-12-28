@@ -656,66 +656,7 @@ class VirtualMachine(
 
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
             if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-
-            var conditionValue: ExecValue
-            var execValue: ExecValue
-            var loopCount = 0
-            val prevShowMoveToLine = showMoveToLine
-
-            while (loopCount < MAX_NUMBER_OF_LOOPS) {
-                conditionValue = executeExpression(whileStatementNode.condition)
-                if (conditionValue is RuntimeError) {
-                    return conditionValue
-                } else if (conditionValue is BoolValue) {
-                    if (!conditionValue.value) {
-                        showMoveToLine = prevShowMoveToLine
-                        pc = whileStatementNode.endLineNumber
-                        return EmptyValue
-                    } else {
-                        showMoveToLine = stepInto
-                        pc = whileStatementNode.lineNumber
-                    }
-                }
-
-                val localDataStructure = mutableSetOf<String>()
-
-                execValue = Frame(
-                    whileStatementNode.statements.first().lineNumber,
-                    whileStatementNode.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = stepInto,
-                    stepInto = stepInto && previousStepIntoState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-
-                when (execValue) {
-                    is BreakValue -> {
-                        showMoveToLine = prevShowMoveToLine
-                        pc = whileStatementNode.endLineNumber
-                        moveToLine()
-                        return EmptyValue
-                    }
-                    is ContinueValue -> {
-                        pc = whileStatementNode.lineNumber
-                        moveToLine()
-                        continue
-                    }
-                    !is EmptyValue -> {
-                        return execValue
-                    }
-                }
-
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                pc = whileStatementNode.lineNumber
-                moveToLine()
-                loopCount++
-            }
-
-            return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
+            return executeLoopBranchingStatements(whileStatementNode, whileStatementNode.condition)
         }
 
         private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
@@ -726,12 +667,6 @@ class VirtualMachine(
         }
 
         private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
-
-            var conditionValue: ExecValue
-            var execValue: ExecValue
-            var loopCount = 0
-            val prevShowMoveToLine = showMoveToLine
-
             executeAssignment(forStatementNode.beginStatement)
 
             val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
@@ -752,6 +687,15 @@ class VirtualMachine(
                 )
             }
 
+            return executeLoopBranchingStatements(forStatementNode, condition)
+        }
+
+        private fun executeLoopBranchingStatements(loopNode: LoopNode, condition: ExpressionNode): ExecValue {
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+            var loopCount = 0
+            val prevShowMoveToLine = showMoveToLine
+
             while (loopCount < MAX_NUMBER_OF_LOOPS) {
                 conditionValue = executeExpression(condition)
                 if (conditionValue is RuntimeError) {
@@ -759,41 +703,41 @@ class VirtualMachine(
                 } else if (conditionValue is BoolValue) {
                     if (!conditionValue.value) {
                         showMoveToLine = prevShowMoveToLine
-                        removeForLoopCounter(forStatementNode)
-                        pc = forStatementNode.endLineNumber
+                        if (loopNode is ForStatementNode) removeForLoopCounter(loopNode)
+                        pc = loopNode.endLineNumber
                         moveToLine()
                         return EmptyValue
                     } else {
                         showMoveToLine = stepInto
-                        pc = forStatementNode.lineNumber
+                        pc = loopNode.lineNumber
                     }
                 }
 
                 val localDataStructure = mutableSetOf<String>()
 
                 execValue = Frame(
-                    forStatementNode.statements.first().lineNumber,
-                    forStatementNode.statements.last().lineNumber,
+                    loopNode.statements.first().lineNumber,
+                    loopNode.statements.last().lineNumber,
                     variables,
                     depth,
                     showMoveToLine = stepInto,
                     stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
-                    displayedDataMap = displayedDataMap,
+                    displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
                     localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
                     is BreakValue -> {
                         showMoveToLine = prevShowMoveToLine
-                        removeForLoopCounter(forStatementNode)
-                        pc = forStatementNode.endLineNumber
+                        if (loopNode is ForStatementNode) removeForLoopCounter(loopNode)
+                        pc = loopNode.endLineNumber
                         moveToLine()
                         return EmptyValue
                     }
                     is ContinueValue -> {
-                        executeAssignment(forStatementNode.updateCounter)
-                        pc = forStatementNode.lineNumber
+                        if (loopNode is ForStatementNode) executeAssignment(loopNode.updateCounter)
+                        pc = loopNode.lineNumber
                         moveToLine()
                         continue
                     }
@@ -802,17 +746,18 @@ class VirtualMachine(
                     }
                 }
 
-                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                executeAssignment(forStatementNode.updateCounter)
+                if (showMoveToLine && !hideCode && loopNode is ForStatementNode) addSleep(animationSpeeds.first() * 0.5)
+
+                if (loopNode is ForStatementNode) executeAssignment(loopNode.updateCounter)
                 if (localDataStructure.isNotEmpty()) {
                     linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
                 }
-                pc = forStatementNode.lineNumber
+                pc = loopNode.lineNumber
                 moveToLine()
                 loopCount++
             }
 
-            return RuntimeError("Max number of loop executions exceeded", lineNumber = forStatementNode.lineNumber)
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = loopNode.lineNumber)
         }
 
         private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
