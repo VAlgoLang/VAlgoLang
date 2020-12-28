@@ -108,23 +108,27 @@ sealed class StatementBlock(
     abstract val scope: Int
 }
 
+sealed class LoopNode(override val lineNumber: Int) : StatementBlock(lineNumber) {
+    abstract val endLineNumber: Int
+}
+
 data class WhileStatementNode(
     override val lineNumber: Int,
-    val endLineNumber: Int,
+    override val endLineNumber: Int,
     override val scope: Int,
     val condition: ExpressionNode,
     override val statements: List<StatementNode>
-) : StatementBlock(lineNumber)
+) : LoopNode(lineNumber)
 
 data class ForStatementNode(
     override val lineNumber: Int,
-    val endLineNumber: Int,
+    override val endLineNumber: Int,
     override val scope: Int,
     val beginStatement: DeclarationNode,
     val endCondition: ExpressionNode,
     val updateCounter: AssignmentNode,
     override val statements: List<StatementNode>,
-) : StatementBlock(lineNumber)
+) : LoopNode(lineNumber)
 
 data class IfStatementNode(
     override val lineNumber: Int,

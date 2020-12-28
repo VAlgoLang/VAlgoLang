@@ -1,9 +1,9 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.runtime.BinaryTreeNodeValue
-import com.manimdsl.runtime.BinaryTreeValue
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.PrimitiveValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.shapes.SubtitleBlockShape
