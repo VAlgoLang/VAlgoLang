@@ -187,6 +187,7 @@ class VirtualMachine(
         private val arrExecutor = ArrayExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
         private val stackExecutor = StackExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
 
+        /** FRAME UTILITIES **/
         fun getShowMoveToLine() = showMoveToLine
 
         fun getPc() = pc
@@ -225,6 +226,28 @@ class VirtualMachine(
 
         fun removeVariable(identifier: String) {
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
+        }
+
+        private fun addSleep(length: Double) {
+            linearRepresentation.add(Sleep(length, runtime = animationSpeeds.first()))
+        }
+
+        private fun moveToLine(line: Int = pc) {
+            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
+                linearRepresentation.add(
+                    MoveToLine(
+                        displayLine[line - 1],
+                        pointerVariable,
+                        codeBlockVariable,
+                        codeTextVariable,
+                        runtime = animationSpeeds.first()
+                    )
+                )
+            }
+        }
+
+        private fun fetchNextStatement() {
+            ++pc
         }
 
         fun convertToIdent(dataStructureVariable: MutableSet<String>?) {
@@ -274,13 +297,29 @@ class VirtualMachine(
             return displayedDataMap.toSortedMap().map { wrapString("${it.value.first} = ${it.value.second}") }
         }
 
+        fun updateVariableState() {
+            if (showMoveToLine && !hideCode && !hideVariables)
+                linearRepresentation.add(
+                    UpdateVariableState(
+                        getVariableState(),
+                        "variable_block",
+                        runtime = animationSpeeds.first()
+                    )
+                )
+        }
+
+        /** STATEMENTS **/
+
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
             is ReturnNode -> executeExpression(statement.expression)
             is FunctionNode -> {
                 // just go onto next line, this is just a label
                 EmptyValue
             }
-            is SleepNode -> executeSleep(statement)
+            is SleepNode -> {
+                addSleep((executeExpression(statement.sleepTime) as DoubleValue).value)
+                EmptyValue
+            }
             is AssignmentNode -> executeAssignment(statement)
             is DeclarationNode -> executeAssignment(statement)
             is MethodCallNode -> executeMethodCall(statement, false, false)
@@ -384,29 +423,6 @@ class VirtualMachine(
             }
         }
 
-        private fun executeSleep(statement: SleepNode): ExecValue {
-            addSleep((executeExpression(statement.sleepTime) as DoubleValue).value)
-            return EmptyValue
-        }
-
-        private fun addSleep(length: Double) {
-            linearRepresentation.add(Sleep(length, runtime = animationSpeeds.first()))
-        }
-
-        private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
-                linearRepresentation.add(
-                    MoveToLine(
-                        displayLine[line - 1],
-                        pointerVariable,
-                        codeBlockVariable,
-                        codeTextVariable,
-                        runtime = animationSpeeds.first()
-                    )
-                )
-            }
-        }
-
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
             // create new stack frame with argument variables
             val executedArguments = mutableListOf<ExecValue>()
@@ -446,10 +462,6 @@ class VirtualMachine(
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
             return returnValue
-        }
-
-        private fun fetchNextStatement() {
-            ++pc
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
@@ -509,161 +521,9 @@ class VirtualMachine(
             }
         }
 
-        fun updateVariableState() {
-            if (showMoveToLine && !hideCode && !hideVariables)
-                linearRepresentation.add(
-                    UpdateVariableState(
-                        getVariableState(),
-                        "variable_block",
-                        runtime = animationSpeeds.first()
-                    )
-                )
-        }
-
-        fun executeExpression(
-            node: ExpressionNode,
-            insideMethodCall: Boolean = false,
-            identifier: AssignLHS = EmptyLHS,
-        ): ExecValue = when (node) {
-            is IdentifierNode -> variables[node.identifier]!!
-            is NumberNode -> DoubleValue(node.double)
-            is CharNode -> CharValue(node.value)
-            is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
-            is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
-            is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
-            is DivideExpression -> executeBinaryOp(node) { x, y -> x / y }
-            is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
-            is PlusExpression -> executeUnaryOp(node) { x -> x }
-            is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
-            is BoolNode -> BoolValue(node.value)
-            is AndExpression -> executeShortCircuitOp(
-                node,
-                false
-            ) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
-            is OrExpression -> executeShortCircuitOp(
-                node,
-                true
-            ) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
-            is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
-            is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
-            is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
-            is LtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x < y) }
-            is GeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x >= y) }
-            is LeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x <= y) }
-            is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
-            is ConstructorNode -> executeConstructor(node, identifier)
-            is FunctionCallNode -> executeFunctionCall(node)
-            is VoidNode -> VoidValue
-            is ArrayElemNode -> arrExecutor.executeArrayElem(node, identifier)
-            is BinaryTreeNodeElemAccessNode -> btExecutor.executeTreeAccess(
-                variables[node.identifier]!! as BinaryTreeNodeValue,
-                node
-            ).second
-            is BinaryTreeRootAccessNode -> btExecutor.executeRootAccess(node).second
-            is NullNode -> NullValue
-            is CastExpressionNode -> executeCastExpression(node)
-            is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
-        }
-
-        private fun executeCastExpression(node: CastExpressionNode): ExecValue {
-            val exprValue = executeExpression(node.expr)
-
-            return when (node.targetType) {
-                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
-                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
-                else -> throw UnsupportedOperationException("Not implemented yet")
-            }
-        }
-
-        private fun executeMethodCall(
-            node: MethodCallNode,
-            insideMethodCall: Boolean,
-            isExpression: Boolean
-        ): ExecValue {
-            return when (val ds = variables[node.instanceIdentifier]) {
-                is StackValue -> {
-                    return stackExecutor.executeStackMethodCall(node, ds, insideMethodCall, isExpression)
-                }
-                is ArrayValue -> {
-                    return arrExecutor.executeArrayMethodCall(node, ds)
-                }
-                is Array2DValue -> {
-                    return arrExecutor.execute2DArrayMethodCall(node, ds)
-                }
-                else -> EmptyValue
-            }
-        }
-
-        private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
-            val dsUID = functionNamePrefix + assignLHS.identifier
-            return when (node.type) {
-                is StackType -> stackExecutor.executeConstructor(node, dsUID, assignLHS)
-                is ArrayType -> arrExecutor.executeConstructor(node, dsUID, assignLHS)
-                is TreeType, is NodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
-            }
-        }
-
-        private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
-            val subExpression = executeExpression(node.expr)
-            return if (subExpression is RuntimeError) {
-                subExpression
-            } else {
-                op(subExpression)
-            }
-        }
-
-        // Used for and and or to short-circuit with first value
-        private fun executeShortCircuitOp(
-            node: BinaryExpression,
-            shortCircuitValue: Boolean,
-            op: (first: ExecValue, seconds: ExecValue) -> ExecValue
-        ): ExecValue {
-
-            val leftExpression = executeExpression(node.expr1)
-            if (leftExpression is RuntimeError || leftExpression.value == shortCircuitValue) {
-                return leftExpression
-            }
-            val rightExpression = executeExpression(node.expr2)
-
-            if (rightExpression is RuntimeError) {
-                return rightExpression
-            }
-            return op(
-                leftExpression,
-                rightExpression
-            )
-        }
-
-        private fun executeBinaryOp(
-            node: BinaryExpression,
-            op: (first: ExecValue, seconds: ExecValue) -> ExecValue
-        ): ExecValue {
-
-            val leftExpression = executeExpression(node.expr1)
-            if (leftExpression is RuntimeError) {
-                return leftExpression
-            }
-            val rightExpression = executeExpression(node.expr2)
-
-            if (rightExpression is RuntimeError) {
-                return rightExpression
-            }
-            return op(
-                leftExpression,
-                rightExpression
-            )
-        }
-
         private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
             if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
             return executeLoopBranchingStatements(whileStatementNode, whileStatementNode.condition)
-        }
-
-        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
-            val identifier = forStatementNode.beginStatement.identifier.identifier
-            val index = displayedDataMap.filterValues { it.first == identifier }.keys
-            displayedDataMap.remove(index.first())
-            variables.remove(identifier)
         }
 
         private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
@@ -688,6 +548,13 @@ class VirtualMachine(
             }
 
             return executeLoopBranchingStatements(forStatementNode, condition)
+        }
+
+        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
+            val identifier = forStatementNode.beginStatement.identifier.identifier
+            val index = displayedDataMap.filterValues { it.first == identifier }.keys
+            displayedDataMap.remove(index.first())
+            variables.remove(identifier)
         }
 
         private fun executeLoopBranchingStatements(loopNode: LoopNode, condition: ExpressionNode): ExecValue {
@@ -823,6 +690,144 @@ class VirtualMachine(
                 )
             }
             return execValue
+        }
+
+        /** EXPRESSIONS **/
+
+        fun executeExpression(
+            node: ExpressionNode,
+            insideMethodCall: Boolean = false,
+            identifier: AssignLHS = EmptyLHS,
+        ): ExecValue = when (node) {
+            is IdentifierNode -> variables[node.identifier]!!
+            is NumberNode -> DoubleValue(node.double)
+            is CharNode -> CharValue(node.value)
+            is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
+            is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
+            is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
+            is DivideExpression -> executeBinaryOp(node) { x, y -> x / y }
+            is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
+            is PlusExpression -> executeUnaryOp(node) { x -> x }
+            is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
+            is BoolNode -> BoolValue(node.value)
+            is AndExpression -> executeShortCircuitOp(
+                node,
+                false
+            ) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
+            is OrExpression -> executeShortCircuitOp(
+                node,
+                true
+            ) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
+            is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
+            is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
+            is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
+            is LtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x < y) }
+            is GeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x >= y) }
+            is LeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x <= y) }
+            is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
+            is ConstructorNode -> executeConstructor(node, identifier)
+            is FunctionCallNode -> executeFunctionCall(node)
+            is VoidNode -> VoidValue
+            is ArrayElemNode -> arrExecutor.executeArrayElem(node, identifier)
+            is BinaryTreeNodeElemAccessNode -> btExecutor.executeTreeAccess(
+                variables[node.identifier]!! as BinaryTreeNodeValue,
+                node
+            ).second
+            is BinaryTreeRootAccessNode -> btExecutor.executeRootAccess(node).second
+            is NullNode -> NullValue
+            is CastExpressionNode -> executeCastExpression(node)
+            is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
+        }
+
+        private fun executeCastExpression(node: CastExpressionNode): ExecValue {
+            val exprValue = executeExpression(node.expr)
+
+            return when (node.targetType) {
+                is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
+                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                else -> throw UnsupportedOperationException("Not implemented yet")
+            }
+        }
+
+        private fun executeMethodCall(
+            node: MethodCallNode,
+            insideMethodCall: Boolean,
+            isExpression: Boolean
+        ): ExecValue {
+            return when (val ds = variables[node.instanceIdentifier]) {
+                is StackValue -> {
+                    return stackExecutor.executeStackMethodCall(node, ds, insideMethodCall, isExpression)
+                }
+                is ArrayValue -> {
+                    return arrExecutor.executeArrayMethodCall(node, ds)
+                }
+                is Array2DValue -> {
+                    return arrExecutor.execute2DArrayMethodCall(node, ds)
+                }
+                /** Extend with further data structures **/
+                else -> EmptyValue
+            }
+        }
+
+        private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
+            val dsUID = functionNamePrefix + assignLHS.identifier
+            return when (node.type) {
+                is StackType -> stackExecutor.executeConstructor(node, dsUID, assignLHS)
+                is ArrayType -> arrExecutor.executeConstructor(node, dsUID, assignLHS)
+                is TreeType, is NodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
+                /** Extend with further data structures **/
+            }
+        }
+
+        private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
+            val subExpression = executeExpression(node.expr)
+            return if (subExpression is RuntimeError) {
+                subExpression
+            } else {
+                op(subExpression)
+            }
+        }
+
+        // Used for and and or to short-circuit with first value
+        private fun executeShortCircuitOp(
+            node: BinaryExpression,
+            shortCircuitValue: Boolean,
+            op: (first: ExecValue, seconds: ExecValue) -> ExecValue
+        ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError || leftExpression.value == shortCircuitValue) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
+            return op(
+                leftExpression,
+                rightExpression
+            )
+        }
+
+        private fun executeBinaryOp(
+            node: BinaryExpression,
+            op: (first: ExecValue, seconds: ExecValue) -> ExecValue
+        ): ExecValue {
+
+            val leftExpression = executeExpression(node.expr1)
+            if (leftExpression is RuntimeError) {
+                return leftExpression
+            }
+            val rightExpression = executeExpression(node.expr2)
+
+            if (rightExpression is RuntimeError) {
+                return rightExpression
+            }
+            return op(
+                leftExpression,
+                rightExpression
+            )
         }
     }
 }
