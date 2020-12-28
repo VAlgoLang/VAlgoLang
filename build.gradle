@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' version '1.4.10'
     id 'org.jmailen.kotlinter' version '3.2.0'
+    id "nebula.ospackage" version "8.4.1"
 }
 
 group 'org.example'
@@ -19,6 +20,33 @@ task buildAntlr() {
         workingDir 'antlr_config'
         commandLine './antlrBuild'
     }
+}
+
+task debianPackage(type: Deb) {
+    release '1'
+    into '/opt/manimdsl'
+    preInstall file('bin/preInstall.sh')
+    from(jar.outputs.files) {
+        into 'lib'
+    }
+    from("bin/compile") {
+        into 'bin'
+    }
+    requires("openjdk-8-jre")
+    requires("python3")
+    requires("python3-pip")
+    requires("ffmpeg")
+    requires("libcairo2")
+    requires("libcairo2-dev")
+    requires("texlive")
+    requires("texlive-latex-extra")
+    requires("texlive-fonts-extra")
+    requires("texlive-latex-recommended")
+    requires("texlive-science")
+    requires("texlive-fonts-extra")
+    requires("tipa")
+
+    link("/usr/bin/manimdsl", "/opt/manimdsl/bin/compile", 777)
 }
 
 jar {
