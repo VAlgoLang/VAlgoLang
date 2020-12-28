@@ -3,7 +3,9 @@ package com.manimdsl.runtime.datastructures.binarytree
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.*
-import com.manimdsl.runtime.datastructures.DSExecutor
+import com.manimdsl.runtime.datastructures.BoundaryShape
+import com.manimdsl.runtime.datastructures.DataStructureExecutor
+import com.manimdsl.runtime.datastructures.SquareBoundary
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
 
@@ -16,7 +18,7 @@ class BinaryTreeExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String
-) : DSExecutor {
+) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
         if (node.type is TreeType) {

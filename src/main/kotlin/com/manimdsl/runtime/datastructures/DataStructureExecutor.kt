@@ -3,12 +3,29 @@ package com.manimdsl.runtime.datastructures
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.InitTreeStructure
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.VariableNameGenerator
 import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.runtime.datastructures.array.Array2DValue
 import com.manimdsl.runtime.datastructures.array.ArrayValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
 import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.makeExpressionNode
+import com.manimdsl.stylesheet.Stylesheet
+
+interface DataStructureExecutor {
+    val variables: MutableMap<String, ExecValue>
+    val linearRepresentation: MutableList<ManimInstr>
+    val frame: VirtualMachine.Frame
+    val stylesheet: Stylesheet
+    val animationSpeeds: java.util.ArrayDeque<Double>
+    val dataStructureBoundaries: MutableMap<String, BoundaryShape>
+    val variableNameGenerator: VariableNameGenerator
+    val codeTextVariable: String
+
+    fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue
+}
 
 fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorNode {
     return when (assignedValue) {

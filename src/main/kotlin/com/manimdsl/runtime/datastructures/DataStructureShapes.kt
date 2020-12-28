@@ -1,4 +1,4 @@
-package com.manimdsl.runtime
+package com.manimdsl.runtime.datastructures
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler

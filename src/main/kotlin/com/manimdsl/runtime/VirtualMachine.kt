@@ -5,6 +5,9 @@ import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.datastructures.BoundaryShape
+import com.manimdsl.runtime.datastructures.Scene
+import com.manimdsl.runtime.datastructures.WideBoundary
 import com.manimdsl.runtime.datastructures.array.Array2DValue
 import com.manimdsl.runtime.datastructures.array.ArrayExecutor
 import com.manimdsl.runtime.datastructures.array.ArrayValue
