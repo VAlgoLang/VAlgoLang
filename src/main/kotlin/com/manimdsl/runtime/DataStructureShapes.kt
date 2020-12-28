@@ -10,7 +10,6 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
     abstract var height: Double
 
     abstract var maxSize: Int
-    abstract val priority: Int
 
     abstract val `minDimensions`: Pair<Double, Double>
     abstract val dynamicWidth: Boolean
@@ -83,7 +82,6 @@ data class SquareBoundary(
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = true
     override val strictRatio: Boolean = false
-    override val priority: Int = 3
 
     override fun setCoords(x: Double, y: Double): SquareBoundary {
         this.x1 = x
@@ -108,7 +106,6 @@ data class TallBoundary(
     override val dynamicWidth: Boolean = false
     override val dynamicHeight: Boolean = true
     override val strictRatio: Boolean = false
-    override val priority: Int = 2
 
     override fun setCoords(x: Double, y: Double): TallBoundary {
         this.x1 = x
@@ -133,7 +130,6 @@ data class WideBoundary(
     override val dynamicWidth: Boolean = true
     override val dynamicHeight: Boolean = false
     override val strictRatio: Boolean = false
-    override val priority: Int = 1
 
     override fun setCoords(x: Double, y: Double): WideBoundary {
         this.x1 = x
@@ -207,7 +203,7 @@ class Scene {
         } else {
             val initialShapes: List<Pair<String, BoundaryShape>> = initCodeAndVariableBlock(!fullScreen, !expandCodeBlock)
             sceneShapes.addAll(initialShapes.map { it.second })
-            val sortedShapes = shapes.sortedBy { -it.second.maxSize }.sortedBy { -it.second.priority }.toMutableList()
+            val sortedShapes = shapes.sortedBy { -it.second.maxSize }.toMutableList()
             sortedShapes.forEach {
                 val didAddToScene = when (it.second) {
                     is WideBoundary -> addToScene(Corner.BL, it.second)
