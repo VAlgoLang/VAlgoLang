@@ -38,6 +38,7 @@ This should save the animation to `out.mp4`, animating the stack with 1 being pu
 Documentation is in progress at [manimdsl.github.io](https://manimdsl.github.io/).
 
 ## Contributing
-We welcome all contributions. In particular, we are hoping to extend the language as much as we can to produce more complex animations. For guidelines please see the
-[documentation](https://manimdsl.github.io).
+We welcome all contributions! If you would like to contribute, please see the corresponding [guidelines][contributing]. By contributing, you are agreeing to our [code of conduct][code-of-conduct].
 
+[contributing]: https://github.com/ManimDSL/ManimDSLCompiler/blob/master/CONTRIBUTING.md
+[code-of-conduct]: https://github.com/ManimDSL/ManimDSLCompiler/blob/master/CODE_OF_CONDUCT.md
