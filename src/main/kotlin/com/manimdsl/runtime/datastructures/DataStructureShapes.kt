@@ -1,4 +1,4 @@
-package com.manimdsl.runtime
+package com.manimdsl.runtime.datastructures
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
@@ -11,7 +11,7 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
 
     abstract var maxSize: Int
 
-    abstract val `minDimensions`: Pair<Double, Double>
+    abstract val minDimensions: Pair<Double, Double>
     abstract val dynamicWidth: Boolean
     abstract val dynamicHeight: Boolean
     abstract val strictRatio: Boolean

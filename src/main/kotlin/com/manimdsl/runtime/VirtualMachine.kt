@@ -5,11 +5,22 @@ import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.runtime.datastructures.BoundaryShape
+import com.manimdsl.runtime.datastructures.Scene
+import com.manimdsl.runtime.datastructures.WideBoundary
+import com.manimdsl.runtime.datastructures.array.Array2DValue
+import com.manimdsl.runtime.datastructures.array.ArrayExecutor
+import com.manimdsl.runtime.datastructures.array.ArrayValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeExecutor
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
+import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
+import com.manimdsl.runtime.datastructures.binarytree.NullValue
+import com.manimdsl.runtime.datastructures.makeConstructorNode
+import com.manimdsl.runtime.datastructures.stack.StackExecutor
+import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.getBoundaries
-import com.manimdsl.runtime.utility.makeConstructorNode
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.runtime.utility.wrapString
-import com.manimdsl.shapes.Rectangle
 import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
@@ -108,7 +119,11 @@ class VirtualMachine(
             addRuntimeError(result.value, result.lineNumber)
             Pair(ExitStatus.RUNTIME_ERROR, linearRepresentation)
         } else if (returnBoundaries || !stylesheet.userDefinedPositions()) {
-            val (exitStatus, computedBoundaries) = Scene().compute(dataStructureBoundaries.toList(), hideCode, hideVariables)
+            val (exitStatus, computedBoundaries) = Scene().compute(
+                dataStructureBoundaries.toList(),
+                hideCode,
+                hideVariables
+            )
             if (returnBoundaries) {
                 val boundaries = mutableMapOf<String, Map<String, PositionProperties>>()
                 val genericShapeIDs = mutableSetOf<String>()
@@ -117,7 +132,8 @@ class VirtualMachine(
                     if (!stylesheet.getHideVariables()) genericShapeIDs.add("_variables")
                 }
                 boundaries["auto"] = computedBoundaries.mapValues { it.value.positioning() }
-                boundaries["stylesheet"] = stylesheet.getPositions().filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
+                boundaries["stylesheet"] = stylesheet.getPositions()
+                    .filter { it.key in dataStructureBoundaries.keys || genericShapeIDs.contains(it.key) }
                 val gson = Gson()
                 println(gson.toJson(boundaries))
             }
@@ -150,7 +166,7 @@ class VirtualMachine(
         }
     }
 
-    private inner class Frame(
+    inner class Frame(
         private var pc: Int,
         private var finalLine: Int,
         private var variables: MutableMap<String, ExecValue>,
@@ -161,10 +177,20 @@ class VirtualMachine(
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
         private val hideCode: Boolean = false,
-        private val functionNamePrefix: String = "",
-        private val localDataStructure: MutableSet<String> ? = null
+        val functionNamePrefix: String = "",
+        private val localDataStructure: MutableSet<String>? = null
     ) {
         private var previousStepIntoState = stepInto
+
+        /** Data Structure Executors **/
+        private val btExecutor = BinaryTreeExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
+        private val arrExecutor = ArrayExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
+        private val stackExecutor = StackExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
+
+        /** FRAME UTILITIES **/
+        fun getShowMoveToLine() = showMoveToLine
+
+        fun getPc() = pc
 
         fun insertVariable(identifier: String, value: ExecValue) {
             if (shouldRenderInVariableState(value, functionNamePrefix + identifier)) {
@@ -192,18 +218,36 @@ class VirtualMachine(
         }
 
         private fun shouldRenderInVariableState(value: ExecValue, identifier: String) =
-            (value is BinaryTreeNodeValue && value.binaryTreeValue == null) || value is PrimitiveValue || (
-                value is BinaryTreeValue && !stylesheet.renderDataStructure(
-                    identifier
-                )
-                ) || (value is ArrayValue && !stylesheet.renderDataStructure(identifier)) || (
-                value is StackValue && !stylesheet.renderDataStructure(
-                    identifier
-                )
-                )
+            (value is BinaryTreeNodeValue && value.binaryTreeValue == null) ||
+                value is PrimitiveValue ||
+                (value is BinaryTreeValue && !stylesheet.renderDataStructure(identifier)) ||
+                (value is ArrayValue && !stylesheet.renderDataStructure(identifier)) ||
+                (value is StackValue && !stylesheet.renderDataStructure(identifier))
 
         fun removeVariable(identifier: String) {
             displayedDataMap = displayedDataMap.filter { (_, v) -> v.first != identifier }.toMutableMap()
+        }
+
+        private fun addSleep(length: Double) {
+            linearRepresentation.add(Sleep(length, runtime = animationSpeeds.first()))
+        }
+
+        private fun moveToLine(line: Int = pc) {
+            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
+                linearRepresentation.add(
+                    MoveToLine(
+                        displayLine[line - 1],
+                        pointerVariable,
+                        codeBlockVariable,
+                        codeTextVariable,
+                        runtime = animationSpeeds.first()
+                    )
+                )
+            }
+        }
+
+        private fun fetchNextStatement() {
+            ++pc
         }
 
         fun convertToIdent(dataStructureVariable: MutableSet<String>?) {
@@ -253,13 +297,29 @@ class VirtualMachine(
             return displayedDataMap.toSortedMap().map { wrapString("${it.value.first} = ${it.value.second}") }
         }
 
+        fun updateVariableState() {
+            if (showMoveToLine && !hideCode && !hideVariables)
+                linearRepresentation.add(
+                    UpdateVariableState(
+                        getVariableState(),
+                        "variable_block",
+                        runtime = animationSpeeds.first()
+                    )
+                )
+        }
+
+        /** STATEMENTS **/
+
         private fun executeStatement(statement: StatementNode): ExecValue = when (statement) {
             is ReturnNode -> executeExpression(statement.expression)
             is FunctionNode -> {
                 // just go onto next line, this is just a label
                 EmptyValue
             }
-            is SleepNode -> executeSleep(statement)
+            is SleepNode -> {
+                addSleep((executeExpression(statement.sleepTime) as DoubleValue).value)
+                EmptyValue
+            }
             is AssignmentNode -> executeAssignment(statement)
             is DeclarationNode -> executeAssignment(statement)
             is MethodCallNode -> executeMethodCall(statement, false, false)
@@ -268,7 +328,7 @@ class VirtualMachine(
             is WhileStatementNode -> executeWhileStatement(statement)
             is ForStatementNode -> executeForStatement(statement)
             is LoopStatementNode -> executeLoopStatement(statement)
-            is InternalArrayMethodCallNode -> executeInternalArrayMethodCall(statement)
+            is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(statement)
             is StartSpeedChangeNode -> {
                 val condition = executeExpression(statement.condition)
                 val factor = executeExpression(statement.speedChange)
@@ -363,34 +423,6 @@ class VirtualMachine(
             }
         }
 
-        private fun executeSleep(statement: SleepNode): ExecValue {
-            linearRepresentation.add(
-                Sleep(
-                    (executeExpression(statement.sleepTime) as DoubleValue).value,
-                    runtime = animationSpeeds.first()
-                )
-            )
-            return EmptyValue
-        }
-
-        private fun addSleep(length: Double) {
-            linearRepresentation.add(Sleep(length, runtime = animationSpeeds.first()))
-        }
-
-        private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
-                linearRepresentation.add(
-                    MoveToLine(
-                        displayLine[line - 1],
-                        pointerVariable,
-                        codeBlockVariable,
-                        codeTextVariable,
-                        runtime = animationSpeeds.first()
-                    )
-                )
-            }
-        }
-
         private fun executeFunctionCall(statement: FunctionCallNode): ExecValue {
             // create new stack frame with argument variables
             val executedArguments = mutableListOf<ExecValue>()
@@ -432,132 +464,6 @@ class VirtualMachine(
             return returnValue
         }
 
-        private fun fetchNextStatement() {
-            ++pc
-        }
-
-        private fun executeArrayElemAssignment(arrayElemNode: ArrayElemNode, assignedValue: ExecValue): ExecValue {
-            val indices = arrayElemNode.indices.map { executeExpression(it) as DoubleValue }
-            return when (val arrayValue = variables[arrayElemNode.identifier]) {
-                is Array2DValue -> {
-                    val index = indices.first().value.toInt()
-
-                    return if (indices.size == 1) {
-                        if (index !in arrayValue.array.indices) {
-                            RuntimeError(value = "Index out of bounds exception", lineNumber = arrayElemNode.lineNumber)
-                        } else {
-                            // Assigning row
-                            val newArray = (assignedValue as ArrayValue).value
-                            if (newArray.size != arrayValue.array[index].size) {
-                                RuntimeError(value = "Dimensions do not match", lineNumber = arrayElemNode.lineNumber)
-                            } else {
-                                arrayValue.array[index] = newArray
-                                linearRepresentation.add(
-                                    ArrayReplaceRow(
-                                        (arrayValue.manimObject as Array2DStructure).ident,
-                                        index,
-                                        arrayValue.value[index],
-                                        runtime = animationSpeeds.first(),
-                                        render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                    )
-                                )
-                                EmptyValue
-                            }
-                        }
-                    } else {
-                        val index2 = indices[1].value.toInt()
-                        if (indices.first().value.toInt() !in arrayValue.array.indices || index2 !in arrayValue.array[index].indices) {
-                            RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
-                        } else {
-                            arrayValue.array[index][index2] = assignedValue
-                            arrayValue.animatedStyle?.let {
-                                linearRepresentation.add(
-                                    ArrayElemRestyle(
-                                        (arrayValue.manimObject as Array2DStructure).ident,
-                                        listOf(index2),
-                                        it,
-                                        it.pointer,
-                                        animationString = it.animationStyle,
-                                        runtime = it.animationTime ?: animationSpeeds.first(),
-                                        secondIndices = listOf(index),
-                                        render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                    )
-                                )
-                            }
-                            linearRepresentation.add(
-                                ArrayElemAssignObject(
-                                    (arrayValue.manimObject as Array2DStructure).ident,
-                                    index2,
-                                    assignedValue,
-                                    arrayValue.animatedStyle,
-                                    secondIndex = index,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                )
-                            )
-                            arrayValue.animatedStyle?.let {
-                                linearRepresentation.add(
-                                    ArrayElemRestyle(
-                                        (arrayValue.manimObject as Array2DStructure).ident,
-                                        listOf(index2),
-                                        arrayValue.style,
-                                        secondIndices = listOf(index),
-                                        runtime = animationSpeeds.first(),
-                                        render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                    )
-                                )
-                            }
-                            EmptyValue
-                        }
-                    }
-                }
-                is ArrayValue -> {
-                    val index = indices.first()
-                    if (indices.first().value.toInt() !in arrayValue.array.indices) {
-                        RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
-                    } else {
-                        arrayValue.array[index.value.toInt()] = assignedValue
-                        arrayValue.animatedStyle?.let {
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as ArrayStructure).ident,
-                                    listOf(index.value.toInt()),
-                                    it,
-                                    it.pointer,
-                                    animationString = it.animationStyle,
-                                    runtime = it.animationTime ?: animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                )
-                            )
-                        }
-                        linearRepresentation.add(
-                            ArrayElemAssignObject(
-                                (arrayValue.manimObject as ArrayStructure).ident,
-                                index.value.toInt(),
-                                assignedValue,
-                                arrayValue.animatedStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                            )
-                        )
-                        arrayValue.animatedStyle?.let {
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as ArrayStructure).ident,
-                                    listOf(index.value.toInt()),
-                                    arrayValue.style,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + arrayElemNode.identifier)
-                                )
-                            )
-                        }
-                        EmptyValue
-                    }
-                }
-                else -> EmptyValue
-            }
-        }
-
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
             if (node.identifier is IdentifierNode && variables.containsKey(node.identifier.identifier)) {
                 with(variables[node.identifier.identifier]?.manimObject) {
@@ -573,45 +479,8 @@ class VirtualMachine(
             } else {
                 with(node.identifier) {
                     when (this) {
-                        is BinaryTreeRootAccessNode -> {
-                            if (assignedValue is EmptyValue) {
-                                return executeTreeDelete(
-                                    (variables[identifier]!! as BinaryTreeValue).value,
-                                    elemAccessNode
-                                )
-                            }
-                            if (assignedValue is DoubleValue) {
-                                return executeTreeEdit(
-                                    (variables[identifier]!! as BinaryTreeValue).value,
-                                    elemAccessNode,
-                                    assignedValue
-                                )
-                            }
-                            return executeTreeAppend(
-                                (variables[identifier]!! as BinaryTreeValue).value,
-                                elemAccessNode,
-                                assignedValue as BinaryTreeNodeValue
-                            )
-                        }
-                        is BinaryTreeNodeElemAccessNode -> {
-                            if (assignedValue is NullValue) {
-                                return executeTreeDelete(variables[identifier]!! as BinaryTreeNodeValue, this)
-                            }
-                            if (assignedValue is DoubleValue) {
-                                return executeTreeEdit(
-                                    (variables[identifier]!! as BinaryTreeNodeValue),
-                                    this,
-                                    assignedValue
-                                )
-                            }
-                            if (assignedValue is BinaryTreeNodeValue) {
-                                return executeTreeAppend(
-                                    (variables[identifier]!! as BinaryTreeNodeValue),
-                                    this,
-                                    assignedValue
-                                )
-                            }
-                        }
+                        is BinaryTreeNodeAccess -> return btExecutor.executeTreeAssignment(this, assignedValue)
+                        is ArrayElemNode -> return arrExecutor.executeArrayElemAssignment(this, assignedValue)
                         is IdentifierNode -> {
                             if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
                                 linearRepresentation.add(
@@ -642,179 +511,190 @@ class VirtualMachine(
                             } else {
                                 variables[node.identifier.identifier] = assignedValue
                             }
-                        }
-                        is ArrayElemNode -> {
-                            return executeArrayElemAssignment(this, assignedValue)
+
+                            insertVariable(node.identifier.identifier, assignedValue)
+                            updateVariableState()
                         }
                     }
-                }
-                if (node.identifier is IdentifierNode) {
-                    insertVariable(node.identifier.identifier, assignedValue)
-                    updateVariableState()
                 }
                 EmptyValue
             }
         }
 
-        private fun executeTreeEdit(
-            rootNode: BinaryTreeNodeValue,
-            binaryTreeElemNode: BinaryTreeNodeElemAccessNode,
-            childValue: DoubleValue
-        ): ExecValue {
-            val (_, node) = executeTreeAccess(rootNode, binaryTreeElemNode)
-            if (node is RuntimeError)
-                return node
-            else if (node is BinaryTreeNodeValue) {
-                val btNodeValue = BinaryTreeNodeValue(node.left, node.right, childValue, node.manimObject, depth = 0)
-                node.binaryTreeValue!!.value = btNodeValue
-                val instructions = mutableListOf<ManimInstr>(
-                    TreeEditValue(
-                        node,
-                        childValue,
-                        node.binaryTreeValue!!,
-                        runtime = animationSpeeds.first(),
-                        render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                    )
+        private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
+            return executeLoopBranchingStatements(whileStatementNode, whileStatementNode.condition)
+        }
+
+        private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
+            executeAssignment(forStatementNode.beginStatement)
+
+            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
+            val end = executeExpression(forStatementNode.endCondition) as DoubleAlias
+            val lineNumber = forStatementNode.lineNumber
+
+            val condition = if (start < end) {
+                LtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
                 )
-                if (node.binaryTreeValue != null) {
-                    if (node.binaryTreeValue!!.animatedStyle != null) {
-                        instructions.add(
-                            0,
-                            TreeNodeRestyle(
-                                node.manimObject.shape.ident,
-                                node.binaryTreeValue!!.animatedStyle!!,
-                                node.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                            )
-                        )
-                        instructions.add(
-                            TreeNodeRestyle(
-                                node.manimObject.shape.ident,
-                                node.binaryTreeValue!!.style,
-                                animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                            )
-                        )
+            } else {
+                GtExpression(
+                    lineNumber,
+                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
+                    NumberNode(lineNumber, end.toDouble())
+                )
+            }
+
+            return executeLoopBranchingStatements(forStatementNode, condition)
+        }
+
+        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
+            val identifier = forStatementNode.beginStatement.identifier.identifier
+            val index = displayedDataMap.filterValues { it.first == identifier }.keys
+            displayedDataMap.remove(index.first())
+            variables.remove(identifier)
+        }
+
+        private fun executeLoopBranchingStatements(loopNode: LoopNode, condition: ExpressionNode): ExecValue {
+            var conditionValue: ExecValue
+            var execValue: ExecValue
+            var loopCount = 0
+            val prevShowMoveToLine = showMoveToLine
+
+            while (loopCount < MAX_NUMBER_OF_LOOPS) {
+                conditionValue = executeExpression(condition)
+                if (conditionValue is RuntimeError) {
+                    return conditionValue
+                } else if (conditionValue is BoolValue) {
+                    if (!conditionValue.value) {
+                        showMoveToLine = prevShowMoveToLine
+                        if (loopNode is ForStatementNode) removeForLoopCounter(loopNode)
+                        pc = loopNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    } else {
+                        showMoveToLine = stepInto
+                        pc = loopNode.lineNumber
                     }
-                    linearRepresentation.addAll(instructions)
+                }
+
+                val localDataStructure = mutableSetOf<String>()
+
+                execValue = Frame(
+                    loopNode.statements.first().lineNumber,
+                    loopNode.statements.last().lineNumber,
+                    variables,
+                    depth,
+                    showMoveToLine = stepInto,
+                    stepInto = stepInto && previousStepIntoState,
+                    hideCode = hideCode,
+                    displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
+                    localDataStructure = localDataStructure
+                ).runFrame()
+
+                when (execValue) {
+                    is BreakValue -> {
+                        showMoveToLine = prevShowMoveToLine
+                        if (loopNode is ForStatementNode) removeForLoopCounter(loopNode)
+                        pc = loopNode.endLineNumber
+                        moveToLine()
+                        return EmptyValue
+                    }
+                    is ContinueValue -> {
+                        if (loopNode is ForStatementNode) executeAssignment(loopNode.updateCounter)
+                        pc = loopNode.lineNumber
+                        moveToLine()
+                        continue
+                    }
+                    !is EmptyValue -> {
+                        return execValue
+                    }
+                }
+
+                if (showMoveToLine && !hideCode && loopNode is ForStatementNode) addSleep(animationSpeeds.first() * 0.5)
+
+                if (loopNode is ForStatementNode) executeAssignment(loopNode.updateCounter)
+                if (localDataStructure.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+                }
+                pc = loopNode.lineNumber
+                moveToLine()
+                loopCount++
+            }
+
+            return RuntimeError("Max number of loop executions exceeded", lineNumber = loopNode.lineNumber)
+        }
+
+        private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
+            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
+            var conditionValue = executeExpression(ifStatementNode.condition)
+            if (conditionValue is RuntimeError) {
+                return conditionValue
+            } else {
+                conditionValue = conditionValue as BoolValue
+            }
+            // Set pc to end of if statement as branching is handled here
+            pc = ifStatementNode.endLineNumber
+            val localDataStructure = mutableSetOf<String>()
+
+            // If
+            if (conditionValue.value) {
+                return executeIfBranchingStatements(ifStatementNode.statements, ifStatementNode.endLineNumber, localDataStructure)
+            }
+
+            // Elif
+            for (elif in ifStatementNode.elifs) {
+                moveToLine(elif.lineNumber)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
+                // Add statement to code
+                conditionValue = executeExpression(elif.condition) as BoolValue
+                if (conditionValue.value) {
+                    return executeIfBranchingStatements(elif.statements, ifStatementNode.endLineNumber, localDataStructure)
                 }
             }
 
-            if (rootNode.binaryTreeValue == null || !stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)) {
-                insertVariable(binaryTreeElemNode.identifier, rootNode)
+            // Else
+            if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
+                moveToLine(ifStatementNode.elseBlock.lineNumber)
+                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
+                return executeIfBranchingStatements(ifStatementNode.elseBlock.statements, ifStatementNode.endLineNumber, localDataStructure)
             }
             return EmptyValue
         }
 
-        private fun executeTreeAppend(
-            rootNode: BinaryTreeNodeValue,
-            binaryTreeElemNode: BinaryTreeNodeElemAccessNode,
-            childValue: BinaryTreeNodeValue
-        ): ExecValue {
-            val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
-            if (parent is RuntimeError)
-                return parent
-            if (childValue.binaryTreeValue != null && childValue.binaryTreeValue == rootNode.binaryTreeValue) {
-                return RuntimeError("Tree cannot self reference", childValue.manimObject, binaryTreeElemNode.lineNumber)
-            } else if (parent is BinaryTreeNodeValue) {
-                var isLeft = false
-                when (binaryTreeElemNode.accessChain.last()) {
-                    is NodeType.Left -> {
-                        parent.left = childValue
-                        childValue.depth = parent.depth + 1
-                        isLeft = true
-                    }
-                    is NodeType.Right -> {
-                        parent.right = childValue
-                        childValue.depth = parent.depth + 1
-                        isLeft = false
-                    }
-                }
+        private fun executeIfBranchingStatements(statements: List<StatementNode>, endLineNumber: Int, localDataStructure: MutableSet<String>): ExecValue {
+            val execValue = Frame(
+                statements.first().lineNumber,
+                statements.last().lineNumber,
+                variables,
+                depth,
+                showMoveToLine = showMoveToLine,
+                stepInto = stepInto,
+                updateVariableState = updateVariableState,
+                hideCode = hideCode,
+                localDataStructure = localDataStructure
+            ).runFrame()
 
-                if (parent.binaryTreeValue != null) {
-                    if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(
-                            TreeNodeRestyle(
-                                parent.manimObject.shape.ident,
-                                parent.binaryTreeValue!!.animatedStyle!!,
-                                parent.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                            )
-                        )
-                    }
-                    if (stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)) {
-                        val boundary =
-                            dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text]!!
-                        boundary.maxSize += nodeCount(childValue)
-                        dataStructureBoundaries[functionNamePrefix + (parent.binaryTreeValue!!.manimObject as InitTreeStructure).text] =
-                            boundary
-                    }
-                    childValue.attachTree(parent.binaryTreeValue!!)
-                    linearRepresentation.add(
-                        TreeAppendObject(
-                            parent,
-                            childValue,
-                            parent.binaryTreeValue!!,
-                            isLeft,
-                            runtime = animationSpeeds.first(),
-                            render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                        )
-                    )
-                    if (parent.binaryTreeValue!!.animatedStyle != null) {
-                        linearRepresentation.add(
-                            TreeNodeRestyle(
-                                parent.manimObject.shape.ident,
-                                parent.binaryTreeValue!!.style,
-                                animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                            )
-                        )
-                    }
-                } else {
-                    linearRepresentation.add(
-                        NodeAppendObject(
-                            parent,
-                            childValue,
-                            isLeft,
-                            runtime = animationSpeeds.first(),
-                            render = false
-                        )
-                    )
-                }
+            if (execValue is EmptyValue) {
+                pc = endLineNumber
             }
 
-            if (rootNode.binaryTreeValue == null) {
-                insertVariable(binaryTreeElemNode.identifier, rootNode)
-            }
-            return EmptyValue
-        }
-
-        private fun removeNodeFromVariableState(parent: ITreeNodeValue) {
-            if (parent is BinaryTreeNodeValue && parent.binaryTreeValue != null) {
-                variables.filter { (_, v) -> v == parent }.keys.forEach(this::removeVariable)
-                removeNodeFromVariableState(parent.left)
-                removeNodeFromVariableState(parent.right)
-            }
-        }
-
-        private fun updateVariableState() {
-            if (showMoveToLine && !hideCode && !hideVariables)
+            if (localDataStructure.isNotEmpty()) {
                 linearRepresentation.add(
-                    UpdateVariableState(
-                        getVariableState(),
-                        "variable_block",
-                        runtime = animationSpeeds.first()
+                    CleanUpLocalDataStructures(
+                        localDataStructure,
+                        animationSpeeds.first()
                     )
                 )
+            }
+            return execValue
         }
 
-        private fun executeExpression(
+        /** EXPRESSIONS **/
+
+        fun executeExpression(
             node: ExpressionNode,
             insideMethodCall: Boolean = false,
             identifier: AssignLHS = EmptyLHS,
@@ -848,125 +728,15 @@ class VirtualMachine(
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
-            is ArrayElemNode -> executeArrayElem(node, identifier)
-            is BinaryTreeNodeElemAccessNode -> executeTreeAccess(
+            is ArrayElemNode -> arrExecutor.executeArrayElem(node, identifier)
+            is BinaryTreeNodeElemAccessNode -> btExecutor.executeTreeAccess(
                 variables[node.identifier]!! as BinaryTreeNodeValue,
                 node
             ).second
-            is BinaryTreeRootAccessNode -> executeRootAccess(node).second
+            is BinaryTreeRootAccessNode -> btExecutor.executeRootAccess(node).second
             is NullNode -> NullValue
             is CastExpressionNode -> executeCastExpression(node)
-            is InternalArrayMethodCallNode -> {
-                executeInternalArrayMethodCall(node)
-            }
-        }
-
-        private fun executeRootAccess(binaryTreeRootAccessNode: BinaryTreeRootAccessNode): Pair<ExecValue, ExecValue> {
-            val treeNode = variables[binaryTreeRootAccessNode.identifier]!! as BinaryTreeValue
-            return executeTreeAccess(treeNode.value, binaryTreeRootAccessNode.elemAccessNode)
-        }
-
-        private fun executeTreeDelete(
-            rootNode: BinaryTreeNodeValue,
-            binaryTreeElemNode: BinaryTreeNodeElemAccessNode
-        ): ExecValue {
-            val (parent, _) = executeTreeAccess(rootNode, binaryTreeElemNode)
-            if (parent is RuntimeError)
-                return parent
-            else if (parent is BinaryTreeNodeValue) {
-                when (binaryTreeElemNode.accessChain.last()) {
-                    is NodeType.Left -> {
-                        parent.left = NullValue
-                        if (parent.binaryTreeValue != null) {
-                            linearRepresentation.add(
-                                TreeDeleteObject(
-                                    parent,
-                                    parent.binaryTreeValue!!,
-                                    true,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                                )
-                            )
-                        }
-                    }
-                    is NodeType.Right -> {
-                        parent.right = NullValue
-                        if (parent.binaryTreeValue != null) {
-                            linearRepresentation.add(
-                                TreeDeleteObject(
-                                    parent,
-                                    parent.binaryTreeValue!!,
-                                    false,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + binaryTreeElemNode.identifier)
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-            insertVariable(binaryTreeElemNode.identifier, rootNode)
-            updateVariableState()
-            return EmptyValue
-        }
-
-        private fun executeTreeAccess(
-            rootNode: BinaryTreeNodeValue,
-            elemAccessNode: BinaryTreeNodeElemAccessNode
-        ): Pair<ExecValue, ExecValue> {
-            if (elemAccessNode.accessChain.isEmpty()) {
-                return Pair(EmptyValue, rootNode)
-            }
-
-            var parentValue: BinaryTreeNodeValue? = rootNode
-            for (access in elemAccessNode.accessChain.take(elemAccessNode.accessChain.size - 1)) {
-                if (access is NodeType.Left && parentValue?.left is BinaryTreeNodeValue) {
-                    parentValue = parentValue.left as? BinaryTreeNodeValue
-                } else if (parentValue?.right is BinaryTreeNodeValue) {
-                    parentValue = parentValue.right as? BinaryTreeNodeValue
-                } else {
-                    parentValue = null
-                    break
-                }
-            }
-
-            parentValue ?: return Pair(
-                EmptyValue,
-                RuntimeError("Accessed child does not exist", lineNumber = elemAccessNode.lineNumber)
-            )
-
-            val accessedValue = when (elemAccessNode.accessChain.last()) {
-                is NodeType.Right -> parentValue.right
-                is NodeType.Left -> parentValue.left
-                is NodeType.Value -> {
-                    if (parentValue.binaryTreeValue?.animatedStyle != null) {
-                        linearRepresentation.add(
-                            TreeNodeRestyle(
-                                parentValue.manimObject.shape.ident,
-                                parentValue.binaryTreeValue!!.animatedStyle!!,
-                                parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
-                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + elemAccessNode.identifier)
-                            )
-                        )
-                        linearRepresentation.add(
-                            TreeNodeRestyle(
-                                parentValue.manimObject.shape.ident,
-                                parentValue.binaryTreeValue!!.style,
-                                animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + elemAccessNode.identifier)
-                            )
-                        )
-                    }
-                    val value = parentValue.value
-                    value
-                }
-                else -> RuntimeError("Unknown tree access", lineNumber = elemAccessNode.lineNumber)
-            }
-
-            return Pair(parentValue, accessedValue)
+            is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
         }
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
@@ -979,121 +749,6 @@ class VirtualMachine(
             }
         }
 
-        private fun executeArrayElem(node: ArrayElemNode, identifier: AssignLHS): ExecValue {
-            return when (val arrayValue = variables[node.identifier]) {
-                is ArrayValue -> executeArrayElemSingle(node, arrayValue)
-                is Array2DValue -> executeArrayElem2D(node, arrayValue, identifier)
-                else -> EmptyValue
-            }
-        }
-
-        private fun executeArrayElemSingle(node: ArrayElemNode, arrayValue: ArrayValue): ExecValue {
-            val index = executeExpression(node.indices.first()) as DoubleValue
-            return if (index.value.toInt() !in arrayValue.array.indices) {
-                RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
-            } else {
-                with(arrayValue.animatedStyle) {
-                    if (showMoveToLine && this != null) {
-                        linearRepresentation.add(
-                            ArrayElemRestyle(
-                                (arrayValue.manimObject as ArrayStructure).ident,
-                                listOf(index.value.toInt()),
-                                this,
-                                this.pointer,
-                                animationString = this.animationStyle,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                            )
-                        )
-                        linearRepresentation.add(
-                            ArrayElemRestyle(
-                                (arrayValue.manimObject as ArrayStructure).ident,
-                                listOf(index.value.toInt()),
-                                arrayValue.style,
-                                runtime = animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                            )
-                        )
-                    }
-                }
-                arrayValue.array[index.value.toInt()]
-            }
-        }
-
-        private fun executeArrayElem2D(node: ArrayElemNode, arrayValue: Array2DValue, assignLHS: AssignLHS): ExecValue {
-            val indices = node.indices.map { executeExpression(it) as DoubleValue }
-            return if (indices.size == 2) {
-                if (indices.first().value.toInt() !in arrayValue.array.indices || indices[1].value.toInt() !in arrayValue.array[indices.first().value.toInt()].indices) {
-                    RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
-                } else {
-                    with(arrayValue.animatedStyle) {
-                        if (showMoveToLine && this != null) {
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as Array2DStructure).ident,
-                                    listOf(indices[1].value.toInt()),
-                                    this,
-                                    this.pointer,
-                                    animationString = this.animationStyle,
-                                    secondIndices = listOf(indices.first().value.toInt()),
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                                )
-                            )
-                            linearRepresentation.add(
-                                ArrayElemRestyle(
-                                    (arrayValue.manimObject as Array2DStructure).ident,
-                                    listOf(indices[1].value.toInt()),
-                                    arrayValue.style,
-                                    secondIndices = listOf(indices.first().value.toInt()),
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                                )
-                            )
-                        }
-                    }
-                    arrayValue.array[indices.first().value.toInt()][indices[1].value.toInt()]
-                }
-            } else {
-                if (indices.first().value.toInt() !in arrayValue.array.indices) {
-                    RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
-                } else {
-                    val newArray = arrayValue.array[indices.first().value.toInt()].clone()
-                    val arrayValue2 = ArrayValue(
-                        EmptyMObject,
-                        newArray
-                    )
-                    val dsUID = functionNamePrefix + assignLHS.identifier
-                    val ident = variableNameGenerator.generateNameFromPrefix("array")
-                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = newArray.size)
-                    arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
-                    arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
-                    val position = stylesheet.getPosition(dsUID)
-                    if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
-                    }
-                    val boundaries = getBoundaries(position)
-                    val arrayStructure = ArrayStructure(
-                        ArrayType(node.internalType),
-                        ident,
-                        stylesheet.renderDataStructure(functionNamePrefix + node.identifier),
-                        assignLHS.identifier,
-                        arrayValue2.array.clone(),
-                        color = arrayValue2.style.borderColor,
-                        textColor = arrayValue2.style.textColor,
-                        creationString = arrayValue2.style.creationStyle,
-                        runtime = arrayValue2.style.creationTime ?: animationSpeeds.first(),
-                        showLabel = arrayValue2.style.showLabel,
-                        boundaries = boundaries,
-                        uid = dsUID
-                    )
-                    linearRepresentation.add(arrayStructure)
-                    arrayValue2.manimObject = arrayStructure
-                    arrayValue2
-                }
-            }
-        }
-
         private fun executeMethodCall(
             node: MethodCallNode,
             insideMethodCall: Boolean,
@@ -1101,259 +756,15 @@ class VirtualMachine(
         ): ExecValue {
             return when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
-                    return executeStackMethodCall(node, ds, insideMethodCall, isExpression)
+                    return stackExecutor.executeStackMethodCall(node, ds, insideMethodCall, isExpression)
                 }
                 is ArrayValue -> {
-                    return executeArrayMethodCall(node, ds)
+                    return arrExecutor.executeArrayMethodCall(node, ds)
                 }
                 is Array2DValue -> {
-                    return execute2DArrayMethodCall(node, ds)
+                    return arrExecutor.execute2DArrayMethodCall(node, ds)
                 }
-                else -> EmptyValue
-            }
-        }
-
-        private fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
-            return when (node.dataStructureMethod) {
-                is ArrayType.Size -> {
-                    DoubleValue(ds.array.size.toDouble())
-                }
-                is ArrayType.Swap -> {
-                    val index1 = (executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
-                    val index2 = (executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
-                    val longSwap =
-                        if (node.arguments.size != 3) false else (executeExpression(node.arguments[2]) as BoolValue).value
-                    val arrayIdent = (ds.manimObject as ArrayStructure).ident
-                    val arraySwap =
-                        if (longSwap) {
-                            ArrayLongSwap(
-                                arrayIdent,
-                                Pair(index1, index2),
-                                variableNameGenerator.generateNameFromPrefix("elem1"),
-                                variableNameGenerator.generateNameFromPrefix("elem2"),
-                                variableNameGenerator.generateNameFromPrefix("animations"),
-                                runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                            )
-                        } else {
-                            ArrayShortSwap(
-                                arrayIdent,
-                                Pair(index1, index2),
-                                runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                            )
-                        }
-                    val swap = mutableListOf(arraySwap)
-                    with(ds.animatedStyle) {
-                        if (this != null) {
-                            swap.add(
-                                0,
-                                ArrayElemRestyle(
-                                    arrayIdent,
-                                    listOf(index1, index2),
-                                    this,
-                                    this.pointer,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                                )
-                            )
-                            swap.add(
-                                ArrayElemRestyle(
-                                    arrayIdent,
-                                    listOf(index1, index2),
-                                    ds.style,
-                                    runtime = animationSpeeds.first(),
-                                    render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)
-                                )
-                            )
-                        }
-                    }
-                    linearRepresentation.addAll(swap)
-                    val temp = ds.array[index1]
-                    ds.array[index1] = ds.array[index2]
-                    ds.array[index2] = temp
-                    EmptyValue
-                }
-                else -> EmptyValue
-            }
-        }
-
-        private fun executeInternalArrayMethodCall(node: InternalArrayMethodCallNode): ExecValue {
-            val ds = variables[node.instanceIdentifier] as Array2DValue
-            val index = (executeExpression(node.index) as DoubleValue).value.toInt()
-            return when (node.dataStructureMethod) {
-                is ArrayType.Size -> DoubleValue(ds.array[index].size.toDouble())
-                is ArrayType.Swap -> {
-                    val fromToIndices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
-                    array2dSwap(ds, listOf(index, fromToIndices[0], index, fromToIndices[1]), node.instanceIdentifier)
-                }
-                else -> EmptyValue
-            }
-        }
-
-        private fun execute2DArrayMethodCall(node: MethodCallNode, ds: Array2DValue): ExecValue {
-            return when (node.dataStructureMethod) {
-                is ArrayType.Size -> {
-                    DoubleValue(ds.array.size.toDouble())
-                }
-                is ArrayType.Swap -> {
-                    val indices = node.arguments.map { (executeExpression(it) as DoubleValue).value.toInt() }
-                    array2dSwap(ds, indices, node.instanceIdentifier)
-                }
-                else -> EmptyValue
-            }
-        }
-
-        private fun array2dSwap(ds: Array2DValue, indices: List<Int>, identifier: String): EmptyValue {
-            val arrayIdent = (ds.manimObject as Array2DStructure).ident
-            val arraySwap =
-                Array2DSwap(
-                    arrayIdent,
-                    indices,
-                    runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                    render = stylesheet.renderDataStructure(functionNamePrefix + identifier)
-                )
-            val swap = mutableListOf<ManimInstr>(arraySwap)
-            with(ds.animatedStyle) {
-                if (this != null) {
-                    swap.add(
-                        0,
-                        ArrayElemRestyle(
-                            arrayIdent,
-                            listOf(indices[1], indices[3]),
-                            this,
-                            this.pointer,
-                            secondIndices = listOf(indices[0], indices[2]),
-                            runtime = animationSpeeds.first(),
-                            render = stylesheet.renderDataStructure(functionNamePrefix + identifier)
-                        )
-                    )
-                    swap.add(
-                        ArrayElemRestyle(
-                            arrayIdent,
-                            listOf(indices[1], indices[3]),
-                            ds.style,
-                            secondIndices = listOf(indices[0], indices[2]),
-                            runtime = animationSpeeds.first(),
-                            render = stylesheet.renderDataStructure(functionNamePrefix + identifier)
-                        )
-                    )
-                }
-            }
-            linearRepresentation.addAll(swap)
-            val temp = ds.array[indices[0]][indices[1]]
-            ds.array[indices[0]][indices[1]] = ds.array[indices[2]][indices[3]]
-            ds.array[indices[2]][indices[3]] = temp
-            return EmptyValue
-        }
-
-        private fun executeStackMethodCall(
-            node: MethodCallNode,
-            ds: StackValue,
-            insideMethodCall: Boolean,
-            isExpression: Boolean
-        ): ExecValue {
-            return when (node.dataStructureMethod) {
-                is StackType.PushMethod -> {
-                    val value = executeExpression(node.arguments[0], true)
-                    if (value is RuntimeError) {
-                        return value
-                    }
-                    val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-                    val dsUID = (ds.manimObject as InitManimStack).uid
-                    val boundaryShape = dataStructureBoundaries[dsUID]!!
-                    boundaryShape.maxSize++
-                    dataStructureBoundaries[dsUID] = boundaryShape
-                    val hasOldMObject = value.manimObject !is EmptyMObject
-                    val oldMObject = value.manimObject
-                    val newObjectStyle = ds.animatedStyle ?: ds.style
-                    val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                        Rectangle(
-                            variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            value.toString(),
-                            dataStructureIdentifier,
-                            color = newObjectStyle.borderColor,
-                            textColor = newObjectStyle.textColor,
-                        ),
-                        codeTextVariable
-                    )
-
-                    val instructions: MutableList<ManimInstr> =
-                        mutableListOf(
-                            StackPushObject(
-                                rectangle.shape,
-                                dataStructureIdentifier,
-                                hasOldMObject,
-                                creationStyle = ds.style.creationStyle,
-                                runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(dsUID)
-                            ),
-                            RestyleObject(
-                                rectangle.shape,
-                                ds.style,
-                                ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(dsUID)
-                            )
-                        )
-                    if (!hasOldMObject) {
-                        instructions.add(0, rectangle)
-                    }
-
-                    linearRepresentation.addAll(instructions)
-                    val clonedValue = value.clone()
-                    clonedValue.manimObject = rectangle
-                    ds.stack.push(clonedValue)
-                    EmptyValue
-                }
-                is StackType.PopMethod -> {
-                    if (ds.stack.empty()) {
-                        return RuntimeError(
-                            value = "Attempted to pop from empty stack ${node.instanceIdentifier}",
-                            lineNumber = pc
-                        )
-                    }
-                    val poppedValue = ds.stack.pop()
-                    val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
-
-                    val topOfStack = poppedValue.manimObject
-                    val instructions = mutableListOf<ManimInstr>(
-                        StackPopObject(
-                            topOfStack.shape,
-                            dataStructureIdentifier,
-                            insideMethodCall,
-                            runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                            render = stylesheet.renderDataStructure(functionNamePrefix + node.instanceIdentifier)
-                        )
-                    )
-                    ds.animatedStyle?.let {
-                        instructions.add(
-                            0,
-                            RestyleObject(
-                                topOfStack.shape,
-                                it,
-                                it.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(functionNamePrefix + node.instanceIdentifier)
-                            )
-                        )
-                    }
-                    linearRepresentation.addAll(instructions)
-                    return if (isExpression) poppedValue else EmptyValue
-                }
-                is StackType.IsEmptyMethod -> {
-                    return BoolValue(ds.stack.isEmpty())
-                }
-                is StackType.SizeMethod -> {
-                    return DoubleValue(ds.stack.size.toDouble())
-                }
-                is StackType.PeekMethod -> {
-                    if (ds.stack.empty()) {
-                        return RuntimeError(value = "Attempted to peek empty stack", lineNumber = pc)
-                    }
-                    val clonedPeekValue = ds.stack.peek().clone()
-                    clonedPeekValue.manimObject = EmptyMObject
-                    return clonedPeekValue
-                }
-
+                /** Extend with further data structures **/
                 else -> EmptyValue
             }
         }
@@ -1361,285 +772,10 @@ class VirtualMachine(
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             val dsUID = functionNamePrefix + assignLHS.identifier
             return when (node.type) {
-                is StackType -> {
-                    val stackValue = StackValue(EmptyMObject, Stack())
-                    val initStructureIdent = variableNameGenerator.generateNameFromPrefix("stack")
-                    stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
-                    stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
-                    val position = stylesheet.getPosition(dsUID)
-                    dataStructureBoundaries[dsUID] = TallBoundary()
-                    if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
-                    }
-                    val boundaries = getBoundaries(position)
-                    val numStack = variables.values.filterIsInstance(StackValue::class.java).lastOrNull()
-                    val (instructions, newObject) = if (numStack == null) {
-                        val stackInit = InitManimStack(
-                            node.type,
-                            initStructureIdent,
-                            Coord(2.0, -1.0),
-                            Alignment.HORIZONTAL,
-                            assignLHS.identifier,
-                            color = stackValue.style.borderColor,
-                            textColor = stackValue.style.textColor,
-                            creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime,
-                            showLabel = stackValue.style.showLabel,
-                            boundaries = boundaries,
-                            uid = dsUID,
-                            render = stylesheet.renderDataStructure(dsUID)
-                        )
-                        // Add to stack of objects to keep track of identifier
-                        Pair(listOf(stackInit), stackInit)
-                    } else {
-                        val stackInit = InitManimStack(
-                            node.type,
-                            initStructureIdent,
-                            RelativeToMoveIdent,
-                            Alignment.HORIZONTAL,
-                            assignLHS.identifier,
-                            numStack.manimObject.shape,
-                            color = stackValue.style.borderColor,
-                            textColor = stackValue.style.textColor,
-                            creationStyle = stackValue.style.creationStyle,
-                            creationTime = stackValue.style.creationTime,
-                            showLabel = stackValue.style.showLabel,
-                            boundaries = boundaries,
-                            uid = dsUID,
-                            render = stylesheet.renderDataStructure(dsUID)
-                        )
-                        Pair(listOf(stackInit), stackInit)
-                    }
-                    linearRepresentation.addAll(instructions)
-                    val newObjectStyle = stackValue.style
-                    val initialiserNodeExpressions =
-                        with(node.initialiser) {
-                            if (this is DataStructureInitialiserNode) {
-                                expressions
-                            } else {
-                                emptyList()
-                            }
-                        }
-                    initialiserNodeExpressions.map { executeExpression(it) }.forEach {
-                        val rectangle = Rectangle(
-                            variableNameGenerator.generateNameFromPrefix("rectangle"),
-                            it.toString(),
-                            initStructureIdent,
-                            color = newObjectStyle.borderColor,
-                            textColor = newObjectStyle.textColor
-                        )
-
-                        val newRectangle = NewMObject(
-                            rectangle,
-                            codeTextVariable
-                        )
-                        val clonedValue = it.clone()
-                        clonedValue.manimObject = newRectangle
-                        stackValue.stack.push(clonedValue)
-                        linearRepresentation.add(newRectangle)
-                        linearRepresentation.add(
-                            StackPushObject(
-                                rectangle,
-                                initStructureIdent,
-                                runtime = newObjectStyle.animate?.animationTime ?: animationSpeeds.first(),
-                                render = stylesheet.renderDataStructure(dsUID)
-                            )
-                        )
-                    }
-                    stackValue.manimObject = newObject
-                    stackValue
-                }
-                is ArrayType -> {
-                    val is2DArray = node.arguments.size == 2
-                    return if (is2DArray) {
-                        execute2DArrayConstructor(node, assignLHS)
-                    } else {
-                        execute1DArrayConstructor(node, assignLHS)
-                    }
-                }
-                is TreeType -> {
-                    val ident = variableNameGenerator.generateNameFromPrefix("tree")
-                    val root = executeExpression(node.arguments.first()) as BinaryTreeNodeValue
-                    val position = stylesheet.getPosition(dsUID)
-                    dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
-                    if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
-                    }
-                    val boundaries = getBoundaries(position)
-                    val binaryTreeValue = BinaryTreeValue(manimObject = EmptyMObject, value = root)
-                    val initTreeStructure = InitTreeStructure(
-                        node.type,
-                        ident,
-                        text = assignLHS.identifier,
-                        root = root,
-                        boundaries = boundaries,
-                        uid = dsUID,
-                        runtime = animationSpeeds.first(),
-                        render = stylesheet.renderDataStructure(functionNamePrefix + assignLHS.identifier)
-                    )
-
-                    binaryTreeValue.style = stylesheet.getStyle(assignLHS.identifier, binaryTreeValue)
-                    binaryTreeValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, binaryTreeValue)
-                    binaryTreeValue.manimObject = initTreeStructure
-                    linearRepresentation.add(initTreeStructure)
-                    root.attachTree(binaryTreeValue)
-                    // Remove any variables pointing to node from variable block as it now belongs to a tree
-                    removeNodeFromVariableState(root)
-                    return binaryTreeValue
-                }
-                is NodeType -> {
-                    val value = executeExpression(node.arguments.first()) as PrimitiveValue
-                    val nodeStructure = NodeStructure(
-                        variableNameGenerator.generateNameFromPrefix("node"),
-                        value.value.toString(),
-                        0
-                    )
-                    linearRepresentation.add(nodeStructure)
-                    return BinaryTreeNodeValue(NullValue, NullValue, value, manimObject = nodeStructure, depth = 0)
-                }
-            }
-        }
-
-        private fun execute1DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
-            val initialiserExpressions =
-                with(node.initialiser) {
-                    if (this is DataStructureInitialiserNode) {
-                        expressions
-                    } else {
-                        emptyList()
-                    }
-                }
-            val arraySize =
-                if (node.arguments.isNotEmpty()) executeExpression(node.arguments[0]) as DoubleValue else DoubleValue(
-                    initialiserExpressions.size.toDouble()
-                )
-            val arrayValue = if (initialiserExpressions.isEmpty()) {
-                ArrayValue(
-                    EmptyMObject,
-                    Array(arraySize.value.toInt()) { _ ->
-                        getDefaultValueForType(
-                            node.type.internalType,
-                            node.lineNumber
-                        )
-                    }
-                )
-            } else {
-                if (initialiserExpressions.size != arraySize.value.toInt()) {
-                    RuntimeError("Initialisation of array failed.", lineNumber = node.lineNumber)
-                } else {
-                    ArrayValue(EmptyMObject, initialiserExpressions.map { executeExpression(it) }.toTypedArray())
-                }
-            }
-            if (assignLHS !is ArrayElemNode) {
-                val ident = variableNameGenerator.generateNameFromPrefix("array")
-                if (arrayValue is ArrayValue) {
-                    arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
-                    arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                    val dsUID = functionNamePrefix + assignLHS.identifier
-                    val position = stylesheet.getPosition(dsUID)
-                    dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
-                    if (stylesheet.userDefinedPositions() && position == null) {
-                        return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
-                    }
-                    val boundaries = getBoundaries(position)
-                    val arrayStructure = ArrayStructure(
-                        node.type,
-                        ident,
-                        stylesheet.renderDataStructure(functionNamePrefix + assignLHS.identifier),
-                        assignLHS.identifier,
-                        arrayValue.array.clone(),
-                        color = arrayValue.style.borderColor,
-                        textColor = arrayValue.style.textColor,
-                        creationString = arrayValue.style.creationStyle,
-                        runtime = arrayValue.style.creationTime ?: animationSpeeds.first(),
-                        showLabel = arrayValue.style.showLabel,
-                        boundaries = boundaries,
-                        uid = dsUID
-                    )
-                    linearRepresentation.add(arrayStructure)
-                    arrayValue.manimObject = arrayStructure
-                }
-            }
-            return arrayValue
-        }
-
-        private fun execute2DArrayConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
-            val arraySizes = node.arguments.map { executeExpression(it) as DoubleValue }
-            val nestedInitialiserExpressions =
-                with(node.initialiser) {
-                    if (this is Array2DInitialiserNode) {
-                        nestedExpressions
-                    } else {
-                        emptyList()
-                    }
-                }
-            val arrayDimensions = Pair(arraySizes[0].value.toInt(), arraySizes[1].value.toInt())
-            val arrayValue = if (nestedInitialiserExpressions.isEmpty()) {
-                Array2DValue(
-                    EmptyMObject,
-                    Array(arrayDimensions.first) { _ ->
-                        Array(arrayDimensions.second) { _ ->
-                            getDefaultValueForType(
-                                node.type.internalType,
-                                node.lineNumber
-                            )
-                        }
-                    }
-                )
-            } else {
-                if (nestedInitialiserExpressions.size != arrayDimensions.first || nestedInitialiserExpressions[0].size != arrayDimensions.second) {
-                    RuntimeError(
-                        "Array initialiser dimensions do not match those in constructor",
-                        lineNumber = node.lineNumber
-                    )
-                } else {
-                    Array2DValue(
-                        EmptyMObject,
-                        nestedInitialiserExpressions.map { exprList ->
-                            exprList.map { executeExpression(it) }.toTypedArray()
-                        }.toTypedArray()
-                    )
-                }
-            }
-
-            if (arrayValue is Array2DValue) {
-                val ident = variableNameGenerator.generateNameFromPrefix("array")
-                val dsUID = functionNamePrefix + assignLHS.identifier
-                val position = stylesheet.getPosition(dsUID)
-                dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
-                arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
-                arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
-                if (stylesheet.userDefinedPositions() && position == null) {
-                    return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
-                }
-                val boundaries = getBoundaries(position)
-                val arrayStructure = Array2DStructure(
-                    node.type,
-                    ident,
-                    stylesheet.renderDataStructure(functionNamePrefix + assignLHS.identifier),
-                    assignLHS.identifier,
-                    arrayValue.array.map { it.clone() }.toTypedArray(),
-                    color = arrayValue.style.borderColor,
-                    textColor = arrayValue.style.textColor,
-                    creationString = arrayValue.style.creationStyle,
-                    runtime = arrayValue.style.creationTime ?: animationSpeeds.first(),
-                    showLabel = arrayValue.style.showLabel,
-                    boundaries = boundaries,
-                    uid = dsUID
-                )
-                linearRepresentation.add(arrayStructure)
-                arrayValue.manimObject = arrayStructure
-            }
-
-            return arrayValue
-        }
-
-        private fun getDefaultValueForType(type: Type, lineNumber: Int): ExecValue {
-            return when (type) {
-                NumberType -> DoubleValue(0.0)
-                BoolType -> BoolValue(false)
-                is ArrayType -> getDefaultValueForType(type.internalType, lineNumber)
-                else -> RuntimeError(value = "Cannot create data structure with type $type", lineNumber = lineNumber)
+                is StackType -> stackExecutor.executeConstructor(node, dsUID, assignLHS)
+                is ArrayType -> arrExecutor.executeConstructor(node, dsUID, assignLHS)
+                is TreeType, is NodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
+                /** Extend with further data structures **/
             }
         }
 
@@ -1692,255 +828,6 @@ class VirtualMachine(
                 leftExpression,
                 rightExpression
             )
-        }
-
-        private fun executeWhileStatement(whileStatementNode: WhileStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-
-            var conditionValue: ExecValue
-            var execValue: ExecValue
-            var loopCount = 0
-            val prevShowMoveToLine = showMoveToLine
-
-            while (loopCount < MAX_NUMBER_OF_LOOPS) {
-                conditionValue = executeExpression(whileStatementNode.condition)
-                if (conditionValue is RuntimeError) {
-                    return conditionValue
-                } else if (conditionValue is BoolValue) {
-                    if (!conditionValue.value) {
-                        showMoveToLine = prevShowMoveToLine
-                        pc = whileStatementNode.endLineNumber
-                        return EmptyValue
-                    } else {
-                        showMoveToLine = stepInto
-                        pc = whileStatementNode.lineNumber
-                    }
-                }
-
-                val localDataStructure = mutableSetOf<String>()
-
-                execValue = Frame(
-                    whileStatementNode.statements.first().lineNumber,
-                    whileStatementNode.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = stepInto,
-                    stepInto = stepInto && previousStepIntoState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-
-                when (execValue) {
-                    is BreakValue -> {
-                        showMoveToLine = prevShowMoveToLine
-                        pc = whileStatementNode.endLineNumber
-                        moveToLine()
-                        return EmptyValue
-                    }
-                    is ContinueValue -> {
-                        pc = whileStatementNode.lineNumber
-                        moveToLine()
-                        continue
-                    }
-                    !is EmptyValue -> {
-                        return execValue
-                    }
-                }
-
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                pc = whileStatementNode.lineNumber
-                moveToLine()
-                loopCount++
-            }
-
-            return RuntimeError("Max number of loop executions exceeded", lineNumber = whileStatementNode.lineNumber)
-        }
-
-        private fun removeForLoopCounter(forStatementNode: ForStatementNode) {
-            val identifier = forStatementNode.beginStatement.identifier.identifier
-            val index = displayedDataMap.filterValues { it.first == identifier }.keys
-            displayedDataMap.remove(index.first())
-            variables.remove(identifier)
-        }
-
-        private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
-
-            var conditionValue: ExecValue
-            var execValue: ExecValue
-            var loopCount = 0
-            val prevShowMoveToLine = showMoveToLine
-
-            executeAssignment(forStatementNode.beginStatement)
-
-            val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
-            val end = executeExpression(forStatementNode.endCondition) as DoubleAlias
-            val lineNumber = forStatementNode.lineNumber
-
-            val condition = if (start < end) {
-                LtExpression(
-                    lineNumber,
-                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
-                    NumberNode(lineNumber, end.toDouble())
-                )
-            } else {
-                GtExpression(
-                    lineNumber,
-                    IdentifierNode(lineNumber, forStatementNode.beginStatement.identifier.identifier),
-                    NumberNode(lineNumber, end.toDouble())
-                )
-            }
-
-            while (loopCount < MAX_NUMBER_OF_LOOPS) {
-                conditionValue = executeExpression(condition)
-                if (conditionValue is RuntimeError) {
-                    return conditionValue
-                } else if (conditionValue is BoolValue) {
-                    if (!conditionValue.value) {
-                        showMoveToLine = prevShowMoveToLine
-                        removeForLoopCounter(forStatementNode)
-                        pc = forStatementNode.endLineNumber
-                        moveToLine()
-                        return EmptyValue
-                    } else {
-                        showMoveToLine = stepInto
-                        pc = forStatementNode.lineNumber
-                    }
-                }
-
-                val localDataStructure = mutableSetOf<String>()
-
-                execValue = Frame(
-                    forStatementNode.statements.first().lineNumber,
-                    forStatementNode.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = stepInto,
-                    stepInto = stepInto && previousStepIntoState,
-                    hideCode = hideCode,
-                    displayedDataMap = displayedDataMap,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-
-                when (execValue) {
-                    is BreakValue -> {
-                        showMoveToLine = prevShowMoveToLine
-                        removeForLoopCounter(forStatementNode)
-                        pc = forStatementNode.endLineNumber
-                        moveToLine()
-                        return EmptyValue
-                    }
-                    is ContinueValue -> {
-                        executeAssignment(forStatementNode.updateCounter)
-                        pc = forStatementNode.lineNumber
-                        moveToLine()
-                        continue
-                    }
-                    !is EmptyValue -> {
-                        return execValue
-                    }
-                }
-
-                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                executeAssignment(forStatementNode.updateCounter)
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                pc = forStatementNode.lineNumber
-                moveToLine()
-                loopCount++
-            }
-
-            return RuntimeError("Max number of loop executions exceeded", lineNumber = forStatementNode.lineNumber)
-        }
-
-        private fun executeIfStatement(ifStatementNode: IfStatementNode): ExecValue {
-            if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-            var conditionValue = executeExpression(ifStatementNode.condition)
-            if (conditionValue is RuntimeError) {
-                return conditionValue
-            } else {
-                conditionValue = conditionValue as BoolValue
-            }
-            // Set pc to end of if statement as branching is handled here
-            pc = ifStatementNode.endLineNumber
-            val localDataStructure = mutableSetOf<String>()
-
-            // If
-            if (conditionValue.value) {
-                val execValue = Frame(
-                    ifStatementNode.statements.first().lineNumber,
-                    ifStatementNode.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
-                    updateVariableState = updateVariableState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-                if (execValue is EmptyValue) {
-                    pc = ifStatementNode.endLineNumber
-                }
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                return execValue
-            }
-
-            // Elif
-            for (elif in ifStatementNode.elifs) {
-                moveToLine(elif.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                // Add statement to code
-                conditionValue = executeExpression(elif.condition) as BoolValue
-                if (conditionValue.value) {
-                    val execValue = Frame(
-                        elif.statements.first().lineNumber,
-                        elif.statements.last().lineNumber,
-                        variables,
-                        depth,
-                        showMoveToLine = showMoveToLine,
-                        stepInto = stepInto,
-                        updateVariableState = updateVariableState,
-                        hideCode = hideCode,
-                        localDataStructure = localDataStructure
-                    ).runFrame()
-                    if (execValue is EmptyValue) {
-                        pc = ifStatementNode.endLineNumber
-                    }
-                    if (localDataStructure.isNotEmpty()) {
-                        linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                    }
-                    return execValue
-                }
-            }
-
-            // Else
-            if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
-                moveToLine(ifStatementNode.elseBlock.lineNumber)
-                if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                val execValue = Frame(
-                    ifStatementNode.elseBlock.statements.first().lineNumber,
-                    ifStatementNode.elseBlock.statements.last().lineNumber,
-                    variables,
-                    depth,
-                    showMoveToLine = showMoveToLine,
-                    stepInto = stepInto,
-                    updateVariableState = updateVariableState,
-                    hideCode = hideCode,
-                    localDataStructure = localDataStructure
-                ).runFrame()
-                if (execValue is EmptyValue) {
-                    pc = ifStatementNode.endLineNumber
-                }
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
-                return execValue
-            }
-            return EmptyValue
         }
     }
 }
