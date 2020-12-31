@@ -12,22 +12,22 @@ data structures and algorithms.
 ## Installation
 
 ManimDSL produces Python code that needs to run on Manim to generate the mp4 files. Please follow the
-[documentation](https://manimce.readthedocs.io/en/latest/installation.html) to build manim
+[documentation](https://manimce.readthedocs.io/en/latest/installation.html) to install manim
 and follow the instructions according to your operating system.
 
-Once manim is installed there are multiple ways to get the ManimDSL.
+Once manim is installed there are multiple ways to get ManimDSL.
 
 #### Mac OSX
 
-ManimDSL is avaliable on brew using the instructions below:
+ManimDSL is avaliable on Homebrew using the instructions below:
 ```
     brew tap ManimDSL/homebrew-manimdsl
     brew install manimdsl
 ```
 
-Typing `manimdsl` in your terminal should show give you access to the compiler
+Typing `manimdsl` in your terminal should show give you access to the compiler.
 
-#### Debain Based Systems
+#### Debian Based Systems
 
 ```
 curl -sLO https://github.com/ManimDSL/ManimDSLCompiler/releases/download/latest/manimdsl_1.0.SNAPSHOT-1_all.deb && sudo dpkg -i manimdsl_1.0.SNAPSHOT-1_all.deb
@@ -35,7 +35,7 @@ curl -sLO https://github.com/ManimDSL/ManimDSLCompiler/releases/download/latest/
 
 ## Web Editor
 
-If you do not want to install all the dependancies, you can use the [web editor](http://manimdsl.netlify.app/) to write and compile code in ManimDSL
+If you do not want to install all the dependencies, you can use the [web editor](http://manimdsl.netlify.app/) to write and compile code in ManimDSL.
 
 ## Usage
 
