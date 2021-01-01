@@ -22,6 +22,21 @@ jobs:
         run: ./gradlew clean check --info
       - name: UnitTest
         run: ./gradlew clean test --info
+        
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build Documentation
+      run: ./gradlew dokkaHtml
+    
+    # Push the HTML to github-pages
+    - name: GitHub Pages action
+      uses: peaceiris/actions-gh-pages@v3.6.1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: build/dokka/html/
 
   package:
     runs-on: ubuntu-latest
