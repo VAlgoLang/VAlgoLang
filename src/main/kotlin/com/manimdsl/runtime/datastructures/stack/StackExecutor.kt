@@ -122,9 +122,8 @@ class StackExecutor(
                 boundaryShape.maxSize++
                 dataStructureBoundaries[dsUID] = boundaryShape
                 val hasOldMObject = value.manimObject !is EmptyMObject
-                val oldMObject = value.manimObject as Rectangle
                 val newObjectStyle = ds.animatedStyle ?: ds.style
-                val rectangle = if (hasOldMObject) oldMObject else Rectangle(
+                val rectangle = if (hasOldMObject) value.manimObject as Rectangle else Rectangle(
                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                     value.toString(),
                     dataStructureIdentifier,
