@@ -4,6 +4,14 @@ import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler
 import com.manimdsl.stylesheet.PositionProperties
 
+/**
+ * Abstract Boundary shape
+ *
+ * @property x1: x coordinate of lower left corner for boundary
+ * @property y1: y coordinate of lower left corner for boundary
+ * @property canCentralise: boolean to decide whether the shape can be centralised (code and variable block cannot for example)
+ * @constructor Create empty Boundary shape
+ */
 sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCentralise: Boolean = true) {
 
     abstract var width: Double
@@ -16,32 +24,72 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
     abstract val dynamicHeight: Boolean
     abstract val strictRatio: Boolean
 
+    /**
+     * Set coords
+     *
+     * @param x
+     * @param y
+     * @return BoundaryShape of new shape with coordinates [x] and [y]
+     */
     abstract fun setCoords(x: Double, y: Double): BoundaryShape
 
+    /**
+     * Clone
+     *
+     * @return BoundaryShape: deep clone of shape
+     */
     abstract fun clone(): BoundaryShape
 
+    /**
+     * Check if coordinate is in shape
+     *
+     * @param x
+     * @param y
+     * @return boolean indicating whether a coordinate ([x] and [y]) lies within the shape or not
+     */
     fun coordInShape(x: Double, y: Double): Boolean {
         return (x >= x1) && (y >= y1) && (x <= (x1 + width)) && (y <= (y1 + height))
     }
 
+    /**
+     * List of 4 corners
+     *
+     * @return Returns list of boundaries in the order: Upper Left, Upper Right, Lower Left, Lower Right
+     */
     fun corners(): List<Pair<Double, Double>> {
         // UL, UR, LL, LR
         return listOf(Pair(x1, y1 + height), Pair(x1 + width, y1 + height), Pair(x1, y1), Pair(x1 + width, y1))
     }
 
+    /**
+     * Returns position property of shape
+     *
+     * @return PositionProperties
+     */
     fun positioning(): PositionProperties {
         return PositionProperties(x1, y1, width, height)
     }
 
+    /**
+     * Get area of of shape
+     *
+     * @return: Double indicating area of shape
+     */
     fun area(): Double {
         return width * height
     }
 
-    fun overlapsShape(boundaryShape: BoundaryShape): Boolean {
+    /**
+     * Overlaps Shape
+     *
+     * @param otherShape: second shape to check whether
+     * @return Checks if [otherShape] overlaps current shape
+     */
+    fun overlapsShape(otherShape: BoundaryShape): Boolean {
         val l1 = Pair(x1, y1 + height)
         val r1 = Pair(x1 + width, y1)
-        val l2 = Pair(boundaryShape.x1, boundaryShape.y1 + boundaryShape.height)
-        val r2 = Pair(boundaryShape.x1 + boundaryShape.width, boundaryShape.y1)
+        val l2 = Pair(otherShape.x1, otherShape.y1 + otherShape.height)
+        val r2 = Pair(otherShape.x1 + otherShape.width, otherShape.y1)
         // If one rectangle is on left side of other
         if (l1.first >= r2.first || l2.first >= r1.first) {
             return false
@@ -51,28 +99,61 @@ sealed class BoundaryShape(var x1: Double = 0.0, var y1: Double = 0.0, var canCe
         return !(l1.second <= r2.second || l2.second <= r1.second)
     }
 
+    /**
+     * Offset width
+     *
+     * @param offset
+     * @return Return current shape with width modified with offset
+     */
     fun offsetWidth(offset: Int = 1): BoundaryShape {
         width += offset
         return this
     }
 
+    /**
+     * Offset height
+     *
+     * @param offset
+     * @return Return current shape with height modified with offset
+     */
     fun offsetHeight(offset: Int = 1): BoundaryShape {
         height += offset
         y1 -= offset
         return this
     }
 
+    /**
+     * Shift horizontal to right
+     *
+     * @param offset
+     * @return Shift shape to the right by a given offset (negative offset shifts to left)
+     */
     fun shiftHorizontalToRight(offset: Double): BoundaryShape {
         x1 += offset
         return this
     }
 
+    /**
+     * Shift vertical upwards
+     *
+     * @param offset
+     * @return Shift shape upwards by a given offset (negative offset shifts down)
+     */
     fun shiftVerticalUpwards(offset: Double): BoundaryShape {
         y1 -= offset
         return this
     }
 }
 
+/**
+ * Square boundary
+ *
+ * @property minDimensions
+ * @property width
+ * @property height
+ * @property maxSize
+ * @constructor Create empty Square boundary
+ */
 data class SquareBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(4.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
@@ -97,6 +178,15 @@ data class SquareBoundary(
     }
 }
 
+/**
+ * Tall boundary
+ *
+ * @property minDimensions
+ * @property width
+ * @property height
+ * @property maxSize
+ * @constructor Create empty Tall boundary
+ */
 data class TallBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(2.0, 4.0),
     override var width: Double = minDimensions.first.toDouble(),
@@ -121,6 +211,15 @@ data class TallBoundary(
     }
 }
 
+/**
+ * Wide boundary
+ *
+ * @property minDimensions
+ * @property width
+ * @property height
+ * @property maxSize
+ * @constructor Create empty Wide boundary
+ */
 data class WideBoundary(
     override val minDimensions: Pair<Double, Double> = Pair(4.0, 2.0),
     override var width: Double = minDimensions.first.toDouble(),
@@ -145,12 +244,23 @@ data class WideBoundary(
     }
 }
 
+/**
+ * Corner Enum (with associated *starting* coordinate)
+ *
+ * @property coord
+ * @constructor Create empty Corner
+ */
 enum class Corner(val coord: Pair<Double, Double>) {
     BL(Pair(-2.0, -4.0)),
     BR(Pair(7.0, -4.0)),
     TL(Pair(-2.0, 4.0)),
     TR(Pair(7.0, 4.0));
 
+    /**
+     * Next Corner
+     *
+     * @return Returns next Corner to search from after one search
+     */
     fun next(): Corner {
         return when (this) {
             BL -> TR
@@ -160,6 +270,12 @@ enum class Corner(val coord: Pair<Double, Double>) {
         }
     }
 
+    /**
+     * Direction
+     *
+     * @param secondScan
+     * @return Direction to scan for a given Corner and whether it is the second scan
+     */
     fun direction(secondScan: Boolean): ScanDir {
         return when (this) {
             BL -> if (secondScan) ScanDir.RIGHT else ScanDir.UP
@@ -170,6 +286,11 @@ enum class Corner(val coord: Pair<Double, Double>) {
     }
 }
 
+/**
+ * Scan dir enum to indicate which direction to scan when looking for space
+ *
+ * @constructor Create empty Scan dir
+ */
 enum class ScanDir {
     UP,
     DOWN,
@@ -177,6 +298,11 @@ enum class ScanDir {
     RIGHT;
 }
 
+/**
+ * Scene
+ *
+ * @constructor Create empty Scene
+ */
 class Scene {
 
     private val sceneShape = WideBoundary(width = 9.0, height = 8.0, maxSize = -1)
@@ -191,6 +317,14 @@ class Scene {
 
     private val sceneShapes = mutableListOf<BoundaryShape>()
 
+    /**
+     * Compute: Main method called from Virtual Machine to find coordinates for each shape on the Scene
+     *
+     * @param shapes: all the shapes to calculate coordinates for
+     * @param fullScreen: whether the scene is fully available (no code or variable block)
+     * @param expandCodeBlock: whether or not to expand the code block (when the variable block is hidden)
+     * @return Pair of error and a map from shape ID to BoundaryShape
+     */
     fun compute(
         shapes: List<Pair<String, BoundaryShape>>,
         fullScreen: Boolean,
