@@ -8,12 +8,14 @@ import com.manimdsl.shapes.*
 /** Objects **/
 
 sealed class MObject : ManimInstr() {
-    abstract val shape: Shape
 }
 
 sealed class ShapeWithBoundary(open val uid: String) : MObject() {
+    abstract val classPath: String
+    abstract val className: String
+    val style = PythonStyle()
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-    abstract fun setShape()
+    abstract fun getConstructor(): String
 }
 
 sealed class DataStructureMObject(
@@ -65,16 +67,19 @@ data class CodeBlock(
     val tabSpacing: Int = 2,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid = "_code") {
-
-    override var shape: Shape = NullShape
+    override val classPath: String = "python/code_block.py"
+    override val className: String = "Code_block"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
-        setShape()
     }
 
-    override fun setShape() {
-        shape = CodeBlockShape(ident, textColor, syntaxHighlightingOn, syntaxHighlightingStyle, tabSpacing, boundaries)
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        return "$ident = $className(code_lines, $boundaries, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
     }
 
     override fun toPython(): List<String> {
@@ -94,7 +99,7 @@ data class CodeBlock(
         return listOf(
             "# Building code visualisation pane",
             "code_lines = $codeLines",
-            shape.getConstructor(),
+            getConstructor(),
             "$codeTextName = $ident.build()",
             "self.code_end = $ident.code_end",
             "self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)",
@@ -114,17 +119,13 @@ data class SubtitleBlock(
     override val runtime: Double = 1.0,
 ) : ShapeWithBoundary("_subtitle") {
 
-    override var shape: Shape = SubtitleBlockShape(variableNameGenerator.generateNameFromPrefix("subtitle_block"), duration, boundary, textColor)
+    override var shape: Shape = NullShape
 
     override fun toPython(): List<String> {
         return listOf(
             shape.getConstructor(),
             "self.time_objects.append(${shape.ident})"
         )
-    }
-
-    override fun setShape() {
-        shape = SubtitleBlockShape(shape.ident, duration, boundary, textColor)
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {

@@ -1,7 +1,6 @@
 package com.manimdsl.animation
 
 import com.manimdsl.linearrepresentation.*
-import com.manimdsl.shapes.NullShape
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
