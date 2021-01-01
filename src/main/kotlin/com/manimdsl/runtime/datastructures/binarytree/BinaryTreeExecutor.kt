@@ -67,21 +67,25 @@ class BinaryTreeExecutor(
         assignedValue: ExecValue,
     ): ExecValue {
         val isRoot = accessNode is BinaryTreeRootAccessNode
-        val node = if (accessNode is BinaryTreeRootAccessNode) {
-            accessNode.elemAccessNode
+        val node: BinaryTreeNodeElemAccessNode
+        val rootNode: BinaryTreeNodeValue
+        if (isRoot) {
+            node = (accessNode as BinaryTreeRootAccessNode).elemAccessNode
+            rootNode = (variables[node.identifier]!! as BinaryTreeValue).value
         } else {
-            accessNode as BinaryTreeNodeElemAccessNode
+            node = accessNode as BinaryTreeNodeElemAccessNode
+            rootNode = (variables[node.identifier]!! as BinaryTreeNodeValue)
         }
 
         if (assignedValue is EmptyValue || assignedValue is NullValue) {
             return executeTreeDelete(
-                (variables[node.identifier]!! as BinaryTreeValue).value,
+                rootNode,
                 node,
             )
         }
         if (assignedValue is DoubleValue) {
             return executeTreeEdit(
-                (variables[node.identifier]!! as BinaryTreeValue).value,
+                rootNode,
                 node,
                 assignedValue,
             )
@@ -89,7 +93,7 @@ class BinaryTreeExecutor(
 
         if (isRoot || assignedValue is BinaryTreeNodeValue) {
             return executeTreeAppend(
-                (variables[node.identifier]!! as BinaryTreeValue).value,
+                rootNode,
                 node,
                 assignedValue as BinaryTreeNodeValue,
             )
