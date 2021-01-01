@@ -5,6 +5,7 @@ import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.binarytree.TreeNodeRestyle
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.Scene
 import com.manimdsl.runtime.datastructures.WideBoundary

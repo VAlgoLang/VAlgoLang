@@ -1,7 +1,10 @@
 package com.manimdsl.runtime.datastructures.binarytree
 
 import com.manimdsl.frontend.*
-import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.EmptyMObject
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.VariableNameGenerator
+import com.manimdsl.linearrepresentation.datastructures.binarytree.*
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor

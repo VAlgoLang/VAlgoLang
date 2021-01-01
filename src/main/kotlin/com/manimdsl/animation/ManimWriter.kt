@@ -1,6 +1,7 @@
 package com.manimdsl.animation
 
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 

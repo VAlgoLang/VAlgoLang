@@ -2,6 +2,9 @@ package com.manimdsl.runtime.datastructures.stack
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.stack.InitManimStack
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPopObject
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPushObject
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor

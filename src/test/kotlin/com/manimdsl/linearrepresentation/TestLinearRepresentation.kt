@@ -4,6 +4,9 @@ import com.manimdsl.animation.ManimProjectWriter
 import com.manimdsl.animation.ManimWriter
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
+import com.manimdsl.linearrepresentation.datastructures.stack.InitManimStack
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPopObject
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPushObject
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File

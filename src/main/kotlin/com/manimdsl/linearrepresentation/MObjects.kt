@@ -1,13 +1,11 @@
 package com.manimdsl.linearrepresentation
 
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.runtime.ExecValue
-import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.stylesheet.StylesheetProperty
 
 /** Objects **/
 
-sealed class MObject : ManimInstr() {
+abstract class MObject : ManimInstr() {
     abstract val ident: String
     abstract val classPath: String
     abstract val className: String
@@ -15,12 +13,12 @@ sealed class MObject : ManimInstr() {
     abstract fun getConstructor(): String
 }
 
-sealed class ShapeWithBoundary(open val uid: String) : MObject() {
+abstract class ShapeWithBoundary(open val uid: String) : MObject() {
     val style = PythonStyle()
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 }
 
-sealed class DataStructureMObject(
+abstract class DataStructureMObject(
     open val type: DataStructureType,
     override val ident: String,
     override val uid: String,
@@ -181,207 +179,6 @@ data class VariableBlock(
             "$variableGroupName = $ident.build()",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
         )
-    }
-}
-
-data class NodeStructure(
-    override val ident: String,
-    val value: String,
-    val depth: Int,
-    override val runtime: Double = 1.0
-) : MObject() {
-    override val classPath: String = "python/binary_tree.py"
-    override val className: String = "Node"
-    override val pythonVariablePrefix: String = ""
-
-    override fun getConstructor(): String {
-        return "Node(\"$value\")"
-    }
-
-    override fun toPython(): List<String> {
-        return listOf(
-            "$ident = ${getConstructor()}"
-        )
-    }
-}
-
-data class InitTreeStructure(
-    override val type: DataStructureType,
-    override val ident: String,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1,
-    override var text: String,
-    val root: BinaryTreeNodeValue,
-    override val uid: String,
-    override val runtime: Double,
-    override val render: Boolean
-) : DataStructureMObject(type, ident, uid, text) {
-    override val classPath: String = "python/binary_tree.py"
-    override val className: String = "Tree"
-    override val pythonVariablePrefix: String = ""
-
-    override fun getConstructor(): String {
-        val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = $className($coordinatesString, ${root.manimObject.ident}, \"$text\")"
-    }
-
-    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
-        maxSize = newMaxSize
-        boundaries = corners
-    }
-
-    override fun toPython(): List<String> {
-        return listOf(
-            "# Constructing a new tree: $ident",
-            getConstructor(),
-            getInstructionString("$ident.create_init(0)", false)
-        )
-    }
-}
-
-data class InitManimStack(
-    override val type: DataStructureType,
-    override val ident: String,
-    val position: Position,
-    val alignment: Alignment,
-    override var text: String,
-    val color: String? = null,
-    val textColor: String? = null,
-    val showLabel: Boolean? = null,
-    val creationStyle: String? = null,
-    val creationTime: Double? = null,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    private var maxSize: Int = -1,
-    override val uid: String,
-    override val runtime: Double = 1.0,
-    override val render: Boolean
-) : DataStructureMObject(type, ident, uid, text, boundaries) {
-    override val classPath: String = "python/stack.py"
-    override val className: String = "Stack"
-    override val pythonVariablePrefix: String = ""
-
-    init {
-        color?.let { style.addStyleAttribute(Color(it)) }
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun getConstructor(): String {
-        val coordinatesString = boundaries.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }
-        return "$ident = $className($coordinatesString, DOWN$style)"
-    }
-
-    override fun toPython(): List<String> {
-        val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
-        val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
-        val python =
-            mutableListOf("# Constructing new $type \"${text}\"", getConstructor())
-        val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
-        python.add(getInstructionString("$ident.create_init($newIdent$creationString)$runtimeString", true))
-        return python
-    }
-
-    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
-        maxSize = newMaxSize
-        boundaries = corners
-    }
-}
-
-data class ArrayStructure(
-    override val type: DataStructureType,
-    override val ident: String,
-    override val render: Boolean,
-    override var text: String,
-    val values: Array<ExecValue>,
-    val color: String? = null,
-    val textColor: String? = null,
-    var creationString: String? = null,
-    override val runtime: Double = 1.0,
-    val showLabel: Boolean? = null,
-    var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    override val uid: String
-) : DataStructureMObject(type, ident, uid, text, boundaries) {
-    override val classPath: String = "python/array.py"
-    override val className: String = "Array"
-    override val pythonVariablePrefix: String = ""
-
-    init {
-        if (creationString == null) creationString = "FadeIn"
-        color?.let { style.addStyleAttribute(Color(it)) }
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun getConstructor(): String {
-        val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = $className([${values.joinToString(",") { "\"${it.value}\"" }}], \"$arrayTitle\", [${
-        boundaries.joinToString(
-            ","
-        )
-        }]$style).build()"
-    }
-
-    override fun toPython(): List<String> {
-        return listOf(
-            "# Constructing new $type \"$text\"",
-            getConstructor(),
-            if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title)${getRuntimeString()})" else "",
-            getInstructionString(
-                "[$creationString(array_elem.all${getRuntimeString()}) for array_elem in $ident.array_elements]",
-                true
-            )
-        )
-    }
-
-    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
-        maxSize = newMaxSize
-        boundaries = corners
-    }
-}
-
-data class Array2DStructure(
-    override val type: DataStructureType,
-    override val ident: String,
-    override val render: Boolean,
-    override var text: String,
-    val values: Array<Array<ExecValue>>,
-    val color: String? = null,
-    val textColor: String? = null,
-    var creationString: String? = null,
-    override val runtime: Double = 1.0,
-    val showLabel: Boolean? = null,
-    var maxSize: Int = -1,
-    private var boundaries: List<Pair<Double, Double>> = emptyList(),
-    override val uid: String
-) : DataStructureMObject(type, ident, uid, text, boundaries) {
-    override val classPath: String = "python/array.py"
-    override val className: String = "Array2D"
-    override val pythonVariablePrefix: String = ""
-
-    init {
-        if (creationString == null) creationString = "FadeIn"
-        color?.let { style.addStyleAttribute(Color(it)) }
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun toPython(): List<String> {
-        return listOf(
-            "# Constructing new $type \"$text\"",
-            getConstructor(),
-            if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title))" else "",
-            getInstructionString("$ident.build(\"$creationString\")", true)
-        )
-    }
-
-    override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
-        maxSize = newMaxSize
-        boundaries = corners
-    }
-
-    override fun getConstructor(): String {
-        val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = $className([${
-        values.map { array -> "[ ${array.map { "\"${it.value}\"" }.joinToString(",")}]" }.joinToString(",")
-        }], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
     }
 }
 

@@ -2,9 +2,9 @@ package com.manimdsl.runtime.datastructures
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.InitTreeStructure
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.VariableNameGenerator
+import com.manimdsl.linearrepresentation.datastructures.binarytree.InitTreeStructure
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.runtime.datastructures.array.Array2DValue
