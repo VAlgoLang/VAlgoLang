@@ -139,7 +139,7 @@ data class SubtitleBlock(
     override fun toPython(): List<String> {
         return listOf(
             getConstructor(),
-            "self.time_objects.append(${ident})"
+            "self.time_objects.append($ident)"
         )
     }
 

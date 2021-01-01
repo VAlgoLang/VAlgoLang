@@ -97,7 +97,6 @@ class InitManimStackShape(
     }
 }
 
-
 class InitTreeShape(
     override val ident: String,
     override val text: String,
