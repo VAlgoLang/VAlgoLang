@@ -96,13 +96,12 @@ data class StackPopObject(
         val instruction = getInstructionString("animation", true)
         return listOf(
             "[$instruction for animation in $dataStructureIdentifier.pop($ident, fade_out=${
-                (!insideMethodCall).toString()
-                    .capitalize()
+            (!insideMethodCall).toString()
+                .capitalize()
             })]"
         )
     }
 }
-
 
 /** Arrays **/
 
@@ -217,9 +216,9 @@ data class ArrayElemRestyle(
             indices.forEachIndexed { index, i ->
                 instructions.add(
                     "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].shape, ${
-                        styleProperties.handleColourValue(
-                            it
-                        )
+                    styleProperties.handleColourValue(
+                        it
+                    )
                     })"
                 )
             }
@@ -229,11 +228,11 @@ data class ArrayElemRestyle(
             if (pointer == null || pointer) {
                 instructions.add(
                     "FadeIn($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer.next_to($arrayIdent${
-                        get2DAccess(
-                            index
-                        )
+                    get2DAccess(
+                        index
+                    )
                     }.array_elements[$i].shape, TOP, 0.01)." +
-                            "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
+                        "set_color(${styleProperties.handleColourValue(styleProperties.borderColor ?: "WHITE")}))"
                 )
             } else {
                 instructions.add("self.fade_out_if_needed($arrayIdent${get2DAccess(index)}.array_elements[$i].pointer)")
@@ -245,12 +244,12 @@ data class ArrayElemRestyle(
                 if (!animationStringTakesColorAsParameter) {
                     instructions.add(
                         "FadeToColor($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
-                                "color=${styleProperties.handleColourValue(it)})"
+                            "color=${styleProperties.handleColourValue(it)})"
                     )
                 }
                 instructions.add(
                     "$animationString($arrayIdent${get2DAccess(index)}.array_elements[$i].text, " +
-                            "color=${styleProperties.handleColourValue(it)})"
+                        "color=${styleProperties.handleColourValue(it)})"
                 )
             }
         }
@@ -322,8 +321,8 @@ data class TreeAppendObject(
         val instruction = getInstructionString("animation", false)
         return listOf(
             "[$instruction for animation in ${treeValue.manimObject.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident},${
-                left.toString()
-                    .capitalize()
+            left.toString()
+                .capitalize()
             })]",
             "[$instruction for animation in ${treeValue.manimObject.ident}.$methodName(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident})]",
         )
