@@ -1,6 +1,5 @@
 package com.manimdsl.linearrepresentation
 
-import com.manimdsl.shapes.Rectangle
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -13,11 +12,9 @@ class PythonStyleTests {
         val textColor = "black"
         val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
-        val mobject = NewMObject(rectangle, "codeBlock")
-
         val expected =
             "x = Rectangle_block(\"rectangle\", stack1, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
-        assertEquals(expected, mobject.toPython()[1])
+        assertEquals(expected, rectangle.toPython()[1])
     }
 
     @Test
@@ -27,11 +24,9 @@ class PythonStyleTests {
         val textColor = "#ffffff"
         val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
-        val mobject = NewMObject(rectangle, "codeBlock")
-
         val expected =
             "x = Rectangle_block(\"rectangle\", stack1, color=\"$color\", text_color=\"$textColor\")"
-        assertEquals(expected, mobject.toPython()[1])
+        assertEquals(expected, rectangle.toPython()[1])
     }
 
     @Test
@@ -39,10 +34,8 @@ class PythonStyleTests {
 
         val rectangle = Rectangle("x", "rectangle", "stack1")
 
-        val mobject = NewMObject(rectangle, "codeBlock")
-
         val expected =
             "x = Rectangle_block(\"rectangle\", stack1)"
-        assertEquals(expected, mobject.toPython()[1])
+        assertEquals(expected, rectangle.toPython()[1])
     }
 }
