@@ -10,12 +10,14 @@ com.manimdsl.errorhandling.syntaxerror
 com.manimdsl.errorhandling.warnings
 com.manimdsl.frontend
 com.manimdsl.linearrepresentation
+com.manimdsl.linearrepresentation.datastructures.array
+com.manimdsl.linearrepresentation.datastructures.binarytree
+com.manimdsl.linearrepresentation.datastructures.stack
 com.manimdsl.runtime
 com.manimdsl.runtime.datastructures
 com.manimdsl.runtime.datastructures.array
 com.manimdsl.runtime.datastructures.binarytree
 com.manimdsl.runtime.datastructures.stack
 com.manimdsl.runtime.utility
-com.manimdsl.shapes
 com.manimdsl.stylesheet
 
