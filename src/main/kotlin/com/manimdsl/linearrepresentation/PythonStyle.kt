@@ -1,4 +1,4 @@
-package com.manimdsl.shapes
+package com.manimdsl.linearrepresentation
 
 class PythonStyle {
     private val pythonStyleAttributes: MutableSet<PythonStyleAttribute> = mutableSetOf()

@@ -3,9 +3,6 @@ package com.manimdsl.linearrepresentation
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
-import com.manimdsl.shapes.Color
-import com.manimdsl.shapes.PythonStyle
-import com.manimdsl.shapes.TextColor
 import com.manimdsl.stylesheet.StylesheetProperty
 
 /** Objects **/
@@ -118,7 +115,6 @@ data class CodeBlock(
     }
 }
 
-/** MObjects **/
 data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
@@ -446,12 +442,9 @@ class Rectangle(
 
 object EmptyMObject : MObject() {
     override val ident: String = ""
-    override val classPath: String
-        get() = TODO("Not yet implemented")
-    override val className: String
-        get() = TODO("Not yet implemented")
-    override val pythonVariablePrefix: String
-        get() = TODO("Not yet implemented")
+    override val classPath: String = ""
+    override val className: String = ""
+    override val pythonVariablePrefix: String = ""
 
     override fun getConstructor(): String = ""
 
