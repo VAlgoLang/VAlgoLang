@@ -68,7 +68,7 @@ data class MoveObject(
 }
 
 data class StackPushObject(
-    val shape: Shape,
+    val ident: String,
     val dataStructureIdentifier: String,
     val isPushPop: Boolean = false,
     val creationStyle: String? = null,
@@ -81,8 +81,8 @@ data class StackPushObject(
         val methodName = if (isPushPop) "push_existing" else "push"
         val instruction = getInstructionString("animation", true)
         return listOf(
-            "[$instruction for animation in $dataStructureIdentifier.$methodName(${shape.ident}$creationString)]",
-            "$dataStructureIdentifier.add($shape)"
+            "[$instruction for animation in $dataStructureIdentifier.$methodName(${ident}$creationString)]",
+            "$dataStructureIdentifier.add($ident.all)"
         )
     }
 }
@@ -99,7 +99,7 @@ data class TreeDeleteObject(
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
             getInstructionString(
-                "${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident})",
+                "${treeValue.manimObject.ident}.$methodName(${parentNodeValue.manimObject.ident})",
                 true
             ),
         )
@@ -118,7 +118,7 @@ data class TreeEditValue(
         val methodName = "edit_node_value"
         return listOf(
             getInstructionString(
-                "${treeValue.manimObject.shape.ident}.$methodName(${nodeValue.manimObject.shape.ident}, \"${value}\")",
+                "${treeValue.manimObject.ident}.$methodName(${nodeValue.manimObject.ident}, \"${value}\")",
                 true
             ),
         )
@@ -138,42 +138,10 @@ data class TreeAppendObject(
         val methodName = if (left) "set_left" else "set_right"
         val instruction = getInstructionString("animation", false)
         return listOf(
-            "[$instruction for animation in ${treeValue.manimObject.shape.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident},${left.toString()
+            "[$instruction for animation in ${treeValue.manimObject.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident},${left.toString()
                 .capitalize()})]",
-            "[$instruction for animation in ${treeValue.manimObject.shape.ident}.$methodName(${parentNodeValue.manimObject.shape.ident}, ${childNodeValue.manimObject.shape.ident})]",
+            "[$instruction for animation in ${treeValue.manimObject.ident}.$methodName(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident})]",
         )
-    }
-}
-
-data class NodeFocusObject(
-    val parentNodeValue: BinaryTreeNodeValue,
-    override val runtime: Double,
-    override val render: Boolean,
-) : ManimInstr() {
-
-    override fun toPython(): List<String> {
-        return if (render) {
-            listOf(
-                "self.play(*${parentNodeValue.manimObject.shape.ident}eeee.highlight(${parentNodeValue.manimObject.shape.ident}.highlight_color)${getRuntimeString()})",
-            )
-        } else {
-            emptyList()
-        }
-    }
-}
-
-data class NodeUnfocusObject(
-    val parentNodeValue: BinaryTreeNodeValue,
-    override val runtime: Double,
-    override val render: Boolean
-) : ManimInstr() {
-
-    override fun toPython(): List<String> {
-        return if (render) {
-            listOf("self.play_animation(*${parentNodeValue.manimObject.shape.ident}.unhighlight()${getRuntimeString()})")
-        } else {
-            emptyList()
-        }
     }
 }
 
@@ -188,13 +156,13 @@ data class NodeAppendObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
-            "${parentNodeValue.manimObject.shape.ident}.$methodName(${childNodeValue.manimObject.shape.ident}, 1)",
+            "${parentNodeValue.manimObject.ident}.$methodName(${childNodeValue.manimObject.ident}, 1)",
         )
     }
 }
 
 data class StackPopObject(
-    val shape: Shape,
+    val ident: String,
     val dataStructureIdentifier: String,
     val insideMethodCall: Boolean,
     override val runtime: Double,
@@ -204,7 +172,7 @@ data class StackPopObject(
     override fun toPython(): List<String> {
         val instruction = getInstructionString("animation", true)
         return listOf(
-            "[$instruction for animation in $dataStructureIdentifier.pop(${shape.ident}, fade_out=${(!insideMethodCall).toString()
+            "[$instruction for animation in $dataStructureIdentifier.pop($ident, fade_out=${(!insideMethodCall).toString()
                 .capitalize()})]"
         )
     }

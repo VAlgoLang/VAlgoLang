@@ -14,14 +14,14 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         linearRepresentation.forEach {
             when (it) {
                 is NodeStructure -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.classPath))
                 }
                 is DataStructureMObject -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.classPath))
                 }
                 is MObject -> {
-                    if (it.shape !is NullShape) {
-                        shapeClassPaths.add(it.shape.classPath)
+                    if (it is ShapeWithBoundary) {
+                        shapeClassPaths.add(it.classPath)
                     }
                 }
             }

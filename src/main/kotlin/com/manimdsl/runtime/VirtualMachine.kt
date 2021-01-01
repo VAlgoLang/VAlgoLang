@@ -158,7 +158,6 @@ class VirtualMachine(
                         }
                         it.setNewBoundary(position.calculateManimCoord(), -1)
                     }
-                    it.setShape()
                 }
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
@@ -484,7 +483,7 @@ class VirtualMachine(
                             if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
-                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.manimObject.ident,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!.highlight,
                                         runtime = animationSpeeds.first(),
@@ -493,7 +492,7 @@ class VirtualMachine(
                                 )
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
-                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.manimObject.ident,
                                         assignedValue.binaryTreeValue!!.style,
                                         runtime = animationSpeeds.first(),
                                         render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)

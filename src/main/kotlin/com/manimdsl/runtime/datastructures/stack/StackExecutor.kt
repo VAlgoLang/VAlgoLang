@@ -59,7 +59,6 @@ class StackExecutor(
                 RelativeToMoveIdent,
                 Alignment.HORIZONTAL,
                 assignLHS.identifier,
-                numStack.manimObject.shape,
                 color = stackValue.style.borderColor,
                 textColor = stackValue.style.textColor,
                 creationStyle = stackValue.style.creationStyle,
@@ -100,7 +99,7 @@ class StackExecutor(
             linearRepresentation.add(newRectangle)
             linearRepresentation.add(
                 StackPushObject(
-                    rectangle,
+                    rectangle.ident,
                     initStructureIdent,
                     runtime = newObjectStyle.animate?.animationTime ?: animationSpeeds.first(),
                     render = stylesheet.renderDataStructure(dsUID)
@@ -131,21 +130,22 @@ class StackExecutor(
                 val hasOldMObject = value.manimObject !is EmptyMObject
                 val oldMObject = value.manimObject
                 val newObjectStyle = ds.animatedStyle ?: ds.style
+                val rectangleShape = Rectangle(
+                    variableNameGenerator.generateNameFromPrefix("rectangle"),
+                    value.toString(),
+                    dataStructureIdentifier,
+                    color = newObjectStyle.borderColor,
+                    textColor = newObjectStyle.textColor,
+                )
                 val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                    Rectangle(
-                        variableNameGenerator.generateNameFromPrefix("rectangle"),
-                        value.toString(),
-                        dataStructureIdentifier,
-                        color = newObjectStyle.borderColor,
-                        textColor = newObjectStyle.textColor,
-                    ),
+                    rectangleShape,
                     codeTextVariable
                 )
 
                 val instructions: MutableList<ManimInstr> =
                     mutableListOf(
                         StackPushObject(
-                            rectangle.shape,
+                            rectangle.ident,
                             dataStructureIdentifier,
                             hasOldMObject,
                             creationStyle = ds.style.creationStyle,
@@ -153,7 +153,7 @@ class StackExecutor(
                             render = stylesheet.renderDataStructure(dsUID)
                         ),
                         RestyleObject(
-                            rectangle.shape,
+                            rectangleShape,
                             ds.style,
                             ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(dsUID)
@@ -182,24 +182,24 @@ class StackExecutor(
                 val topOfStack = poppedValue.manimObject
                 val instructions = mutableListOf<ManimInstr>(
                     StackPopObject(
-                        topOfStack.shape,
+                        topOfStack.ident,
                         dataStructureIdentifier,
                         insideMethodCall,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                         render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
                     )
                 )
-                ds.animatedStyle?.let {
-                    instructions.add(
-                        0,
-                        RestyleObject(
-                            topOfStack.shape,
-                            it,
-                            it.animationTime ?: animationSpeeds.first(),
-                            render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
-                        )
-                    )
-                }
+//                ds.animatedStyle?.let {
+//                    instructions.add(
+//                        0,
+//                        RestyleObject(
+//                            topOfStack.shape,
+//                            it,
+//                            it.animationTime ?: animationSpeeds.first(),
+//                            render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
+//                        )
+//                    )
+//                }
                 linearRepresentation.addAll(instructions)
                 return if (isExpression) poppedValue else EmptyValue
             }
