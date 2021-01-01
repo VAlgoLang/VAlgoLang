@@ -4,7 +4,9 @@ import com.manimdsl.animation.ManimProjectWriter
 import com.manimdsl.animation.ManimWriter
 import com.manimdsl.frontend.NumberType
 import com.manimdsl.frontend.StackType
-import com.manimdsl.shapes.Rectangle
+import com.manimdsl.linearrepresentation.datastructures.stack.InitManimStack
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPopObject
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPushObject
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -39,13 +41,13 @@ class TestLinearRepresentation {
             MoveToLine(1, "pointer", "code_block", "code_text", runtime = 1.0),
             stackIS,
             MoveToLine(2, "pointer", "code_block", "code_text", runtime = 1.0),
-            NewMObject(rectangle, "code_text"),
-            StackPushObject(rectangle, "stack", runtime = 1.0, render = true),
+            rectangle,
+            StackPushObject(rectangle.ident, "stack", runtime = 1.0, render = true),
             MoveToLine(3, "pointer", "code_block", "code_text", runtime = 1.0),
-            NewMObject(rectangle1, "code_text"),
-            StackPushObject(rectangle1, "stack", runtime = 1.0, render = true),
+            rectangle1,
+            StackPushObject(rectangle1.ident, "stack", runtime = 1.0, render = true),
             MoveToLine(4, "pointer", "code_block", "code_text", runtime = 1.0),
-            StackPopObject(rectangle1, "stack", false, runtime = 1.0, render = true)
+            StackPopObject(rectangle1.ident, "stack", false, runtime = 1.0, render = true)
         )
 
         val writer = ManimProjectWriter(ManimWriter(stackIR).build())

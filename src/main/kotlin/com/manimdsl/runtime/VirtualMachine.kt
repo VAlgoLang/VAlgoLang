@@ -5,6 +5,7 @@ import com.manimdsl.ExitStatus
 import com.manimdsl.errorhandling.ErrorHandler.addRuntimeError
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.binarytree.TreeNodeRestyle
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.Scene
 import com.manimdsl.runtime.datastructures.WideBoundary
@@ -21,7 +22,6 @@ import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.runtime.utility.wrapString
-import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
@@ -159,7 +159,6 @@ class VirtualMachine(
                         }
                         it.setNewBoundary(position.calculateManimCoord(), -1)
                     }
-                    it.setShape()
                 }
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
@@ -405,7 +404,7 @@ class VirtualMachine(
             }
             linearRepresentation.add(
                 UpdateSubtitle(
-                    subtitleBlockVariable.shape as SubtitleBlockShape,
+                    (subtitleBlockVariable as SubtitleBlock),
                     wrapString(text, 30),
                     runtime = animationSpeeds.first()
                 )
@@ -485,7 +484,7 @@ class VirtualMachine(
                             if (assignedValue is BinaryTreeNodeValue && assignedValue.binaryTreeValue != null) {
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
-                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.manimObject.ident,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!,
                                         assignedValue.binaryTreeValue!!.animatedStyle!!.highlight,
                                         runtime = animationSpeeds.first(),
@@ -494,7 +493,7 @@ class VirtualMachine(
                                 )
                                 linearRepresentation.add(
                                     TreeNodeRestyle(
-                                        assignedValue.manimObject.shape.ident,
+                                        assignedValue.manimObject.ident,
                                         assignedValue.binaryTreeValue!!.style,
                                         runtime = animationSpeeds.first(),
                                         render = stylesheet.renderDataStructure(functionNamePrefix + node.identifier)

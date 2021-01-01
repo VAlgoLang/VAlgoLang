@@ -44,7 +44,7 @@ data class BinaryTreeNodeValue(
     override fun nodeCount(): Int = 1 + left.nodeCount() + right.nodeCount()
 
     override val name: String = "Tree"
-    fun attachTree(tree: BinaryTreeValue, prefix: String = "${tree.manimObject.shape.ident}.root") {
+    fun attachTree(tree: BinaryTreeValue, prefix: String = "${tree.manimObject.ident}.root") {
         binaryTreeValue = tree
         pathFromRoot = prefix
         if (left is BinaryTreeNodeValue) {

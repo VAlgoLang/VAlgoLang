@@ -1,7 +1,7 @@
 package com.manimdsl.animation
 
 import com.manimdsl.linearrepresentation.*
-import com.manimdsl.shapes.NullShape
+import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
 
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
@@ -15,14 +15,14 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         linearRepresentation.forEach {
             when (it) {
                 is NodeStructure -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.classPath))
                 }
                 is DataStructureMObject -> {
-                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.shape.classPath))
+                    shapeClassPaths.addAll(listOf("python/data_structure.py", "python/rectangle.py", it.classPath))
                 }
                 is MObject -> {
-                    if (it.shape !is NullShape) {
-                        shapeClassPaths.add(it.shape.classPath)
+                    if (it is ShapeWithBoundary) {
+                        shapeClassPaths.add(it.classPath)
                     }
                 }
             }

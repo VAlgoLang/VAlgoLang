@@ -1,7 +1,10 @@
 package com.manimdsl.runtime.datastructures.binarytree
 
 import com.manimdsl.frontend.*
-import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.EmptyMObject
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.VariableNameGenerator
+import com.manimdsl.linearrepresentation.datastructures.binarytree.*
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
@@ -134,7 +137,7 @@ class BinaryTreeExecutor(
                 if (parentValue.binaryTreeValue?.animatedStyle != null) {
                     linearRepresentation.add(
                         TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
+                            parentValue.manimObject.ident,
                             parentValue.binaryTreeValue!!.animatedStyle!!,
                             parentValue.binaryTreeValue!!.animatedStyle!!.highlight,
                             animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle,
@@ -144,7 +147,7 @@ class BinaryTreeExecutor(
                     )
                     linearRepresentation.add(
                         TreeNodeRestyle(
-                            parentValue.manimObject.shape.ident,
+                            parentValue.manimObject.ident,
                             parentValue.binaryTreeValue!!.style,
                             animationString = parentValue.binaryTreeValue!!.animatedStyle!!.animationStyle,
                             runtime = animationSpeeds.first(),
@@ -193,7 +196,7 @@ class BinaryTreeExecutor(
                 if (parent.binaryTreeValue!!.animatedStyle != null) {
                     linearRepresentation.add(
                         TreeNodeRestyle(
-                            parent.manimObject.shape.ident,
+                            parent.manimObject.ident,
                             parent.binaryTreeValue!!.animatedStyle!!,
                             parent.binaryTreeValue!!.animatedStyle!!.highlight,
                             animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle,
@@ -223,7 +226,7 @@ class BinaryTreeExecutor(
                 if (parent.binaryTreeValue!!.animatedStyle != null) {
                     linearRepresentation.add(
                         TreeNodeRestyle(
-                            parent.manimObject.shape.ident,
+                            parent.manimObject.ident,
                             parent.binaryTreeValue!!.style,
                             animationString = parent.binaryTreeValue!!.animatedStyle!!.animationStyle,
                             runtime = animationSpeeds.first(),
@@ -278,7 +281,7 @@ class BinaryTreeExecutor(
                     instructions.add(
                         0,
                         TreeNodeRestyle(
-                            node.manimObject.shape.ident,
+                            node.manimObject.ident,
                             node.binaryTreeValue!!.animatedStyle!!,
                             node.binaryTreeValue!!.animatedStyle!!.highlight,
                             animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle,
@@ -288,7 +291,7 @@ class BinaryTreeExecutor(
                     )
                     instructions.add(
                         TreeNodeRestyle(
-                            node.manimObject.shape.ident,
+                            node.manimObject.ident,
                             node.binaryTreeValue!!.style,
                             animationString = node.binaryTreeValue!!.animatedStyle!!.animationStyle,
                             runtime = animationSpeeds.first(),

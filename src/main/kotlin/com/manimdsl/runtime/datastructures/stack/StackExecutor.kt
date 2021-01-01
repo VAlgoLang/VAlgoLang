@@ -2,12 +2,14 @@ package com.manimdsl.runtime.datastructures.stack
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.stack.InitManimStack
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPopObject
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPushObject
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
 import com.manimdsl.runtime.datastructures.TallBoundary
 import com.manimdsl.runtime.utility.getBoundaries
-import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
@@ -59,7 +61,6 @@ class StackExecutor(
                 RelativeToMoveIdent,
                 Alignment.HORIZONTAL,
                 assignLHS.identifier,
-                numStack.manimObject.shape,
                 color = stackValue.style.borderColor,
                 textColor = stackValue.style.textColor,
                 creationStyle = stackValue.style.creationStyle,
@@ -89,18 +90,13 @@ class StackExecutor(
                 color = newObjectStyle.borderColor,
                 textColor = newObjectStyle.textColor
             )
-
-            val newRectangle = NewMObject(
-                rectangle,
-                codeTextVariable
-            )
             val clonedValue = it.clone()
-            clonedValue.manimObject = newRectangle
+            clonedValue.manimObject = rectangle
             stackValue.stack.push(clonedValue)
-            linearRepresentation.add(newRectangle)
+            linearRepresentation.add(rectangle)
             linearRepresentation.add(
                 StackPushObject(
-                    rectangle,
+                    rectangle.ident,
                     initStructureIdent,
                     runtime = newObjectStyle.animate?.animationTime ?: animationSpeeds.first(),
                     render = stylesheet.renderDataStructure(dsUID)
@@ -129,31 +125,27 @@ class StackExecutor(
                 boundaryShape.maxSize++
                 dataStructureBoundaries[dsUID] = boundaryShape
                 val hasOldMObject = value.manimObject !is EmptyMObject
-                val oldMObject = value.manimObject
                 val newObjectStyle = ds.animatedStyle ?: ds.style
-                val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                    Rectangle(
-                        variableNameGenerator.generateNameFromPrefix("rectangle"),
-                        value.toString(),
-                        dataStructureIdentifier,
-                        color = newObjectStyle.borderColor,
-                        textColor = newObjectStyle.textColor,
-                    ),
-                    codeTextVariable
+                val rectangle = if (hasOldMObject) value.manimObject as Rectangle else Rectangle(
+                    variableNameGenerator.generateNameFromPrefix("rectangle"),
+                    value.toString(),
+                    dataStructureIdentifier,
+                    color = newObjectStyle.borderColor,
+                    textColor = newObjectStyle.textColor,
                 )
 
                 val instructions: MutableList<ManimInstr> =
                     mutableListOf(
                         StackPushObject(
-                            rectangle.shape,
+                            rectangle.ident,
                             dataStructureIdentifier,
                             hasOldMObject,
                             creationStyle = ds.style.creationStyle,
                             runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(dsUID)
                         ),
-                        RestyleObject(
-                            rectangle.shape,
+                        RestyleRectangle(
+                            rectangle,
                             ds.style,
                             ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(dsUID)
@@ -179,10 +171,10 @@ class StackExecutor(
                 val poppedValue = ds.stack.pop()
                 val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
 
-                val topOfStack = poppedValue.manimObject
+                val topOfStack = poppedValue.manimObject as Rectangle
                 val instructions = mutableListOf<ManimInstr>(
                     StackPopObject(
-                        topOfStack.shape,
+                        topOfStack.ident,
                         dataStructureIdentifier,
                         insideMethodCall,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
@@ -192,8 +184,8 @@ class StackExecutor(
                 ds.animatedStyle?.let {
                     instructions.add(
                         0,
-                        RestyleObject(
-                            topOfStack.shape,
+                        RestyleRectangle(
+                            topOfStack,
                             it,
                             it.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
