@@ -7,8 +7,7 @@ import com.manimdsl.shapes.*
 
 /** Objects **/
 
-sealed class MObject : ManimInstr() {
-}
+sealed class MObject : ManimInstr()
 
 sealed class ShapeWithBoundary(open val uid: String) : MObject() {
     abstract val classPath: String
