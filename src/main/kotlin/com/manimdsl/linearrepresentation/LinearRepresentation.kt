@@ -4,8 +4,6 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.PrimitiveValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
-import com.manimdsl.shapes.Shape
-import com.manimdsl.shapes.StyleableShape
 import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StyleSheetValidator
 import com.manimdsl.stylesheet.StylesheetProperty
@@ -45,25 +43,6 @@ data class MoveToLine(
         return listOf(
             "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName, $codeTextVariable)"
         )
-    }
-}
-
-data class MoveObject(
-    val shape: Shape,
-    val moveToShape: Shape,
-    val objectSide: ObjectSide,
-    val offset: Int = 0,
-    val fadeOut: Boolean = false,
-    override val runtime: Double
-) :
-    ManimInstr() {
-    override fun toPython(): List<String> {
-        val instructions =
-            mutableListOf("self.move_relative_to_obj($shape, $moveToShape, ${objectSide.addOffset(offset)})")
-        if (fadeOut) {
-            instructions.add("self.play_animation(FadeOut($shape)${getRuntimeString()})")
-        }
-        return instructions
     }
 }
 
@@ -374,14 +353,14 @@ data class UpdateSubtitle(
     }
 }
 
-data class RestyleObject(
-    val shape: Shape,
+data class RestyleRectangle(
+    val shape: Rectangle,
     val newStyle: StylesheetProperty,
     override val runtime: Double,
     override val render: Boolean,
 ) : ManimInstr() {
     override fun toPython(): List<String> {
-        return if (shape is StyleableShape && render) {
+        return if (render) {
             shape.restyle(newStyle, getRuntimeString())
         } else emptyList()
     }

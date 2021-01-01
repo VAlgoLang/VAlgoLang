@@ -5,8 +5,8 @@ import com.manimdsl.runtime.ExecValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.shapes.Color
 import com.manimdsl.shapes.PythonStyle
-import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.TextColor
+import com.manimdsl.stylesheet.StylesheetProperty
 
 /** Objects **/
 
@@ -389,24 +389,57 @@ data class Array2DStructure(
     }
 }
 
-data class NewMObject(val shape: Shape, val codeBlockVariable: String, override val runtime: Double = 1.0) :
-    MObject() {
-    override val ident: String = shape.ident
-    override val classPath: String
-        get() = TODO("Not yet implemented")
-    override val className: String
-        get() = TODO("Not yet implemented")
-    override val pythonVariablePrefix: String
-        get() = TODO("Not yet implemented")
+class Rectangle(
+    override val ident: String,
+    val text: String,
+    private val dataStructureIdentifier: String,
+    color: String? = null,
+    textColor: String? = null,
+    override val runtime: Double = 1.0,
+) : MObject() {
+    override val classPath: String = "python/rectangle.py"
+    override val className: String = "Rectangle_block"
+    override val pythonVariablePrefix: String = "rectangle"
+    val style = PythonStyle()
+
+    init {
+        color?.let { style.addStyleAttribute(Color(it)) }
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    fun restyle(styleProperties: StylesheetProperty, runtimeString: String): List<String> {
+        val instructions = mutableListOf<String>()
+
+        styleProperties.borderColor?.let {
+            instructions.add(
+                "FadeToColor($ident.shape, ${styleProperties.handleColourValue(
+                    it
+                )})"
+            )
+        }
+        styleProperties.textColor?.let {
+            instructions.add(
+                "FadeToColor($ident.text, ${styleProperties.handleColourValue(
+                    it
+                )})"
+            )
+        }
+
+        return if (instructions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
+        }
+    }
 
     override fun getConstructor(): String {
-        TODO("Not yet implemented")
+        return "$ident = $className(\"${text}\", ${dataStructureIdentifier}$style)"
     }
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Constructs a new ${shape.className} with value ${shape.text}",
-            shape.getConstructor(),
+            "# Constructs a new $className with value $text",
+            getConstructor(),
         )
     }
 }

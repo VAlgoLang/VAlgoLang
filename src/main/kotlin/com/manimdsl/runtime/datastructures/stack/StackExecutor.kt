@@ -7,7 +7,6 @@ import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
 import com.manimdsl.runtime.datastructures.TallBoundary
 import com.manimdsl.runtime.utility.getBoundaries
-import com.manimdsl.shapes.Rectangle
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
@@ -88,15 +87,10 @@ class StackExecutor(
                 color = newObjectStyle.borderColor,
                 textColor = newObjectStyle.textColor
             )
-
-            val newRectangle = NewMObject(
-                rectangle,
-                codeTextVariable
-            )
             val clonedValue = it.clone()
-            clonedValue.manimObject = newRectangle
+            clonedValue.manimObject = rectangle
             stackValue.stack.push(clonedValue)
-            linearRepresentation.add(newRectangle)
+            linearRepresentation.add(rectangle)
             linearRepresentation.add(
                 StackPushObject(
                     rectangle.ident,
@@ -128,18 +122,14 @@ class StackExecutor(
                 boundaryShape.maxSize++
                 dataStructureBoundaries[dsUID] = boundaryShape
                 val hasOldMObject = value.manimObject !is EmptyMObject
-                val oldMObject = value.manimObject
+                val oldMObject = value.manimObject as Rectangle
                 val newObjectStyle = ds.animatedStyle ?: ds.style
-                val rectangleShape = Rectangle(
+                val rectangle = if (hasOldMObject) oldMObject else Rectangle(
                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                     value.toString(),
                     dataStructureIdentifier,
                     color = newObjectStyle.borderColor,
                     textColor = newObjectStyle.textColor,
-                )
-                val rectangle = if (hasOldMObject) oldMObject else NewMObject(
-                    rectangleShape,
-                    codeTextVariable
                 )
 
                 val instructions: MutableList<ManimInstr> =
@@ -152,8 +142,8 @@ class StackExecutor(
                             runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(dsUID)
                         ),
-                        RestyleObject(
-                            rectangleShape,
+                        RestyleRectangle(
+                            rectangle,
                             ds.style,
                             ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                             render = stylesheet.renderDataStructure(dsUID)
@@ -179,7 +169,7 @@ class StackExecutor(
                 val poppedValue = ds.stack.pop()
                 val dataStructureIdentifier = (ds.manimObject as InitManimStack).ident
 
-                val topOfStack = poppedValue.manimObject
+                val topOfStack = poppedValue.manimObject as Rectangle
                 val instructions = mutableListOf<ManimInstr>(
                     StackPopObject(
                         topOfStack.ident,
@@ -189,17 +179,17 @@ class StackExecutor(
                         render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
                     )
                 )
-//                ds.animatedStyle?.let {
-//                    instructions.add(
-//                        0,
-//                        RestyleObject(
-//                            topOfStack.shape,
-//                            it,
-//                            it.animationTime ?: animationSpeeds.first(),
-//                            render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
-//                        )
-//                    )
-//                }
+                ds.animatedStyle?.let {
+                    instructions.add(
+                        0,
+                        RestyleRectangle(
+                            topOfStack,
+                            it,
+                            it.animationTime ?: animationSpeeds.first(),
+                            render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.instanceIdentifier)
+                        )
+                    )
+                }
                 linearRepresentation.addAll(instructions)
                 return if (isExpression) poppedValue else EmptyValue
             }
