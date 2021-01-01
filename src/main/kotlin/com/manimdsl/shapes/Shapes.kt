@@ -74,69 +74,6 @@ class Rectangle(
     }
 }
 
-class CodeBlockShape(
-    override val ident: String,
-    textColor: String? = null,
-    val syntaxHighlightingOn: Boolean,
-    val syntaxHighlightingStyle: String,
-    val tabSpacing: Int,
-    val boundaries: List<Pair<Double, Double>>
-) : Shape() {
-    override val classPath: String = "python/code_block.py"
-    override val className: String = "Code_block"
-    override val pythonVariablePrefix: String = "code_block"
-    override val text: String = ""
-
-    init {
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun getConstructor(): String {
-        return "$ident = $className(code_lines, $boundaries, syntax_highlighting=${syntaxHighlightingOn.toString().capitalize()}, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
-    }
-}
-
-class VariableBlockShape(
-    override val ident: String,
-    variables: List<String>,
-    textColor: String? = null,
-    val boundaries: List<Pair<Double, Double>>
-) : Shape() {
-    override val classPath: String = "python/variable_block.py"
-    override val className: String = "Variable_block"
-    override val pythonVariablePrefix: String = "variable_block"
-    override val text: String = "[\"${variables.joinToString("\",\"")}\"]"
-
-    init {
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun getConstructor(): String {
-        return "$ident = $className($text, $boundaries$style)"
-    }
-}
-
-class SubtitleBlockShape(
-    override val ident: String,
-    val duration: Int = 5,
-    private val boundary: List<Pair<Double, Double>> = emptyList(),
-    textColor: String? = null
-) : Shape() {
-    override val classPath: String = "python/subtitles.py"
-    override val className: String = "Subtitle_block"
-    override val pythonVariablePrefix: String = "subtitle_block"
-    override val text: String = ""
-    init {
-        textColor?.let { style.addStyleAttribute(TextColor(it)) }
-    }
-
-    override fun getConstructor(): String {
-        val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
-
-        return "$ident = $className(self.get_time() + $duration, $coordinatesString$style)"
-    }
-}
-
 class InitManimStackShape(
     override val ident: String,
     override val text: String,
@@ -159,17 +96,7 @@ class InitManimStackShape(
         return "$ident = $className($coordinatesString, DOWN$style)"
     }
 }
-class NodeShape(
-    override val ident: String,
-    override val text: String,
-    override val classPath: String = "python/binary_tree.py",
-    override val className: String = "Node",
-    override val pythonVariablePrefix: String = "",
-) : Shape() {
-    override fun getConstructor(): String {
-        return "Node(\"$text\")"
-    }
-}
+
 
 class InitTreeShape(
     override val ident: String,

@@ -6,7 +6,6 @@ import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
 import com.manimdsl.shapes.Shape
 import com.manimdsl.shapes.StyleableShape
-import com.manimdsl.shapes.SubtitleBlockShape
 import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StyleSheetValidator
 import com.manimdsl.stylesheet.StylesheetProperty
@@ -393,14 +392,14 @@ data class TreeNodeRestyle(
 }
 
 data class UpdateSubtitle(
-    val shape: SubtitleBlockShape,
+    val subtitleBlock: SubtitleBlock,
     val text: String,
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> {
-        val instr = mutableListOf("self.play_animation(${shape.ident}.clear())")
+        val instr = mutableListOf("self.play_animation(${subtitleBlock.ident}.clear())")
         if (!text.isBlank()) {
-            instr.add("self.play_animation(${shape.ident}.display($text, self.get_time() + ${shape.duration}))")
+            instr.add("self.play_animation(${subtitleBlock.ident}.display($text, self.get_time() + ${subtitleBlock.duration}))")
         }
 
         return instr

@@ -7,19 +7,22 @@ import com.manimdsl.shapes.*
 
 /** Objects **/
 
-sealed class MObject : ManimInstr()
+sealed class MObject : ManimInstr() {
+    abstract val ident: String
+    abstract fun getConstructor(): String
+}
 
 sealed class ShapeWithBoundary(open val uid: String) : MObject() {
     abstract val classPath: String
     abstract val className: String
+    abstract val pythonVariablePrefix: String
     val style = PythonStyle()
     abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
-    abstract fun getConstructor(): String
 }
 
 sealed class DataStructureMObject(
     open val type: DataStructureType,
-    open val ident: String,
+    override val ident: String,
     override val uid: String,
     open var text: String,
     private var boundaries: List<Pair<Double, Double>> = emptyList()
@@ -56,7 +59,7 @@ enum class ObjectSide(var coord: Coord) {
 /** MObjects **/
 data class CodeBlock(
     val lines: List<List<String>>,
-    val ident: String,
+    override val ident: String,
     val codeTextName: String,
     val pointerName: String,
     val textColor: String? = null,
@@ -68,6 +71,7 @@ data class CodeBlock(
 ) : ShapeWithBoundary(uid = "_code") {
     override val classPath: String = "python/code_block.py"
     override val className: String = "Code_block"
+    override val pythonVariablePrefix: String = "code_block"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
@@ -116,46 +120,62 @@ data class SubtitleBlock(
     val textColor: String? = null,
     var duration: Int,
     override val runtime: Double = 1.0,
+    override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {
+    override val classPath: String = "python/subtitles.py"
+    override val className: String = "Subtitle_block"
+    override val pythonVariablePrefix: String = "subtitle_block"
 
-    override var shape: Shape = NullShape
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        val coordinatesString = if (boundary.isEmpty()) "" else "[${boundary.joinToString(", ") { "[${it.first}, ${it.second}, 0]" }}]"
+
+        return "$ident = $className(self.get_time() + $duration, $coordinatesString$style)"
+    }
 
     override fun toPython(): List<String> {
         return listOf(
-            shape.getConstructor(),
-            "self.time_objects.append(${shape.ident})"
+            getConstructor(),
+            "self.time_objects.append(${ident})"
         )
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundary = corners
-        setShape()
     }
 }
 
 data class VariableBlock(
     val variables: List<String>,
-    val ident: String,
+    override val ident: String,
     val variableGroupName: String,
     val textColor: String? = null,
     override val runtime: Double = 1.0,
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
 ) : ShapeWithBoundary(uid = "_variables") {
-    override var shape: Shape = NullShape
+    override val classPath: String = "python/variable_block.py"
+    override val className: String = "Variable_block"
+    override val pythonVariablePrefix: String = "variable_block"
+
+    init {
+        textColor?.let { style.addStyleAttribute(TextColor(it)) }
+    }
+
+    override fun getConstructor(): String {
+        return "$ident = $className(${"[\"${variables.joinToString("\",\"")}\"]"}, $boundaries$style)"
+    }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
-        setShape()
-    }
-
-    override fun setShape() {
-        shape = VariableBlockShape(ident, variables, textColor, boundaries)
     }
 
     override fun toPython(): List<String> {
         return listOf(
             "# Building variable visualisation pane",
-            shape.getConstructor(),
+            getConstructor(),
             "$variableGroupName = $ident.build()",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
         )
@@ -163,16 +183,19 @@ data class VariableBlock(
 }
 
 data class NodeStructure(
-    val ident: String,
+    override val ident: String,
     val value: String,
     val depth: Int,
-    override val shape: Shape = NodeShape(ident, value),
     override val runtime: Double = 1.0
-
 ) : MObject() {
+
+    override fun getConstructor(): String {
+        return "Node(\"$value\")"
+    }
+
     override fun toPython(): List<String> {
         return listOf(
-            "$ident = ${shape.getConstructor()}"
+            "$ident = ${getConstructor()}"
         )
     }
 }
