@@ -2,6 +2,9 @@ package com.manimdsl.runtime.datastructures.stack
 
 import com.manimdsl.frontend.*
 import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.datastructures.stack.InitManimStack
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPopObject
+import com.manimdsl.linearrepresentation.datastructures.stack.StackPushObject
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
@@ -122,9 +125,8 @@ class StackExecutor(
                 boundaryShape.maxSize++
                 dataStructureBoundaries[dsUID] = boundaryShape
                 val hasOldMObject = value.manimObject !is EmptyMObject
-                val oldMObject = value.manimObject as Rectangle
                 val newObjectStyle = ds.animatedStyle ?: ds.style
-                val rectangle = if (hasOldMObject) oldMObject else Rectangle(
+                val rectangle = if (hasOldMObject) value.manimObject as Rectangle else Rectangle(
                     variableNameGenerator.generateNameFromPrefix("rectangle"),
                     value.toString(),
                     dataStructureIdentifier,

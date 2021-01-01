@@ -19,9 +19,3 @@ class VariableNameGenerator(private val symbolTableVisitor: SymbolTableVisitor) 
         return if (count > 0) "$prefix$count" else prefix
     }
 }
-
-object DummyNameGenerator : NameGenerator {
-    override fun generateNameFromPrefix(prefix: String): String {
-        return "dummy"
-    }
-}
