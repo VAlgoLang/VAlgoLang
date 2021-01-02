@@ -86,7 +86,7 @@ class VirtualMachine(
                         displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                     }
                 } else {
-                    displayCode.add(fileLines[it])
+                    displayCode.add(fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")) // Escape chars to be compatible with python strings
                     displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                 }
             } else {

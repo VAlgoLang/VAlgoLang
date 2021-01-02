@@ -268,10 +268,10 @@ class ASTExecutorTests {
             ),
             CodeBlock(
                 lines = listOf(
-                    listOf("let x = 'a';"),
+                    listOf("let x = \\'a\\';"),
                     listOf("let y = toNumber(x);"),
                     listOf("let z = toChar(y);"),
-                    listOf("let a = toNumber(toChar(toNumber('a')));"),
+                    listOf("let a = toNumber(toChar(toNumber(\\'a\\')));"),
                     listOf("let shouldBeTrue = x == z;")
                 ),
                 ident = "code_block",
@@ -287,7 +287,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = 'a'"),
+                variables = listOf("x = \\'a\\'"),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0
@@ -299,7 +299,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = 'a', y = 97.0"),
+                variables = listOf("x = \\'a\\', y = 97.0"),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0
@@ -311,7 +311,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = 'a', y = 97.0, z = 'a'"),
+                variables = listOf("x = \\'a\\', y = 97.0, z = \\'a\\'"),
                 ident = "variable_block",
                 textColor = null, runtime = 1.0
             ),
@@ -322,7 +322,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = 'a', y = 97.0, z = 'a', a = 97.0"),
+                variables = listOf("x = \\'a\\', y = 97.0, z = \\'a\\', a = 97.0"),
                 ident = "variable_block",
                 textColor = null, runtime = 1.0
             ),
@@ -333,7 +333,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("shouldBeTrue = true, y = 97.0, z = 'a', a = 97.0"),
+                variables = listOf("shouldBeTrue = true, y = 97.0, z = \\'a\\', a = 97.0"),
                 ident = "variable_block",
                 textColor = null, runtime = 1.0
             ),

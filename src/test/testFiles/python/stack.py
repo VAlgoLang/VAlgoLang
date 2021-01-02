@@ -1,7 +1,7 @@
 import tempfile
 from abc import ABC, abstractmethod
 from manimlib.imports import *
-
+ 
 class Main(Scene):
     code_start = 0
     code_end = 10
@@ -10,7 +10,7 @@ class Main(Scene):
 
     def construct(self):
         # Building code visualisation pane
-        code_lines = [["let y = new Stack<number>();"], ["y.push(2);"], ["y.push(3);"], ["y.pop();"]]
+        code_lines = [['let y = new Stack<number>();'], ['y.push(2);'], ['y.push(3);'], ['y.pop();']]
         code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
@@ -38,23 +38,23 @@ class Main(Scene):
 
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
-
+    
     def move_relative_to_edge(self, group, x, y):
         self.play_animation(ApplyMethod(group.to_edge, np.array([x, y, 0])))
-
+    
     def move_relative_to_obj(self, group, target, x, y):
         self.play_animation(ApplyMethod(group.next_to, target, np.array([x, y, 0])))
-
-
+    
+    
     def place_relative_to_obj(self, group, target, x, y):
         group.next_to(target, np.array([x, y, 0]))
-
+    
     def fade_out_if_needed(self, mobject):
         if mobject in self.mobjects:
             return FadeOut(mobject)
         else:
             return None
-
+    
     def play_animation(self, *args, run_time=1.0):
         time_elapsed = round(self.get_time())
         for time_object in self.time_objects:
@@ -62,12 +62,12 @@ class Main(Scene):
                 self.play(time_object.action())
     #             self.time_objects.remove(time_object)
         self.play(*args, run_time=run_time)
-
+    
     def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
         idx = 0
         for i in range(line_number):
             idx += len(code_block.code[i])
-
+    
         if idx > self.code_end:
             animation = self.fade_out_if_needed(pointer)
             if animation is not None:
@@ -78,10 +78,10 @@ class Main(Scene):
             if animation is not None:
                 self.play(animation, runtime=0.1)
             self.scroll_up(code_text, (self.code_start - idx + len(code_block.code[line_number - 1])))
-
+    
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
-
+    
     def scroll_down(self, group, scrolls):
         sh_val = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
         for i in range(1, 1 + scrolls):
@@ -90,7 +90,7 @@ class Main(Scene):
                       group[(self.code_start + i):(self.code_end + i)].shift, sh_val * UP, run_time=0.1)
         self.code_start = self.code_start + scrolls
         self.code_end = self.code_end + scrolls
-
+    
     def scroll_up(self, group, scrolls):
         sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
         for i in range(1, 1 + scrolls):
@@ -219,6 +219,7 @@ class DataStructure(ABC):
     @abstractmethod
     def shrink_if_cross_border(self, obj):
         pass
+
     @abstractmethod
     def clean_up(self):
         pass
@@ -248,8 +249,11 @@ class Rectangle_block:
         if(new_text_obj.get_height() > 0.6 * self.height):
             new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
         return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
+
     def clean_up(self):
         return FadeOut(self.all)
+
+
 class Stack(DataStructure, ABC):
 
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
@@ -310,8 +314,10 @@ class Stack(DataStructure, ABC):
             animation.append(sim_list)
         animation.append([ApplyMethod(obj.all.next_to, self.all, np.array([0, 0.25, 0]))])
         return animation
+
     def clean_up(self):
         return [FadeOut(self.all)]
+
 # Object representing a stack instantiation.
 class Init_structure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):

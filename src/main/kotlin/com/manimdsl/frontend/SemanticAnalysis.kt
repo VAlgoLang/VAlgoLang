@@ -568,7 +568,9 @@ class SemanticAnalysis {
     }
 
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
-        if (type !is ArrayType) {
+        if (type is StringType) {
+            stringImmutabilityError(identifier, ctx)
+        } else if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
         }
     }

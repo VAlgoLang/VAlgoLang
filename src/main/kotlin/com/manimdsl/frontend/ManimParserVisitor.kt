@@ -740,21 +740,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
         val type = symbolTable.getTypeOf(arrayIdentifier)
 
-        val internalType: Type
-        if (type is ArrayType) {
-            semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
-            internalType = type.internalType
-        } else if(type is StringType) {
-            semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, false, ctx)
-            internalType = CharType
-        } else {
-            internalType = ErrorType
-            incompatibleOperatorTypeError("[]", type, ctx= ctx)
+        val internalType = when (type) {
+            is ArrayType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+                type.internalType
+            }
+            is StringType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, false, ctx)
+                CharType
+            }
+            else -> {
+                incompatibleOperatorTypeError("[]", type, ctx= ctx)
+                ErrorType
+            }
         }
 
         semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
-
-//        val internalType = if (type is ArrayType) type.internalType else ErrorType
         return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
     }
 
