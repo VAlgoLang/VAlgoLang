@@ -71,7 +71,7 @@ private fun compile(filename: String, outputVideoFile: String, generatePython: B
             exitProcess(1)
         }
 
-        println("Animation Complete!")
+        println("Animation saved to $outputVideoFile")
     }
 }
 

@@ -1,0 +1,16 @@
+fun inorder(head: Node<number>, arr: Array<number>, i: number): number {
+    if (head == null) {
+        return i;
+    } else {
+        let j = inorder(head.left, arr, i);
+        arr[j] = head.value;
+        return inorder(head.right, arr, j+1);
+    }
+}
+
+let head = Node<number>(4);
+let tree = Tree<Node<number>>(head);
+head.left = Node<number>(3);
+head.right = Node<number>(5);
+let arr = Array<number>(3) {-1, -1, -1};
+inorder(tree.root, arr, 0);
