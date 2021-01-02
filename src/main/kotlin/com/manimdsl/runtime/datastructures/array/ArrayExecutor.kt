@@ -415,6 +415,12 @@ class ArrayExecutor(
 
     fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
         return when (node.dataStructureMethod) {
+            is ListType.Prepend -> {
+                EmptyValue
+            }
+            is ListType.Append -> {
+                EmptyValue
+            }
             is ArrayType.Size -> {
                 DoubleValue(ds.array.size.toDouble())
             }

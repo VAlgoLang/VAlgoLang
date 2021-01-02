@@ -50,6 +50,7 @@ COMMENT: 'comment';
 SLEEP: 'sleep';
 STACK: 'Stack';
 ARRAY: 'Array';
+LIST: 'List';
 TREE: 'Tree';
 TREE_NODE: 'Node';
 IF: 'if';
