@@ -1,1 +1,8 @@
-let x = 2;
+fun test(): Tree<Node<number>> {
+    let x = Node<number>(2);
+    let tree = Tree<Node<number>>(x);
+    x.left = Node<number>(3);
+    return tree;
+}
+
+let tree = test();

@@ -21,7 +21,8 @@ class StackExecutor(
     override val animationSpeeds: ArrayDeque<Double>,
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
-    override val codeTextVariable: String
+    override val codeTextVariable: String,
+    val locallyCreatedDynamicVariables: MutableSet<String>,
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
@@ -30,6 +31,7 @@ class StackExecutor(
         stackValue.style = stylesheet.getStyle(assignLHS.identifier, stackValue)
         stackValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, stackValue)
         val position = stylesheet.getPosition(dsUID)
+        locallyCreatedDynamicVariables.add(dsUID)
         dataStructureBoundaries[dsUID] = TallBoundary()
         if (stylesheet.userDefinedPositions() && position == null) {
             return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)

@@ -193,7 +193,7 @@ class VirtualMachine(
      * @property updateVariableState: Whether to not hide variable block.
      * @property hideCode: Whether to hide code block.
      * @property functionNamePrefix: Function name for stylesheet styling assignment disambiguation.
-     * @property localDataStructure: Set of local data structures.
+     * @property localDataStructures: Set of local data structures.
      * @constructor Creates a new execution frame.
      *
      */
@@ -210,14 +210,44 @@ class VirtualMachine(
         private val updateVariableState: Boolean = true,
         private val hideCode: Boolean = false,
         val functionNamePrefix: String = "",
-        private val localDataStructure: MutableSet<String>? = null
+        private val localDataStructures: MutableSet<String> = mutableSetOf()
     ) {
         private var previousStepIntoState = stepInto
 
         /** Data Structure Executors **/
-        private val btExecutor = BinaryTreeExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
-        private val arrExecutor = ArrayExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
-        private val stackExecutor = StackExecutor(variables, linearRepresentation, this, stylesheet, animationSpeeds, dataStructureBoundaries, variableNameGenerator, codeTextVariable)
+        private val btExecutor = BinaryTreeExecutor(
+            variables,
+            linearRepresentation,
+            this,
+            stylesheet,
+            animationSpeeds,
+            dataStructureBoundaries,
+            variableNameGenerator,
+            codeTextVariable,
+            localDataStructures
+        )
+        private val arrExecutor = ArrayExecutor(
+            variables,
+            linearRepresentation,
+            this,
+            stylesheet,
+            animationSpeeds,
+            dataStructureBoundaries,
+            variableNameGenerator,
+            codeTextVariable,
+            localDataStructures
+        )
+        private val stackExecutor = StackExecutor(
+            variables,
+            linearRepresentation,
+            this,
+            stylesheet,
+            animationSpeeds,
+            dataStructureBoundaries,
+            variableNameGenerator,
+            codeTextVariable,
+            localDataStructures
+        )
 
         /** FRAME UTILITIES **/
         fun getShowMoveToLine() = showMoveToLine
@@ -282,15 +312,17 @@ class VirtualMachine(
             ++pc
         }
 
-        fun convertToIdent(dataStructureVariable: MutableSet<String>?) {
-            if (dataStructureVariable != null) {
-                val idents = dataStructureVariable.map { (variables[it]!!.manimObject as DataStructureMObject).ident }
-                dataStructureVariable.forEach {
-                    variables[it] = EmptyValue
-                }
-                dataStructureVariable.clear()
-                dataStructureVariable.addAll(idents)
+        fun convertToIdent(dataStructureVariable: MutableSet<String>, frame: Frame): MutableSet<String> {
+            val idents = dataStructureVariable.map { if (it.contains('.')) {
+                    it.substringAfter('.')
+                } else {
+                    it
+                } }.map { (frame.variables[it]!!.manimObject as DataStructureMObject).ident }
+            dataStructureVariable.forEach {
+                variables[it] = EmptyValue
             }
+            return idents.toMutableSet()
+
         }
 
         // instantiate new Frame and execute on scoping changes e.g. recursion
@@ -314,14 +346,16 @@ class VirtualMachine(
 
                     val value = executeStatement(statement)
                     if (statement is ReturnNode || value !is EmptyValue) {
-                        convertToIdent(localDataStructure)
+                        if (statement is ReturnNode && statement.expression is IdentifierNode && value !is PrimitiveValue && value !is RuntimeError) {
+                            // Return variable data structure
+                            localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
+                        }
                         return value
                     }
                 }
 
                 fetchNextStatement()
             }
-            convertToIdent(localDataStructure)
             return EmptyValue
         }
 
@@ -471,10 +505,10 @@ class VirtualMachine(
             val functionNode = program.functions.find { it.identifier == statement.functionIdentifier }!!
             val finalStatementLine = functionNode.statements.last().lineNumber
 
-            val localDataStructure = mutableSetOf<String>()
-
             // program counter will forward in loop, we have popped out of stack
-            val returnValue = Frame(
+
+            val locallyCreatedDynamicVariables = mutableSetOf<String>()
+            val frame = Frame(
                 functionNode.lineNumber,
                 finalStatementLine,
                 argumentVariables,
@@ -484,11 +518,13 @@ class VirtualMachine(
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
                 functionNamePrefix = "${functionNode.identifier}.",
-                localDataStructure = localDataStructure
-            ).runFrame()
+                localDataStructures = locallyCreatedDynamicVariables
+            )
+            val returnValue = frame.runFrame()
 
-            if (localDataStructure.isNotEmpty()) {
-                linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
+
+            if (locallyCreatedDynamicVariables.isNotEmpty()) {
+                linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(locallyCreatedDynamicVariables, frame), animationSpeeds.first()))
             }
 
             // to visualise popping back to assignment we can move pointer to the prior statement again
@@ -497,14 +533,6 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
-            if (node.identifier is IdentifierNode && variables.containsKey(node.identifier.identifier)) {
-                with(variables[node.identifier.identifier]?.manimObject) {
-                    if (this is DataStructureMObject) {
-                        linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
-                    }
-                }
-            }
-
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
@@ -533,16 +561,8 @@ class VirtualMachine(
                                     )
                                 )
                             }
-                            if (localDataStructure != null && node is DeclarationNode && assignedValue.manimObject is DataStructureMObject) {
-                                localDataStructure.add(node.identifier.identifier)
-                            }
-                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject) {
-                                val constructor = makeConstructorNode(assignedValue, node.lineNumber)
-                                val rhs = executeConstructor(constructor, node.identifier)
-                                variables[node.identifier.identifier] = rhs
-                            } else {
-                                variables[node.identifier.identifier] = assignedValue
-                            }
+
+                            variables[node.identifier.identifier] = assignedValue
 
                             insertVariable(node.identifier.identifier, assignedValue)
                             updateVariableState()
@@ -612,7 +632,6 @@ class VirtualMachine(
                     }
                 }
 
-                val localDataStructure = mutableSetOf<String>()
 
                 execValue = Frame(
                     loopNode.statements.first().lineNumber,
@@ -623,7 +642,6 @@ class VirtualMachine(
                     stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
-                    localDataStructure = localDataStructure
                 ).runFrame()
 
                 when (execValue) {
@@ -648,9 +666,6 @@ class VirtualMachine(
                 if (showMoveToLine && !hideCode && loopNode is ForStatementNode) addSleep(animationSpeeds.first() * 0.5)
 
                 if (loopNode is ForStatementNode) executeAssignment(loopNode.updateCounter)
-                if (localDataStructure.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(localDataStructure, animationSpeeds.first()))
-                }
                 pc = loopNode.lineNumber
                 moveToLine()
                 loopCount++
@@ -669,11 +684,10 @@ class VirtualMachine(
             }
             // Set pc to end of if statement as branching is handled here
             pc = ifStatementNode.endLineNumber
-            val localDataStructure = mutableSetOf<String>()
 
             // If
             if (conditionValue.value) {
-                return executeIfBranchingStatements(ifStatementNode.statements, ifStatementNode.endLineNumber, localDataStructure)
+                return executeIfBranchingStatements(ifStatementNode.statements, ifStatementNode.endLineNumber)
             }
 
             // Elif
@@ -683,7 +697,7 @@ class VirtualMachine(
                 // Add statement to code
                 conditionValue = executeExpression(elif.condition) as BoolValue
                 if (conditionValue.value) {
-                    return executeIfBranchingStatements(elif.statements, ifStatementNode.endLineNumber, localDataStructure)
+                    return executeIfBranchingStatements(elif.statements, ifStatementNode.endLineNumber)
                 }
             }
 
@@ -691,12 +705,12 @@ class VirtualMachine(
             if (ifStatementNode.elseBlock.statements.isNotEmpty()) {
                 moveToLine(ifStatementNode.elseBlock.lineNumber)
                 if (showMoveToLine && !hideCode) addSleep(animationSpeeds.first() * 0.5)
-                return executeIfBranchingStatements(ifStatementNode.elseBlock.statements, ifStatementNode.endLineNumber, localDataStructure)
+                return executeIfBranchingStatements(ifStatementNode.elseBlock.statements, ifStatementNode.endLineNumber)
             }
             return EmptyValue
         }
 
-        private fun executeIfBranchingStatements(statements: List<StatementNode>, endLineNumber: Int, localDataStructure: MutableSet<String>): ExecValue {
+        private fun executeIfBranchingStatements(statements: List<StatementNode>, endLineNumber: Int): ExecValue {
             val execValue = Frame(
                 statements.first().lineNumber,
                 statements.last().lineNumber,
@@ -706,21 +720,12 @@ class VirtualMachine(
                 stepInto = stepInto,
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
-                localDataStructure = localDataStructure
             ).runFrame()
 
             if (execValue is EmptyValue) {
                 pc = endLineNumber
             }
 
-            if (localDataStructure.isNotEmpty()) {
-                linearRepresentation.add(
-                    CleanUpLocalDataStructures(
-                        localDataStructure,
-                        animationSpeeds.first()
-                    )
-                )
-            }
             return execValue
         }
 

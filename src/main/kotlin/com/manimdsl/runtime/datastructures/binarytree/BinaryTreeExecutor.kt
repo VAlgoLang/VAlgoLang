@@ -11,16 +11,18 @@ import com.manimdsl.runtime.datastructures.DataStructureExecutor
 import com.manimdsl.runtime.datastructures.SquareBoundary
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
+import java.util.ArrayDeque
 
 class BinaryTreeExecutor(
     override val variables: MutableMap<String, ExecValue>,
     override val linearRepresentation: MutableList<ManimInstr>,
     override val frame: VirtualMachine.Frame,
     override val stylesheet: Stylesheet,
-    override val animationSpeeds: java.util.ArrayDeque<Double>,
+    override val animationSpeeds: ArrayDeque<Double>,
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
-    override val codeTextVariable: String
+    override val codeTextVariable: String,
+    val localDataStructures: MutableSet<String>
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
@@ -28,6 +30,7 @@ class BinaryTreeExecutor(
             val ident = variableNameGenerator.generateNameFromPrefix("tree")
             val root = frame.executeExpression(node.arguments.first()) as BinaryTreeNodeValue
             val position = stylesheet.getPosition(dsUID)
+            localDataStructures.add(dsUID)
             dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
             if (stylesheet.userDefinedPositions() && position == null) {
                 return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
