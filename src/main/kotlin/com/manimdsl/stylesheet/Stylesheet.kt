@@ -193,10 +193,13 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
                 if (e.message.let {
-                        it != null && (it.startsWith("duplicate key") || it.startsWith("Missing field") || it.startsWith(
-                            "Cannot"
-                        ))
-                    }) {
+                    it != null && (
+                        it.startsWith("duplicate key") || it.startsWith("Missing field") || it.startsWith(
+                                "Cannot"
+                            )
+                        )
+                }
+                ) {
                     println(e.message)
                 } else {
                     println("Could not parse JSON")
@@ -241,12 +244,12 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             )
         val style = stylesheet.variables.getOrDefault(identifier, dataStructureStyle)
         val animationStyle = (
-                style.animate
-                    ?: AnimationProperties()
-                ) merge (
-                dataStructureStyle.animate
-                    ?: AnimationProperties()
-                )
+            style.animate
+                ?: AnimationProperties()
+            ) merge (
+            dataStructureStyle.animate
+                ?: AnimationProperties()
+            )
 
         return (animationStyle merge DefaultAnimationProperties())
     }
