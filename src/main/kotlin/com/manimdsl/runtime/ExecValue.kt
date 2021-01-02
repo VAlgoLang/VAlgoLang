@@ -260,7 +260,6 @@ data class RuntimeError(
     override val name: String = "RuntimeError"
 }
 
-
 object BreakValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
