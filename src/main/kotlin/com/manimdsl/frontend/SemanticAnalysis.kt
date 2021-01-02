@@ -80,12 +80,13 @@ class SemanticAnalysis {
 
         return when (expression) {
             is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
-                val validTypes = (expression as ComparableTypes).compatibleTypes
-                if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) {
-                    if (expr1Type is StringType || expr2Type is StringType) {
-                        StringType
-                    } else NumberType
-                } else ErrorType
+                if (expr1Type is StringType || expr2Type is StringType) {
+                    // String interpolation can be compatible with any type and takes highest priority
+                    StringType
+                } else {
+                    val validTypes = (expression as ComparableTypes).compatibleTypes
+                    if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
+                }
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType

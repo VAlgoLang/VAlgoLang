@@ -411,7 +411,8 @@ class VirtualMachine(
                         stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
                     }
 
-                    updateSubtitle(statement.text, duration)
+                    val text = executeExpression(statement.text) as StringValue
+                    updateSubtitle(text.toString(), duration)
                     EmptyValue
                 } else {
                     EmptyValue

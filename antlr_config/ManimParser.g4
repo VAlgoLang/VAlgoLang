@@ -36,7 +36,7 @@ annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS
     | SPEED (OPEN_PARENTHESIS arg_list CLOSE_PARENTHESIS)?
     OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                         #AnimationSpeedUpAnnotation
     | show=(SUBTITLE | SUBTITLE_ONCE) OPEN_PARENTHESIS
-    subtitle_text=STRING (COMMA arg_list)? CLOSE_PARENTHESIS            #SubtitleAnnotation
+    subtitle_text=expr (COMMA arg_list)? CLOSE_PARENTHESIS            #SubtitleAnnotation
     ;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;

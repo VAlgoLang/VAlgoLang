@@ -463,7 +463,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitSubtitleAnnotation(ctx: SubtitleAnnotationContext): SubtitleAnnotationNode {
-        val text = ctx.subtitle_text.text
+        val text = visit(ctx.subtitle_text) as ExpressionNode
+
+        semanticAnalyser.checkExpressionTypeWithExpectedType(text, StringType, symbolTable, ctx)
+
         var condition: ExpressionNode = BoolNode(ctx.start.line, true)
         var duration: ExpressionNode? = null
         if (ctx.arg_list() != null) {
