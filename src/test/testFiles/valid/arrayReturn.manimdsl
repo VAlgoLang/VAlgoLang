@@ -1,0 +1,7 @@
+fun func(): Array<number> {
+    let x = Array<number>(3);
+    return x;
+}
+
+let x = func();
+x[0] = 3;
