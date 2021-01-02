@@ -662,6 +662,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CharNode(ctx.start.line, ctx.CHAR_LITER().text[1])
     }
 
+    override fun visitStringLiteral(ctx: StringLiteralContext): ASTNode {
+        // string in format "string"
+        return StringNode(ctx.start.line, ctx.STRING().text.removeSurrounding("\""))
+    }
+
     override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
         return NullNode(ctx.start.line)
     }
@@ -682,6 +687,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCharType(ctx: CharTypeContext?): ASTNode {
         return CharType
+    }
+
+    override fun visitStringType(ctx: StringTypeContext?): ASTNode {
+        return StringType
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {

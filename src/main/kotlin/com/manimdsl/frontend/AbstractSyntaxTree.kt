@@ -212,7 +212,9 @@ data class BinaryTreeRootAccessNode(
 data class NumberNode(override val lineNumber: Int, val double: Double) : ExpressionNode(lineNumber)
 data class BoolNode(override val lineNumber: Int, val value: Boolean) : ExpressionNode(lineNumber)
 data class CharNode(override val lineNumber: Int, val value: Char) : ExpressionNode(lineNumber)
+data class StringNode(override val lineNumber: Int, val value: String) : ExpressionNode(lineNumber)
 data class VoidNode(override val lineNumber: Int) : ExpressionNode(lineNumber)
+
 data class MethodCallNode(
     override val lineNumber: Int,
     val instanceIdentifier: String,

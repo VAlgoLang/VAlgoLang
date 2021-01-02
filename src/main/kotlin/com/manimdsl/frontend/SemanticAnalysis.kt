@@ -10,17 +10,18 @@ class SemanticAnalysis {
         when (expression) {
             is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
             is NumberNode -> NumberType
+            is VoidNode -> VoidType
+            is BoolNode -> BoolType
+            is NullNode -> NullType
+            is CharNode -> CharType
+            is StringNode -> StringType
             is MethodCallNode -> expression.dataStructureMethod.returnType
             is ConstructorNode -> expression.type
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
             is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
-            is BoolNode -> BoolType
-            is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeNodeElemAccessNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
-            is NullNode -> NullType
-            is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
             is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
             is BinaryTreeRootAccessNode -> {
