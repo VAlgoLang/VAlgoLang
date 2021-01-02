@@ -1,2 +1,5 @@
 let x = List<number>() {1,2,3,4};
-let y = x[0];
+x.prepend(100);
+x.append(10);
+x.append(20);
+let z = x.size();

@@ -5,6 +5,8 @@ import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.VariableNameGenerator
 import com.manimdsl.linearrepresentation.datastructures.array.*
+import com.manimdsl.linearrepresentation.datastructures.list.ListAppend
+import com.manimdsl.linearrepresentation.datastructures.list.ListPrepend
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
@@ -416,12 +418,33 @@ class ArrayExecutor(
     fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
         return when (node.dataStructureMethod) {
             is ListType.Prepend -> {
+                val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                val newValue = frame.executeExpression(node.arguments[0])
+                val arrayList = ds.array.toMutableList()
+                arrayList.add(0, newValue)
+                ds.array = arrayList.toTypedArray()
+                linearRepresentation.add(
+                    ListPrepend(arrayIdent, newValue,
+                        runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier))
+                )
                 EmptyValue
             }
             is ListType.Append -> {
+                val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                val newValue = frame.executeExpression(node.arguments[0])
+                val arrayList = ds.array.toMutableList()
+                arrayList += newValue
+                ds.array = arrayList.toTypedArray()
+                linearRepresentation.add(
+                    ListAppend(arrayIdent, newValue,
+                        runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier))
+                )
                 EmptyValue
             }
             is ArrayType.Size -> {
+                println(ds.array.toList())
                 DoubleValue(ds.array.size.toDouble())
             }
             is ArrayType.Swap -> {
