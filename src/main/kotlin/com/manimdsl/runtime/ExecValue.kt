@@ -217,7 +217,7 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
 /**
  * String Execution Value Class
  *
- * @property manimObject: Manim Object corresponded to by the BoolValue.
+ * @property manimObject: Manim Object corresponded to by the StringValue.
  * @property value: Current string value.
  * @constructor: Creates a new StringValue.
  *
