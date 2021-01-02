@@ -9,6 +9,15 @@ import com.manimdsl.stylesheet.PositionProperties
 
 private const val WRAP_LINE_LENGTH = 50
 
+/**
+ * Wrap code lines to prevent overly long lines during rendering.
+ *
+ * @param code The code being formatted as an array of lines.
+ * @return 2D list of strings with each inner list corresponding to one original broken up line.
+ * Flattened output corresponds to original unwrapped code.
+ *
+ */
+
 fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
     val wrappedCode = mutableListOf<MutableList<String>>()
     for (line in code) {
@@ -25,6 +34,14 @@ fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
     return wrappedCode
 }
 
+/**
+ * Wrap individual code line.
+ *
+ * @param line
+ * @return Length of the line of code that can be safely rendered.
+ *
+ */
+
 fun wrapLine(line: String): Int {
     val list = line.split(" ")
     var counter = 0
@@ -39,6 +56,14 @@ fun wrapLine(line: String): Int {
     return line.length
 }
 
+/**
+ * Gets boundaries as list of coordinates based on position properties.
+ *
+ * @param position The position properties from the stylesheet.
+ * @return List of top left to bottom right coordinates based on [position].
+ *
+ */
+
 fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
     val boundaries = mutableListOf<Pair<Double, Double>>()
     if (position != null) {
@@ -51,12 +76,30 @@ fun getBoundaries(position: PositionProperties?): List<Pair<Double, Double>> {
     return boundaries
 }
 
+/**
+ * Formats [text] with \n insertions so each line is less than [max_length].
+ *
+ * @param text
+ * @param max_length
+ * @return Formatted [text]
+ *
+ */
+
 fun wrapString(text: String, max_length: Int = WRAP_LINE_LENGTH): String {
     val sb = StringBuilder(text)
     for (index in max_length until text.length step max_length)
         sb.insert(index, "\\n")
     return sb.toString()
 }
+
+/**
+ * Utility to construct some basic expression nodes back from corresponding execution values.
+ *
+ * @param value
+ * @param lineNumber
+ * @return ExpressionNode.
+ *
+ */
 
 fun makeExpressionNode(value: ExecValue, lineNumber: Int): ExpressionNode {
     return when (value) {
