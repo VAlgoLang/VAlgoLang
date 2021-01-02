@@ -211,7 +211,9 @@ class ArrayExecutor(
                     if (indices.first().value.toInt() !in arrayValue.array.indices || index2 !in arrayValue.array[index].indices) {
                         RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                     } else {
-                        arrayValue.array[index][index2] = assignedValue
+                        val arrayClone = arrayValue.array.clone()
+                        arrayClone[index][index2] = assignedValue
+                        arrayValue.array = arrayClone
                         arrayValue.animatedStyle?.let {
                             linearRepresentation.add(
                                 ArrayElemRestyle(
@@ -258,7 +260,9 @@ class ArrayExecutor(
                 if (indices.first().value.toInt() !in arrayValue.array.indices) {
                     RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                 } else {
-                    arrayValue.array[index.value.toInt()] = assignedValue
+                    val arrayClone = arrayValue.array.clone()
+                    arrayClone[index.value.toInt()] = assignedValue
+                    arrayValue.array = arrayClone
                     arrayValue.animatedStyle?.let {
                         linearRepresentation.add(
                             ArrayElemRestyle(
@@ -430,6 +434,9 @@ class ArrayExecutor(
                         variableNameGenerator.generateNameFromPrefix("list"),
                         node.instanceIdentifier,
                         ds.array,
+                        color = ds.style.borderColor,
+                        textColor = ds.style.textColor,
+                        creationString = ds.style.creationStyle,
                         uid = frame.functionNamePrefix + node.instanceIdentifier,
                         showLabel = ds.style.showLabel,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
