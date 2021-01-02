@@ -22,7 +22,7 @@ stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepS
     (ELSE OPEN_CURLY_BRACKET elseStat=stat? CLOSE_CURLY_BRACKET)?        #IfStatement
     | WHILE OPEN_PARENTHESIS whileCond=expr CLOSE_PARENTHESIS
       OPEN_CURLY_BRACKET whileStat=stat? CLOSE_CURLY_BRACKET             #WhileStatement
-    | FOR forHeader OPEN_CURLY_BRACKET forStat=stat? CLOSE_CURLY_BRACKET               #ForStatement
+    | FOR forHeader OPEN_CURLY_BRACKET forStat=stat? CLOSE_CURLY_BRACKET #ForStatement
     | loop_stat                                                          #LoopStatement
     | stat1=stat stat2=stat                                              #ConsecutiveStatement
     | method_call SEMI                                                   #MethodCallStatement
@@ -36,7 +36,7 @@ annotation: step=(STEP_INTO | STEP_OVER) (OPEN_PARENTHESIS
     | SPEED (OPEN_PARENTHESIS arg_list CLOSE_PARENTHESIS)?
     OPEN_CURLY_BRACKET stat CLOSE_CURLY_BRACKET                         #AnimationSpeedUpAnnotation
     | show=(SUBTITLE | SUBTITLE_ONCE) OPEN_PARENTHESIS
-    subtitle_text=STRING (COMMA arg_list)? CLOSE_PARENTHESIS                              #SubtitleAnnotation
+    subtitle_text=STRING (COMMA arg_list)? CLOSE_PARENTHESIS            #SubtitleAnnotation
     ;
 
 forHeader: IDENT IN RANGE OPEN_PARENTHESIS (begin=expr COMMA)? end=expr (COMMA delta=expr)? CLOSE_PARENTHESIS     #RangeHeader;
@@ -54,6 +54,7 @@ elseIf: ELSE IF OPEN_PARENTHESIS elifCond=expr CLOSE_PARENTHESIS OPEN_CURLY_BRAC
 arg_list: expr (COMMA expr)*                                        #ArgumentList;
 
 expr: NUMBER                                                        #NumberLiteral
+    | STRING                                                        #StringLiteral
     | NULL                                                          #NullLiteral
     | bool                                                          #BooleanLiteral
     | CHAR_LITER                                                    #CharacterLiteral
@@ -85,7 +86,7 @@ type: data_structure_type                                            #DataStruct
 
 node_type: TREE_NODE LT primitive_type GT;
 data_structure_type: STACK LT primitive_type GT                      #StackType
-    | (ARRAY LT)+ type GT+                                 #ArrayType
+    | (ARRAY LT)+ type GT+                                           #ArrayType
     | node_type                                                      #NodeType
     | TREE LT node_type GT                                           #TreeType
     ;
@@ -94,6 +95,7 @@ data_structure_type: STACK LT primitive_type GT                      #StackType
 primitive_type: NUMBER_TYPE                                          #NumberType
     | BOOL_TYPE                                                      #BoolType
     | CHAR_TYPE                                                      #CharType
+    | STRING_TYPE                                                    #StringType
     ;
 
 bool: TRUE | FALSE;
