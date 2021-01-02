@@ -777,7 +777,17 @@ class VirtualMachine(
 
             return when (node.targetType) {
                 is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
-                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                is NumberType -> {
+                    if (exprValue is DoubleAlias) {
+                        DoubleValue(exprValue.toDouble())
+                    } else {
+                        try {
+                            DoubleValue((exprValue as StringValue).value.toDouble())
+                        } catch (e: NumberFormatException) {
+                            RuntimeError(value = "Invalid cast operation", lineNumber = node.lineNumber)
+                        }
+                    }
+                }
                 else -> RuntimeError(value = "Invalid cast operation", lineNumber = node.lineNumber)
             }
         }

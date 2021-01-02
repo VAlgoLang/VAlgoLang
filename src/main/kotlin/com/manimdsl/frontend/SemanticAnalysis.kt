@@ -82,7 +82,7 @@ class SemanticAnalysis {
             is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
                 val validTypes = (expression as ComparableTypes).compatibleTypes
                 if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) {
-                    if(expr1Type is StringType || expr2Type is StringType) {
+                    if (expr1Type is StringType || expr2Type is StringType) {
                         StringType
                     } else NumberType
                 } else ErrorType

@@ -97,7 +97,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val expr = visit(ctx.expr()) as ExpressionNode
 
         val expectedTypes = when (ctx.cast_method()) {
-            is ToCharacterContext, is ToNumberContext -> setOf(NumberType, CharType)
+            is ToCharacterContext -> setOf(NumberType, CharType)
+            is ToNumberContext -> setOf(NumberType, CharType, StringType)
             else -> throw UnsupportedOperationException("Not implemented")
         }
 
@@ -750,7 +751,7 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
                 CharType
             }
             else -> {
-                incompatibleOperatorTypeError("[]", type, ctx= ctx)
+                incompatibleOperatorTypeError("[]", type, ctx = ctx)
                 ErrorType
             }
         }
