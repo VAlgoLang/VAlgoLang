@@ -3,8 +3,8 @@ package com.manimdsl.linearrepresentation.datastructures.array
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.runtime.ExecValue
 import com.manimdsl.stylesheet.AnimationProperties
-import com.manimdsl.stylesheet.StyleSheetValidator
 import com.manimdsl.stylesheet.StylesheetProperty
+import com.manimdsl.stylesheet.StylesheetValidator
 
 data class ArrayElemAssignObject(
     val arrayIdent: String,
@@ -111,7 +111,7 @@ data class ArrayElemRestyle(
         val animationString = animationString ?: "FadeToColor"
 
         val animationStringTakesColorAsParameter =
-            StyleSheetValidator.validAnimationStrings.getOrDefault(animationString, true)
+            StylesheetValidator.validAnimationStrings.getOrDefault(animationString, true)
 
         styleProperties.borderColor?.let {
             indices.forEachIndexed { index, i ->

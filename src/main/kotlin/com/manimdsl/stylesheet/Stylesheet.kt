@@ -188,7 +188,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
             val type: Type = object : TypeToken<StylesheetFromJSON>() {}.type
             try {
                 val parsedStylesheet: StylesheetFromJSON = gson.fromJson(File(stylesheetPath).readText(), type)
-                StyleSheetValidator.validateStyleSheet(parsedStylesheet, symbolTableVisitor)
+                StylesheetValidator.validateStyleSheet(parsedStylesheet, symbolTableVisitor)
                 parsedStylesheet
             } catch (e: JsonSyntaxException) {
                 print("Invalid JSON stylesheet: ")
