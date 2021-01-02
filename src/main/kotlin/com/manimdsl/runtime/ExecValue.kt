@@ -165,7 +165,7 @@ data class CharValue(override val value: Char, override var manimObject: MObject
     }
 
     override fun toString(): String {
-        return "\'${value}\'"
+        return "\\'${value}\\'"
     }
 
     override fun clone(): ExecValue {

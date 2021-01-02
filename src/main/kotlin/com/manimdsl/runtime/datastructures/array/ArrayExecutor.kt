@@ -302,6 +302,12 @@ class ArrayExecutor(
         return when (val arrayValue = variables[node.identifier]) {
             is ArrayValue -> executeArrayElemSingle(node, arrayValue)
             is Array2DValue -> executeArrayElem2D(node, arrayValue, identifier)
+            is StringValue -> {
+                val index = (frame.executeExpression(node.indices.first()) as DoubleValue).value.toInt()
+                if (index !in arrayValue.value.indices) {
+                    RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
+                } else CharValue(arrayValue.value[index])
+            }
             else -> EmptyValue
         }
     }
