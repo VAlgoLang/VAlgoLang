@@ -41,7 +41,7 @@ class SemanticAnalysis {
         return if (type is NodeType) {
             if (expression.accessChain.isNotEmpty()) {
                 val lastValue = expression.accessChain.last()
-                if (lastValue is NodeType.Value) lastValue.returnType else NodeType(lastValue.returnType)
+                lastValue.returnType
             } else {
                 type
             }
