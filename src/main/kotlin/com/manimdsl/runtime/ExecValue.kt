@@ -14,7 +14,6 @@ import kotlin.math.roundToInt
  *
  */
 
-// Wrapper classes for values of variables while executing code
 abstract class ExecValue {
     abstract var manimObject: MObject
     abstract val value: Any
@@ -247,7 +246,6 @@ object VoidValue : ExecValue() {
  *
  */
 
-// Used to propagate runtime error up scope
 data class RuntimeError(
     override val value: String,
     override var manimObject: MObject = EmptyMObject,
