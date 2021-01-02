@@ -26,6 +26,20 @@ import com.manimdsl.stylesheet.PositionProperties
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.*
 
+/**
+ * Virtual Machine
+ *
+ * @property program: Root node of abstract syntax tree
+ * @property symbolTableVisitor: Symbol table visitor built during parsing
+ * @property statements: Line to node map mapping unique line numbers to StatementNodes in the abstract syntax tree.
+ *                       Constructed during parsing
+ * @property fileLines: Array of source code lines.
+ * @property stylesheet: Stylesheet object with animation properties.
+ * @property returnBoundaries: Optional CLI argument for whether to return the boundaries of the shapes. Used in Web UI.
+ * @constructor Creates a new virtual machine
+ *
+ */
+
 class VirtualMachine(
     private val program: ProgramNode,
     private val symbolTableVisitor: SymbolTableVisitor,
@@ -165,6 +179,25 @@ class VirtualMachine(
         }
     }
 
+    /**
+     * Frame
+     *
+     * @property pc: Start line (program counter) for frame execution.
+     * @property finalLine: Last line (inclusive) for frame execution.
+     * @property variables: Map from identifier of a variable in frame to its current execution value.
+     * @property depth: Number of frames top level scope.
+     * @property showMoveToLine: Whether to visualise code stepping for the code executed in this frame.
+     * @property stepInto: Whether to step into (rather than over) this frame in the code stepping visualisation.
+     * @property mostRecentlyUpdatedQueue: Queue maintaining most recently updated variables.
+     * @property displayedDataMap: Map maintaining the execution value and variable being displayed in variable block.
+     * @property updateVariableState: Whether to not hide variable block.
+     * @property hideCode: Whether to hide code block.
+     * @property functionNamePrefix: Function name for stylesheet styling assignment disambiguation.
+     * @property localDataStructure: Set of local data structures.
+     * @constructor Creates a new execution frame.
+     *
+     */
+
     inner class Frame(
         private var pc: Int,
         private var finalLine: Int,
@@ -172,7 +205,7 @@ class VirtualMachine(
         val depth: Int = 1,
         private var showMoveToLine: Boolean = true,
         private var stepInto: Boolean = STEP_INTO_DEFAULT,
-        private var leastRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
+        private var mostRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
         private var displayedDataMap: MutableMap<Int, Pair<String, ExecValue>> = mutableMapOf(),
         private val updateVariableState: Boolean = true,
         private val hideCode: Boolean = false,
@@ -199,18 +232,18 @@ class VirtualMachine(
                     // if there is space
                     if (displayedDataMap.size < MAX_DISPLAYED_VARIABLES) {
                         val newIndex = displayedDataMap.size
-                        leastRecentlyUpdatedQueue.addLast(newIndex)
+                        mostRecentlyUpdatedQueue.addLast(newIndex)
                         displayedDataMap[newIndex] = Pair(identifier, value)
                     } else {
                         // if there is no space
-                        val oldest = leastRecentlyUpdatedQueue.removeFirst()
+                        val oldest = mostRecentlyUpdatedQueue.removeFirst()
                         displayedDataMap[oldest] = Pair(identifier, value)
-                        leastRecentlyUpdatedQueue.addLast(oldest)
+                        mostRecentlyUpdatedQueue.addLast(oldest)
                     }
                 } else {
                     // being visualised
-                    leastRecentlyUpdatedQueue.remove(index.first())
-                    leastRecentlyUpdatedQueue.addLast(index.first())
+                    mostRecentlyUpdatedQueue.remove(index.first())
+                    mostRecentlyUpdatedQueue.addLast(index.first())
                     displayedDataMap[index.first()] = Pair(identifier, value)
                 }
             }
@@ -744,7 +777,7 @@ class VirtualMachine(
             return when (node.targetType) {
                 is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
                 is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
-                else -> throw UnsupportedOperationException("Not implemented yet")
+                else -> RuntimeError(value = "Invalid cast operation", lineNumber = node.lineNumber)
             }
         }
 

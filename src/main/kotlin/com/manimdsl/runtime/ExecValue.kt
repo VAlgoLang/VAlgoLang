@@ -5,48 +5,96 @@ import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.MObject
 import kotlin.math.roundToInt
 
-// Wrapper classes for values of variables while executing code
+/**
+ * Abstract Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the Execution Value.
+ * @property value: Current value in Kotlin.
+ * @property name: String name of value.
+ *
+ */
+
 abstract class ExecValue {
     abstract var manimObject: MObject
     abstract val value: Any
     abstract val name: String
-    /** Extend when more types are added these are assuming semantic checks have passed **/
 
-    /** '+' **/
+    /**
+     * '+'
+     *
+     * @param other
+     * @return [value] plus [other]
+     * @exception UnsupportedOperationException
+     *
+     */
+
     operator fun plus(other: ExecValue): ExecValue = when (this) {
         is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() + this.toDouble())
-        else -> throw UnsupportedOperationException("Not implemented yet")
-    }
-
-    /** '-' **/
-    operator fun minus(other: ExecValue): ExecValue = when (this) {
-        is DoubleAlias -> DoubleValue(this.toDouble() - (other as DoubleAlias).toDouble())
-        else -> throw UnsupportedOperationException("Not implemented yet")
-    }
-
-    /** '/' **/
-    operator fun div(other: ExecValue): ExecValue = when (this) {
-        is DoubleValue -> if (other is DoubleValue) DoubleValue((this.value / other.value).roundToInt().toDouble()) else throwTypeError()
         else -> throwTypeError()
     }
 
-    /** '*' **/
-    operator fun times(other: ExecValue): ExecValue = when (this) {
-        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() * this.toDouble())
-        else -> throw UnsupportedOperationException("Not implemented yet")
+    /**
+     * '-'
+     *
+     * @param other
+     * @return [value] minus [other]
+     * @exception UnsupportedOperationException
+     *
+     */
+
+    operator fun minus(other: ExecValue): ExecValue = when (this) {
+        is DoubleAlias -> DoubleValue(this.toDouble() - (other as DoubleAlias).toDouble())
+        else -> throwTypeError()
     }
 
-    /** '!' **/
+    /**
+     * '/'
+     *
+     * @param other
+     * @return [value] divided by [other]
+     * @exception UnsupportedOperationException
+     *
+     */
+
+    operator fun div(other: ExecValue): ExecValue = when (this) {
+        is DoubleValue -> if (other is DoubleValue) DoubleValue(
+            (this.value / other.value).roundToInt().toDouble()
+        ) else throwTypeError()
+        else -> throwTypeError()
+    }
+
+    /**
+     * '*'
+     *
+     * @param other
+     * @return [value] times [other]
+     * @exception UnsupportedOperationException
+     *
+     */
+
+    operator fun times(other: ExecValue): ExecValue = when (this) {
+        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() * this.toDouble())
+        else -> throwTypeError()
+    }
+
+    /**
+     * '!'
+     *
+     * @return not [value]
+     * @exception UnsupportedOperationException
+     *
+     */
+
     operator fun not(): Boolean = when (this) {
         is BoolValue -> !this.value
-        else -> throw UnsupportedOperationException("Not implemented yet")
+        else -> throwTypeError()
     }
 
     /** '==','!=', '<', '<=', '>', '>='  **/
     operator fun compareTo(other: Any): Int = when (this) {
         is DoubleAlias -> this.toDouble().compareTo((other as DoubleAlias).toDouble())
         is BoolValue -> this.value.compareTo((other as BoolValue).value)
-        else -> throw UnsupportedOperationException("Not implemented yet")
+        else -> throwTypeError()
     }
 
     private fun throwTypeError(): Nothing = throw UnsupportedOperationException("Unsupported type")
@@ -54,11 +102,25 @@ abstract class ExecValue {
     abstract fun clone(): ExecValue
 }
 
+/**
+ * Abstract primitive execution value (non data structures)
+ *
+ */
+
 sealed class PrimitiveValue : ExecValue()
 
 sealed class DoubleAlias : PrimitiveValue() {
     abstract fun toDouble(): Double
 }
+
+/**
+ * Double Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the DoubleValue.
+ * @property value: Current double value.
+ * @constructor: Creates a new DoubleValue.
+ *
+ */
 
 data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
 
@@ -80,6 +142,15 @@ data class DoubleValue(override val value: Double, override var manimObject: MOb
     }
 }
 
+/**
+ * Char Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the CharValue.
+ * @property value: Current char value.
+ * @constructor: Creates a new CharValue.
+ *
+ */
+
 data class CharValue(override val value: Char, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
 
     override val name: String = "Char"
@@ -99,6 +170,15 @@ data class CharValue(override val value: Char, override var manimObject: MObject
         return CharValue(value, manimObject)
     }
 }
+
+/**
+ * Bool Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the BoolValue.
+ * @property value: Current boolean value.
+ * @constructor: Creates a new BoolValue.
+ *
+ */
 
 data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
 
@@ -120,6 +200,13 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
     }
 }
 
+/**
+ * Empty Execution Value Class
+ *
+ * @constructor: Creates a new EmptyValue.
+ *
+ */
+
 object EmptyValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
@@ -131,7 +218,13 @@ object EmptyValue : ExecValue() {
     override val name: String = "Empty"
 }
 
-// For use to terminate a void function with a return of no expression.
+/**
+ * Void Execution Value Class. Terminates void function.
+ *
+ * @constructor: Creates a new VoidValue.
+ *
+ */
+
 object VoidValue : ExecValue() {
     override var manimObject: MObject = EmptyMObject
     override val value: Any = ErrorType
@@ -141,6 +234,28 @@ object VoidValue : ExecValue() {
     }
 
     override val name: String = "Void"
+}
+
+/**
+ * Runtime Error Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the BoolValue.
+ * @property value: Description of error.
+ * @property lineNumber: Line number at error.
+ * @constructor: Creates a new Runtime Error for safe handling. Error communicated to user.
+ *
+ */
+
+data class RuntimeError(
+    override val value: String,
+    override var manimObject: MObject = EmptyMObject,
+    val lineNumber: Int
+) : ExecValue() {
+    override fun clone(): ExecValue {
+        return RuntimeError(value, manimObject, lineNumber)
+    }
+
+    override val name: String = "RuntimeError"
 }
 
 object BreakValue : ExecValue() {
@@ -163,13 +278,4 @@ object ContinueValue : ExecValue() {
     }
 
     override val name: String = "Continue"
-}
-
-// Used to propagate runtime error up scope
-data class RuntimeError(override val value: String, override var manimObject: MObject = EmptyMObject, val lineNumber: Int) : ExecValue() {
-    override fun clone(): ExecValue {
-        return RuntimeError(value, manimObject, lineNumber)
-    }
-
-    override val name: String = "RuntimeError"
 }
