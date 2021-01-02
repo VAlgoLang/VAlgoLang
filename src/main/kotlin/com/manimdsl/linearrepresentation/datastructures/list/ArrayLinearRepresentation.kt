@@ -12,7 +12,7 @@ data class ListPrepend(
     ManimInstr() {
     override fun toPython(): List<String> {
 //        val instruction = getInstructionString("animations", true)
-////        return listOf("[$instruction for animations in array.prepend(${newElemValue})]")
+// //        return listOf("[$instruction for animations in array.prepend(${newElemValue})]")
         return listOf()
     }
 }

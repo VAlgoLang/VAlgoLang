@@ -424,9 +424,11 @@ class ArrayExecutor(
                 arrayList.add(0, newValue)
                 ds.array = arrayList.toTypedArray()
                 linearRepresentation.add(
-                    ListPrepend(arrayIdent, newValue,
+                    ListPrepend(
+                        arrayIdent, newValue,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier))
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier)
+                    )
                 )
                 EmptyValue
             }
@@ -437,9 +439,11 @@ class ArrayExecutor(
                 arrayList += newValue
                 ds.array = arrayList.toTypedArray()
                 linearRepresentation.add(
-                    ListAppend(arrayIdent, newValue,
+                    ListAppend(
+                        arrayIdent, newValue,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier))
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier)
+                    )
                 )
                 EmptyValue
             }
