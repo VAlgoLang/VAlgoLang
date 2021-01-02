@@ -18,8 +18,7 @@ class ValidRuntimeTests {
     companion object {
         @JvmStatic
         fun data(): Stream<Arguments> {
-            // TODO - Remove filtering out binaryTree files after back-end has been implemented
-            return File("src/test/testFiles/valid/").walk().filter { it.isFile && !it.absolutePath.contains("binaryTree") }.map { Arguments.of(it.path) }
+            return File("src/test/testFiles/valid/").walk().filter { it.isFile }.map { Arguments.of(it.path) }
                 .asStream()
         }
 
