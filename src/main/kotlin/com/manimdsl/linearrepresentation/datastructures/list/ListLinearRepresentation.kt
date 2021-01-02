@@ -25,14 +25,13 @@ data class ListPrepend(
          */
         return listOf(
             "$newArrayIdent = Array([${values.joinToString(", ") { "\"${it.value}\"" }}], \"$arrayTitle\", [${
-                boundaries.joinToString(
-                    ", "
-                )
+            boundaries.joinToString(
+                ", "
+            )
             }]).build()",
             "self.play(ReplacementTransform($arrayIdent.all, $newArrayIdent.all))"
-            )
+        )
     }
-
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
         boundaries = corners
