@@ -16,7 +16,6 @@ import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeExecutor
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
 import com.manimdsl.runtime.datastructures.binarytree.NullValue
-import com.manimdsl.runtime.datastructures.makeConstructorNode
 import com.manimdsl.runtime.datastructures.stack.StackExecutor
 import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.convertToIdent
@@ -629,7 +628,6 @@ class VirtualMachine(
                     hideCode = hideCode,
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
                 ).runFrame()
-
 
                 when (execValue) {
                     is BreakValue -> {
