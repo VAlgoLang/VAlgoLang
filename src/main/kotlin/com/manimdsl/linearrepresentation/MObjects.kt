@@ -13,9 +13,13 @@ abstract class MObject : ManimInstr() {
     abstract fun getConstructor(): String
 }
 
-abstract class ShapeWithBoundary(open val uid: String) : MObject() {
+interface ManimInstrWithBoundary {
+    val uid: String
+    fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+}
+
+abstract class ShapeWithBoundary(override val uid: String) : MObject(), ManimInstrWithBoundary {
     val style = PythonStyle()
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 }
 
 abstract class DataStructureMObject(

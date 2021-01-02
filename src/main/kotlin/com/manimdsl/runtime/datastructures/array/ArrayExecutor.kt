@@ -423,11 +423,17 @@ class ArrayExecutor(
                 val arrayList = ds.array.toMutableList()
                 arrayList.add(0, newValue)
                 ds.array = arrayList.toTypedArray()
+
                 linearRepresentation.add(
                     ListPrepend(
-                        arrayIdent, newValue,
+                        arrayIdent,
+                        variableNameGenerator.generateNameFromPrefix("list"),
+                        node.identifier,
+                        ds.array,
+                        uid = frame.functionNamePrefix + node.identifier,
+                        showLabel = ds.style.showLabel,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
-                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier)
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier),
                     )
                 )
                 EmptyValue
