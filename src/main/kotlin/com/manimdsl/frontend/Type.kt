@@ -134,8 +134,8 @@ open class ArrayType(
     }
 }
 
-data class ListType(override var internalType: Type): ArrayType(internalType) {
-    override val methods: MutableMap<String, DataStructureMethod> =  mutableMapOf(
+data class ListType(override var internalType: Type) : ArrayType(internalType) {
+    override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
         "size" to Size(), "prepend" to Prepend(), "append" to Append()
     )
 
@@ -156,8 +156,6 @@ data class ListType(override var internalType: Type): ArrayType(internalType) {
     ) : DataStructureMethod
 
     override fun toString(): String = "List<$internalType>"
-
-
 }
 
 data class TreeType(
