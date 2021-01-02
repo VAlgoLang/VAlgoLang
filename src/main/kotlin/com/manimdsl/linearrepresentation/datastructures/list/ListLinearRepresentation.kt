@@ -27,7 +27,6 @@ data class ListPrepend(
         textColor?.let { style.addStyleAttribute(TextColor(it)) }
     }
 
-
     override fun toPython(): List<String> {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
         return listOf(
