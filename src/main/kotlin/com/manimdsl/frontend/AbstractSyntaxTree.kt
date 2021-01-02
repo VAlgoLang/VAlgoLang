@@ -283,7 +283,7 @@ data class AddExpression(
     override val expr1: ExpressionNode,
     override val expr2: ExpressionNode
 ) : BinaryExpression(lineNumber, expr1, expr2), ComparableTypes {
-    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType)
+    override val compatibleTypes: Set<Type> = setOf(CharType, NumberType, StringType)
 }
 
 data class SubtractExpression(

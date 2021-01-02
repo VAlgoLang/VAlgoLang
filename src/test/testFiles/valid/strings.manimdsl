@@ -1,3 +1,4 @@
 let x: string = "hi";
 let y: string = "hi2";
 let z = x == y;
+let a = x + y;

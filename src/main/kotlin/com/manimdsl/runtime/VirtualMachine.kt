@@ -769,6 +769,7 @@ class VirtualMachine(
             is NullNode -> NullValue
             is CastExpressionNode -> executeCastExpression(node)
             is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
+            is StringNode -> StringValue(node.value)
         }
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {

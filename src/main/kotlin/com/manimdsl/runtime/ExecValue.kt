@@ -30,6 +30,7 @@ abstract class ExecValue {
 
     operator fun plus(other: ExecValue): ExecValue = when (this) {
         is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() + this.toDouble())
+        is StringValue -> StringValue(this.value + (other as StringValue).value)
         else -> throwTypeError()
     }
 
@@ -94,6 +95,7 @@ abstract class ExecValue {
     operator fun compareTo(other: Any): Int = when (this) {
         is DoubleAlias -> this.toDouble().compareTo((other as DoubleAlias).toDouble())
         is BoolValue -> this.value.compareTo((other as BoolValue).value)
+        is StringValue -> this.value.compareTo((other as StringValue).value)
         else -> throwTypeError()
     }
 
@@ -197,6 +199,35 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
 
     override fun clone(): ExecValue {
         return BoolValue(value, manimObject)
+    }
+}
+
+/**
+ * String Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the BoolValue.
+ * @property value: Current string value.
+ * @constructor: Creates a new StringValue.
+ *
+ */
+
+data class StringValue(override val value: String, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
+
+    override val name: String = "Bool"
+
+    override fun equals(other: Any?): Boolean = other is StringValue && this.value == other.value
+    override fun hashCode(): Int {
+        var result = value.hashCode()
+        result = 31 * result + manimObject.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "\"$value\""
+    }
+
+    override fun clone(): ExecValue {
+        return StringValue(value, manimObject)
     }
 }
 
