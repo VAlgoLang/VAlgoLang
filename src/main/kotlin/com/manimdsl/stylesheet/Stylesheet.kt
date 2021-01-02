@@ -179,6 +179,9 @@ data class StylesheetFromJSON(
 class Stylesheet(private val stylesheetPath: String?, private val symbolTableVisitor: SymbolTableVisitor) {
     private val stylesheet: StylesheetFromJSON
 
+    /**
+     * Uses Gson to read JSON file into a StylesheetFromJSON
+     */
     init {
         stylesheet = if (stylesheetPath != null) {
             val gson = Gson()
@@ -205,7 +208,13 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         }
     }
 
-
+    /**
+     * Get style, falling back on default style properties where necessary
+     *
+     * @param identifier
+     * @param value
+     * @return style properties for [identifier]
+     */
     fun getStyle(identifier: String, value: ExecValue): StyleProperties {
 
         val dataStructureStyle =
@@ -216,8 +225,13 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         return styleProperties merge DefaultStyleProperties()
     }
 
-    fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
-
+    /**
+     * Get animated style, falling back on default animation properties where necessary
+     *
+     * @param identifier
+     * @param value
+     * @return animation properties for [identifier]
+     */
     fun getAnimatedStyle(identifier: String, value: ExecValue): AnimationProperties {
         val dataStructureStyle =
             stylesheet.dataStructures.getOrDefault(value.name, StyleProperties()) merge StyleProperties(
@@ -236,6 +250,10 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
 
         return (animationStyle merge DefaultAnimationProperties())
     }
+
+    /** Methods for accessing style attributes **/
+
+    fun getSubtitleStyle(): StyleProperties = stylesheet.subtitles
 
     fun userDefinedPositions(): Boolean = stylesheet.positions.isNotEmpty()
 
@@ -261,7 +279,14 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
         !stylesheet.positions.containsKey(identifier) || stylesheet.positions[identifier]!!.height != 0.0
 }
 
-// Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679
+/**
+ * Infix function that merges two instances of a generic class [T]
+ *
+ * @param other
+ * @return merged form of [this] and [other], where the properties of [this] take precedence over [other]
+ *
+ * Credit to https://stackoverflow.com/questions/44566607/combining-merging-data-classes-in-kotlin/44570679#44570679
+ */
 inline infix fun <reified T : Any> T.merge(other: T): T {
     val propertiesByName = T::class.declaredMemberProperties.associateBy { it.name }
     val primaryConstructor = T::class.primaryConstructor
