@@ -47,9 +47,6 @@ data class ListAppend(
 ) :
     ManimInstr() {
     override fun toPython(): List<String> {
-//        val instruction = getInstructionString("animations", true)
-//        return listOf("[$instruction for animations in array.append(${newElemValue})]")
-
-        return listOf()
+        return listOf("self.play_animation(*$arrayIdent.append(\"$newElemValue\")${getRuntimeString()})")
     }
 }

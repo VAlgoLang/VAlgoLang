@@ -73,7 +73,7 @@ class Array:
 
     def update_element(self, idx, v, color=None):
         self.values[idx] = v
-        return self.array_elements[1].replace_text(v, color=color)
+        return self.array_elements[idx].replace_text(v, color=color)
 
     def update_array_elements(self):
         width_per_element = (self.boundary_width - self.title_width - self.padding) / len(self.values)

@@ -1,2 +1,4 @@
 let x = List<number>() {1,2,3,4, 6, 7};
-x.swap(1,2);
+x[3] = 100;
+x.append(10);
+x[6] = 60;

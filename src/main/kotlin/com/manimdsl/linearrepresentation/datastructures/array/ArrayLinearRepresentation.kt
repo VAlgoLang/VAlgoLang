@@ -21,7 +21,7 @@ data class ArrayElemAssignObject(
         val assignIndex2D = if (secondIndex == null) "" else ".rows[$secondIndex]"
         return listOf(
             getInstructionString(
-                "$arrayIdent$assignIndex2D.array_elements[$index].replace_text(\"${newElemValue.value}\"$animationString)",
+                "$arrayIdent$assignIndex2D.update_element($index, \"${newElemValue.value}\"$animationString)",
                 false
             )
         )

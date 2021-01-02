@@ -428,9 +428,9 @@ class ArrayExecutor(
                     ListPrepend(
                         arrayIdent,
                         variableNameGenerator.generateNameFromPrefix("list"),
-                        node.identifier,
+                        node.instanceIdentifier,
                         ds.array,
-                        uid = frame.functionNamePrefix + node.identifier,
+                        uid = frame.functionNamePrefix + node.instanceIdentifier,
                         showLabel = ds.style.showLabel,
                         runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
                         render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier),
