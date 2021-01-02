@@ -19,6 +19,7 @@ import com.manimdsl.runtime.datastructures.binarytree.NullValue
 import com.manimdsl.runtime.datastructures.makeConstructorNode
 import com.manimdsl.runtime.datastructures.stack.StackExecutor
 import com.manimdsl.runtime.datastructures.stack.StackValue
+import com.manimdsl.runtime.utility.convertToIdent
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.runtime.utility.wrapCode
 import com.manimdsl.runtime.utility.wrapString
@@ -312,19 +313,6 @@ class VirtualMachine(
             ++pc
         }
 
-        fun convertToIdent(dataStructureVariable: MutableSet<String>, frame: Frame): MutableSet<String> {
-            val idents = dataStructureVariable.map { if (it.contains('.')) {
-                    it.substringAfter('.')
-                } else {
-                    it
-                } }.map { (frame.variables[it]!!.manimObject as DataStructureMObject).ident }
-            dataStructureVariable.forEach {
-                variables[it] = EmptyValue
-            }
-            return idents.toMutableSet()
-
-        }
-
         // instantiate new Frame and execute on scoping changes e.g. recursion
         fun runFrame(): ExecValue {
             if (depth > ALLOCATED_STACKS) {
@@ -350,11 +338,18 @@ class VirtualMachine(
                             // Return variable data structure
                             localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
                         }
+                        if (localDataStructures.isNotEmpty()) {
+                            linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
+                        }
                         return value
                     }
                 }
 
                 fetchNextStatement()
+            }
+
+            if (localDataStructures.isNotEmpty()) {
+                linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
             }
             return EmptyValue
         }
@@ -507,8 +502,7 @@ class VirtualMachine(
 
             // program counter will forward in loop, we have popped out of stack
 
-            val locallyCreatedDynamicVariables = mutableSetOf<String>()
-            val frame = Frame(
+            val returnValue = Frame(
                 functionNode.lineNumber,
                 finalStatementLine,
                 argumentVariables,
@@ -518,14 +512,7 @@ class VirtualMachine(
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
                 functionNamePrefix = "${functionNode.identifier}.",
-                localDataStructures = locallyCreatedDynamicVariables
-            )
-            val returnValue = frame.runFrame()
-
-
-            if (locallyCreatedDynamicVariables.isNotEmpty()) {
-                linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(locallyCreatedDynamicVariables, frame), animationSpeeds.first()))
-            }
+            ).runFrame()
 
             // to visualise popping back to assignment we can move pointer to the prior statement again
             if (stepInto) moveToLine()
@@ -632,7 +619,6 @@ class VirtualMachine(
                     }
                 }
 
-
                 execValue = Frame(
                     loopNode.statements.first().lineNumber,
                     loopNode.statements.last().lineNumber,
@@ -643,6 +629,7 @@ class VirtualMachine(
                     hideCode = hideCode,
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
                 ).runFrame()
+
 
                 when (execValue) {
                     is BreakValue -> {

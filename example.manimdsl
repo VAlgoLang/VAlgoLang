@@ -1,8 +1,14 @@
-fun test(): Tree<Node<number>> {
-    let x = Node<number>(2);
-    let tree = Tree<Node<number>>(x);
-    x.left = Node<number>(3);
-    return tree;
+fun test(n: number): Stack<number> {
+    if (n == 0) {
+        let st = Stack<number>();
+        return st;
+    } else {
+        let st = test(n-1);
+        st.push(n);
+        return st;
+
+    }
 }
 
-let tree = test();
+let st = test(3);
+st.push(5);

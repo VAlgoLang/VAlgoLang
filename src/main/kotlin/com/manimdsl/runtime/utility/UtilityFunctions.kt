@@ -1,10 +1,8 @@
 package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
-import com.manimdsl.runtime.BoolValue
-import com.manimdsl.runtime.CharValue
-import com.manimdsl.runtime.DoubleValue
-import com.manimdsl.runtime.ExecValue
+import com.manimdsl.linearrepresentation.DataStructureMObject
+import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
 
 private const val WRAP_LINE_LENGTH = 50
@@ -108,4 +106,17 @@ fun makeExpressionNode(value: ExecValue, lineNumber: Int): ExpressionNode {
         is BoolValue -> BoolNode(lineNumber, value.value)
         else -> VoidNode(lineNumber)
     }
+}
+
+fun convertToIdent(dataStructureVariable: MutableSet<String>, variables: MutableMap<String, ExecValue>): MutableSet<String> {
+    val idents = dataStructureVariable.map { if (it.contains('.')) {
+        it.substringAfter('.')
+    } else {
+        it
+    } }.map { (variables[it]!!.manimObject as DataStructureMObject).ident }
+    dataStructureVariable.forEach {
+        variables[it] = EmptyValue
+    }
+    return idents.toMutableSet()
+
 }
