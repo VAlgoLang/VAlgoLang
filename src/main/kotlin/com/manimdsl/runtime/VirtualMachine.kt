@@ -16,6 +16,7 @@ import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeExecutor
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeValue
 import com.manimdsl.runtime.datastructures.binarytree.NullValue
+import com.manimdsl.runtime.datastructures.makeConstructorNode
 import com.manimdsl.runtime.datastructures.stack.StackExecutor
 import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.convertToIdent
@@ -519,16 +520,13 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
-            if (node.expression is FunctionCallNode) {
-                val functionPrefix = (node.expression as FunctionCallNode).functionIdentifier
-
-                val removeDataStructureVariable =
-                    dataStructureBoundaries.keys.filter { it.startsWith("$functionPrefix.") }.toMutableSet()
-                if (removeDataStructureVariable.isNotEmpty()) {
-                    linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(removeDataStructureVariable, variables), animationSpeeds.first()))
+            if (node.identifier is IdentifierNode && variables.containsKey(node.identifier.identifier)) {
+                with(variables[node.identifier.identifier]?.manimObject) {
+                    if (this is DataStructureMObject) {
+                        linearRepresentation.add(CleanUpLocalDataStructures(setOf(this.ident), animationSpeeds.first()))
+                    }
                 }
             }
-
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
@@ -558,7 +556,15 @@ class VirtualMachine(
                                 )
                             }
 
-                            variables[node.identifier.identifier] = assignedValue
+                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore('.'))) {
+                                // Non recursive function call
+                                linearRepresentation.add(CleanUpLocalDataStructures(setOf(assignedValue.manimObject.ident), animationSpeeds.first()))
+                                val constructor = makeConstructorNode(assignedValue, node.lineNumber)
+                                variables[node.identifier.identifier] = executeConstructor(constructor, node.identifier)
+                            } else {
+                                // Recursive call and regular assignment
+                                variables[node.identifier.identifier] = assignedValue
+                            }
 
                             insertVariable(node.identifier.identifier, assignedValue)
                             updateVariableState()
@@ -576,7 +582,6 @@ class VirtualMachine(
 
         private fun executeForStatement(forStatementNode: ForStatementNode): ExecValue {
             executeAssignment(forStatementNode.beginStatement)
-
             val start = executeExpression(forStatementNode.beginStatement.expression) as DoubleAlias
             val end = executeExpression(forStatementNode.endCondition) as DoubleAlias
             val lineNumber = forStatementNode.lineNumber
@@ -637,6 +642,7 @@ class VirtualMachine(
                     stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
+                    functionNamePrefix = functionNamePrefix
                 ).runFrame()
 
                 when (execValue) {
@@ -715,6 +721,7 @@ class VirtualMachine(
                 stepInto = stepInto,
                 updateVariableState = updateVariableState,
                 hideCode = hideCode,
+                functionNamePrefix = functionNamePrefix
             ).runFrame()
 
             if (execValue is EmptyValue) {
