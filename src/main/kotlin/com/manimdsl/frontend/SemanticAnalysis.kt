@@ -10,17 +10,18 @@ class SemanticAnalysis {
         when (expression) {
             is IdentifierNode -> currentSymbolTable.getTypeOf(expression.identifier)
             is NumberNode -> NumberType
+            is VoidNode -> VoidType
+            is BoolNode -> BoolType
+            is NullNode -> NullType
+            is CharNode -> CharType
+            is StringNode -> StringType
             is MethodCallNode -> expression.dataStructureMethod.returnType
             is ConstructorNode -> expression.type
             is BinaryExpression -> getBinaryExpressionType(expression, currentSymbolTable)
             is UnaryExpression -> getUnaryExpressionType(expression, currentSymbolTable)
-            is BoolNode -> BoolType
-            is VoidNode -> VoidType
             is FunctionCallNode -> currentSymbolTable.getTypeOf(expression.functionIdentifier)
             is ArrayElemNode -> getArrayElemType(expression, currentSymbolTable)
             is BinaryTreeNodeElemAccessNode -> getBinaryTreeNodeType(expression, currentSymbolTable)
-            is NullNode -> NullType
-            is CharNode -> CharType
             is CastExpressionNode -> expression.targetType
             is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
             is BinaryTreeRootAccessNode -> {
@@ -79,8 +80,13 @@ class SemanticAnalysis {
 
         return when (expression) {
             is AddExpression, is SubtractExpression, is MultiplyExpression, is DivideExpression -> {
-                val validTypes = (expression as ComparableTypes).compatibleTypes
-                if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
+                if (expr1Type is StringType || expr2Type is StringType) {
+                    // String interpolation can be compatible with any type and takes highest priority
+                    StringType
+                } else {
+                    val validTypes = (expression as ComparableTypes).compatibleTypes
+                    if (validTypes.contains(expr1Type) && validTypes.contains(expr2Type)) NumberType else ErrorType
+                }
             }
             is AndExpression, is OrExpression -> {
                 if (expr1Type is BoolType && expr2Type is BoolType) BoolType else ErrorType
@@ -563,7 +569,9 @@ class SemanticAnalysis {
     }
 
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: ManimParser.Assignment_lhsContext) {
-        if (type !is ArrayType) {
+        if (type is StringType) {
+            stringImmutabilityError(identifier, ctx)
+        } else if (type !is ArrayType) {
             incorrectLHSForDataStructureElem(identifier, "Array", type, ctx)
         }
     }

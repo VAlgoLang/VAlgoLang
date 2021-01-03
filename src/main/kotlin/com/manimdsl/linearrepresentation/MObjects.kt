@@ -90,7 +90,7 @@ data class CodeBlock(
         codeLines.append("[")
         (lines.indices).forEach {
             codeLines.append("[")
-            codeLines.append("\"${lines[it].joinToString("\",\"")}\"")
+            codeLines.append("\'${lines[it].joinToString("\',\'")}\'")
             if (it == lines.size - 1) {
                 codeLines.append("]")
             } else {
@@ -165,7 +165,7 @@ data class VariableBlock(
     }
 
     override fun getConstructor(): String {
-        return "$ident = $className(${"[\"${variables.joinToString("\",\"")}\"]"}, $boundaries$style)"
+        return "$ident = $className(${"[\'${variables.joinToString("\',\'")}\']"}, $boundaries$style)"
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
