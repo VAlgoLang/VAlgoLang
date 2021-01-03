@@ -482,7 +482,6 @@ class ArrayExecutor(
                 EmptyValue
             }
             is ArrayType.Size -> {
-                println(ds.array.toList())
                 DoubleValue(ds.array.size.toDouble())
             }
             is ArrayType.Swap -> {

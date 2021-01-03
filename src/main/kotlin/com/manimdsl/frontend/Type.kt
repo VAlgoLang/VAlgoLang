@@ -142,14 +142,12 @@ open class ArrayType(
 
 data class ListType(override var internalType: Type) : ArrayType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
-        "size" to Size(), "prepend" to Prepend(), "append" to Append()
+        "size" to Size(), "prepend" to Prepend(argumentTypes = listOf(internalType to true)), "append" to Append(argumentTypes = listOf(internalType to true))
     )
 
     data class Prepend(
         override val returnType: Type = VoidType,
-        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(
-            NumberType to true,
-        ),
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
