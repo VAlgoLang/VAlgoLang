@@ -81,23 +81,20 @@ class Array:
         self.array_elements = [
             Rectangle_block(str(val), color=self.color, text_color=self.text_color, width=square_dim, height=square_dim)
             for val in self.values]
-
         self.all = VGroup(self.title, *[rect.all for rect in self.array_elements])
-
         offset = 0
         if ((square_dim * len(self.values)) + self.title_width) < self.boundary_width:
             offset = (self.boundary_width - ((square_dim * len(self.values)) + self.title_width)) / 2
-
-        return ApplyMethod(self.title.move_to, np.array([self.boundaries[0][0] + (self.title_width / 2) + offset,
-                                                         (self.boundaries[0][1] + self.boundaries[3][1]) / 2, 0])), \
-               np.array([self.boundaries[0][0] + (self.title_width / 2) + offset + 0.5,
-                         (self.boundaries[0][1] + self.boundaries[3][1]) / 2, 0])
+        coord = np.array([self.boundaries[0][0] + (self.title_width / 2) + offset,
+                          (self.boundaries[0][1] + self.boundaries[3][1]) / 2, 0])
+        return ApplyMethod(self.title.move_to, coord), deepcopy(coord)
 
     def append(self, v):
         animations = [elem.clean_up() for elem in self.array_elements]
         self.values.append(v)
         move_title, coord = self.update_array_elements()
         animations.append(move_title)
+        coord[0] += 0.5
         self.build(coord)
         animations.extend([FadeIn(array_elem.all, run_time=1.0) for array_elem in self.array_elements])
         return animations
