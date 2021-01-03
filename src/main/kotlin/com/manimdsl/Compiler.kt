@@ -10,48 +10,83 @@ import java.io.File
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
-private fun compile(filename: String, outputVideoFile: String, generatePython: Boolean, onlyGenerateManim: Boolean, manimOptions: List<String>, stylesheetPath: String?, boundaries: Boolean) {
+/**
+ * Compile a ManimDSL program, producing python file and/or animation video depending on command-line arguments specified
+ *
+ * @param filename: Path to input file
+ * @param outputVideoFile: Name of output python and/or video files
+ * @param generatePython: Whether to generate python and manim file
+ * @param onlyGenerateManim: Whether to *only* generate python and manim file
+ * @param manimOptions: Options to pass to manim (video quality, whether to show video location in file system, whether to open video once finished)
+ * @param stylesheetPath: Path to stylesheet
+ * @param boundaries: Whether to print out boundaries of shapes
+ */
+private fun compile(
+    filename: String,
+    outputVideoFile: String,
+    generatePython: Boolean,
+    onlyGenerateManim: Boolean,
+    manimOptions: List<String>,
+    stylesheetPath: String?,
+    boundaries: Boolean
+) {
     val file = File(filename)
+    /** Check if file path is valid **/
     if (!file.isFile) {
-        // File argument was not valid
         println("Please enter a valid file name: $filename not found")
         exitProcess(1)
     }
 
+    /** Check if stylesheet path is valid **/
     if (stylesheetPath != null && !File(stylesheetPath).isFile) {
-        // Stylesheet argument was not valid
         println("Please enter a valid stylesheet file: $stylesheetPath not found")
         exitProcess(1)
     }
 
     println("Compiling...")
+
+    /** Parse file to get ANTLR parse tree **/
     val parser = ManimDSLParser(file.inputStream())
     val (syntaxErrorStatus, program) = parser.parseFile()
 
-    // Error handling
+    /** Throw syntax errors and exit if any exist **/
     if (syntaxErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(syntaxErrorStatus.code)
     }
 
+    /** Visit ANTLR parse tree to generate AST **/
     val (semanticErrorStatus, abstractSyntaxTree, symbolTable, lineNodeMap) = parser.convertToAst(program)
-    // Error handling
+
+    /** Throw semantic errors and exit if any exist **/
     if (semanticErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(semanticErrorStatus.code)
     }
+
     val stylesheet = Stylesheet(stylesheetPath, symbolTable)
 
-    val (runtimeErrorStatus, manimInstructions) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, file.readLines(), stylesheet, boundaries).runProgram()
+    /** Run virtual machine and execute AST to generate linear representation **/
+    val (runtimeErrorStatus, manimInstructions) = VirtualMachine(
+        abstractSyntaxTree,
+        symbolTable,
+        lineNodeMap,
+        file.readLines(),
+        stylesheet,
+        boundaries
+    ).runProgram()
 
     if (boundaries) {
         exitProcess(runtimeErrorStatus.code)
     }
 
+    /** Throw runtime errors and exit if any exist **/
     if (runtimeErrorStatus != ExitStatus.EXIT_SUCCESS) {
         exitProcess(runtimeErrorStatus.code)
     }
 
+    /** Code generation into python and manim **/
     val writer = ManimProjectWriter(ManimWriter(manimInstructions).build())
 
+    /** Create python file to be executed **/
     val outputFile = if (generatePython) {
         val pythonOutputFile = outputVideoFile.removeSuffix(".mp4") + ".py"
         println("Writing file to $pythonOutputFile")
@@ -62,6 +97,7 @@ private fun compile(filename: String, outputVideoFile: String, generatePython: B
         writer.createPythonFile()
     }
 
+    /** Run manim on python file to produce MP4 video **/
     if (!onlyGenerateManim) {
         println("Generating animation...")
         val exitCode = writer.generateAnimation(outputFile, manimOptions, outputVideoFile)
@@ -75,6 +111,11 @@ private fun compile(filename: String, outputVideoFile: String, generatePython: B
     }
 }
 
+/**
+ * Manim animation quality
+ *
+ * @constructor Create empty Animation quality
+ */
 enum class AnimationQuality {
     LOW,
     MEDIUM,
@@ -85,6 +126,9 @@ enum class AnimationQuality {
     }
 }
 
+/**
+ * Manim DSL command line arguments
+ * */
 @Command(
     name = "manimdsl",
     mixinStandardHelpOptions = true,

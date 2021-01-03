@@ -14,7 +14,12 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode
 import java.io.InputStream
 
-/* Exit status codes */
+/**
+ * Exit status codes
+ *
+ * @property code
+ * @constructor Create empty Exit status
+ */
 enum class ExitStatus(val code: Int) {
     EXIT_SUCCESS(0),
     SYNTAX_ERROR(100),
@@ -23,19 +28,31 @@ enum class ExitStatus(val code: Int) {
     PATH_ERROR(101)
 }
 
+/**
+ * Manim DSL parser
+ *
+ * @property input: file to be parsed as an input stream of bytes
+ * @constructor Create empty Manim DSL parser
+ */
 class ManimDSLParser(private val input: InputStream) {
 
-    // Build ANTLR Parse Tree and if Syntax Errors found, throw them and exit
+    /**
+     * Parse file to build ANTLR parse tree and find any syntax errors
+     *
+     * @return pair of exit status and parse tree
+     */
     fun parseFile(): Pair<ExitStatus, ManimParser.ProgramContext> {
         val input = CharStreams.fromStream(input)
-        // Lexical analysis
+
+        /** Lexical analysis **/
         val lexer = ManimLexer(input)
         lexer.removeErrorListeners()
 
-        // Syntax analysis
+        /** Syntax analysis **/
         val tokens = CommonTokenStream(lexer)
         val parser = ManimParser(tokens)
-        // Speeds up parser with no backtracking as our grammar is quite simple
+
+        /** Speeds up parser with no backtracking as DSL grammar is quite simple **/
         parser.interpreter.predictionMode = PredictionMode.SLL
         parser.errorHandler = SyntaxErrorStrategy()
         parser.removeErrorListeners()
@@ -44,6 +61,12 @@ class ManimDSLParser(private val input: InputStream) {
         return Pair(ErrorHandler.checkErrorsAndWarnings(), program)
     }
 
+    /**
+     * Convert ANTLR parse tree to AST
+     *
+     * @param program: ANTLR parse tree
+     * @return a [ParserResult] containing exit code, AST, symbol table and line number node map
+     */
     fun convertToAst(program: ManimParser.ProgramContext): ParserResult {
         val visitor = ManimParserVisitor()
         val ast = visitor.visitProgram(program)
