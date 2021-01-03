@@ -337,7 +337,7 @@ class VirtualMachine(
                             // Return variable data structure
                             localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
                         }
-                        if (localDataStructures.isNotEmpty()) {
+                        if (localDataStructures.isNotEmpty() && value !is RuntimeError) {
                             linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
                         }
                         return value
