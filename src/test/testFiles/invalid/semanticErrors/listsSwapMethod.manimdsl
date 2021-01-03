@@ -1,2 +1,2 @@
-let x = List<number>(3, 10);
+let x = List<number>();
 x.swap(1, 2);

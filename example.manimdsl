@@ -4,10 +4,13 @@ fun move(state: string, command: char): string {
 
 fun trace(array: Array<char>, stack: Stack<string>, startIndex: number, currentState: string): List<string> {
     if (startIndex == array.size()) {
-        return List<string>(1);
+        return List<string>();
     } else if (array[startIndex] == 'F') {
-        let res = trace(array, stack, startIndex + 1, currentState);
-        res.prepend(currentState + "-" + move(currentState, 'F'));
+        @stepOver {
+        let newPosition = move(currentState, 'F');
+        }
+        let res = trace(array, stack, startIndex + 1, newPosition);
+        res.prepend(currentState + "-" + newPosition);
         return res;
     } else if (array[startIndex] == '[') {
         stack.push(currentState);
