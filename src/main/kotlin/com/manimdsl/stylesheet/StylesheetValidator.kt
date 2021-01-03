@@ -2,7 +2,7 @@ package com.manimdsl.stylesheet
 
 import com.google.gson.JsonSyntaxException
 import com.manimdsl.errorhandling.ErrorHandler
-import com.manimdsl.errorhandling.warnings.invalidStyleAttribute
+import com.manimdsl.errorhandling.warnings.invalidStyleAttributeWarning
 import com.manimdsl.errorhandling.warnings.undeclaredVariableStyleWarning
 import com.manimdsl.frontend.SymbolTableVisitor
 
@@ -64,19 +64,19 @@ object StylesheetValidator {
         /** Check whether data structures in stylesheet are valid **/
         stylesheet.dataStructures.keys.forEach {
             if (!(dataStructureStrings.contains(it))) {
-                invalidStyleAttribute("dataStructures", dataStructureStrings, it)
+                invalidStyleAttributeWarning("dataStructures", dataStructureStrings, it)
             }
         }
 
         /** Check whether code tracking string is valid **/
         if (!validCodeTracking.contains(stylesheet.codeTracking)) {
             // throw warning
-            invalidStyleAttribute("codeTracking", validCodeTracking, stylesheet.codeTracking)
+            invalidStyleAttributeWarning("codeTracking", validCodeTracking, stylesheet.codeTracking)
         }
 
         /** Check syntax highlighting style is valid **/
         if (!validPygmentsStyles.contains(stylesheet.syntaxHighlightingStyle)) {
-            invalidStyleAttribute("syntaxHighlightingStyle", validPygmentsStyles, stylesheet.syntaxHighlightingStyle)
+            invalidStyleAttributeWarning("syntaxHighlightingStyle", validPygmentsStyles, stylesheet.syntaxHighlightingStyle)
             stylesheet.syntaxHighlightingStyle = DEFAULT_PYGMENT_STYLE
         }
 
@@ -105,7 +105,7 @@ object StylesheetValidator {
         styles.forEach { style ->
             style.creationStyle?.let {
                 if (!validCreationStrings.contains(it)) {
-                    invalidStyleAttribute("creationStyle", validCreationStrings, it)
+                    invalidStyleAttributeWarning("creationStyle", validCreationStrings, it)
                     style.creationStyle = DEFAULT_CREATION_STYLE
                 }
             }
@@ -123,7 +123,7 @@ object StylesheetValidator {
             style.animate?.let { animationProperties ->
                 animationProperties.animationStyle?.let { animationString ->
                     if (!validAnimationStrings.contains(animationString)) {
-                        invalidStyleAttribute("animationStyle", validAnimationStrings.keys, animationString)
+                        invalidStyleAttributeWarning("animationStyle", validAnimationStrings.keys, animationString)
                         style.animate.animationStyle = DEFAULT_ANIMATION_STYLE
                     }
                 }
