@@ -14,6 +14,21 @@ import com.manimdsl.runtime.datastructures.stack.StackValue
 import com.manimdsl.runtime.utility.makeExpressionNode
 import com.manimdsl.stylesheet.Stylesheet
 
+/**
+ * Abstract Data Structure Executor. Maintains the runtime operations of a data structure.
+ *
+ * @property variables: Map from identifier of a variable in frame to its current execution value.
+ * @property linearRepresentation: Reference to linear representation list being constructed.
+ * @property frame: Frame executor is in.
+ * @property stylesheet: Stylesheet object provided by user for styling.
+ * @property animationSpeeds: Animation speeds deque maintaining speeds at different points of execution.
+ * @property dataStructureBoundaries: Map from data structure identifier it's shape boundary.
+ * @property variableNameGenerator: Top level VariableNameGenerator.
+ * @property codeTextVariable: Python identifier of code block.
+ * @constructor Creates a new DataStructureExecutor with runtime operations defined inside for the binary tree.
+ *
+ */
+
 interface DataStructureExecutor {
     val variables: MutableMap<String, ExecValue>
     val linearRepresentation: MutableList<ManimInstr>
