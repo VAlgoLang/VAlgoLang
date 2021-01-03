@@ -126,7 +126,6 @@ enum class AnimationQuality {
     }
 }
 
-
 /**
  * Manim DSL command line arguments
  * */
