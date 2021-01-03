@@ -446,28 +446,125 @@ class ASTConstructionTests {
             DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 4.0)),
             SubtitleAnnotationNode(
                 2,
-                "\"x is 4\"",
+                StringNode(2, "x is 4"),
                 condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 4.0)),
                 showOnce = false
             ),
             SubtitleAnnotationNode(
                 3,
-                "\"x is not 4\"",
+                StringNode(3, "x is not 4"),
                 condition = NeqExpression(3, IdentifierNode(3, "x"), NumberNode(3, 4.0)),
                 showOnce = true
             ),
             SubtitleAnnotationNode(
                 4,
-                "\"x is not 4\"",
+                StringNode(4, "x is not 4"),
                 condition = BoolNode(4, true),
                 showOnce = true
             ),
             SubtitleAnnotationNode(
                 5,
-                "\"x is 4\"",
+                StringNode(5, "x is 4"),
                 condition = BoolNode(5, true),
                 showOnce = false
             )
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun subtitleAnnotationsWithInterpolation() {
+        val methodProgram = """
+            let x = 4;
+            @subtitle("x is " + x, x == 4)
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), NumberNode(1, 4.0)),
+            SubtitleAnnotationNode(
+                2,
+                AddExpression(2, StringNode(2, "x is "), IdentifierNode(2, "x")),
+                condition = EqExpression(2, IdentifierNode(2, "x"), NumberNode(2, 4.0)),
+                showOnce = false
+            )
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun basicString() {
+        val methodProgram = """
+            let x = "hi";
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), StringNode(1, "hi")),
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun numberInterpolatedString() {
+        val methodProgram = """
+            let x = "hi " + 3;
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), AddExpression(1, StringNode(1, "hi "), NumberNode(1, 3.0))),
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun booleanInterpolatedString() {
+        val methodProgram = """
+            let x = "hi " + false;
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), AddExpression(1, StringNode(1, "hi "), BoolNode(1, false))),
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun charInterpolatedString() {
+        val methodProgram = """
+            let x = 'c' + "hi";
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), AddExpression(1, CharNode(1, 'c'), StringNode(1, "hi"))),
+        )
+
+        val reference = ProgramNode(listOf(), statements)
+        val actual = buildAST(methodProgram)
+        assertEquals(reference.toString(), actual.toString())
+    }
+
+    @Test
+    fun treeInterpolatedString() {
+        val methodProgram = """
+            let x = "tree: " + Node<number>(3);
+        """.trimIndent()
+
+        val statements = listOf<StatementNode>(
+            DeclarationNode(1, IdentifierNode(1, "x"), AddExpression(1, StringNode(1, "tree: "), ConstructorNode(1, NodeType(NumberType), listOf(NumberNode(1, 3.0)), EmptyInitialiserNode))),
         )
 
         val reference = ProgramNode(listOf(), statements)

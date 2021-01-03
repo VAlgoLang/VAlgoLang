@@ -1,10 +1,7 @@
 package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
-import com.manimdsl.runtime.BoolValue
-import com.manimdsl.runtime.CharValue
-import com.manimdsl.runtime.DoubleValue
-import com.manimdsl.runtime.ExecValue
+import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
 
 private const val WRAP_LINE_LENGTH = 50
@@ -106,6 +103,7 @@ fun makeExpressionNode(value: ExecValue, lineNumber: Int): ExpressionNode {
         is CharValue -> CharNode(lineNumber, value.value)
         is DoubleValue -> NumberNode(lineNumber, value.value)
         is BoolValue -> BoolNode(lineNumber, value.value)
+        is StringValue -> StringNode(lineNumber, value.value)
         else -> VoidNode(lineNumber)
     }
 }

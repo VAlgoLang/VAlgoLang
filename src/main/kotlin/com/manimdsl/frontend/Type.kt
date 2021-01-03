@@ -24,6 +24,12 @@ object CharType : PrimitiveType() {
     }
 }
 
+object StringType : PrimitiveType() {
+    override fun toString(): String {
+        return "string"
+    }
+}
+
 interface NullableDataStructure
 
 sealed class DataStructureType(

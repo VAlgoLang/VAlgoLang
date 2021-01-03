@@ -80,7 +80,7 @@ data class UpdateVariableState(
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> =
-        listOf("self.play_animation(*$ident.update_variable(${variables.map { "\"${it}\"" }})${getRuntimeString()})")
+        listOf("self.play_animation(*$ident.update_variable(${variables.map { "\'${it}\'" }})${getRuntimeString()})")
 }
 
 data class CleanUpLocalDataStructures(
