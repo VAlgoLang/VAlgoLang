@@ -1,7 +1,6 @@
 package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
-import com.manimdsl.runtime.*
 import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
