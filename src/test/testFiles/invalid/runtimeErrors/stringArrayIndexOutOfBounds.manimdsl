@@ -1,0 +1,6 @@
+let x = "hi";
+let y = "hi";
+let z = x == y;
+let a = x + y;
+
+let c: char = a[6];

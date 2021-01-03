@@ -1,6 +1,7 @@
 package com.manimdsl.runtime.utility
 
 import com.manimdsl.frontend.*
+import com.manimdsl.runtime.*
 import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.runtime.*
 import com.manimdsl.stylesheet.PositionProperties
@@ -104,6 +105,7 @@ fun makeExpressionNode(value: ExecValue, lineNumber: Int): ExpressionNode {
         is CharValue -> CharNode(lineNumber, value.value)
         is DoubleValue -> NumberNode(lineNumber, value.value)
         is BoolValue -> BoolNode(lineNumber, value.value)
+        is StringValue -> StringNode(lineNumber, value.value)
         else -> VoidNode(lineNumber)
     }
 }

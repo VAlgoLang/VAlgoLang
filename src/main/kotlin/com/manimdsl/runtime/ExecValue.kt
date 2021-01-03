@@ -20,6 +20,12 @@ abstract class ExecValue {
     abstract val name: String
 
     /**
+     * @return [value] to string formatted for use in interpolation
+     *
+     */
+    open fun toInterpolatedString(): String = this.toString()
+
+    /**
      * '+'
      *
      * @param other
@@ -29,7 +35,14 @@ abstract class ExecValue {
      */
 
     operator fun plus(other: ExecValue): ExecValue = when (this) {
-        is DoubleAlias -> DoubleValue((other as DoubleAlias).toDouble() + this.toDouble())
+        is DoubleAlias -> {
+            if (other is StringValue) {
+                StringValue(other.toInterpolatedString() + this.toInterpolatedString())
+            } else {
+                DoubleValue((other as DoubleAlias).toDouble() + this.toDouble())
+            }
+        }
+        is StringValue -> StringValue(this.toInterpolatedString() + other.toInterpolatedString())
         else -> throwTypeError()
     }
 
@@ -94,6 +107,7 @@ abstract class ExecValue {
     operator fun compareTo(other: Any): Int = when (this) {
         is DoubleAlias -> this.toDouble().compareTo((other as DoubleAlias).toDouble())
         is BoolValue -> this.value.compareTo((other as BoolValue).value)
+        is StringValue -> this.value.compareTo((other as StringValue).value)
         else -> throwTypeError()
     }
 
@@ -125,7 +139,6 @@ sealed class DoubleAlias : PrimitiveValue() {
 data class DoubleValue(override val value: Double, override var manimObject: MObject = EmptyMObject) : DoubleAlias() {
 
     override val name: String = "Double"
-
     override fun equals(other: Any?): Boolean = other is DoubleValue && this.value == other.value
     override fun toDouble(): Double = value
 
@@ -155,6 +168,8 @@ data class CharValue(override val value: Char, override var manimObject: MObject
 
     override val name: String = "Char"
 
+    override fun toInterpolatedString(): String = value.toString()
+
     override fun equals(other: Any?): Boolean = other is CharValue && this.value == other.value
     override fun toDouble(): Double = value.toDouble()
 
@@ -163,7 +178,7 @@ data class CharValue(override val value: Char, override var manimObject: MObject
     }
 
     override fun toString(): String {
-        return "\'${value}\'"
+        return "\\'${value}\\'"
     }
 
     override fun clone(): ExecValue {
@@ -183,7 +198,6 @@ data class CharValue(override val value: Char, override var manimObject: MObject
 data class BoolValue(override val value: Boolean, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
 
     override val name: String = "Bool"
-
     override fun equals(other: Any?): Boolean = other is BoolValue && this.value == other.value
     override fun hashCode(): Int {
         var result = value.hashCode()
@@ -197,6 +211,41 @@ data class BoolValue(override val value: Boolean, override var manimObject: MObj
 
     override fun clone(): ExecValue {
         return BoolValue(value, manimObject)
+    }
+}
+
+/**
+ * String Execution Value Class
+ *
+ * @property manimObject: Manim Object corresponded to by the StringValue.
+ * @property value: Current string value.
+ * @constructor: Creates a new StringValue.
+ *
+ */
+
+data class StringValue(override val value: String, override var manimObject: MObject = EmptyMObject) : PrimitiveValue() {
+
+    override val name: String = "Bool"
+
+    /**
+     * @return [value] to string formatted for use in interpolation
+     *
+     */
+    override fun toInterpolatedString(): String = value
+
+    override fun equals(other: Any?): Boolean = other is StringValue && this.value == other.value
+    override fun hashCode(): Int {
+        var result = value.hashCode()
+        result = 31 * result + manimObject.hashCode()
+        return result
+    }
+
+    override fun toString(): String {
+        return "\"$value\""
+    }
+
+    override fun clone(): ExecValue {
+        return StringValue(value, manimObject)
     }
 }
 

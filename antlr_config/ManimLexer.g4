@@ -44,6 +44,7 @@ RETURN: 'return';
 NUMBER_TYPE: 'number';
 BOOL_TYPE: 'boolean';
 CHAR_TYPE: 'char';
+STRING_TYPE: 'string';
 
 // Keywords
 COMMENT: 'comment';

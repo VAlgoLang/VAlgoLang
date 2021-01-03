@@ -2,6 +2,7 @@ package com.manimdsl.frontend
 
 import antlr.ManimParser.*
 import antlr.ManimParserBaseVisitor
+import com.manimdsl.errorhandling.semanticerror.incompatibleOperatorTypeError
 import java.util.*
 
 class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
@@ -96,7 +97,8 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         val expr = visit(ctx.expr()) as ExpressionNode
 
         val expectedTypes = when (ctx.cast_method()) {
-            is ToCharacterContext, is ToNumberContext -> setOf(NumberType, CharType)
+            is ToCharacterContext -> setOf(NumberType, CharType)
+            is ToNumberContext -> setOf(NumberType, CharType, StringType)
             else -> throw UnsupportedOperationException("Not implemented")
         }
 
@@ -461,7 +463,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
     }
 
     override fun visitSubtitleAnnotation(ctx: SubtitleAnnotationContext): SubtitleAnnotationNode {
-        val text = ctx.subtitle_text.text
+        val text = visit(ctx.subtitle_text) as ExpressionNode
+
+        semanticAnalyser.checkExpressionTypeWithExpectedType(text, StringType, symbolTable, ctx)
+
         var condition: ExpressionNode = BoolNode(ctx.start.line, true)
         var duration: ExpressionNode? = null
         if (ctx.arg_list() != null) {
@@ -662,6 +667,11 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         return CharNode(ctx.start.line, ctx.CHAR_LITER().text[1])
     }
 
+    override fun visitStringLiteral(ctx: StringLiteralContext): ASTNode {
+        // string in format "string"
+        return StringNode(ctx.start.line, ctx.STRING().text.removeSurrounding("\""))
+    }
+
     override fun visitNullLiteral(ctx: NullLiteralContext): ASTNode {
         return NullNode(ctx.start.line)
     }
@@ -682,6 +692,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
 
     override fun visitCharType(ctx: CharTypeContext?): ASTNode {
         return CharType
+    }
+
+    override fun visitStringType(ctx: StringTypeContext?): ASTNode {
+        return StringType
     }
 
     override fun visitDataStructureType(ctx: DataStructureTypeContext): DataStructureType {
@@ -730,12 +744,22 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
         val type = symbolTable.getTypeOf(arrayIdentifier)
 
-        if (type is ArrayType) {
-            semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+        val internalType = when (type) {
+            is ArrayType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+                type.internalType
+            }
+            is StringType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, false, ctx)
+                CharType
+            }
+            else -> {
+                incompatibleOperatorTypeError("[]", type, ctx = ctx)
+                ErrorType
+            }
         }
-        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
 
-        val internalType = if (type is ArrayType) type.internalType else ErrorType
+        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
         return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
     }
 

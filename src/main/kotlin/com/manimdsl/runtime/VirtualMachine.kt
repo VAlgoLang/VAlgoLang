@@ -87,7 +87,7 @@ class VirtualMachine(
                         displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                     }
                 } else {
-                    displayCode.add(fileLines[it])
+                    displayCode.add(fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")) // Escape chars to be compatible with python strings
                     displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                 }
             } else {
@@ -440,7 +440,8 @@ class VirtualMachine(
                         stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
                     }
 
-                    updateSubtitle(statement.text, duration)
+                    val text = executeExpression(statement.text) as StringValue
+                    updateSubtitle(text.toString(), duration)
                     EmptyValue
                 } else {
                     EmptyValue
@@ -776,6 +777,7 @@ class VirtualMachine(
             is NullNode -> NullValue
             is CastExpressionNode -> executeCastExpression(node)
             is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
+            is StringNode -> StringValue(node.value)
         }
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
@@ -783,7 +785,17 @@ class VirtualMachine(
 
             return when (node.targetType) {
                 is CharType -> CharValue((exprValue as DoubleAlias).toDouble().toChar())
-                is NumberType -> DoubleValue((exprValue as DoubleAlias).toDouble())
+                is NumberType -> {
+                    if (exprValue is DoubleAlias) {
+                        DoubleValue(exprValue.toDouble())
+                    } else {
+                        try {
+                            DoubleValue((exprValue as StringValue).value.toDouble())
+                        } catch (e: NumberFormatException) {
+                            RuntimeError(value = "Invalid cast operation", lineNumber = node.lineNumber)
+                        }
+                    }
+                }
                 else -> RuntimeError(value = "Invalid cast operation", lineNumber = node.lineNumber)
             }
         }

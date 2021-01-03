@@ -427,6 +427,15 @@ class InvalidSemanticTests {
         )
     }
 
+    @Test
+    fun stringImmutabiltiyError() {
+        runSyntaxAndSemanticAnalysis("stringImmutabilityError.manimdsl")
+        val output = outputStreamCaptor.toString()
+        assertTrue(
+            output.contains(Regex("Cannot perform array access editing on .* of type string as they are immutable"))
+        )
+    }
+
     private fun runSyntaxAndSemanticAnalysis(fileName: String) {
         val inputFile = File("$semanticErrorFilePath/$fileName")
         val parser = ManimDSLParser(inputFile.inputStream())

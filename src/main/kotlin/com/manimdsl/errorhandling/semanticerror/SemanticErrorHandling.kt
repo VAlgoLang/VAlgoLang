@@ -92,6 +92,10 @@ fun unsupportedMethodError(dataStructureType: String, method: String, ctx: Parse
     addSemanticError("$dataStructureType does not support $method method", getErrorLinePos(ctx))
 }
 
+fun stringImmutabilityError(varName: String, ctx: ParserRuleContext) {
+    addSemanticError("Cannot perform array access editing on $varName of type string as they are immutable", getErrorLinePos(ctx))
+}
+
 fun numOfArgsInMethodCallError(
     dataStructureType: String,
     method: String,
