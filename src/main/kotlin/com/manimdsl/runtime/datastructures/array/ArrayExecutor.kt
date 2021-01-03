@@ -14,6 +14,21 @@ import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
 import java.util.ArrayDeque
 
+/**
+ * Array Executor
+ *
+ * @property variables: Map from identifier of a variable in frame to its current execution value.
+ * @property linearRepresentation: Reference to linear representation list being constructed.
+ * @property frame: Frame executor is in.
+ * @property stylesheet: Stylesheet object provided by user for styling.
+ * @property animationSpeeds: Animation speeds deque maintaining speeds at different points of execution.
+ * @property dataStructureBoundaries: Map from data structure identifier it's shape boundary.
+ * @property variableNameGenerator: Top level VariableNameGenerator.
+ * @property codeTextVariable: Python identifier of code block.
+ * @constructor Creates a new Array Executor with runtime operations defined inside.
+ *
+ */
+
 class ArrayExecutor(
     override val variables: MutableMap<String, ExecValue>,
     override val linearRepresentation: MutableList<ManimInstr>,
