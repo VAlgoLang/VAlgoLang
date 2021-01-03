@@ -7,14 +7,17 @@ class Array:
 
         title_width = 1 if title != "" else 0
         self.title_width = title_width
-        width_per_element = (self.boundary_width - title_width) / len(values)
         self.padding = 0.2 if padding else 0
+        if len(values) != 0:
+            width_per_element = (self.boundary_width - title_width) / len(values)
+            square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
+            self.array_elements = [
+                Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val
+                in self.values]
+        else:
+            square_dim = 0
+            self.array_elements = []
 
-        square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
-
-        self.array_elements = [
-            Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val
-            in self.values]
         offset = 0
         if ((square_dim * len(values)) + title_width) < self.boundary_width:
             offset = (self.boundary_width - ((square_dim * len(values)) + title_width)) / 2

@@ -189,6 +189,7 @@ class ArrayExecutor(
             NumberType -> DoubleValue(0.0)
             BoolType -> BoolValue(false)
             is ArrayType -> getDefaultValueForType(type.internalType, lineNumber)
+            is StringType -> StringValue("")
             else -> RuntimeError(value = "Cannot create data structure with type $type", lineNumber = lineNumber)
         }
     }

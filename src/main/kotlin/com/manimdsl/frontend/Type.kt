@@ -145,6 +145,15 @@ data class ListType(override var internalType: Type) : ArrayType(internalType) {
         "size" to Size(), "prepend" to Prepend(argumentTypes = listOf(internalType to true)), "append" to Append(argumentTypes = listOf(internalType to true))
     )
 
+    object ListConstructor : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 0
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf()
+        override val varargs: Boolean = true
+
+        override fun toString(): String = "constructor"
+    }
+
     data class Prepend(
         override val returnType: Type = VoidType,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
@@ -158,6 +167,10 @@ data class ListType(override var internalType: Type) : ArrayType(internalType) {
         ),
         override val varargs: Boolean = false
     ) : DataStructureMethod
+
+    override fun getConstructor(): ConstructorMethod {
+        return ListConstructor
+    }
 
     override fun toString(): String = "List<$internalType>"
 }
