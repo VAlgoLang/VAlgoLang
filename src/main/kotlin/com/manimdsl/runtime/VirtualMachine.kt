@@ -202,7 +202,7 @@ class VirtualMachine(
         private var pc: Int,
         private var finalLine: Int,
         private var variables: MutableMap<String, ExecValue>,
-        val depth: Int = 1,
+        private val depth: Int = 1,
         private var showMoveToLine: Boolean = true,
         private var stepInto: Boolean = STEP_INTO_DEFAULT,
         private var mostRecentlyUpdatedQueue: LinkedList<Int> = LinkedList(),
@@ -295,7 +295,7 @@ class VirtualMachine(
         }
 
         private fun moveToLine(line: Int = pc) {
-            if (showMoveToLine && !hideCode && !fileLines[line - 1].isEmpty()) {
+            if (showMoveToLine && !hideCode && fileLines[line - 1].isNotEmpty()) {
                 linearRepresentation.add(
                     MoveToLine(
                         displayLine[line - 1],
@@ -382,7 +382,7 @@ class VirtualMachine(
             }
             is AssignmentNode -> executeAssignment(statement)
             is DeclarationNode -> executeAssignment(statement)
-            is MethodCallNode -> executeMethodCall(statement, false, false)
+            is MethodCallNode -> executeMethodCall(statement, insideMethodCall = false, isExpression = false)
             is FunctionCallNode -> executeFunctionCall(statement)
             is IfStatementNode -> executeIfStatement(statement)
             is WhileStatementNode -> executeWhileStatement(statement)
@@ -519,6 +519,16 @@ class VirtualMachine(
         }
 
         private fun executeAssignment(node: DeclarationOrAssignment): ExecValue {
+            if (node.expression is FunctionCallNode) {
+                val functionPrefix = (node.expression as FunctionCallNode).functionIdentifier
+
+                val removeDataStructureVariable =
+                    dataStructureBoundaries.keys.filter { it.startsWith("$functionPrefix.") }.toMutableSet()
+                if (removeDataStructureVariable.isNotEmpty()) {
+                    linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(removeDataStructureVariable, variables), animationSpeeds.first()))
+                }
+            }
+
             val assignedValue = executeExpression(node.expression, identifier = node.identifier)
             return if (assignedValue is RuntimeError) {
                 assignedValue
