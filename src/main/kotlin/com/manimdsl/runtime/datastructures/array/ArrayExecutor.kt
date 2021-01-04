@@ -14,6 +14,7 @@ import com.manimdsl.runtime.datastructures.SquareBoundary
 import com.manimdsl.runtime.datastructures.WideBoundary
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
+import java.util.*
 
 /**
  * Array Executor
@@ -35,10 +36,12 @@ class ArrayExecutor(
     override val linearRepresentation: MutableList<ManimInstr>,
     override val frame: VirtualMachine.Frame,
     override val stylesheet: Stylesheet,
-    override val animationSpeeds: java.util.ArrayDeque<Double>,
+    override val animationSpeeds: ArrayDeque<Double>,
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
-    override val codeTextVariable: String
+    override val codeTextVariable: String,
+    override val locallyCreatedDynamicVariables: MutableSet<String>
+
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
@@ -87,6 +90,7 @@ class ArrayExecutor(
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 val dsUID = frame.functionNamePrefix + assignLHS.identifier
                 val position = stylesheet.getPosition(dsUID)
+                locallyCreatedDynamicVariables.add(dsUID)
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
                 if (stylesheet.userDefinedPositions() && position == null) {
                     return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
@@ -156,6 +160,7 @@ class ArrayExecutor(
             val ident = variableNameGenerator.generateNameFromPrefix("array")
             val dsUID = frame.functionNamePrefix + assignLHS.identifier
             val position = stylesheet.getPosition(dsUID)
+            locallyCreatedDynamicVariables.add(dsUID)
             dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
             arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
             arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
@@ -412,6 +417,7 @@ class ArrayExecutor(
                 )
                 val dsUID = frame.functionNamePrefix + assignLHS.identifier
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
+                locallyCreatedDynamicVariables.add(dsUID)
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = newArray.size)
                 arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                 arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)

@@ -1,29 +1,15 @@
-fun move(state: string, command: char): string {
-    return state + command;
-}
-
-fun trace(array: Array<char>, stack: Stack<string>, startIndex: number, currentState: string): List<string> {
-    if (startIndex == array.size()) {
-        return List<string>();
-    } else if (array[startIndex] == 'F') {
+fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<number>) {
+    if(n > 0) {
         @stepOver {
-        let newPosition = move(currentState, 'F');
+        move(n - 1, source, aux, target);
+        target.push(source.pop());
+        move(n - 1, aux, target, source);
         }
-        let res = trace(array, stack, startIndex + 1, newPosition);
-        res.prepend(currentState + "-" + newPosition);
-        return res;
-    } else if (array[startIndex] == '[') {
-        stack.push(currentState);
-        return trace(array, stack, startIndex + 1, currentState);
-    } else if (array[startIndex] == ']') {
-        let turtleState = stack.pop();
-        return trace(array, stack, startIndex + 1, turtleState);
-    } else {
-        return trace(array, stack, startIndex + 1, move(currentState, 'F'));
     }
 }
-let array1 = Array<char>() {'[', 'F', 'F', ']'};
 
-let stack1 = Stack<string>();
+let C = Stack<number>();
+let B = Stack<number>();
+let A = Stack<number>() { 2, 1} ;
 
-let result = trace(array1, stack1, 0, "0,0:0");
+move(A.size(), A, B, C);
