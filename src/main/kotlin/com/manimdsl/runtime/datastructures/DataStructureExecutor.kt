@@ -38,6 +38,7 @@ interface DataStructureExecutor {
     val dataStructureBoundaries: MutableMap<String, BoundaryShape>
     val variableNameGenerator: VariableNameGenerator
     val codeTextVariable: String
+    val locallyCreatedDynamicVariables: MutableSet<String>
 
     fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue
 }

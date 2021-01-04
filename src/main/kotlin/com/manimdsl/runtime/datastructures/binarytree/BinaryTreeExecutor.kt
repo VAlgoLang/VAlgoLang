@@ -11,7 +11,7 @@ import com.manimdsl.runtime.datastructures.DataStructureExecutor
 import com.manimdsl.runtime.datastructures.SquareBoundary
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
-import java.util.ArrayDeque
+import java.util.*
 
 /**
  * Binary Tree Executor
@@ -37,7 +37,7 @@ class BinaryTreeExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String,
-    val localDataStructures: MutableSet<String>
+    override val locallyCreatedDynamicVariables: MutableSet<String>,
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
@@ -45,7 +45,7 @@ class BinaryTreeExecutor(
             val ident = variableNameGenerator.generateNameFromPrefix("tree")
             val root = frame.executeExpression(node.arguments.first()) as BinaryTreeNodeValue
             val position = stylesheet.getPosition(dsUID)
-            localDataStructures.add(dsUID)
+            locallyCreatedDynamicVariables.add(dsUID)
             dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = 1)
             if (stylesheet.userDefinedPositions() && position == null) {
                 return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)

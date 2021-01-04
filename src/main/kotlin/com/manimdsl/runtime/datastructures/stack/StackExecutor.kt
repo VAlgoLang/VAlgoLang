@@ -37,7 +37,7 @@ class StackExecutor(
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
     override val codeTextVariable: String,
-    private val locallyCreatedDynamicVariables: MutableSet<String>,
+    override val locallyCreatedDynamicVariables: MutableSet<String>,
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
