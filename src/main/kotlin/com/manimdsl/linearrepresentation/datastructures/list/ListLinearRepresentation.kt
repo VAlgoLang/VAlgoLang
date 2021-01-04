@@ -30,7 +30,7 @@ data class ListPrepend(
     override fun toPython(): List<String> {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
         return listOf(
-            "$newArrayIdent = Array([${values.joinToString(", ") { "\"${it.value}\"" }}], \"$arrayTitle\", [${
+            "$newArrayIdent = Array([${values.joinToString(", ") { "\"${it}\"" }}], \"$arrayTitle\", [${
             boundaries.joinToString(", ")}]$style).build()",
             "self.play(ReplacementTransform($arrayIdent.all, $newArrayIdent.all))",
             "$arrayIdent = $newArrayIdent"
