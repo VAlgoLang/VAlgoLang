@@ -12,6 +12,7 @@ com.manimdsl.frontend
 com.manimdsl.linearrepresentation
 com.manimdsl.linearrepresentation.datastructures.array
 com.manimdsl.linearrepresentation.datastructures.binarytree
+com.manimdsl.linearrepresentation.datastructures.list
 com.manimdsl.linearrepresentation.datastructures.stack
 com.manimdsl.runtime
 com.manimdsl.runtime.datastructures
