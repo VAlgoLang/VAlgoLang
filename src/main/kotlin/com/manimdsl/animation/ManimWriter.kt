@@ -7,12 +7,12 @@ import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
  * Manim writer that generates the Python code written using the manim library
  *
  * @property linearRepresentation: list of all the instructions to be converted to Python code
- * @constructor Create empty Manim writer
+ * @constructor Creates a new Manim writer
  */
 class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
     /**
-     * Converts linear representation to Python code written in format compatible with the manim library.
+     * Converts linear representation to Python code written in the format compatible with manim.
      * Also copies in the utility functions and prebuilt Python libraries that are used by the linear representation.
      *
      * @return string containing all the well-formatted Python code
