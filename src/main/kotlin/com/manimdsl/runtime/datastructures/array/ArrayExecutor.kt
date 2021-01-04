@@ -439,6 +439,9 @@ class ArrayExecutor(
             is ArrayType.Size -> {
                 DoubleValue(ds.array.size.toDouble())
             }
+            is ArrayType.Contains -> {
+                BoolValue(ds.array.contains(frame.executeExpression(node.arguments[0])))
+            }
             is ArrayType.Swap -> {
                 val index1 = (frame.executeExpression(node.arguments[0]) as DoubleValue).value.toInt()
                 val index2 = (frame.executeExpression(node.arguments[1]) as DoubleValue).value.toInt()
