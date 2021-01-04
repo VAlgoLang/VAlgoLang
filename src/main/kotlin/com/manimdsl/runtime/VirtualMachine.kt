@@ -348,7 +348,7 @@ class VirtualMachine(
                 fetchNextStatement()
             }
 
-            if (localDataStructures.isNotEmpty()) {
+            if (localDataStructures.isNotEmpty() && depth != 1) {
                 linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
             }
             return EmptyValue
