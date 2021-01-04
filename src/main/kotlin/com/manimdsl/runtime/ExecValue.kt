@@ -241,7 +241,7 @@ data class StringValue(override val value: String, override var manimObject: MOb
     }
 
     override fun toString(): String {
-        return "\"$value\""
+        return "\\\"$value\\\""
     }
 
     override fun clone(): ExecValue {

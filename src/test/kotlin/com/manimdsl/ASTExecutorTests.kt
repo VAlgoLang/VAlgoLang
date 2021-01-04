@@ -348,7 +348,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("shouldBeTrue = true, w = \"123\", z = \\'a\\', a = 97.0"),
+                variables = listOf("shouldBeTrue = true, w = \\\"123\\\", z = \\'a\\', a = 97.0"),
                 ident = "variable_block",
                 textColor = null, runtime = 1.0
             ),
@@ -359,7 +359,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("shouldBeTrue = true, w = \"123\", shouldAlsoBeTrue = true, a = 97.0"),
+                variables = listOf("shouldBeTrue = true, w = \\\"123\\\", shouldAlsoBeTrue = true, a = 97.0"),
                 ident = "variable_block",
                 textColor = null, runtime = 1.0
             ),
@@ -424,7 +424,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = 4.0", "interpolate = \"x is 4.0\""),
+                variables = listOf("x = 4.0", "interpolate = \\\"x is 4.0\\\""),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0
@@ -480,7 +480,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = \"abcdefgh\""),
+                variables = listOf("x = \\\"abcdefgh\\\""),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0
@@ -492,7 +492,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = \"abcdefgh\"", "firstChar = \\\'a\\\'"),
+                variables = listOf("x = \\\"abcdefgh\\\"", "firstChar = \\\'a\\\'"),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0
@@ -504,7 +504,7 @@ class ASTExecutorTests {
                 codeTextVariable = "code_text", runtime = 1.0
             ),
             UpdateVariableState(
-                variables = listOf("x = \"abcdefgh\"", "firstChar = \\\'a\\\'", "thirdChar = \\\'c\\\'"),
+                variables = listOf("x = \\\"abcdefgh\\\"", "firstChar = \\\'a\\\'", "thirdChar = \\\'c\\\'"),
                 ident = "variable_block",
                 textColor = null,
                 runtime = 1.0

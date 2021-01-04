@@ -33,7 +33,7 @@ data class ArrayStructure(
 
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
-        return "$ident = $className([${values.joinToString(",") { "\"${it.value}\"" }}], \"$arrayTitle\", [${
+        return "$ident = $className([${values.joinToString(",") { "\"${it}\"" }}], \"$arrayTitle\", [${
         boundaries.joinToString(
             ","
         )
@@ -100,7 +100,7 @@ data class Array2DStructure(
     override fun getConstructor(): String {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
         return "$ident = $className([${
-        values.map { array -> "[ ${array.map { "\"${it.value}\"" }.joinToString(",")}]" }.joinToString(",")
+        values.map { array -> "[ ${array.map { "\"${it}\"" }.joinToString(",")}]" }.joinToString(",")
         }], \"$arrayTitle\", [${boundaries.joinToString(",")}]$style)"
     }
 }
