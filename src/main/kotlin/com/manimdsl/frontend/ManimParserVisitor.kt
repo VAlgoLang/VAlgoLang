@@ -836,4 +836,10 @@ class ManimParserVisitor : ManimParserBaseVisitor<ASTNode>() {
         semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
         return ContinueNode(ctx.start.line, startLineNumber)
     }
+
+    override fun visitListType(ctx: ListTypeContext): ASTNode {
+        val elementType = visit(ctx.type()) as Type
+        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(elementType, ctx)
+        return ListType(elementType)
+    }
 }

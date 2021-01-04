@@ -156,7 +156,7 @@ class VirtualMachine(
                 return Pair(exitStatus, linearRepresentation)
             }
             val linearRepresentationWithBoundaries = linearRepresentation.map {
-                if (it is ShapeWithBoundary) {
+                if (it is ManimInstrWithBoundary) {
                     val boundaryShape = computedBoundaries[it.uid]!!
                     it.setNewBoundary(boundaryShape.corners(), boundaryShape.maxSize)
                 }
