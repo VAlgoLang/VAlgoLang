@@ -73,7 +73,7 @@ data class ArrayType(
     var is2D: Boolean = false,
 ) : DataStructureType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
-        "size" to Size(), "swap" to Swap(), "contains" to Contains(argumentTypes =listOf(internalType to true))
+        "size" to Size(), "swap" to Swap(), "contains" to Contains(argumentTypes = listOf(internalType to true))
     )
 
     object ArrayConstructor : ConstructorMethod {
