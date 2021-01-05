@@ -468,7 +468,7 @@ class VirtualMachine(
             linearRepresentation.add(
                 UpdateSubtitle(
                     (subtitleBlockVariable as SubtitleBlock),
-                    wrapString(text, 30),
+                    wrapString(text, 65),
                     runtime = animationSpeeds.first()
                 )
             )
