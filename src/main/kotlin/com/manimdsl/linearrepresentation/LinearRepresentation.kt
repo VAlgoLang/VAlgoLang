@@ -66,7 +66,7 @@ data class UpdateSubtitle(
     override fun toPython(): List<String> {
         val instr = mutableListOf("self.play_animation(${subtitleBlock.ident}.clear())")
         if (!text.isBlank()) {
-            instr.add("self.play_animation(${subtitleBlock.ident}.display($text, self.get_time() + ${subtitleBlock.duration}))")
+            instr.add("self.play_animation(${subtitleBlock.ident}.display('$text', self.get_time() + ${subtitleBlock.duration}))")
         }
 
         return instr

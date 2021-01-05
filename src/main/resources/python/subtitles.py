@@ -15,6 +15,8 @@ class Subtitle_block:
         self.text = Text(text, color=self.text_color, weight=self.text_weight, font=self.font)
         if self.text.get_height() > self.height:
             self.text.scale(self.height / self.text.get_height())
+        if self.text.get_width() > self.width:
+            self.text.scale(self.width / self.text.get_width())
 
     def display(self, text, end_time):
         self.change_text(text)

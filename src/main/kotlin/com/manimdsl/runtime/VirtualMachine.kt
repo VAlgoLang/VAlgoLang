@@ -441,7 +441,7 @@ class VirtualMachine(
                     }
 
                     val text = executeExpression(statement.text) as StringValue
-                    updateSubtitle(text.toString(), duration)
+                    updateSubtitle(text.value, duration)
                     EmptyValue
                 } else {
                     EmptyValue
