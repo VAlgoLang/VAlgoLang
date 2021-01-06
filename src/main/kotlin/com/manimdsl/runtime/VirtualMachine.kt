@@ -87,7 +87,9 @@ class VirtualMachine(
                         displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                     }
                 } else {
-                    displayCode.add(fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")) // Escape chars to be compatible with python strings
+                    displayCode.add(
+                        fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")
+                    ) // Escape chars to be compatible with python strings
                     displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
                 }
             } else {
@@ -339,7 +341,15 @@ class VirtualMachine(
                             localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
                         }
                         if (localDataStructures.isNotEmpty() && value !is RuntimeError) {
-                            linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
+                            linearRepresentation.add(
+                                CleanUpLocalDataStructures(
+                                    convertToIdent(
+                                        localDataStructures,
+                                        variables
+                                    ),
+                                    animationSpeeds.first()
+                                )
+                            )
                         }
                         return value
                     }
@@ -349,7 +359,12 @@ class VirtualMachine(
             }
 
             if (localDataStructures.isNotEmpty() && depth != 1) {
-                linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
+                linearRepresentation.add(
+                    CleanUpLocalDataStructures(
+                        convertToIdent(localDataStructures, variables),
+                        animationSpeeds.first()
+                    )
+                )
             }
             return EmptyValue
         }
@@ -557,9 +572,19 @@ class VirtualMachine(
                                 )
                             }
 
-                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore('.'))) {
+                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (
+                                functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore(
+                                        '.'
+                                    )
+                                )
+                            ) {
                                 // Non recursive function call
-                                linearRepresentation.add(CleanUpLocalDataStructures(setOf(assignedValue.manimObject.ident), animationSpeeds.first()))
+                                linearRepresentation.add(
+                                    CleanUpLocalDataStructures(
+                                        setOf(assignedValue.manimObject.ident),
+                                        animationSpeeds.first()
+                                    )
+                                )
                                 val constructor = makeConstructorNode(assignedValue, node.lineNumber)
                                 variables[node.identifier.identifier] = executeConstructor(constructor, node.identifier)
                             } else {
