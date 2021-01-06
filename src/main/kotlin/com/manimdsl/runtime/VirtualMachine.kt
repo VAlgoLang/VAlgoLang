@@ -441,7 +441,7 @@ class VirtualMachine(
                     }
 
                     val text = executeExpression(statement.text) as StringValue
-                    updateSubtitle(text.value, duration)
+                    updateSubtitle(text.value, duration * animationSpeeds.first())
                     EmptyValue
                 } else {
                     EmptyValue
@@ -450,7 +450,7 @@ class VirtualMachine(
             else -> EmptyValue
         }
 
-        private fun updateSubtitle(text: String, duration: Int) {
+        private fun updateSubtitle(text: String, duration: Double) {
             if (subtitleBlockVariable is EmptyMObject) {
                 val dsUID = "_subtitle"
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)

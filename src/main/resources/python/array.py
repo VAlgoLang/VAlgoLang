@@ -99,7 +99,7 @@ class Array:
         animations.append(move_title)
         coord[0] += 0.5
         self.build(coord)
-        animations.extend([FadeIn(array_elem.all, run_time=1.0) for array_elem in self.array_elements])
+        animations.extend([FadeIn(array_elem.all) for array_elem in self.array_elements])
         return animations
 
 class Array2D:

@@ -32,7 +32,7 @@ data class ListPrepend(
         return listOf(
             "$newArrayIdent = Array([${values.joinToString(", ") { "\"${it}\"" }}], \"$arrayTitle\", [${
             boundaries.joinToString(", ")}]$style).build()",
-            "self.play(ReplacementTransform($arrayIdent.all, $newArrayIdent.all))",
+            "self.play_animation(ReplacementTransform($arrayIdent.all, $newArrayIdent.all)${getRuntimeString()})",
             "$arrayIdent = $newArrayIdent"
         )
     }

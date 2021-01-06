@@ -121,7 +121,7 @@ data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
-    var duration: Int,
+    var duration: Double,
     override val runtime: Double = 1.0,
     override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {
@@ -141,10 +141,7 @@ data class SubtitleBlock(
     }
 
     override fun toPython(): List<String> {
-        return listOf(
-            getConstructor(),
-            "self.time_objects.append($ident)"
-        )
+        return listOf(getConstructor())
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
