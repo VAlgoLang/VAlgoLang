@@ -70,30 +70,7 @@ class VirtualMachine(
     private var animationSpeeds = ArrayDeque(listOf(1.0))
 
     init {
-        if (stylesheet.getDisplayNewLinesInCode()) {
-            acceptableNonStatements = acceptableNonStatements.plus("")
-        }
-        fileLines.indices.forEach {
-            if (statements[it + 1] !is NoRenderAnimationNode &&
-                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
-            ) {
-                if (fileLines[it].isEmpty()) {
-                    if (stylesheet.getDisplayNewLinesInCode()) {
-                        if (stylesheet.getSyntaxHighlighting()) {
-                            displayCode.add(" ")
-                        } else {
-                            displayCode.add("")
-                        }
-                        displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
-                    }
-                } else {
-                    displayCode.add(fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")) // Escape chars to be compatible with python strings
-                    displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
-                }
-            } else {
-                displayLine.add(displayLine.lastOrNull() ?: 0)
-            }
-        }
+        setupFileLines()
     }
 
     fun runProgram(): Pair<ExitStatus, List<ManimInstr>> {
@@ -177,6 +154,35 @@ class VirtualMachine(
                 }
             }
             Pair(ExitStatus.EXIT_SUCCESS, linearRepresentation)
+        }
+    }
+
+    private fun setupFileLines() {
+        if (stylesheet.getDisplayNewLinesInCode()) {
+            acceptableNonStatements = acceptableNonStatements.plus("")
+        }
+        fileLines.indices.forEach {
+            if (statements[it + 1] !is NoRenderAnimationNode &&
+                (acceptableNonStatements.any { x -> fileLines[it].contains(x) } || statements[it + 1] is CodeNode)
+            ) {
+                if (fileLines[it].isEmpty()) {
+                    if (stylesheet.getDisplayNewLinesInCode()) {
+                        if (stylesheet.getSyntaxHighlighting()) {
+                            displayCode.add(" ")
+                        } else {
+                            displayCode.add("")
+                        }
+                        displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                    }
+                } else {
+                    displayCode.add(
+                        fileLines[it].replace("\'", "\\'").replace("\"", "\\\"")
+                    ) // Escape chars to be compatible with python strings
+                    displayLine.add(1 + (displayLine.lastOrNull() ?: 0))
+                }
+            } else {
+                displayLine.add(displayLine.lastOrNull() ?: 0)
+            }
         }
     }
 
@@ -557,7 +563,7 @@ class VirtualMachine(
                                 )
                             }
 
-                            if (node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore('.'))) {
+                            if (stepInto && node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore('.'))) {
                                 // Non recursive function call
                                 linearRepresentation.add(CleanUpLocalDataStructures(setOf(assignedValue.manimObject.ident), animationSpeeds.first()))
                                 val constructor = makeConstructorNode(assignedValue, node.lineNumber)
