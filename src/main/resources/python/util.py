@@ -57,6 +57,6 @@ def scroll_up(self, group, scrolls):
     for i in range(1, 1 + scrolls):
         group[self.code_start - i].next_to(group[self.code_start - i + 1], UP*self.line_spacing, aligned_edge=LEFT)
         self.play_animation(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
-                  group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
+                group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
     self.code_start = self.code_start - scrolls
     self.code_end = self.code_end - scrolls
