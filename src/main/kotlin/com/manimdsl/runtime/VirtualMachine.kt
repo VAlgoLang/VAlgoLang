@@ -434,14 +434,14 @@ class VirtualMachine(
                 if (condition.value) {
                     if (statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
 
-                    val duration: Int = if (statement.duration != null) {
-                        (executeExpression(statement.duration) as DoubleValue).value.toInt()
+                    val duration: Double = if (statement.duration != null) {
+                        (executeExpression(statement.duration) as DoubleValue).value
                     } else {
-                        stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
+                        (stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION) * animationSpeeds.first()
                     }
 
                     val text = executeExpression(statement.text) as StringValue
-                    updateSubtitle(text.value, duration * animationSpeeds.first())
+                    updateSubtitle(text.value, duration)
                     EmptyValue
                 } else {
                     EmptyValue

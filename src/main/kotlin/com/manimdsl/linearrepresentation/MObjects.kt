@@ -141,7 +141,10 @@ data class SubtitleBlock(
     }
 
     override fun toPython(): List<String> {
-        return listOf(getConstructor())
+        return listOf(
+            getConstructor(),
+            "self.time_objects.append($ident)"
+        )
     }
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
