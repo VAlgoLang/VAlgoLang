@@ -157,6 +157,13 @@ class DSLCommandLineArguments : Callable<Int> {
     @Option(names = ["-b", "--boundaries"], description = ["Print out boundaries of shapes"], hidden = true)
     var boundaries: Boolean = false
 
+    @Option(names = ["--progress_bars"], description = ["Print out and leave progress bars from manim"])
+    fun progressBars(progressBars: Boolean = false) {
+        if (progressBars) {
+            manimArguments.add("--leave_progress_bars")
+        }
+    }
+
     @Option(
         names = ["-q", "--quality"],
         defaultValue = "low",
