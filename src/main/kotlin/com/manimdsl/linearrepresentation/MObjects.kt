@@ -13,9 +13,13 @@ abstract class MObject : ManimInstr() {
     abstract fun getConstructor(): String
 }
 
-abstract class ShapeWithBoundary(open val uid: String) : MObject() {
+interface ManimInstrWithBoundary {
+    val uid: String
+    fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
+}
+
+abstract class ShapeWithBoundary(override val uid: String) : MObject(), ManimInstrWithBoundary {
     val style = PythonStyle()
-    abstract fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 }
 
 abstract class DataStructureMObject(
@@ -117,7 +121,7 @@ data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
-    var duration: Int,
+    var duration: Double,
     override val runtime: Double = 1.0,
     override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {

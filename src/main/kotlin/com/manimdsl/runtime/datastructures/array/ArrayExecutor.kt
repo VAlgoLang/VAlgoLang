@@ -5,6 +5,8 @@ import com.manimdsl.linearrepresentation.EmptyMObject
 import com.manimdsl.linearrepresentation.ManimInstr
 import com.manimdsl.linearrepresentation.VariableNameGenerator
 import com.manimdsl.linearrepresentation.datastructures.array.*
+import com.manimdsl.linearrepresentation.datastructures.list.ListAppend
+import com.manimdsl.linearrepresentation.datastructures.list.ListPrepend
 import com.manimdsl.runtime.*
 import com.manimdsl.runtime.datastructures.BoundaryShape
 import com.manimdsl.runtime.datastructures.DataStructureExecutor
@@ -12,6 +14,7 @@ import com.manimdsl.runtime.datastructures.SquareBoundary
 import com.manimdsl.runtime.datastructures.WideBoundary
 import com.manimdsl.runtime.utility.getBoundaries
 import com.manimdsl.stylesheet.Stylesheet
+import java.util.*
 
 /**
  * Array Executor
@@ -33,10 +36,12 @@ class ArrayExecutor(
     override val linearRepresentation: MutableList<ManimInstr>,
     override val frame: VirtualMachine.Frame,
     override val stylesheet: Stylesheet,
-    override val animationSpeeds: java.util.ArrayDeque<Double>,
+    override val animationSpeeds: ArrayDeque<Double>,
     override val dataStructureBoundaries: MutableMap<String, BoundaryShape>,
     override val variableNameGenerator: VariableNameGenerator,
-    override val codeTextVariable: String
+    override val codeTextVariable: String,
+    override val locallyCreatedDynamicVariables: MutableSet<String>
+
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
@@ -85,6 +90,7 @@ class ArrayExecutor(
                 arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
                 val dsUID = frame.functionNamePrefix + assignLHS.identifier
                 val position = stylesheet.getPosition(dsUID)
+                locallyCreatedDynamicVariables.add(dsUID)
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = arraySize.value.toInt())
                 if (stylesheet.userDefinedPositions() && position == null) {
                     return RuntimeError("Missing position values for $dsUID", lineNumber = node.lineNumber)
@@ -154,6 +160,7 @@ class ArrayExecutor(
             val ident = variableNameGenerator.generateNameFromPrefix("array")
             val dsUID = frame.functionNamePrefix + assignLHS.identifier
             val position = stylesheet.getPosition(dsUID)
+            locallyCreatedDynamicVariables.add(dsUID)
             dataStructureBoundaries[dsUID] = SquareBoundary(maxSize = arraySizes.sumBy { it.value.toInt() })
             arrayValue.style = stylesheet.getStyle(assignLHS.identifier, arrayValue)
             arrayValue.animatedStyle = stylesheet.getAnimatedStyle(assignLHS.identifier, arrayValue)
@@ -187,6 +194,7 @@ class ArrayExecutor(
             NumberType -> DoubleValue(0.0)
             BoolType -> BoolValue(false)
             is ArrayType -> getDefaultValueForType(type.internalType, lineNumber)
+            is StringType -> StringValue("")
             else -> RuntimeError(value = "Cannot create data structure with type $type", lineNumber = lineNumber)
         }
     }
@@ -224,7 +232,9 @@ class ArrayExecutor(
                     if (indices.first().value.toInt() !in arrayValue.array.indices || index2 !in arrayValue.array[index].indices) {
                         RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                     } else {
-                        arrayValue.array[index][index2] = assignedValue
+                        val arrayClone = arrayValue.array.clone()
+                        arrayClone[index][index2] = assignedValue
+                        arrayValue.array = arrayClone
                         arrayValue.animatedStyle?.let {
                             linearRepresentation.add(
                                 ArrayElemRestyle(
@@ -271,7 +281,9 @@ class ArrayExecutor(
                 if (indices.first().value.toInt() !in arrayValue.array.indices) {
                     RuntimeError(value = "Array index out of bounds", lineNumber = arrayElemNode.lineNumber)
                 } else {
-                    arrayValue.array[index.value.toInt()] = assignedValue
+                    val arrayClone = arrayValue.array.clone()
+                    arrayClone[index.value.toInt()] = assignedValue
+                    arrayValue.array = arrayClone
                     arrayValue.animatedStyle?.let {
                         linearRepresentation.add(
                             ArrayElemRestyle(
@@ -405,6 +417,7 @@ class ArrayExecutor(
                 )
                 val dsUID = frame.functionNamePrefix + assignLHS.identifier
                 val ident = variableNameGenerator.generateNameFromPrefix("array")
+                locallyCreatedDynamicVariables.add(dsUID)
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = newArray.size)
                 arrayValue2.style = stylesheet.getStyle(node.identifier, arrayValue)
                 arrayValue2.animatedStyle = stylesheet.getAnimatedStyle(node.identifier, arrayValue)
@@ -436,8 +449,50 @@ class ArrayExecutor(
 
     fun executeArrayMethodCall(node: MethodCallNode, ds: ArrayValue): ExecValue {
         return when (node.dataStructureMethod) {
+            is ListType.Prepend -> {
+                val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                val newValue = frame.executeExpression(node.arguments[0])
+                val arrayList = ds.array.toMutableList()
+                arrayList.add(0, newValue)
+                ds.array = arrayList.toTypedArray()
+
+                linearRepresentation.add(
+                    ListPrepend(
+                        arrayIdent,
+                        variableNameGenerator.generateNameFromPrefix("list"),
+                        node.instanceIdentifier,
+                        ds.array,
+                        color = ds.style.borderColor,
+                        textColor = ds.style.textColor,
+                        creationString = ds.style.creationStyle,
+                        uid = frame.functionNamePrefix + node.instanceIdentifier,
+                        showLabel = ds.style.showLabel,
+                        runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier),
+                    )
+                )
+                EmptyValue
+            }
+            is ListType.Append -> {
+                val arrayIdent = (ds.manimObject as ArrayStructure).ident
+                val newValue = frame.executeExpression(node.arguments[0])
+                val arrayList = ds.array.toMutableList()
+                arrayList += newValue
+                ds.array = arrayList.toTypedArray()
+                linearRepresentation.add(
+                    ListAppend(
+                        arrayIdent, newValue,
+                        runtime = ds.animatedStyle?.animationTime ?: animationSpeeds.first(),
+                        render = stylesheet.renderDataStructure(frame.functionNamePrefix + node.identifier)
+                    )
+                )
+                EmptyValue
+            }
             is ArrayType.Size -> {
                 DoubleValue(ds.array.size.toDouble())
+            }
+            is ArrayType.Contains -> {
+                BoolValue(ds.array.contains(frame.executeExpression(node.arguments[0])))
             }
             is ArrayType.Swap -> {
                 val index1 = (frame.executeExpression(node.arguments[0]) as DoubleValue).value.toInt()

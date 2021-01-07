@@ -68,12 +68,12 @@ object ErrorMethod : DataStructureMethod {
 // This is used to collect arguments up into method call node
 data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 
-data class ArrayType(
+open class ArrayType(
     override var internalType: Type,
     var is2D: Boolean = false,
 ) : DataStructureType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
-        "size" to Size(), "swap" to Swap()
+        "size" to Size(), "swap" to Swap(), "contains" to Contains(argumentTypes = listOf(internalType to true))
     )
 
     object ArrayConstructor : ConstructorMethod {
@@ -87,6 +87,12 @@ data class ArrayType(
 
     data class Size(
         override val returnType: Type = NumberType,
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    data class Contains(
+        override val returnType: Type = BoolType,
         override val argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
@@ -120,6 +126,59 @@ data class ArrayType(
         methods["swap"] =
             Swap(argumentTypes = listOf(NumberType to true, NumberType to true, NumberType to true, NumberType to true))
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ArrayType
+
+        if (internalType != other.internalType) return false
+        if (is2D != other.is2D) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = internalType.hashCode()
+        result = 31 * result + is2D.hashCode()
+        return result
+    }
+}
+
+data class ListType(override var internalType: Type) : ArrayType(internalType) {
+    override val methods: MutableMap<String, DataStructureMethod> = mutableMapOf(
+        "size" to Size(), "prepend" to Prepend(argumentTypes = listOf(internalType to true)), "append" to Append(argumentTypes = listOf(internalType to true))
+    )
+
+    object ListConstructor : ConstructorMethod {
+        override val minRequiredArgsWithoutInitialValue: Int = 0
+        override val returnType: Type = VoidType
+        override val argumentTypes: List<Pair<Type, Boolean>> = listOf()
+        override val varargs: Boolean = true
+
+        override fun toString(): String = "constructor"
+    }
+
+    data class Prepend(
+        override val returnType: Type = VoidType,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    data class Append(
+        override val returnType: Type = VoidType,
+        override var argumentTypes: List<Pair<Type, Boolean>> = listOf(
+            NumberType to true,
+        ),
+        override val varargs: Boolean = false
+    ) : DataStructureMethod
+
+    override fun getConstructor(): ConstructorMethod {
+        return ListConstructor
+    }
+
+    override fun toString(): String = "List<$internalType>"
 }
 
 data class TreeType(

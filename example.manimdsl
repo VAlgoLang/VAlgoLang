@@ -1,1 +1,24 @@
-let x = 2;
+fun constructArray(n: number, val: number): Array<number> {
+    let arr = Array<number>(n);
+    for i in range(n) {
+        arr[i] = val;
+    }
+    return arr;
+}
+
+fun fib(n: number, dp: Array<number>): number {
+    if (dp[n] != -1) {
+        return dp[n];
+    }
+    if (n <= 1) {
+        dp[n] = n;
+    } else {
+        dp[n] = fib(n-1, dp) + fib(n-2, dp);
+    }
+    return dp[n];
+}
+
+@stepOver {
+let dp = constructArray(5, -1);
+}
+let ans = fib(4, dp);

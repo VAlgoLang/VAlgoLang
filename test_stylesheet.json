@@ -1,19 +1,42 @@
 {
-  "syntaxHighlightingStyle": "monokai",
-  "tabSpacing": 1,
   "variables": {
-    "transpose": {
-      "borderColor": "ORANGE"
+    "dp": {
+      "textColor": "blue",
+      "animate": {}
     }
   },
   "dataStructures": {
     "Array": {
-      "creationStyle": "Write",
+      "borderColor": "yellow",
       "animate": {
-        "textColor": "RED",
-        "animationStyle": "Indicate",
-        "animationTime": 0.1
+        "textColor": "red"
       }
+    }
+  },
+  "positions": {
+    "constructArray.arr": {
+      "x": -2,
+      "y": 0,
+      "width": 0,
+      "height": 0
+    },
+    "dp": {
+      "x": -2,
+      "y": -0.7,
+      "width": 9,
+      "height": 2
+    },
+    "_code": {
+      "x": -7,
+      "y": -4,
+      "width": 5,
+      "height": 5.3
+    },
+    "_variables": {
+      "x": -7,
+      "y": 1.3,
+      "width": 5,
+      "height": 2.7
     }
   }
 }
