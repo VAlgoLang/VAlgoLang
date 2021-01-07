@@ -10,6 +10,7 @@ class Subtitle_block:
         self.height = boundaries[0][1] - boundaries[3][1]
         self.position = np.array([(boundaries[0][0] + boundaries[1][0]) / 2, (boundaries[0][1] + boundaries[3][1]) / 2, 0])
         self.text.move_to(self.position)
+        self.showing = False
 
     def change_text(self, text):
         self.text = Text(text, color=self.text_color, weight=self.text_weight, font=self.font)
@@ -22,9 +23,11 @@ class Subtitle_block:
         self.change_text(text)
         self.text.move_to(self.position)
         self.end_time = end_time
+        self.showing = True
         return ShowCreation(self.text)
 
     def clear(self):
+        self.showing = False
         return Uncreate(self.text)
 
     def action(self):

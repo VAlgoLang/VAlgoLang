@@ -345,7 +345,15 @@ class VirtualMachine(
                             localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
                         }
                         if (localDataStructures.isNotEmpty() && value !is RuntimeError) {
-                            linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
+                            linearRepresentation.add(
+                                CleanUpLocalDataStructures(
+                                    convertToIdent(
+                                        localDataStructures,
+                                        variables
+                                    ),
+                                    animationSpeeds.first()
+                                )
+                            )
                         }
                         return value
                     }
@@ -355,7 +363,12 @@ class VirtualMachine(
             }
 
             if (localDataStructures.isNotEmpty() && depth != 1) {
-                linearRepresentation.add(CleanUpLocalDataStructures(convertToIdent(localDataStructures, variables), animationSpeeds.first()))
+                linearRepresentation.add(
+                    CleanUpLocalDataStructures(
+                        convertToIdent(localDataStructures, variables),
+                        animationSpeeds.first()
+                    )
+                )
             }
             return EmptyValue
         }
@@ -440,10 +453,10 @@ class VirtualMachine(
                 if (condition.value) {
                     if (statement.showOnce) statement.condition = BoolNode(statement.lineNumber, false)
 
-                    val duration: Int = if (statement.duration != null) {
-                        (executeExpression(statement.duration) as DoubleValue).value.toInt()
+                    val duration: Double = if (statement.duration != null) {
+                        (executeExpression(statement.duration) as DoubleValue).value
                     } else {
-                        stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION
+                        (stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION) * animationSpeeds.first()
                     }
 
                     val text = executeExpression(statement.text) as StringValue
@@ -456,7 +469,7 @@ class VirtualMachine(
             else -> EmptyValue
         }
 
-        private fun updateSubtitle(text: String, duration: Int) {
+        private fun updateSubtitle(text: String, duration: Double) {
             if (subtitleBlockVariable is EmptyMObject) {
                 val dsUID = "_subtitle"
                 dataStructureBoundaries[dsUID] = WideBoundary(maxSize = Int.MAX_VALUE)
@@ -565,7 +578,12 @@ class VirtualMachine(
 
                             if (stepInto && node.expression is FunctionCallNode && assignedValue.manimObject is DataStructureMObject && (functionNamePrefix == "" || (node.expression as FunctionCallNode).functionIdentifier != functionNamePrefix.substringBefore('.'))) {
                                 // Non recursive function call
-                                linearRepresentation.add(CleanUpLocalDataStructures(setOf(assignedValue.manimObject.ident), animationSpeeds.first()))
+                                linearRepresentation.add(
+                                    CleanUpLocalDataStructures(
+                                        setOf(assignedValue.manimObject.ident),
+                                        animationSpeeds.first()
+                                    )
+                                )
                                 val constructor = makeConstructorNode(assignedValue, node.lineNumber)
                                 variables[node.identifier.identifier] = executeConstructor(constructor, node.identifier)
                             } else {
@@ -648,6 +666,7 @@ class VirtualMachine(
                     showMoveToLine = stepInto,
                     stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
+                    mostRecentlyUpdatedQueue = if (loopNode is ForStatementNode) mostRecentlyUpdatedQueue else LinkedList(),
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
                     functionNamePrefix = functionNamePrefix
                 ).runFrame()

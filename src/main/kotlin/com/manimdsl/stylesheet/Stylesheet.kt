@@ -79,7 +79,7 @@ data class DefaultAnimationProperties(
     override val pointer: Boolean = true,
     override val highlight: String? = "YELLOW",
     override var animationStyle: String? = "FadeToColor",
-    override var animationTime: Double? = 1.0,
+    override var animationTime: Double? = null,
     override val render: Boolean? = true,
 ) : AnimationProperties()
 

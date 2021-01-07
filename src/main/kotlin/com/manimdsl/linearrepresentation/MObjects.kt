@@ -121,7 +121,7 @@ data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
     val textColor: String? = null,
-    var duration: Int,
+    var duration: Double,
     override val runtime: Double = 1.0,
     override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {
