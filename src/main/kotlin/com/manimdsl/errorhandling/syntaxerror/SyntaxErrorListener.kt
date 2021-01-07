@@ -3,15 +3,34 @@ package com.manimdsl.errorhandling.syntaxerror
 import org.antlr.runtime.UnwantedTokenException
 import org.antlr.v4.runtime.*
 
+/**
+ * Syntax error listener
+ *
+ * Custom Syntax error listener that throws custom messages.
+ *
+ * @constructor Create empty Syntax error listener
+ */
 class SyntaxErrorListener : BaseErrorListener() {
 
     /** Map to convert tokens to readable format.
      * Please update when grammar updates **/
     private val readableTokenMap = mapOf(
         "IDENT" to "identifier",
-        "INT" to "integer",
+        "NUMBER_TYPE" to "number",
     )
 
+    /**
+     * Syntax error
+     *
+     * Syntax error to throw.
+     *
+     * @param recognizer: Token recognizer
+     * @param offendingSymbol: Offending symbol
+     * @param line: Error line
+     * @param charPositionInLine: Error char position in error line
+     * @param msg: Error message
+     * @param e: Exception
+     */
     override fun syntaxError(
         recognizer: Recognizer<*, *>,
         offendingSymbol: Any,
@@ -22,15 +41,9 @@ class SyntaxErrorListener : BaseErrorListener() {
     ) {
 
         val token = offendingSymbol as Token
-        var underlinedError = underlineError(recognizer, offendingSymbol, line, charPositionInLine)
+        val underlinedError = underlineError(recognizer, offendingSymbol, line, charPositionInLine)
 
         when (e) {
-            is FailedPredicateException -> {
-                val overflowInfo = getOverflowInfo(msg)
-                underlinedError =
-                    underlineCharOverflow(recognizer, overflowInfo.token, overflowInfo.line, overflowInfo.char)
-                overflowError(overflowInfo, underlinedError)
-            }
             is UnwantedTokenException -> {
                 extraneousInputError(token.text, line, charPositionInLine, underlinedError)
             }
@@ -40,6 +53,17 @@ class SyntaxErrorListener : BaseErrorListener() {
         }
     }
 
+    /**
+     * Underline error
+     *
+     * Underlines whereabouts in input file the error has occured.
+     *
+     * @param recognizer: Token recognizer
+     * @param offendingSymbol: Offending symbol
+     * @param line: Error line
+     * @param charPositionInLine: Error char position in error line
+     * @return
+     */
     private fun underlineError(
         recognizer: Recognizer<*, *>,
         offendingSymbol: Token,
@@ -59,27 +83,16 @@ class SyntaxErrorListener : BaseErrorListener() {
         return errorLine
     }
 
-    private fun underlineCharOverflow(
-        recognizer: Recognizer<*, *>,
-        offendingSymbol: String,
-        line: Int,
-        charPositionInLine: Int
-    ): String {
-        var errorLine = getErrorLine(recognizer, line, charPositionInLine)
-        for (i in offendingSymbol.indices) {
-            errorLine += if (!isASCII(offendingSymbol[i])) {
-                "^"
-            } else {
-                " "
-            }
-        }
-        return errorLine
-    }
-
-    private fun isASCII(c: Char): Boolean {
-        return c >= 0.toChar() && c < 128.toChar()
-    }
-
+    /**
+     * Get error line
+     *
+     * Gets the line of code error had occurred on from input file.
+     *
+     * @param recognizer: Token recognizer
+     * @param line: Error line
+     * @param charPositionInLine: Error char position in error line
+     * @return
+     */
     private fun getErrorLine(recognizer: Recognizer<*, *>, line: Int, charPositionInLine: Int): String {
         val tokens = recognizer.inputStream as CommonTokenStream
         val input = tokens.tokenSource.inputStream.toString()
@@ -91,23 +104,19 @@ class SyntaxErrorListener : BaseErrorListener() {
         return errorLine
     }
 
+    /**
+     * Make readable
+     *
+     * Replaces tokens with more meaningful equivalents
+     *
+     * @param message: Error message
+     * @return
+     */
     private fun makeReadable(message: String): String {
         var readableMessage = message
         readableTokenMap.forEach { (token, readable) ->
             readableMessage = message.replace(token, readable, false)
         }
         return readableMessage
-    }
-
-    data class OverflowInfo(val type: String, val token: String, val line: Int, val char: Int)
-
-    private fun getOverflowInfo(errorInfo: String): OverflowInfo {
-        val type = if (errorInfo.contains("char")) "character" else "integer"
-        val extraInfo = errorInfo.split("TOKEN")[1].split("LINE")
-        val text = extraInfo[0]
-        val tokenLineInfo = extraInfo[1].split("CHAR")
-        val line = Integer.parseInt(tokenLineInfo[0])
-        val char = Integer.parseInt(tokenLineInfo[1])
-        return OverflowInfo(type, text, line, char)
     }
 }
