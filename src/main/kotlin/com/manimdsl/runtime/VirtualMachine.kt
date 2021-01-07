@@ -666,6 +666,7 @@ class VirtualMachine(
                     showMoveToLine = stepInto,
                     stepInto = stepInto && previousStepIntoState,
                     hideCode = hideCode,
+                    mostRecentlyUpdatedQueue = if (loopNode is ForStatementNode) mostRecentlyUpdatedQueue else LinkedList(),
                     displayedDataMap = if (loopNode is ForStatementNode) displayedDataMap else mutableMapOf(),
                     functionNamePrefix = functionNamePrefix
                 ).runFrame()
