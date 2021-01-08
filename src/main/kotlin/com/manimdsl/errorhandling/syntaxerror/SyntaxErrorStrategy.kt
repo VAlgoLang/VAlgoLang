@@ -2,8 +2,24 @@ package com.manimdsl.errorhandling.syntaxerror
 
 import org.antlr.v4.runtime.*
 
+/**
+ * Syntax error strategy
+ *
+ * Custom syntax error strategy to override default ANTLR syntax errors.
+ *
+ * @constructor Create empty Syntax error strategy
+ */
 class SyntaxErrorStrategy : DefaultErrorStrategy() {
 
+    /**
+     * Report failed predicate
+     *
+     * General error thrown by ANTLR when a parser rule has not matched fully. Has been overridden to send
+     * additional information to be used to underline offending token in SyntaxErrorListener.
+     *
+     * @param recognizer: Parser recognizer
+     * @param e: Error
+     */
     override fun reportFailedPredicate(recognizer: Parser?, e: FailedPredicateException?) {
         val ruleName = recognizer!!.ruleNames[recognizer.context.ruleIndex]
         val offendingToken = recognizer.context.text
@@ -17,6 +33,14 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         )
     }
 
+    /**
+     * Report no viable alternative
+     *
+     * No viable alternative error in parser. Enriches message with string value rather than token.
+     *
+     * @param recognizer: Parser recognizer
+     * @param e: Error
+     */
     override fun reportNoViableAlternative(recognizer: Parser?, e: NoViableAltException?) {
         val tokens = recognizer!!.inputStream
         val input: String
@@ -34,6 +58,13 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         recognizer.notifyErrorListeners(e!!.offendingToken, msg, e)
     }
 
+    /**
+     * Report unwanted token
+     *
+     * Extraneous input error.
+     *
+     * @param recognizer: Parser recognizer
+     */
     override fun reportUnwantedToken(recognizer: Parser?) {
         if (!inErrorRecoveryMode(recognizer)) {
             beginErrorCondition(recognizer)
@@ -44,6 +75,13 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         }
     }
 
+    /**
+     * Report missing token
+     *
+     * Attempts to offer suggestions on general missing token errors
+     *
+     * @param recognizer: Parser recognizer
+     */
     override fun reportMissingToken(recognizer: Parser?) {
         if (!inErrorRecoveryMode(recognizer)) {
             beginErrorCondition(recognizer)
@@ -61,9 +99,16 @@ class SyntaxErrorStrategy : DefaultErrorStrategy() {
         }
     }
 
+    /**
+     * Report input mismatch
+     *
+     * Shows expected tokens on input mismatch
+     *
+     * @param recognizer: Parser recognizer
+     * @param e: Error
+     */
     override fun reportInputMismatch(recognizer: Parser, e: InputMismatchException) {
-        val expecting =
-            if (e.expectedTokens.size() > 1) "" else " expecting " + e.expectedTokens.toString(recognizer.vocabulary)
+        val expecting = " expecting " + e.expectedTokens.toString(recognizer.vocabulary)
         val msg = "mismatched input " + getTokenErrorDisplay(e.offendingToken) + expecting
         recognizer.notifyErrorListeners(e.offendingToken, msg, e)
     }
