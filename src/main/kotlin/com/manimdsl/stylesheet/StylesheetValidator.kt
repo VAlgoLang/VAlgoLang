@@ -13,7 +13,7 @@ import com.manimdsl.frontend.SymbolTableVisitor
  */
 object StylesheetValidator {
     /** Sets of acceptable inputs **/
-    private val dataStructureStrings = setOf("Stack", "Array", "Tree")
+    private val dataStructureStrings = setOf("Stack", "Array", "Tree", "List")
     private val validCodeTracking = setOf("stepOver", "stepInto")
     private val validCreationStrings =
         setOf("FadeIn", "FadeInFromLarge", "Write", "GrowFromCenter", "ShowCreation", "DrawBorderThenFill")
