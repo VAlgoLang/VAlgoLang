@@ -459,7 +459,7 @@ class VirtualMachine(
                         (stylesheet.getSubtitleStyle().duration ?: SUBTITLE_DEFAULT_DURATION) * animationSpeeds.first()
                     }
 
-                    val text = executeExpression(statement.text) as StringValue
+                    val text = executeExpression(statement.text, subtitleExpression = true) as StringValue
                     updateSubtitle(text.value, duration)
                     EmptyValue
                 } else {
@@ -763,15 +763,16 @@ class VirtualMachine(
             node: ExpressionNode,
             insideMethodCall: Boolean = false,
             identifier: AssignLHS = EmptyLHS,
+            subtitleExpression: Boolean = false
         ): ExecValue = when (node) {
             is IdentifierNode -> variables[node.identifier]!!
             is NumberNode -> DoubleValue(node.double)
             is CharNode -> CharValue(node.value)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
-            is AddExpression -> executeBinaryOp(node) { x, y -> x + y }
-            is SubtractExpression -> executeBinaryOp(node) { x, y -> x - y }
-            is DivideExpression -> executeBinaryOp(node) { x, y -> x / y }
-            is MultiplyExpression -> executeBinaryOp(node) { x, y -> x * y }
+            is AddExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x + y }
+            is SubtractExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x - y }
+            is DivideExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x / y }
+            is MultiplyExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x * y }
             is PlusExpression -> executeUnaryOp(node) { x -> x }
             is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
             is BoolNode -> BoolValue(node.value)
@@ -783,17 +784,17 @@ class VirtualMachine(
                 node,
                 true
             ) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
-            is EqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x == y) }
-            is NeqExpression -> executeBinaryOp(node) { x, y -> BoolValue(x != y) }
-            is GtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x > y) }
-            is LtExpression -> executeBinaryOp(node) { x, y -> BoolValue(x < y) }
-            is GeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x >= y) }
-            is LeExpression -> executeBinaryOp(node) { x, y -> BoolValue(x <= y) }
+            is EqExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x == y) }
+            is NeqExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x != y) }
+            is GtExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x > y) }
+            is LtExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x < y) }
+            is GeExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x >= y) }
+            is LeExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x <= y) }
             is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
-            is ArrayElemNode -> arrExecutor.executeArrayElem(node, identifier)
+            is ArrayElemNode -> arrExecutor.executeArrayElem(node, identifier, subtitleExpression)
             is BinaryTreeNodeElemAccessNode -> btExecutor.executeTreeAccess(
                 variables[node.identifier]!! as BinaryTreeNodeValue,
                 node
@@ -888,14 +889,15 @@ class VirtualMachine(
 
         private fun executeBinaryOp(
             node: BinaryExpression,
+            subtitleExpression: Boolean,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
         ): ExecValue {
 
-            val leftExpression = executeExpression(node.expr1)
+            val leftExpression = executeExpression(node.expr1, subtitleExpression = subtitleExpression)
             if (leftExpression is RuntimeError) {
                 return leftExpression
             }
-            val rightExpression = executeExpression(node.expr2)
+            val rightExpression = executeExpression(node.expr2, subtitleExpression = subtitleExpression)
 
             if (rightExpression is RuntimeError) {
                 return rightExpression

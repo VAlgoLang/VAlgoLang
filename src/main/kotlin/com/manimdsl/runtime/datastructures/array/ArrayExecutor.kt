@@ -325,9 +325,9 @@ class ArrayExecutor(
         }
     }
 
-    fun executeArrayElem(node: ArrayElemNode, identifier: AssignLHS): ExecValue {
+    fun executeArrayElem(node: ArrayElemNode, identifier: AssignLHS, subtitleExpression: Boolean): ExecValue {
         return when (val arrayValue = variables[node.identifier]) {
-            is ArrayValue -> executeArrayElemSingle(node, arrayValue)
+            is ArrayValue -> executeArrayElemSingle(node, arrayValue, subtitleExpression)
             is Array2DValue -> executeArrayElem2D(node, arrayValue, identifier)
             is StringValue -> {
                 val index = (frame.executeExpression(node.indices.first()) as DoubleValue).value.toInt()
@@ -339,13 +339,13 @@ class ArrayExecutor(
         }
     }
 
-    private fun executeArrayElemSingle(node: ArrayElemNode, arrayValue: ArrayValue): ExecValue {
+    private fun executeArrayElemSingle(node: ArrayElemNode, arrayValue: ArrayValue, subtitleExpression: Boolean): ExecValue {
         val index = frame.executeExpression(node.indices.first()) as DoubleValue
         return if (index.value.toInt() !in arrayValue.array.indices) {
             RuntimeError(value = "Array index out of bounds", lineNumber = node.lineNumber)
         } else {
             with(arrayValue.animatedStyle) {
-                if (frame.getShowMoveToLine() && this != null) {
+                if (frame.getShowMoveToLine() && this != null && !subtitleExpression) {
                     linearRepresentation.add(
                         ArrayElemRestyle(
                             (arrayValue.manimObject as ArrayStructure).ident,
