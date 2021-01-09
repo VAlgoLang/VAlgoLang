@@ -32,7 +32,7 @@ class TestLinearRepresentation {
 
         stackIS.setNewBoundary(listOf(Pair(5.0, 4.0), Pair(7.0, 4.0), Pair(5.0, -4.0), Pair(7.0, -4.0)), 5)
 
-        val codeLines = listOf(listOf("let y = new Stack<number>();"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
+        val codeLines = listOf(listOf("let y = Stack<number>();"), listOf("y.push(2);"), listOf("y.push(3);"), listOf("y.pop();"))
         val codeBlock = CodeBlock(codeLines, "code_block", "code_text", "pointer", runtime = 1.0)
         codeBlock.setNewBoundary(defaultCodeBlockBoundaries, -1)
 

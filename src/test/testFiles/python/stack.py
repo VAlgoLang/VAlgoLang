@@ -8,7 +8,7 @@ class Main(Scene):
     time_objects = []
     def construct(self):
         # Building code visualisation pane
-        code_lines = [['let y = new Stack<number>();'], ['y.push(2);'], ['y.push(3);'], ['y.pop();']]
+        code_lines = [['let y = Stack<number>();'], ['y.push(2);'], ['y.push(3);'], ['y.pop();']]
         code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
@@ -71,7 +71,7 @@ class Main(Scene):
     def scroll_down(self, group, scrolls):
         sh_val = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
         for i in range(1, 1 + scrolls):
-            group[self.code_end + i - 1].next_to(group[self.code_end - 2 + i], DOWN*self.line_spacing, aligned_edge=LEFT)
+            group[self.code_end + i - 1].next_to(group[self.code_end - 2 + i], DOWN * self.line_spacing, aligned_edge=LEFT)
             self.play(FadeOut(group[self.code_start + i - 1]), FadeIn(group[self.code_end + i - 1]),
                       group[(self.code_start + i):(self.code_end + i)].shift, sh_val * UP, run_time=0.1)
         self.code_start = self.code_start + scrolls
@@ -79,9 +79,9 @@ class Main(Scene):
     def scroll_up(self, group, scrolls):
         sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
         for i in range(1, 1 + scrolls):
-            group[self.code_start - i].next_to(group[self.code_start - i + 1], UP*self.line_spacing, aligned_edge=LEFT)
+            group[self.code_start - i].next_to(group[self.code_start - i + 1], UP * self.line_spacing, aligned_edge=LEFT)
             self.play_animation(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
-                    group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
+                                group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
         self.code_start = self.code_start - scrolls
         self.code_end = self.code_end - scrolls
 class Code_block:
@@ -115,7 +115,7 @@ class Code_block:
             self.all = group
         self.code = code
     def build(self):
-        self.all.arrange_submobjects(DOWN*0.1, aligned_edge=LEFT)
+        self.all.arrange_submobjects(DOWN * 0.1, aligned_edge=LEFT)
         ratio = 4.6 / 5.0
         self.all.set_width(self.boundary_width * ratio)
         return self.all
@@ -125,7 +125,8 @@ class Code_block:
             idx += len(self.code[i])
         return self.all[idx - 1]
 class DataStructure(ABC):
-    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,
+                 font="Times New Roman"):
         self.ul = ul
         self.ur = ur
         self.ll = ll
@@ -140,7 +141,8 @@ class DataStructure(ABC):
         self.font = font
         self.all = VGroup()
     def shrink(self, new_width, new_height):
-        scale_factor = min((self.max_width - 2 * MED_SMALL_BUFF) / new_width, (self.max_height - 2 * MED_SMALL_BUFF) / new_height)
+        scale_factor = min((self.max_width - 2 * MED_SMALL_BUFF) / new_width,
+                           (self.max_height - 2 * MED_SMALL_BUFF) / new_height)
         if scale_factor != 1:
             return ApplyMethod(self.all.scale, scale_factor, {"about_edge": self.aligned_edge}), scale_factor
         return 0, 1
@@ -189,40 +191,45 @@ class DataStructure(ABC):
     def clean_up(self):
         pass
 class Rectangle_block:
-    def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL,
+                 font="Times New Roman"):
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
         self.shape = Rectangle(height=height, width=width, color=color)
         self.all = VGroup(self.text, self.shape)
-        self.text.set_width(7/10 * width)
+        self.text.set_width(7 / 10 * width)
         self.height = height
-        if(self.text.get_height() > 0.6 * height):
+        if self.text.get_height() > 0.6 * height:
             self.text.scale(0.6 * height / self.text.get_height())
         self.width = width
         self.text_color = text_color
         self.font = font
-        self.pointer = Triangle(color=color,fill_color=color,fill_opacity=1).flip(LEFT).scale(0.1)
+        self.pointer = Triangle(color=color, fill_color=color, fill_opacity=1).flip(LEFT).scale(0.1)
         self.pointer.next_to(self.shape, TOP, 0.01)
         if target:
             self.owner = target
-            self.all.scale(max(target.empty.get_height() / self.shape.get_height(), target.empty.get_width() / self.shape.get_width()))
+            self.all.scale(max(target.empty.get_height() / self.shape.get_height(),
+                               target.empty.get_width() / self.shape.get_width()))
     def replace_text(self, new_text, color=None):
         if not color:
             color = self.text_color
         new_text_obj = Text(new_text, color=color, font=self.font)
-        new_text_obj.set_width(self.width * 7/10)
-        if(new_text_obj.get_height() > 0.6 * self.height):
+        new_text_obj.set_width(self.width * 7 / 10)
+        if new_text_obj.get_height() > 0.6 * self.height:
             new_text_obj.scale(0.6 * self.height / new_text_obj.get_height())
-        return (Transform(self.text, new_text_obj.move_to(self.all.get_center())))
+        return Transform(self.text, new_text_obj.move_to(self.all.get_center()))
     def clean_up(self):
         return FadeOut(self.all)
 class Stack(DataStructure, ABC):
-    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,font="Times New Roman"):
+
+    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,
+                 font="Times New Roman"):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
         self.empty = None
     def create_init(self, text=None, creation_style=None):
         if not creation_style:
             creation_style = "ShowCreation"
-        empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color, text_color=self.text_color)
+        empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color,
+                               text_color=self.text_color)
         self.empty = empty.all
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
         self.all.add(empty.all)
@@ -258,7 +265,8 @@ class Stack(DataStructure, ABC):
         return 0, 1
     def push_existing(self, obj):
         animation = [[ApplyMethod(obj.all.move_to, np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)]]
-        enlarge, scale_factor = obj.owner.shrink(new_width=obj.owner.all.get_width(), new_height=obj.owner.all.get_height() + 0.25)
+        enlarge, scale_factor = obj.owner.shrink(new_width=obj.owner.all.get_width(),
+                                                 new_height=obj.owner.all.get_height() + 0.25)
         sim_list = list()
         if enlarge:
             sim_list.append(enlarge)
@@ -273,7 +281,8 @@ class Stack(DataStructure, ABC):
         return [FadeOut(self.all)]
 # Object representing a stack instantiation.
 class Init_structure:
-    def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL,
+                 font="Times New Roman"):
         self.shape = Line(color=color)
         self.shape.set_length(length)
         self.shape.set_angle(angle)
