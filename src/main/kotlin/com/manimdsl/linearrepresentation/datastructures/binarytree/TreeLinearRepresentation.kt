@@ -31,8 +31,8 @@ data class TreeAppendObject(
         val instruction = getInstructionString("animation", false)
         return listOf(
             "[$instruction for animation in ${treeValue.manimObject.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident},${
-                left.toString()
-                    .capitalize()
+            left.toString()
+                .capitalize()
             })]",
             "[$instruction for animation in ${treeValue.manimObject.ident}.$methodName(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident})]",
         )
