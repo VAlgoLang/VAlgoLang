@@ -1,6 +1,7 @@
 class DataStructure(ABC):
 
-    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
+    def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,
+                 font="Times New Roman"):
         self.ul = ul
         self.ur = ur
         self.ll = ll
@@ -16,7 +17,8 @@ class DataStructure(ABC):
         self.all = VGroup()
 
     def shrink(self, new_width, new_height):
-        scale_factor = min((self.max_width - 2 * MED_SMALL_BUFF) / new_width, (self.max_height - 2 * MED_SMALL_BUFF) / new_height)
+        scale_factor = min((self.max_width - 2 * MED_SMALL_BUFF) / new_width,
+                           (self.max_height - 2 * MED_SMALL_BUFF) / new_height)
         if scale_factor != 1:
             return ApplyMethod(self.all.scale, scale_factor, {"about_edge": self.aligned_edge}), scale_factor
         return 0, 1

@@ -12,7 +12,8 @@ class Array:
             width_per_element = (self.boundary_width - title_width) / len(values)
             square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
             self.array_elements = [
-                Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for val
+                Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for
+                val
                 in self.values]
         else:
             square_dim = 0
@@ -32,7 +33,6 @@ class Array:
         self.text_color = text_color
 
         self.all = VGroup(self.title, *[rect.all for rect in self.array_elements])
-
 
     def build(self, coord=None):
         previous = self.title if coord is None else coord
@@ -65,9 +65,10 @@ class Array:
         elem2_copy2.move_to(self.array_elements[i1].text.get_center())
         elem1_copy2 = deepcopy(elem1_copy)
         elem1_copy2.move_to(self.array_elements[i2].text.get_center())
-        return elem1_copy, elem2_copy, [[ApplyMethod(elem1_copy.next_to, self.array_elements[i1].all, np.array([0, 0.4, 0]))],
-                                        [ClockwiseTransform(elem2_copy, elem2_copy2), FadeOut(self.array_elements[i1].text)],
-                                        [ClockwiseTransform(elem1_copy, elem1_copy2), FadeOut(self.array_elements[i2].text)]]
+        return elem1_copy, elem2_copy, [
+            [ApplyMethod(elem1_copy.next_to, self.array_elements[i1].all, np.array([0, 0.4, 0]))],
+            [ClockwiseTransform(elem2_copy, elem2_copy2), FadeOut(self.array_elements[i1].text)],
+            [ClockwiseTransform(elem1_copy, elem1_copy2), FadeOut(self.array_elements[i2].text)]]
 
     def clean_up(self):
         animations = [FadeOut(self.title)]
@@ -102,6 +103,7 @@ class Array:
         animations.extend([FadeIn(array_elem.all) for array_elem in self.array_elements])
         return animations
 
+
 class Array2D:
     def __init__(self, values, title, boundaries, color=BLUE, text_color=WHITE):
         self.values = values
@@ -114,16 +116,18 @@ class Array2D:
         offset_from_bottom = (boundary_height - square_dim * len(values)) / 2
         sub_array_width = (square_dim * len(values[0]))
         for i in range(len(values) - 1, -1, -1):
-            new_ll = boundaries[2][0] + ((boundary_width - sub_array_width) /2) , boundaries[2][1] + (i * square_dim) + offset_from_bottom - 0.25
+            new_ll = boundaries[2][0] + ((boundary_width - sub_array_width) / 2), boundaries[2][1] + (
+                    i * square_dim) + offset_from_bottom - 0.25
             new_boundaries = [(new_ll[0], new_ll[1] + square_dim),
                               (new_ll[0] + sub_array_width, new_ll[1] + square_dim), new_ll,
                               (new_ll[0] + sub_array_width, new_ll[1])]
-            self.rows.append(Array(values[len(values) - 1 - i], "",new_boundaries, color=color, text_color=text_color, padding=False).build())
+            self.rows.append(Array(values[len(values) - 1 - i], "", new_boundaries, color=color, text_color=text_color,
+                                   padding=False).build())
         self.title = VGroup(Text(title).set_width(title_width))
         if title_width != 0 and self.title.get_height() > (boundary_height - square_dim * len(values)) / 2:
-                    self.title.scale((boundary_height - square_dim * len(values)) / 2 / self.title.get_height())
+            self.title.scale((boundary_height - square_dim * len(values)) / 2 / self.title.get_height())
         self.title.move_to(
-            np.array([boundaries[0][0] + (boundary_width/ 2), (boundaries[0][1] - 0.5), 0]))
+            np.array([boundaries[0][0] + (boundary_width / 2), (boundaries[0][1] - 0.5), 0]))
         self.color = color
         self.text_color = text_color
 
@@ -147,7 +151,8 @@ class Array2D:
             for j in range(len(self.rows[0].array_elements)):
                 if (i != i1 or j != j1) and (i != i2 or j != j2):
                     fade_to_grey_animations.append(FadeToColor(self.rows[i].array_elements[j].text, GREY))
-                    fade_to_original_animations.append(FadeToColor(self.rows[i].array_elements[j].text, self.text_color))
+                    fade_to_original_animations.append(
+                        FadeToColor(self.rows[i].array_elements[j].text, self.text_color))
 
         # Swapping elements
         o1 = self.rows[i1].array_elements[j1].text

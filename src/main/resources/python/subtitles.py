@@ -8,7 +8,8 @@ class Subtitle_block:
         self.end_time = end_time
         self.width = boundaries[1][0] - boundaries[0][0]
         self.height = boundaries[0][1] - boundaries[3][1]
-        self.position = np.array([(boundaries[0][0] + boundaries[1][0]) / 2, (boundaries[0][1] + boundaries[3][1]) / 2, 0])
+        self.position = np.array(
+            [(boundaries[0][0] + boundaries[1][0]) / 2, (boundaries[0][1] + boundaries[3][1]) / 2, 0])
         self.text.move_to(self.position)
         self.showing = False
 
