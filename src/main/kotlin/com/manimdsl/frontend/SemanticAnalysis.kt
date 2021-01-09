@@ -216,7 +216,7 @@ class SemanticAnalysis {
 
         val expectedTypes = dataStructureMethod.argumentTypes
         if (dataStructureMethod != ErrorMethod &&
-            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size)
+            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size) && expectedTypes.isNotEmpty()
         ) {
 
             argumentTypes.forEachIndexed { index, type ->
