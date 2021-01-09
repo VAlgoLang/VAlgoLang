@@ -23,7 +23,6 @@ class TestLinearRepresentation {
             StackType(NumberType),
             "stack",
             Coord(2.0, -1.0),
-            Alignment.HORIZONTAL,
             "y",
             boundaries = emptyList(),
             uid = "y",
