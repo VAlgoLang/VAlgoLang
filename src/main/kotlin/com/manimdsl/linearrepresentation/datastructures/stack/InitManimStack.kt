@@ -3,13 +3,11 @@ package com.manimdsl.linearrepresentation.datastructures.stack
 import com.manimdsl.frontend.DataStructureType
 import com.manimdsl.linearrepresentation.Color
 import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.Position
 import com.manimdsl.linearrepresentation.TextColor
 
 data class InitManimStack(
     override val type: DataStructureType,
     override val ident: String,
-    val position: Position,
     override var text: String,
     val color: String? = null,
     val textColor: String? = null,

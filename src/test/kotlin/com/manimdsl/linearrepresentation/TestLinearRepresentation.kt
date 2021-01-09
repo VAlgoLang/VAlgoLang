@@ -22,7 +22,6 @@ class TestLinearRepresentation {
         val stackIS = InitManimStack(
             StackType(NumberType),
             "stack",
-            Coord(2.0, -1.0),
             "y",
             boundaries = emptyList(),
             uid = "y",
