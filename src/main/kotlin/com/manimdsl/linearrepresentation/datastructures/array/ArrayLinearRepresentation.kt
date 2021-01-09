@@ -6,6 +6,18 @@ import com.manimdsl.stylesheet.AnimationProperties
 import com.manimdsl.stylesheet.StylesheetProperty
 import com.manimdsl.stylesheet.StylesheetValidator
 
+/**
+ * Array element assignment object
+ *
+ * @property arrayIdent
+ * @property index
+ * @property newElemValue
+ * @property animatedStyle
+ * @property secondIndex
+ * @property runtime
+ * @property render
+ * @constructor Create empty Array elem assign object
+ */
 data class ArrayElemAssignObject(
     val arrayIdent: String,
     val index: Int,
@@ -28,6 +40,16 @@ data class ArrayElemAssignObject(
     }
 }
 
+/**
+ * Array row replacement
+ *
+ * @property arrayIdent
+ * @property index
+ * @property newArray
+ * @property runtime
+ * @property render
+ * @constructor Create empty Array replace row
+ */
 data class ArrayReplaceRow(
     val arrayIdent: String,
     val index: Int,
@@ -46,6 +68,15 @@ data class ArrayReplaceRow(
     }
 }
 
+/**
+ * 2D array swap
+ *
+ * @property arrayIdent
+ * @property indices
+ * @property runtime
+ * @property render
+ * @constructor Create empty Array2d swap
+ */
 data class Array2DSwap(
     val arrayIdent: String,
     val indices: List<Int>,
@@ -59,6 +90,15 @@ data class Array2DSwap(
     }
 }
 
+/**
+ * 1D array short swap
+ *
+ * @property arrayIdent
+ * @property indices
+ * @property runtime
+ * @property render
+ * @constructor Create empty Array short swap
+ */
 data class ArrayShortSwap(
     val arrayIdent: String,
     val indices: Pair<Int, Int>,
@@ -71,6 +111,18 @@ data class ArrayShortSwap(
     }
 }
 
+/**
+ * 1D array long swap
+ *
+ * @property arrayIdent
+ * @property indices
+ * @property elem1
+ * @property elem2
+ * @property animations
+ * @property runtime
+ * @property render
+ * @constructor Create empty Array long swap
+ */
 data class ArrayLongSwap(
     val arrayIdent: String,
     val indices: Pair<Int, Int>,
@@ -91,6 +143,19 @@ data class ArrayLongSwap(
     }
 }
 
+/**
+ * Array element restyle
+ *
+ * @property arrayIdent
+ * @property indices
+ * @property styleProperties
+ * @property pointer
+ * @property animationString
+ * @property runtime
+ * @property render
+ * @property secondIndices
+ * @constructor Create empty Array elem restyle
+ */
 data class ArrayElemRestyle(
     val arrayIdent: String,
     val indices: List<Int>,

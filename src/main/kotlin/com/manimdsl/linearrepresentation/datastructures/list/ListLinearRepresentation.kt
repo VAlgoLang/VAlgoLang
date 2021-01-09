@@ -3,6 +3,23 @@ package com.manimdsl.linearrepresentation.datastructures.list
 import com.manimdsl.linearrepresentation.*
 import com.manimdsl.runtime.ExecValue
 
+/**
+ * List prepend
+ *
+ * @property arrayIdent
+ * @property newArrayIdent
+ * @property text
+ * @property values
+ * @property color
+ * @property textColor
+ * @property creationString
+ * @property showLabel
+ * @property boundaries
+ * @property runtime
+ * @property render
+ * @property uid
+ * @constructor Create empty List prepend
+ */
 data class ListPrepend(
     val arrayIdent: String,
     val newArrayIdent: String,
@@ -42,6 +59,15 @@ data class ListPrepend(
     }
 }
 
+/**
+ * List append
+ *
+ * @property arrayIdent
+ * @property newElemValue
+ * @property runtime
+ * @property render
+ * @constructor Create empty List append
+ */
 data class ListAppend(
     val arrayIdent: String,
     val newElemValue: ExecValue,

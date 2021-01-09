@@ -1,5 +1,10 @@
 package com.manimdsl.linearrepresentation
 
+/**
+ * Python style for storing style attributes
+ *
+ * @constructor Create empty Python style
+ */
 class PythonStyle {
     private val pythonStyleAttributes: MutableSet<PythonStyleAttribute> = mutableSetOf()
 
@@ -14,6 +19,11 @@ class PythonStyle {
     }
 }
 
+/**
+ * Python style attribute
+ *
+ * @constructor Create empty Python style attribute
+ */
 sealed class PythonStyleAttribute {
     abstract val name: String
     abstract val value: String
@@ -21,6 +31,11 @@ sealed class PythonStyleAttribute {
     override fun toString(): String = "$name=$value"
 }
 
+/**
+ * Python color attribute
+ *
+ * @constructor Create empty Color attribute python
+ */
 sealed class ColorAttributePython : PythonStyleAttribute() {
     private fun handleColourValue(): String {
         return if (value.matches(Regex("#[a-fA-F0-9]{6}"))) {
@@ -37,10 +52,22 @@ sealed class ColorAttributePython : PythonStyleAttribute() {
     }
 }
 
+/**
+ * Color attribute
+ *
+ * @property value
+ * @constructor Create empty Color
+ */
 class Color(override val value: String) : ColorAttributePython() {
     override val name: String = "color"
 }
 
+/**
+ * Text color attribute
+ *
+ * @property value
+ * @constructor Create empty Text color
+ */
 class TextColor(override val value: String) : ColorAttributePython() {
     override val name: String = "text_color"
 }
