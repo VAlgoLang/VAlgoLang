@@ -6,6 +6,24 @@ import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.TextColor
 import com.manimdsl.runtime.ExecValue
 
+/**
+ * 1D array initialisation
+ *
+ * @property type
+ * @property ident
+ * @property render
+ * @property text
+ * @property values
+ * @property color
+ * @property textColor
+ * @property creationString
+ * @property runtime
+ * @property showLabel
+ * @property maxSize
+ * @property boundaries
+ * @property uid
+ * @constructor Create empty Array structure
+ */
 data class ArrayStructure(
     override val type: DataStructureType,
     override val ident: String,
@@ -58,6 +76,24 @@ data class ArrayStructure(
     }
 }
 
+/**
+ * 2D array initialisation
+ *
+ * @property type
+ * @property ident
+ * @property render
+ * @property text
+ * @property values
+ * @property color
+ * @property textColor
+ * @property creationString
+ * @property runtime
+ * @property showLabel
+ * @property maxSize
+ * @property boundaries
+ * @property uid
+ * @constructor Create empty Array2d structure
+ */
 data class Array2DStructure(
     override val type: DataStructureType,
     override val ident: String,

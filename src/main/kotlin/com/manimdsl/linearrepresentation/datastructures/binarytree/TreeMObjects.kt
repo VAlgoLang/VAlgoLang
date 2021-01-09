@@ -5,6 +5,15 @@ import com.manimdsl.linearrepresentation.DataStructureMObject
 import com.manimdsl.linearrepresentation.MObject
 import com.manimdsl.runtime.datastructures.binarytree.BinaryTreeNodeValue
 
+/**
+ * Node initialisation
+ *
+ * @property ident
+ * @property value
+ * @property depth
+ * @property runtime
+ * @constructor Create empty Node structure
+ */
 data class NodeStructure(
     override val ident: String,
     val value: String,
@@ -26,6 +35,20 @@ data class NodeStructure(
     }
 }
 
+/**
+ * Tree initialisation
+ *
+ * @property type
+ * @property ident
+ * @property boundaries
+ * @property maxSize
+ * @property text
+ * @property root
+ * @property uid
+ * @property runtime
+ * @property render
+ * @constructor Create empty Init tree structure
+ */
 data class InitTreeStructure(
     override val type: DataStructureType,
     override val ident: String,
