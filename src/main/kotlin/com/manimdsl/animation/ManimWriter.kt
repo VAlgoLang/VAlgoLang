@@ -1,6 +1,9 @@
 package com.manimdsl.animation
 
-import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.DataStructureMObject
+import com.manimdsl.linearrepresentation.MObject
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.ShapeWithBoundary
 import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
 
 /**
@@ -23,7 +26,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         val constructCodeBlock = mutableListOf<String>()
 
         val shapeClassPaths = mutableSetOf<String>()
-        var executed = false
         linearRepresentation.forEach {
             when (it) {
                 is NodeStructure -> {
@@ -37,15 +39,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                         shapeClassPaths.add(it.classPath)
                     }
                 }
-            }
-            if (it is MoveToLine && !executed) {
-                constructCodeBlock.add(
-                    printWithIndent(
-                        2,
-                        listOf("# Moves the current line pointer to line ${it.lineNumber}")
-                    )
-                )
-                executed = true
             }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
         }

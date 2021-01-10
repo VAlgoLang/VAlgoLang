@@ -145,7 +145,7 @@ class Tree(DataStructure, ABC):
         self.root = root
         self.all.add(self.root.all)
 
-    def create_init(self):
+    def create_init(self, n):
         name = Text(self.identifier)
         name.next_to(self.root.circle_text, UP, self.text_padding)
         self.all.add(name)

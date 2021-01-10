@@ -116,14 +116,14 @@ data class CodeBlock(
         codeLines.append("]")
 
         return listOf(
-            "# Building code visualisation pane",
+            "# Builds code visualisation pane",
             "code_lines = $codeLines",
             getConstructor(),
             "$codeTextName = $ident.build()",
             "self.code_end = $ident.code_end",
             "self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)",
             "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to($ident.move_position)${getRuntimeString()}))",
-            "# Constructing current line pointer",
+            "# Constructs current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale($ident.boundary_width * 0.7/5.0).flip(TOP)"
         )
     }
@@ -165,6 +165,7 @@ data class SubtitleBlock(
 
     override fun toPython(): List<String> {
         return listOf(
+            "# Builds subtitle pane",
             getConstructor(),
             "self.time_objects.append($ident)"
         )
@@ -212,7 +213,7 @@ data class VariableBlock(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Building variable visualisation pane",
+            "# Builds variable visualisation pane",
             getConstructor(),
             "$variableGroupName = $ident.build()",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
@@ -275,7 +276,10 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
+            listOf(
+                "# Changes color of \"$ident\"",
+                "self.play_animation(${instructions.joinToString(", ")}$runtimeString)"
+            )
         }
     }
 
