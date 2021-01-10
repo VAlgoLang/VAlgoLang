@@ -135,9 +135,9 @@ enum class AnimationQuality {
     version = ["manimdsl 1.0"],
     description = ["ManimDSL compiler to produce manim animations."]
 )
-class DSLCommandLineArguments : Callable<Int> {
+open class DSLCommandLineArguments : Callable<Int> {
 
-    private val manimArguments = mutableListOf<String>()
+    val manimArguments = mutableListOf<String>()
 
     @Parameters(index = "0", description = ["The manimdsl file to compile and animate."])
     lateinit var file: String

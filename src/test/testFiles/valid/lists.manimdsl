@@ -1,3 +1,6 @@
 let a = List<number>();
 let y = a.size();
 a.append(1);
+let b = List<number>();
+
+b.prepend(10);
