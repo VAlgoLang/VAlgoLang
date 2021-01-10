@@ -1,13 +1,12 @@
 package com.manimdsl
 
-import org.junit.jupiter.api.Test
-
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import picocli.CommandLine
 
 internal class DSLCommandLineArgumentsTest {
 
-    class CommandLineTest: DSLCommandLineArguments() {
+    class CommandLineTest : DSLCommandLineArguments() {
         override fun call(): Int {
             val compileTest = listOf(file, output, python, manim, manimArguments, stylesheet, boundaries)
             return 0
