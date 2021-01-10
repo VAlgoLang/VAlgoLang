@@ -17,7 +17,7 @@ data structures and algorithms.
 ## Installation
 
 ManimDSL produces Python code that needs to run on Manim to generate the mp4 files. Please follow the
-[documentation](https://manimce.readthedocs.io/en/latest/installation.\html) to install manim
+[documentation](https://manimce.readthedocs.io/en/latest/installation.html) to install manim
 and follow the instructions according to your operating system.
 
 Once manim is installed there are multiple ways to get ManimDSL.
