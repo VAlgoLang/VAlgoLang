@@ -276,11 +276,11 @@ class BinaryTreeExecutor(
         binaryTreeElemNode: BinaryTreeNodeElemAccessNode,
         childValue: DoubleValue,
     ): ExecValue {
-        val (node, value) = executeTreeAccess(
+        val (_, node) = executeTreeAccess(
             rootNode,
             binaryTreeElemNode,
         )
-        if (value is RuntimeError)
+        if (node is RuntimeError)
             return node
         else if (node is BinaryTreeNodeValue) {
             val btNodeValue = BinaryTreeNodeValue(node.left, node.right, childValue, node.manimObject, depth = 0)
