@@ -1,8 +1,7 @@
-package com.manimdsl.semanticanalysis
+package com.manimdsl.runtime
 
 import com.manimdsl.ExitStatus
 import com.manimdsl.ManimDSLParser
-import com.manimdsl.runtime.VirtualMachine
 import com.manimdsl.stylesheet.Stylesheet
 import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.AfterAll
@@ -24,11 +23,19 @@ class InvalidRuntimeTests {
 
     companion object {
         private const val semanticErrorFilePath = "src/test/testFiles/invalid/runtimeErrors"
+        private val filesWithStylesheets = setOf("interactWithHiddenDataStructure")
 
         @JvmStatic
         fun data(): Stream<Arguments> {
-            return File(semanticErrorFilePath).walk().filter { it.isFile }
-                .map { Arguments.of(it.path) }.asStream()
+            return File(semanticErrorFilePath).walk().filter { it.isFile && it.extension == "manimdsl" }
+                .map { file ->
+                    if (filesWithStylesheets.contains(file.nameWithoutExtension)) {
+                        Arguments.of(file.path, "${file.parentFile.path}/${file.nameWithoutExtension}.json")
+                    } else {
+                        Arguments.of(file.path, null)
+                    }
+                }
+                .asStream()
         }
 
         @JvmStatic
@@ -58,12 +65,12 @@ class InvalidRuntimeTests {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("data")
-    fun invalidRuntimeTests(fileName: String) {
+    fun invalidRuntimeTests(fileName: String, stylesheetPath: String?) {
         val inputFile = File(fileName)
         val parser = ManimDSLParser(inputFile.inputStream())
         val (_, program) = parser.parseFile()
         val (_, abstractSyntaxTree, symbolTable, lineNodeMap) = parser.convertToAst(program)
-        val (exitStatus, _) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, inputFile.readLines(), Stylesheet(null, symbolTable)).runProgram()
+        val (exitStatus, _) = VirtualMachine(abstractSyntaxTree, symbolTable, lineNodeMap, inputFile.readLines(), Stylesheet(stylesheetPath, symbolTable)).runProgram()
         assertEquals(ExitStatus.RUNTIME_ERROR, exitStatus)
     }
 }

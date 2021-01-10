@@ -339,8 +339,11 @@ class VirtualMachine(
                     }
 
                     val value = executeStatement(statement)
+                    if (value is RuntimeError) {
+                        return value
+                    }
                     if (statement is ReturnNode || value !is EmptyValue) {
-                        if (statement is ReturnNode && statement.expression is IdentifierNode && value !is PrimitiveValue && value !is RuntimeError) {
+                        if (statement is ReturnNode && statement.expression is IdentifierNode && value !is PrimitiveValue) {
                             // Return variable data structure
                             localDataStructures.remove(functionNamePrefix + statement.expression.identifier)
                         }
@@ -830,21 +833,22 @@ class VirtualMachine(
             node: MethodCallNode,
             insideMethodCall: Boolean,
             isExpression: Boolean
-        ): ExecValue {
-            return when (val ds = variables[node.instanceIdentifier]) {
+        ): ExecValue =
+            if (variables[node.instanceIdentifier]?.manimObject?.render?.not() == true) {
+                RuntimeError(value = "Method interaction with hidden data structure", lineNumber = node.lineNumber)
+            } else when (val ds = variables[node.instanceIdentifier]) {
                 is StackValue -> {
-                    return stackExecutor.executeStackMethodCall(node, ds, insideMethodCall, isExpression)
+                    stackExecutor.executeStackMethodCall(node, ds, insideMethodCall, isExpression)
                 }
                 is ArrayValue -> {
-                    return arrExecutor.executeArrayMethodCall(node, ds)
+                    arrExecutor.executeArrayMethodCall(node, ds)
                 }
                 is Array2DValue -> {
-                    return arrExecutor.execute2DArrayMethodCall(node, ds)
+                    arrExecutor.execute2DArrayMethodCall(node, ds)
                 }
                 /** Extend with further data structures **/
                 else -> EmptyValue
             }
-        }
 
         private fun executeConstructor(node: ConstructorNode, assignLHS: AssignLHS): ExecValue {
             val dsUID = functionNamePrefix + assignLHS.identifier
