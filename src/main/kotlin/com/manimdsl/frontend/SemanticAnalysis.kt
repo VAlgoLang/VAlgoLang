@@ -119,7 +119,7 @@ class SemanticAnalysis {
 
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
         if (rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
-            nonNullableAssignedToNull(rhsType.toString(), lhsType.toString(), ctx)
+            nonNullableAssignedToNull(lhsType.toString(), ctx)
         } else if (rhsType != NullType && lhsType != ErrorType && rhsType != ErrorType && lhsType != rhsType) {
             declareAssignError(text, rhsType, lhsType, ctx)
         }
@@ -216,7 +216,7 @@ class SemanticAnalysis {
 
         val expectedTypes = dataStructureMethod.argumentTypes
         if (dataStructureMethod != ErrorMethod &&
-            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size)
+            (dataStructureMethod.varargs || expectedTypes.size == argumentTypes.size) && expectedTypes.isNotEmpty()
         ) {
 
             argumentTypes.forEachIndexed { index, type ->
@@ -564,7 +564,7 @@ class SemanticAnalysis {
 
     fun unableToInferTypeCheck(rhsType: Type, ctx: ParserRuleContext) {
         if (rhsType is NullType) {
-            unableToInferType(rhsType.toString(), ctx)
+            unableToInferTypeFromNullType(ctx)
         }
     }
 
@@ -592,7 +592,7 @@ class SemanticAnalysis {
             if (is2D) "2D " else "1D "
         } else ""
         if ((initialiser is Array2DInitialiserNode && !is2D) || (initialiser is DataStructureInitialiserNode && is2D)) {
-            incompatibleInitialisation("${arrayPrefix}$dataStructureType", ctx)
+            incompatibleDataStructureInitialisation("${arrayPrefix}$dataStructureType", ctx)
         }
     }
 

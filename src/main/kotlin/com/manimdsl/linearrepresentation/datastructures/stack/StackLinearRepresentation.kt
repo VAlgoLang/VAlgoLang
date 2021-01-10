@@ -2,6 +2,17 @@ package com.manimdsl.linearrepresentation.datastructures.stack
 
 import com.manimdsl.linearrepresentation.ManimInstr
 
+/**
+ * Stack push
+ *
+ * @property ident
+ * @property dataStructureIdentifier
+ * @property isPushPop
+ * @property creationStyle
+ * @property runtime
+ * @property render
+ * @constructor Create empty Stack push object
+ */
 data class StackPushObject(
     val ident: String,
     val dataStructureIdentifier: String,
@@ -22,6 +33,16 @@ data class StackPushObject(
     }
 }
 
+/**
+ * Stack pop
+ *
+ * @property ident
+ * @property dataStructureIdentifier
+ * @property insideMethodCall
+ * @property runtime
+ * @property render
+ * @constructor Create empty Stack pop object
+ */
 data class StackPopObject(
     val ident: String,
     val dataStructureIdentifier: String,

@@ -39,7 +39,7 @@ class ManimDSLParser(private val input: InputStream) {
     /**
      * Parse file to build ANTLR parse tree and find any syntax errors
      *
-     * @return pair of exit status and parse tree
+     * @return pair of exit status [ExitStatus] and parse tree [ManimParser.ProgramContext]
      */
     fun parseFile(): Pair<ExitStatus, ManimParser.ProgramContext> {
         val input = CharStreams.fromStream(input)

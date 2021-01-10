@@ -1,35 +1,35 @@
-fun inorder(head: Node<number>, arr2: Array<number>, i: number): number {
+fun inorder(head: Node<number>, list2: List<number>, i: number): number {
     if (head == null) {
         return i;
     } else {
-        let j = inorder(head.left, arr2, i);
-        arr2[j] = head.value;
-        return inorder(head.right, arr2, j+1);
+        let j = inorder(head.left, list2, i);
+        list2.append(head.value);
+        return inorder(head.right, list2, j+1);
     }
 }
 
-fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
+fun buildBST(i: number, j: number, list1: List<number>): Node<number> {
     if (i == j) {
-        return Node<number>(arr[i]);
+        return Node<number>(list1[i]);
     }
     if (i > j) {
         return null;
     }
     let m = i+j;
     m = m/2;
-    let head = Node<number>(arr[m]);
-    head.left = buildBST(i, m-1, arr);
-    head.right = buildBST(m+1, j, arr);
+    let head = Node<number>(list1[m]);
+    head.left = buildBST(i, m-1, list1);
+    head.right = buildBST(m+1, j, list1);
     return head;
 }
 
-let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
-stepOver {
+let list1 = List<number>(7) {1, 2, 3, 4, 5, 6, 7};
+@stepOver {
 let head = Node<number>(4);
 let tree = Tree<Node<number>>(head);
-head.left = buildBST(0, 2, arr);
-head.right = buildBST(4, arr.size()-1, arr);
+head.left = buildBST(0, 2, list1);
+head.right = buildBST(4, list1.size()-1, list1);
 }
-let arr2 = Array<number>(7) {-1, -1, -1, -1, -1, -1, -1};
-inorder(tree.root, arr2, 0);
+let list2 = List<number>();
+inorder(tree.root, list2, 0);
 

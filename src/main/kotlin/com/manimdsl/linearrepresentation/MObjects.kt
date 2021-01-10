@@ -5,6 +5,11 @@ import com.manimdsl.stylesheet.StylesheetProperty
 
 /** Objects **/
 
+/**
+ * Manim object instruction for creating shapes on scene
+ *
+ * @constructor Create empty M object
+ */
 abstract class MObject : ManimInstr() {
     abstract val ident: String
     abstract val classPath: String
@@ -13,15 +18,36 @@ abstract class MObject : ManimInstr() {
     abstract fun getConstructor(): String
 }
 
+/**
+ * Manim instruction with boundary
+ *
+ * @constructor Create empty Manim instr with boundary
+ */
 interface ManimInstrWithBoundary {
     val uid: String
     fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int)
 }
 
+/**
+ * Shape with boundary - has a unique id and style
+ *
+ * @property uid
+ * @constructor Create empty Shape with boundary
+ */
 abstract class ShapeWithBoundary(override val uid: String) : MObject(), ManimInstrWithBoundary {
     val style = PythonStyle()
 }
 
+/**
+ * Data structure initialising Manim object
+ *
+ * @property type
+ * @property ident
+ * @property uid
+ * @property text
+ * @property boundaries
+ * @constructor Create empty Data structure m object
+ */
 abstract class DataStructureMObject(
     open val type: DataStructureType,
     override val ident: String,
@@ -30,35 +56,21 @@ abstract class DataStructureMObject(
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid)
 
-/** Positioning **/
-interface Position
-object RelativeToMoveIdent : Position
-
-data class Coord(val x: Double, val y: Double) : Position {
-    override fun toString(): String {
-        return "$x, $y"
-    }
-}
-
-enum class ObjectSide(var coord: Coord) {
-    ABOVE(Coord(0.0, 0.25)),
-    BELOW(Coord(0.0, -0.25)),
-    LEFT(Coord(-0.25, 0.0)),
-    RIGHT(Coord(0.25, 0.0));
-
-    fun addOffset(offset: Int): Coord {
-        if (this == ABOVE) {
-            return Coord(this.coord.x, this.coord.y + offset)
-        }
-        return coord
-    }
-
-    override fun toString(): String {
-        return coord.toString()
-    }
-}
-
-/** MObjects **/
+/**
+ * Code block
+ *
+ * @property lines
+ * @property ident
+ * @property codeTextName
+ * @property pointerName
+ * @property textColor
+ * @property runtime
+ * @property syntaxHighlightingOn
+ * @property syntaxHighlightingStyle
+ * @property tabSpacing
+ * @property boundaries
+ * @constructor Create empty Code block
+ */
 data class CodeBlock(
     val lines: List<List<String>>,
     override val ident: String,
@@ -117,6 +129,17 @@ data class CodeBlock(
     }
 }
 
+/**
+ * Subtitle block
+ *
+ * @property variableNameGenerator
+ * @property boundary
+ * @property textColor
+ * @property duration
+ * @property runtime
+ * @property ident
+ * @constructor Create empty Subtitle block
+ */
 data class SubtitleBlock(
     val variableNameGenerator: VariableNameGenerator,
     private var boundary: List<Pair<Double, Double>> = emptyList(),
@@ -152,6 +175,17 @@ data class SubtitleBlock(
     }
 }
 
+/**
+ * Variable block
+ *
+ * @property variables
+ * @property ident
+ * @property variableGroupName
+ * @property textColor
+ * @property runtime
+ * @property boundaries
+ * @constructor Create empty Variable block
+ */
 data class VariableBlock(
     val variables: List<String>,
     override val ident: String,
@@ -186,6 +220,18 @@ data class VariableBlock(
     }
 }
 
+/**
+ * Rectangle
+ *
+ * @property ident
+ * @property text
+ * @property dataStructureIdentifier
+ * @property runtime
+ * @constructor
+ *
+ * @param color
+ * @param textColor
+ */
 class Rectangle(
     override val ident: String,
     val text: String,
@@ -209,16 +255,20 @@ class Rectangle(
 
         styleProperties.borderColor?.let {
             instructions.add(
-                "FadeToColor($ident.shape, ${styleProperties.handleColourValue(
+                "FadeToColor($ident.shape, ${
+                styleProperties.handleColourValue(
                     it
-                )})"
+                )
+                })"
             )
         }
         styleProperties.textColor?.let {
             instructions.add(
-                "FadeToColor($ident.text, ${styleProperties.handleColourValue(
+                "FadeToColor($ident.text, ${
+                styleProperties.handleColourValue(
                     it
-                )})"
+                )
+                })"
             )
         }
 
@@ -241,6 +291,11 @@ class Rectangle(
     }
 }
 
+/**
+ * Empty Manim object
+ *
+ * @constructor Create empty Empty m object
+ */
 object EmptyMObject : MObject() {
     override val ident: String = ""
     override val classPath: String = ""

@@ -1,13 +1,31 @@
 package com.manimdsl.linearrepresentation.datastructures.stack
 
 import com.manimdsl.frontend.DataStructureType
-import com.manimdsl.linearrepresentation.*
+import com.manimdsl.linearrepresentation.Color
+import com.manimdsl.linearrepresentation.DataStructureMObject
+import com.manimdsl.linearrepresentation.TextColor
 
+/**
+ * Stack initialisation
+ *
+ * @property type
+ * @property ident
+ * @property text
+ * @property color
+ * @property textColor
+ * @property showLabel
+ * @property creationStyle
+ * @property creationTime
+ * @property boundaries
+ * @property maxSize
+ * @property uid
+ * @property runtime
+ * @property render
+ * @constructor Create empty Init manim stack
+ */
 data class InitManimStack(
     override val type: DataStructureType,
     override val ident: String,
-    val position: Position,
-    val alignment: Alignment,
     override var text: String,
     val color: String? = null,
     val textColor: String? = null,

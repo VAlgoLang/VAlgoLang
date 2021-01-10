@@ -57,8 +57,6 @@ class StackExecutor(
             val stackInit = InitManimStack(
                 node.type,
                 initStructureIdent,
-                Coord(2.0, -1.0),
-                Alignment.HORIZONTAL,
                 assignLHS.identifier,
                 color = stackValue.style.borderColor,
                 textColor = stackValue.style.textColor,
@@ -75,8 +73,6 @@ class StackExecutor(
             val stackInit = InitManimStack(
                 node.type,
                 initStructureIdent,
-                RelativeToMoveIdent,
-                Alignment.HORIZONTAL,
                 assignLHS.identifier,
                 color = stackValue.style.borderColor,
                 textColor = stackValue.style.textColor,
