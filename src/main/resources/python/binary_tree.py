@@ -172,7 +172,6 @@ class Tree(DataStructure, ABC):
             curr.set_radius(self.radius)
             right_most_y = y_prev - (2 * self.scale)
             right_most_x = x_prev + 1.5
-            # bounds.append((x_child_2, y_child_2))
             x_prev, y_prev = right_most_x, right_most_y
             curr = curr.right
 
@@ -183,7 +182,6 @@ class Tree(DataStructure, ABC):
             curr.set_radius(self.radius)
             left_most_x = x_prev - 1.5
             left_most_y = y_prev - (2 * self.scale)
-            # bounds.append((x_child_2, y_child_2))
             x_prev, y_prev = left_most_x, left_most_y
             curr = curr.left
 

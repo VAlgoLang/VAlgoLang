@@ -48,7 +48,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
         pythonCode += "\n" + printWithIndent(
             0,
-            shapeClassPaths.map { getResourceAsText(it) }
+            shapeClassPaths.map { "\n" + getResourceAsText(it) }
         )
 
         return pythonCode
