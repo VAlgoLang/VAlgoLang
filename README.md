@@ -1,3 +1,7 @@
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Java CI](https://github.com/ManimDSL/ManimDSLCompiler/workflows/Java%20CI/badge.svg?branch=master)](https://github.com/ManimDSL/ManimDSLCompiler/actions?query=workflow%3A%22Java+CI%22)
+[![](https://img.shields.io/badge/docs-readthedocs.svg)](https://manimdsl.github.io)
+
 ## Manim DSL Compiler
 
 ManimDSL is a domain specific language using [Manim](https://github.com/3b1b/manim) to create animations for
@@ -5,6 +9,7 @@ data structures and algorithms.
 
 ## Table of Contents:
 - [Installation](#installation)
+- [Web Editor](#web-editor)
 - [Usage](#usage)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
