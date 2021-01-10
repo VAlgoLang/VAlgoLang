@@ -60,7 +60,7 @@ data class ArrayStructure(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Constructs new $type \"$text\"",
+            "# Constructs a new $type \"$text\"",
             getConstructor(),
             if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title)${getRuntimeString()})" else "",
             if (values.isNotEmpty()) getInstructionString(
@@ -121,7 +121,7 @@ data class Array2DStructure(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Constructs new $type \"$text\"",
+            "# Constructs a new $type \"$text\"",
             getConstructor(),
             if (render && (showLabel == null || showLabel)) "self.play($creationString($ident.title))" else "",
             getInstructionString("$ident.build(\"$creationString\")", true)

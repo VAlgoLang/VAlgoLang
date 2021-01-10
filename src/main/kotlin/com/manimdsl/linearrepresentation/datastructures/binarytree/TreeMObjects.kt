@@ -30,7 +30,7 @@ data class NodeStructure(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Constructs new binary tree node with value $value",
+            "# Constructs a new binary tree node with value $value",
             "$ident = ${getConstructor()}"
         )
     }
@@ -77,7 +77,7 @@ data class InitTreeStructure(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Constructs new $type \"$text\"",
+            "# Constructs a new $type \"$text\"",
             getConstructor(),
             getInstructionString("$ident.create_init(0)", false)
         )

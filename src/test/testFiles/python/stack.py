@@ -7,31 +7,37 @@ class Main(Scene):
     line_spacing = 0.1
     time_objects = []
     def construct(self):
-        # Building code visualisation pane
+        # Builds code visualisation pane
         code_lines = [['let y = Stack<number>();'], ['y.push(2);'], ['y.push(3);'], ['y.pop();']]
         code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
         self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)
         self.play(FadeIn(code_text[self.code_start:self.code_end].move_to(code_block.move_position), run_time=1.0))
-        # Constructing current line pointer
+        # Constructs current line pointer
         pointer = ArrowTip(color=YELLOW).scale(code_block.boundary_width * 0.7/5.0).flip(TOP)
         # Moves the current line pointer to line 1
         self.move_arrow_to_line(1, pointer, code_block, code_text)
-        # Constructing new Stack<number> "y"
+        # Constructs a new Stack<number> "y"
         stack = Stack([5.0, 4.0, 0], [7.0, 4.0, 0], [5.0, -4.0, 0], [7.0, -4.0, 0], DOWN)
         self.play_animation(*stack.create_init("y"), run_time=1.0)
+        # Moves the current line pointer to line 2
         self.move_arrow_to_line(2, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 2.0
         rectangle = Rectangle_block("2.0", stack)
+        # Pushes "rectangle" onto "stack"
         [self.play_animation(*animation, run_time=1.0) for animation in stack.push(rectangle)]
         stack.add(rectangle.all)
+        # Moves the current line pointer to line 3
         self.move_arrow_to_line(3, pointer, code_block, code_text)
         # Constructs a new Rectangle_block with value 3.0
         rectangle1 = Rectangle_block("3.0", stack)
+        # Pushes "rectangle1" onto "stack"
         [self.play_animation(*animation, run_time=1.0) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
+        # Moves the current line pointer to line 4
         self.move_arrow_to_line(4, pointer, code_block, code_text)
+        # Pops "rectangle1" off "stack"
         [self.play_animation(*animation, run_time=1.0) for animation in stack.pop(rectangle1, fade_out=True)]
     def place_at(self, group, x, y):
         group.to_edge(np.array([x, y, 0]))
