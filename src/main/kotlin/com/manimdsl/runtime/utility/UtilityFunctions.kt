@@ -41,7 +41,7 @@ fun wrapCode(code: MutableList<String>): MutableList<MutableList<String>> {
  */
 
 fun wrapLine(line: String): Int {
-    val list = line.split(" ")
+    val list = line.split(" ", ",")
     var counter = 0
     var prevCounter = 0
     for (word in list) {
