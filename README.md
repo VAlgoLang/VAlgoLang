@@ -47,9 +47,9 @@ If you do not want to install all the dependencies, you can use the [web editor]
 Here is an example on how to use VAlgoLang:
 
 ```js
-    let stack = Stack();
+    let stack = Stack<number>();
     stack.push(1);
-    stack.pop();
+    let x = stack.pop();
 ```
 
 Save this file with the .val extension and run the compiler on it:
