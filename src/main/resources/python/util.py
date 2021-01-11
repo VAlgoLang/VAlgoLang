@@ -42,6 +42,8 @@ def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
     line_object = code_block.get_line_at(line_number)
     self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
 
+# Inspired from https://www.reddit.com/r/manim/comments/bubyj2/scrolling_mobjects/
+
 def scroll_down(self, group, scrolls):
     shift = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
     for i in range(1, 1 + scrolls):
