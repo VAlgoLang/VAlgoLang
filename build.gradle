@@ -9,7 +9,7 @@ plugins {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
-description = """Manim DSL Compiler"""
+description = """VAlgoLang Interpreter"""
 
 repositories {
     mavenCentral()
@@ -26,7 +26,7 @@ task buildAntlr() {
 
 task debianPackage(type: Deb) {
     release '1'
-    into '/opt/manimdsl'
+    into '/opt/valgolang'
     preInstall file('bin/preInstall.sh')
     from(jar.outputs.files) {
         into 'lib'
@@ -48,12 +48,12 @@ task debianPackage(type: Deb) {
     requires("texlive-fonts-extra")
     requires("tipa")
 
-    link("/usr/bin/manimdsl", "/opt/manimdsl/bin/compile", 777)
+    link("/usr/bin/valgolang", "/opt/valgolang/bin/compile", 777)
 }
 
 jar {
     manifest {
-        attributes 'Main-Class': 'com.manimdsl.CompilerKt'
+        attributes 'Main-Class': 'com.valgolang.CompilerKt'
     }
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }
