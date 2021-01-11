@@ -279,7 +279,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
     fun getTabSpacing(): Int = stylesheet.tabSpacing
 
     fun renderDataStructure(identifier: String) =
-        !stylesheet.positions.containsKey(identifier) || stylesheet.positions[identifier]!!.height != 0.0
+        !stylesheet.positions.containsKey(identifier) || stylesheet.positions[identifier]!!.height != 0.0 || stylesheet.positions[identifier]!!.width != 0.0
 }
 
 /**
