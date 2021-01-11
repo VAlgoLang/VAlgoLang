@@ -40,14 +40,14 @@ curl -sLO https://github.com/ManimDSL/ManimDSLCompiler/releases/download/latest/
 
 ## Web Editor
 
-If you do not want to install all the dependencies, you can use the [web editor](http://manimdsl.netlify.app/) to write and compile code in ManimDSL.
+If you do not want to install all the dependencies, you can use the [web editor](http://valgolang.netlify.app/) to write and compile code in ManimDSL.
 
 ## Usage
 
 Here is an example on how to use ManimDSL:
 
 ```js
-    let stack = new Stack;
+    let stack = Stack<number>();
     stack.push(1);
     stack.pop();
 ```
