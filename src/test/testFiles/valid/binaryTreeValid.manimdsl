@@ -1,3 +1,0 @@
-let left = Node<number>(3);
-let right = Node<number>(4);
-let root = Node<number>(3);

@@ -1,4 +1,0 @@
-let x = 12;
-let y = Node<number>(3);
-@subtitle("hi " + y + " Hi")
-let z = "hi " + " asda: " + y;

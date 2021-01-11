@@ -1,2 +1,0 @@
-let x = Array<number>(3);
-x.append(1, false);

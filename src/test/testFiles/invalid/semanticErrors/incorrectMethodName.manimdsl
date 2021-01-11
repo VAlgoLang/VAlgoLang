@@ -1,2 +1,0 @@
-let x = Stack<number>();
-x.hello(5);

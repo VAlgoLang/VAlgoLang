@@ -1,3 +1,0 @@
-let x = Array<number>(3);
-
-let y = x[false];

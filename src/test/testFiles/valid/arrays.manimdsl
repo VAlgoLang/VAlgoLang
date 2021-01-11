@@ -1,6 +1,0 @@
-let a = Array<number>(3);
-let b = Array<number>(3){1,2,3};
-let c = Array<number>(){1,2,3};
-a.swap(0,1);
-a.swap(0,1, true);
-let y = c.size();

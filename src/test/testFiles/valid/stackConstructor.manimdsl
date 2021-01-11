@@ -1,2 +1,0 @@
-let x = Stack<number>() {1, 2, 3};
-let y = Stack<number>();

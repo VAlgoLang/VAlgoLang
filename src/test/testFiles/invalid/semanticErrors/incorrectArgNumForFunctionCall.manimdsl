@@ -1,6 +1,0 @@
-fun function(x: number, y: number): number {
-    let z: number = x + x;
-    return z;
-}
-
-let z = function(5);

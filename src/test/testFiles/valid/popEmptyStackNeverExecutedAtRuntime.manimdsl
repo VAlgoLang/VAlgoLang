@@ -1,6 +1,0 @@
-if (false) {
-    let y = Stack<number>();
-    let x = y.pop();
-} else {
-    let x = 0;
-}

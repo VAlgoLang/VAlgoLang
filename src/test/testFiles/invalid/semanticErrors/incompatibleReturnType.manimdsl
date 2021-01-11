@@ -1,5 +1,0 @@
-fun func(x: number) {
-return 5;
-}
-
-let z = func(5);

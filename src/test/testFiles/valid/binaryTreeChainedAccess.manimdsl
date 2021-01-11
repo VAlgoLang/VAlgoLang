@@ -1,6 +1,0 @@
-let y = Node<number>(1);
-y.left = Node<number>(2);
-y.left.right = Node<number>(5);
-let x = 7;
-y.left.right.value = x;
-y.left = y.left.right;

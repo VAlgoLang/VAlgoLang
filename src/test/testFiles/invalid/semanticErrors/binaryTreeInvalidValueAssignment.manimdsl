@@ -1,3 +1,0 @@
-let r = Node<number>(3);
-
-r.right.value = true;

@@ -1,7 +1,0 @@
-fun multiplyByTwo(x: number) {
-    if(x > 123) {
-        return;
-    }
-    let z: number = x*2;
-}
-multiplyByTwo(2);

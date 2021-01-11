@@ -1,6 +1,0 @@
-fun function(x: number, st: Stack<number>): Stack<number> {
-    st.pop();
-    return st;
-}
-Stack<number> st = Stack<number>();
-let stack2 = function(4, st);

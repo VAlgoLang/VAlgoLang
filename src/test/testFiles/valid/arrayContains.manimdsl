@@ -1,2 +1,0 @@
-let a = Array<number>(3);
-a.contains(1);

@@ -1,2 +1,0 @@
-let arr2 = Array<Array<boolean>>(5);
-arr2[0][0][0] = 1;

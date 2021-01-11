@@ -1,4 +1,0 @@
-let x = 1;
-let y: Stack<number> = Stack<number>();
-y.push(x);
-let z = y.pop();
