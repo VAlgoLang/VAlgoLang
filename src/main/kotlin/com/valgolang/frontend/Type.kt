@@ -204,6 +204,8 @@ data class TreeType(
         return other is TreeType && other.internalType == internalType
     }
 
+    override fun toString(): String = "Tree<$internalType>"
+
     class Root(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),

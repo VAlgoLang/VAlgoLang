@@ -27,6 +27,7 @@ data class StackPushObject(
         val methodName = if (isPushPop) "push_existing" else "push"
         val instruction = getInstructionString("animation", true)
         return listOf(
+            "# Pushes \"$ident\" onto \"$dataStructureIdentifier\"",
             "[$instruction for animation in $dataStructureIdentifier.$methodName(${ident}$creationString)]",
             "$dataStructureIdentifier.add($ident.all)"
         )
@@ -54,6 +55,7 @@ data class StackPopObject(
     override fun toPython(): List<String> {
         val instruction = getInstructionString("animation", true)
         return listOf(
+            "# Pops \"$ident\" off \"$dataStructureIdentifier\"",
             "[$instruction for animation in $dataStructureIdentifier.pop($ident, fade_out=${
             (!insideMethodCall).toString()
                 .capitalize()

@@ -1,7 +1,10 @@
 package com.valgolang.animation
 
-import com.valgolang.linearrepresentation.*
-import com.valgolang.linearrepresentation.datastructures.binarytree.NodeStructure
+import com.manimdsl.linearrepresentation.DataStructureMObject
+import com.manimdsl.linearrepresentation.MObject
+import com.manimdsl.linearrepresentation.ManimInstr
+import com.manimdsl.linearrepresentation.ShapeWithBoundary
+import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
 
 /**
  * Manim writer that generates the Python code written using the manim library
@@ -23,7 +26,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
         val constructCodeBlock = mutableListOf<String>()
 
         val shapeClassPaths = mutableSetOf<String>()
-        var executed = false
         linearRepresentation.forEach {
             when (it) {
                 is NodeStructure -> {
@@ -38,15 +40,6 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
                     }
                 }
             }
-            if (it is MoveToLine && !executed) {
-                constructCodeBlock.add(
-                    printWithIndent(
-                        2,
-                        listOf("# Moves the current line pointer to line ${it.lineNumber}")
-                    )
-                )
-                executed = true
-            }
             constructCodeBlock.add(printWithIndent(2, it.toPython()))
         }
         pythonCode += constructCodeBlock.joinToString("\n") + "\n"
@@ -55,7 +48,7 @@ class ManimWriter(private val linearRepresentation: List<ManimInstr>) {
 
         pythonCode += "\n" + printWithIndent(
             0,
-            shapeClassPaths.map { getResourceAsText(it) }
+            shapeClassPaths.map { "\n" + getResourceAsText(it) }
         )
 
         return pythonCode

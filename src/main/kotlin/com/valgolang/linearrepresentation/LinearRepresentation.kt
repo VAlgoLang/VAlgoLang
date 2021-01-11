@@ -47,7 +47,7 @@ abstract class ManimInstr {
 
 data class Sleep(val length: Double = 1.0, override val runtime: Double) : ManimInstr() {
     override fun toPython(): List<String> {
-        return listOf("self.wait($length)")
+        return listOf("# Adds a pause for $length second(s)", "self.wait($length)")
     }
 }
 
@@ -70,6 +70,7 @@ data class MoveToLine(
 ) : ManimInstr() {
     override fun toPython(): List<String> {
         return listOf(
+            "# Moves the current line pointer to line $lineNumber",
             "self.move_arrow_to_line($lineNumber, $pointerName, $codeBlockName, $codeTextVariable)"
         )
     }
@@ -113,7 +114,7 @@ data class UpdateSubtitle(
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> {
-        val instr = mutableListOf("self.play_animation(${subtitleBlock.ident}.clear())")
+        val instr = mutableListOf("# Updates subtitle text", "self.play_animation(${subtitleBlock.ident}.clear())")
         if (!text.isBlank()) {
             instr.add("self.play_animation(${subtitleBlock.ident}.display('$text', self.get_time() + ${subtitleBlock.duration}))")
         }
@@ -138,7 +139,10 @@ data class UpdateVariableState(
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> =
-        listOf("self.play_animation(*$ident.update_variable(${variables.map { "\'${it}\'" }})${getRuntimeString()})")
+        listOf(
+            "# Updates variable block with variables ${variables.map { "\"${it.substringBefore(' ')}\"" }}",
+            "self.play_animation(*$ident.update_variable(${variables.map { "\'${it}\'" }})${getRuntimeString()})"
+        )
 }
 
 /**
@@ -153,7 +157,9 @@ data class CleanUpLocalDataStructures(
     override val runtime: Double
 ) : ManimInstr() {
     override fun toPython(): List<String> {
-        val instr = "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
-        return listOf(instr)
+        return listOf(
+            "# Cleans up unused data structures",
+            "self.play(${dataStructures.joinToString(", ") { "*$it.clean_up()" }}${getRuntimeString()})"
+        )
     }
 }

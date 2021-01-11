@@ -47,8 +47,10 @@ data class ListPrepend(
     override fun toPython(): List<String> {
         val arrayTitle = if (showLabel == null || showLabel) text else ""
         return listOf(
+            "# Prepends \"${values.first().toInterpolatedString()}\" at the start of \"$arrayIdent\"",
             "$newArrayIdent = Array([${values.joinToString(", ") { "\"${it}\"" }}], \"$arrayTitle\", [${
-            boundaries.joinToString(", ")}]$style).build()",
+            boundaries.joinToString(", ")
+            }]$style).build()",
             "self.play_animation(ReplacementTransform($arrayIdent.all, $newArrayIdent.all)${getRuntimeString()})",
             "$arrayIdent = $newArrayIdent"
         )
@@ -76,6 +78,9 @@ data class ListAppend(
 ) :
     ManimInstr() {
     override fun toPython(): List<String> {
-        return listOf("self.play_animation(*$arrayIdent.append(\"$newElemValue\")${getRuntimeString()})")
+        return listOf(
+            "# Appends \"$newElemValue\" at the end of \"$arrayIdent\"",
+            "self.play_animation(*$arrayIdent.append(\"$newElemValue\")${getRuntimeString()})"
+        )
     }
 }
