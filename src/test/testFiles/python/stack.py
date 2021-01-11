@@ -191,7 +191,7 @@ class DataStructure(ABC):
     def create_init(self, ident):
         pass
     @abstractmethod
-    def shrink_if_cross_border(self, obj):
+    def shrink_if_cross_boundary(self, obj):
         pass
     @abstractmethod
     def clean_up(self):
@@ -246,7 +246,7 @@ class Stack(DataStructure, ABC):
             creation_style = "FadeIn"
         animations = []
         obj.all.move_to(np.array([self.width_center, self.ul[1] - 0.1, 0]), UP)
-        shrink, scale_factor = self.shrink_if_cross_border(obj.all)
+        shrink, scale_factor = self.shrink_if_cross_boundary(obj.all)
         if shrink:
             animations.append([shrink])
         target_width = self.all.get_width() * (scale_factor if scale_factor else 1)
@@ -264,7 +264,7 @@ class Stack(DataStructure, ABC):
             if enlarge:
                 animation.append([enlarge])
         return animation
-    def shrink_if_cross_border(self, new_obj):
+    def shrink_if_cross_boundary(self, new_obj):
         height = new_obj.get_height()
         if self.will_cross_boundary(height, "TOP"):
             return self.shrink(new_width=self.all.get_width(), new_height=self.all.get_height() + height + 0.4)

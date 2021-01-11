@@ -269,7 +269,7 @@ class Tree(DataStructure, ABC):
         if len(overlapping_children) > 0:
             animations.extend(overlapping_children)
         else:
-            shrink, scale_factor = self.shrink_if_cross_border()
+            shrink, scale_factor = self.shrink_if_cross_boundary()
             if not shrink:
                 grow, scale = self.grow_if_small()
                 if grow:
@@ -311,7 +311,7 @@ class Tree(DataStructure, ABC):
         else:
             return 0, self.scale
 
-    def shrink_if_cross_border(self, offset_x=0):
+    def shrink_if_cross_boundary(self, offset_x=0):
         # Check if crossing bottom
         if self.all.get_bottom()[1] < self.ll[1]:
             scale = self.crossing_bottom_border()
@@ -351,7 +351,7 @@ class Tree(DataStructure, ABC):
                     Transform(node.rline, new_rline),
                 ]
 
-                shrink, scale = self.shrink_if_cross_border(offset_x)
+                shrink, scale = self.shrink_if_cross_boundary(offset_x)
                 if shrink:
                     animations.extend(shrink)
 

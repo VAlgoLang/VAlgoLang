@@ -70,7 +70,7 @@ class DataStructure(ABC):
         pass
 
     @abstractmethod
-    def shrink_if_cross_border(self, obj):
+    def shrink_if_cross_boundary(self, obj):
         pass
 
     @abstractmethod
