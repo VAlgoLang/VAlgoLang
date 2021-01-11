@@ -4,7 +4,7 @@
 
 ## VAlgoLang
 
-VAlgoLang is a domain specific language using [Manim](https://github.com/3b1b/manim) to create animations for
+VAlgoLang (formerly known as ManimDSL) is a domain specific language using [Manim](https://github.com/3b1b/manim) to create animations for
 data structures and algorithms.
 
 ## Table of Contents:
