@@ -1,10 +1,7 @@
 package com.valgolang.animation
 
-import com.manimdsl.linearrepresentation.DataStructureMObject
-import com.manimdsl.linearrepresentation.MObject
-import com.manimdsl.linearrepresentation.ManimInstr
-import com.manimdsl.linearrepresentation.ShapeWithBoundary
-import com.manimdsl.linearrepresentation.datastructures.binarytree.NodeStructure
+import com.valgolang.linearrepresentation.*
+import com.valgolang.linearrepresentation.datastructures.binarytree.NodeStructure
 
 /**
  * Manim writer that generates the Python code written using the manim library
