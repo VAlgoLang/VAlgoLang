@@ -1,4 +1,4 @@
-class Subtitle_block:
+class SubtitleBlock:
     def __init__(self, end_time, boundaries, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         self.text = Text("", color=text_color, weight=text_weight, font=font)
         self.text_color = text_color

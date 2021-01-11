@@ -1,4 +1,4 @@
-class Rectangle_block:
+class RectangleBlock:
     def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         self.text = Text(text, color=text_color, weight=text_weight, font=font)

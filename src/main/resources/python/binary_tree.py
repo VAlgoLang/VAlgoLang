@@ -77,7 +77,7 @@ class Node:
 
         # For pointer angle
         dummy = Node("", radius=0)
-        rectangle = Rectangle_block(tree.identifier, color=self.color, text_color=self.text_color, font=self.font)
+        rectangle = RectangleBlock(tree.identifier, color=self.color, text_color=self.text_color, font=self.font)
 
         if left:
             self.left = rectangle

@@ -12,7 +12,7 @@ class Array:
             width_per_element = (self.boundary_width - title_width) / len(values)
             square_dim = min((boundaries[0][1] - boundaries[3][1] - self.padding), width_per_element)
             self.array_elements = [
-                Rectangle_block(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for
+                RectangleBlock(str(val), color=color, text_color=text_color, width=square_dim, height=square_dim) for
                 val
                 in self.values]
         else:
@@ -83,7 +83,7 @@ class Array:
         width_per_element = (self.boundary_width - self.title_width - self.padding) / len(self.values)
         square_dim = min((self.boundary_height - self.padding), width_per_element)
         self.array_elements = [
-            Rectangle_block(str(val), color=self.color, text_color=self.text_color, width=square_dim, height=square_dim)
+            RectangleBlock(str(val), color=self.color, text_color=self.text_color, width=square_dim, height=square_dim)
             for val in self.values]
         self.all = VGroup(self.title, *[rect.all for rect in self.array_elements])
         offset = 0

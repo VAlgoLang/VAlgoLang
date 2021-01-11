@@ -1,5 +1,5 @@
 # Object representing the visualised variables on the top left hand side of the screen
-class Variable_block:
+class VariableBlock:
     def __init__(self, variables, boundaries, text_color=WHITE, text_weight=NORMAL, font="Times New Roman"):
         group = VGroup()
         self.move_position = np.array(

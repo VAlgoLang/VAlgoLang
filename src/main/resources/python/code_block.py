@@ -1,4 +1,4 @@
-class Code_block:
+class CodeBlock:
     def __init__(self, code, boundaries, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE,
                  text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()

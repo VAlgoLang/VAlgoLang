@@ -1,5 +1,4 @@
 class Stack(DataStructure, ABC):
-
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         super().__init__(ul, ur, ll, lr, aligned_edge, color, text_color, text_weight, font)
@@ -8,7 +7,7 @@ class Stack(DataStructure, ABC):
     def create_init(self, text=None, creation_style=None):
         if not creation_style:
             creation_style = "ShowCreation"
-        empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color,
+        empty = InitStructure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color,
                                text_color=self.text_color)
         self.empty = empty.all
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
@@ -67,7 +66,7 @@ class Stack(DataStructure, ABC):
 
 
 # Object representing a stack instantiation.
-class Init_structure:
+class InitStructure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         self.shape = Line(color=color)

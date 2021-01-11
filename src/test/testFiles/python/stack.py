@@ -9,7 +9,7 @@ class Main(Scene):
     def construct(self):
         # Builds code visualisation pane
         code_lines = [['let y = Stack<number>();'], ['y.push(2);'], ['y.push(3);'], ['y.pop();']]
-        code_block = Code_block(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
+        code_block = CodeBlock(code_lines, [(-7.0, 1.333333333333333), (-2.0, 1.333333333333333), (-7.0, -4.0), (-2.0, -4.0)], syntax_highlighting=True, syntax_highlighting_style="inkpot", tab_spacing=2)
         code_text = code_block.build()
         self.code_end = code_block.code_end
         self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)
@@ -23,15 +23,15 @@ class Main(Scene):
         self.play_animation(*stack.create_init("y"), run_time=1.0)
         # Moves the current line pointer to line 2
         self.move_arrow_to_line(2, pointer, code_block, code_text)
-        # Constructs a new Rectangle_block with value 2.0
-        rectangle = Rectangle_block("2.0", stack)
+        # Constructs a new RectangleBlock with value 2.0
+        rectangle = RectangleBlock("2.0", stack)
         # Pushes "rectangle" onto "stack"
         [self.play_animation(*animation, run_time=1.0) for animation in stack.push(rectangle)]
         stack.add(rectangle.all)
         # Moves the current line pointer to line 3
         self.move_arrow_to_line(3, pointer, code_block, code_text)
-        # Constructs a new Rectangle_block with value 3.0
-        rectangle1 = Rectangle_block("3.0", stack)
+        # Constructs a new RectangleBlock with value 3.0
+        rectangle1 = RectangleBlock("3.0", stack)
         # Pushes "rectangle1" onto "stack"
         [self.play_animation(*animation, run_time=1.0) for animation in stack.push(rectangle1)]
         stack.add(rectangle1.all)
@@ -90,7 +90,7 @@ class Main(Scene):
                                 group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
         self.code_start = self.code_start - scrolls
         self.code_end = self.code_end - scrolls
-class Code_block:
+class CodeBlock:
     def __init__(self, code, boundaries, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE,
                  text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()
@@ -196,7 +196,7 @@ class DataStructure(ABC):
     @abstractmethod
     def clean_up(self):
         pass
-class Rectangle_block:
+class RectangleBlock:
     def __init__(self, text, target=None, height=0.75, width=1.5, color=BLUE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         self.text = Text(text, color=text_color, weight=text_weight, font=font)
@@ -234,7 +234,7 @@ class Stack(DataStructure, ABC):
     def create_init(self, text=None, creation_style=None):
         if not creation_style:
             creation_style = "ShowCreation"
-        empty = Init_structure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color,
+        empty = InitStructure(text, 0, self.max_width - 2 * MED_SMALL_BUFF, color=self.color,
                                text_color=self.text_color)
         self.empty = empty.all
         empty.all.move_to(np.array([self.width_center, self.lr[1], 0]), aligned_edge=self.aligned_edge)
@@ -286,7 +286,7 @@ class Stack(DataStructure, ABC):
     def clean_up(self):
         return [FadeOut(self.all)]
 # Object representing a stack instantiation.
-class Init_structure:
+class InitStructure:
     def __init__(self, text, angle, length=1.5, color=WHITE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         self.shape = Line(color=color)

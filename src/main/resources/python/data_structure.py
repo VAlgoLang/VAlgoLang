@@ -1,5 +1,4 @@
 class DataStructure(ABC):
-
     def __init__(self, ul, ur, ll, lr, aligned_edge, color=WHITE, text_color=WHITE, text_weight=NORMAL,
                  font="Times New Roman"):
         self.ul = ul

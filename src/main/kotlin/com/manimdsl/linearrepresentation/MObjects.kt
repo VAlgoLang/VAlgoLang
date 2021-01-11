@@ -84,7 +84,7 @@ data class CodeBlock(
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid = "_code") {
     override val classPath: String = "python/code_block.py"
-    override val className: String = "Code_block"
+    override val className: String = "CodeBlock"
     override val pythonVariablePrefix: String = "code_block"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
@@ -149,7 +149,7 @@ data class SubtitleBlock(
     override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {
     override val classPath: String = "python/subtitles.py"
-    override val className: String = "Subtitle_block"
+    override val className: String = "SubtitleBlock"
     override val pythonVariablePrefix: String = "subtitle_block"
 
     init {
@@ -196,7 +196,7 @@ data class VariableBlock(
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
 ) : ShapeWithBoundary(uid = "_variables") {
     override val classPath: String = "python/variable_block.py"
-    override val className: String = "Variable_block"
+    override val className: String = "VariableBlock"
     override val pythonVariablePrefix: String = "variable_block"
 
     init {
@@ -242,7 +242,7 @@ class Rectangle(
     override val runtime: Double = 1.0,
 ) : MObject() {
     override val classPath: String = "python/rectangle.py"
-    override val className: String = "Rectangle_block"
+    override val className: String = "RectangleBlock"
     override val pythonVariablePrefix: String = "rectangle"
     val style = PythonStyle()
 
