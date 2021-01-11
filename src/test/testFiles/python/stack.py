@@ -74,6 +74,7 @@ class Main(Scene):
             self.scroll_up(code_text, (self.code_start - idx + len(code_block.code[line_number - 1])))
         line_object = code_block.get_line_at(line_number)
         self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
+    # Inspired from https://www.reddit.com/r/manim/comments/bubyj2/scrolling_mobjects/
     def scroll_down(self, group, scrolls):
         shift = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
         for i in range(1, 1 + scrolls):
