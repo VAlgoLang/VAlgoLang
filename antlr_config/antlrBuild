@@ -1,7 +1,7 @@
 #!/bin/sh
 
-LEXER_FILE=ManimLexer.g4
-PARSER_FILE=ManimParser.g4
+LEXER_FILE=VAlgoLangLexer.g4
+PARSER_FILE=VAlgoLangParser.g4
 
 BASEDIR=$(dirname $0)
 

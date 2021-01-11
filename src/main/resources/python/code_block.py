@@ -1,4 +1,4 @@
-class Code_block:
+class CodeBlock:
     def __init__(self, code, boundaries, syntax_highlighting=True, syntax_highlighting_style="inkpot", text_color=WHITE,
                  text_weight=NORMAL, font="Times New Roman", tab_spacing=2):
         group = VGroup()
@@ -35,7 +35,7 @@ class Code_block:
         self.code = code
 
     def build(self):
-        self.all.arrange_submobjects(DOWN*0.1, aligned_edge=LEFT)
+        self.all.arrange_submobjects(DOWN * 0.1, aligned_edge=LEFT)
         ratio = 4.6 / 5.0
         self.all.set_width(self.boundary_width * ratio)
         return self.all
