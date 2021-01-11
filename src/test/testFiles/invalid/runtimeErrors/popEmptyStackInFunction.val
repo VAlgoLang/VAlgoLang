@@ -1,0 +1,6 @@
+fun function(x: number): Stack<number> {
+    let stack1 = Stack<number>();
+    let y = stack1.pop();
+    return stack1;
+}
+let stack2 = function(2);

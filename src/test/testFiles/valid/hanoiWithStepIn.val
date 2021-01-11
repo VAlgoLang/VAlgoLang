@@ -1,0 +1,21 @@
+fun buildTower(n: number, tower: Stack<number>) {
+    if(n > 0) {
+        tower.push(n);
+        buildTower(n - 1, tower);
+    }
+}
+fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<number>) {
+    if(n > 0) {
+        move(n - 1, source, aux, target);
+        target.push(source.pop());
+        move(n - 1, aux, target, source);
+    }
+}
+
+let C = Stack<number>();
+let B = Stack<number>();
+let A = Stack<number>();
+buildTower(3, A);
+@stepInto {
+move(3, A, B, C);
+}

@@ -1,0 +1,2 @@
+let x: number = 2;
+x = Stack<number>();

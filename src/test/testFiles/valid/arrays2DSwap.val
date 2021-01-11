@@ -1,0 +1,4 @@
+let original = Array<Array<number>>(2,3){[1,2,3],[4,5,6]};
+
+original.swap(0,1,1,2);
+original.swap(0,1,1,2);

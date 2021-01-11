@@ -1,0 +1,7 @@
+fun func1(x: number) {
+    let y: Stack<number> = Stack<number>();
+    y = func2(5);
+
+}
+
+func1(5);

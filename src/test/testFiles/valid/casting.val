@@ -1,0 +1,9 @@
+let x = 'a';
+
+let y = toNumber(x);
+
+let z = toChar(y);
+
+let stack = Stack<number>();
+
+stack.push(y);

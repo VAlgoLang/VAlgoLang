@@ -1,0 +1,6 @@
+fun function(x: number): number {
+    let z: number = x*2;
+    return z;
+}
+let x = Stack<number>();
+let z = function(x);

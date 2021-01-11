@@ -1,0 +1,10 @@
+fun get(x: number, stack: Stack<number>): number {
+    if(x > 3) {
+        stack.push(3);
+    } else {
+        return 4;
+    }
+}
+
+let stack = Stack<number>();
+get(4, stack);

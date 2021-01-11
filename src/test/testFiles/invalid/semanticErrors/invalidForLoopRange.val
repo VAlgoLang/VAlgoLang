@@ -1,0 +1,5 @@
+let x = 0;
+let y = 'a';
+for i in range(x, y) {
+    x = x + i;
+}
