@@ -1,5 +1,6 @@
 class Node:
-    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight_color=YELLOW, text_weight=NORMAL, font="Times New Roman", radius=0.6):
+    def __init__(self, text, color=RED, text_color=BLUE, line_color=GREEN, highlight_color=YELLOW, text_weight=NORMAL,
+                 font="Times New Roman", radius=0.6):
         self.circle = Circle(radius=radius, color=color)
         self.radius = radius
         self.text = Text(text, color=text_color)
@@ -76,7 +77,7 @@ class Node:
 
         # For pointer angle
         dummy = Node("", radius=0)
-        rectangle = Rectangle_block(tree.identifier, color=self.color, text_color=self.text_color, font=self.font)
+        rectangle = RectangleBlock(tree.identifier, color=self.color, text_color=self.text_color, font=self.font)
 
         if left:
             self.left = rectangle
@@ -134,7 +135,8 @@ class Tree(DataStructure, ABC):
                  font="Times New Roman", radius=0.6):
         self.margin = [0.2, 0.2, 0]
         super().__init__(np.add(ul, self.margin), np.subtract(ur, self.margin), np.add(ll, self.margin),
-                         np.subtract(lr, self.margin), np.average([ul, ur, ll, lr], axis=0), color, text_color, text_weight, font)
+                         np.subtract(lr, self.margin), np.average([ul, ur, ll, lr], axis=0), color, text_color,
+                         text_weight, font)
         self.identifier = identifier
         self.radius = radius
         self.max_radius = radius * 1.3
@@ -170,7 +172,6 @@ class Tree(DataStructure, ABC):
             curr.set_radius(self.radius)
             right_most_y = y_prev - (2 * self.scale)
             right_most_x = x_prev + 1.5
-            # bounds.append((x_child_2, y_child_2))
             x_prev, y_prev = right_most_x, right_most_y
             curr = curr.right
 
@@ -181,17 +182,18 @@ class Tree(DataStructure, ABC):
             curr.set_radius(self.radius)
             left_most_x = x_prev - 1.5
             left_most_y = y_prev - (2 * self.scale)
-            # bounds.append((x_child_2, y_child_2))
             x_prev, y_prev = left_most_x, left_most_y
             curr = curr.left
 
         animations = []
 
-        is_within_left_or_right_boundary = left_most_x > self.ll[0] and right_most_x < self.lr[0] and right_most_y > self.ll[1] and left_most_y > self.ll[1]
+        is_within_left_or_right_boundary = left_most_x > self.ll[0] and right_most_x < self.lr[0] \
+            and right_most_y > self.ll[1] and left_most_y > self.ll[1]
 
-        if (not is_within_left_or_right_boundary) and (self.will_cross_boundary(abs(x - left_most_x), "LEFT") or self.will_cross_boundary(abs(x - right_most_x),
-                                                                                                                                          "RIGHT")
-                                                       or self.will_cross_boundary(y - min(right_most_y, left_most_y), "BOTTOM")):
+        if (not is_within_left_or_right_boundary) and (
+                self.will_cross_boundary(abs(x - left_most_x), "LEFT") or self.will_cross_boundary(
+                abs(x - right_most_x), "RIGHT")
+                or self.will_cross_boundary(y - min(right_most_y, left_most_y), "BOTTOM")):
             group_left_x = self.all.get_left()[0]
             group_right_x = self.all.get_right()[0]
             group_top_y = self.all.get_top()[1]
@@ -210,8 +212,10 @@ class Tree(DataStructure, ABC):
             self.radius = self.radius * scale_factor
             if scale_animation:
                 animations.extend(scale_animation)
-                corner_coord = self.ur[0] - (scale_factor *self.all.get_width()) / 2 if is_left else self.ul[0] + (scale_factor *self.all.get_width()) / 2
-                animations.append(ApplyMethod(self.all.move_to, np.array([corner_coord, self.ul[1] - (self.all.get_height()/ 2) , 0])))
+                corner_coord = self.ur[0] - (scale_factor * self.all.get_width()) / 2 if is_left else self.ul[0] + (
+                        scale_factor * self.all.get_width()) / 2
+                animations.append(ApplyMethod(self.all.move_to,
+                                              np.array([corner_coord, self.ul[1] - (self.all.get_height() / 2), 0])))
         return animations
 
     # Assumes parent is in the tree
@@ -265,7 +269,7 @@ class Tree(DataStructure, ABC):
         if len(overlapping_children) > 0:
             animations.extend(overlapping_children)
         else:
-            shrink, scale_factor = self.shrink_if_cross_border()
+            shrink, scale_factor = self.shrink_if_cross_boundary()
             if not shrink:
                 grow, scale = self.grow_if_small()
                 if grow:
@@ -273,7 +277,7 @@ class Tree(DataStructure, ABC):
 
         return animations, scale
 
-     # Assumes node is in the tree
+    # Assumes node is in the tree
     def crossing_bottom_border(self):
         curr_top = self.all.get_top()[1]
         bottom_bound = self.ll[1]
@@ -282,7 +286,6 @@ class Tree(DataStructure, ABC):
         overflow_height = curr_top - curr_bottom
         scale = target_height / overflow_height
         return scale
-
 
     # Assumes node is in the tree
     def crossing_left_right_border(self, offset_x, scale=10e9):
@@ -300,14 +303,15 @@ class Tree(DataStructure, ABC):
         if scale >= 1:
             # check radius size
             target_radius = self.radius * scale
-            if(target_radius > self.max_radius):
+            if target_radius > self.max_radius:
                 scale *= self.max_radius / target_radius
 
-            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, np.array([(self.ul[0] + self.ur[0]) / 2,(self.ll[1] + self.ur[1]) / 2, 0]))], scale
+            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, np.array(
+                [(self.ul[0] + self.ur[0]) / 2, (self.ll[1] + self.ur[1]) / 2, 0]))], scale
         else:
             return 0, self.scale
 
-    def shrink_if_cross_border(self, offset_x=0):
+    def shrink_if_cross_boundary(self, offset_x=0):
         # Check if crossing bottom
         if self.all.get_bottom()[1] < self.ll[1]:
             scale = self.crossing_bottom_border()
@@ -315,14 +319,13 @@ class Tree(DataStructure, ABC):
             scale = 10e9
 
         # Check if crossing left and right borders
-        if self.all.get_left()[0] - offset_x < self.ll[0] or self.all.get_right()[0] + offset_x> self.lr[0]:
+        if self.all.get_left()[0] - offset_x < self.ll[0] or self.all.get_right()[0] + offset_x > self.lr[0]:
             scale = self.crossing_left_right_border(offset_x, scale=scale)
 
         if scale == 10e9:
-                return 0, self.scale
-        else :
-                return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, self.aligned_edge)], scale
-
+            return 0, self.scale
+        else:
+            return [ScaleInPlace(self.all, scale), ApplyMethod(self.all.move_to, self.aligned_edge)], scale
 
     def check_overlapping_children(self, node):
         if node is None:
@@ -335,11 +338,11 @@ class Tree(DataStructure, ABC):
                 left_offset = LEFT * offset_x
                 right_offset = RIGHT * offset_x
                 new_rline = Line(node.circle.point_at_angle(np.deg2rad(315)),
-                                np.add(node.right.circle.point_at_angle(np.deg2rad(90)), right_offset),
-                                color=node.line_color)
+                                 np.add(node.right.circle.point_at_angle(np.deg2rad(90)), right_offset),
+                                 color=node.line_color)
                 new_lline = Line(node.circle.point_at_angle(np.deg2rad(225)),
-                                np.add(node.left.circle.point_at_angle(np.deg2rad(90)), left_offset),
-                                color=node.line_color)
+                                 np.add(node.left.circle.point_at_angle(np.deg2rad(90)), left_offset),
+                                 color=node.line_color)
 
                 animations = [
                     ApplyMethod(node.left.all.move_to, np.add(node.left.all.get_center(), left_offset)),
@@ -348,7 +351,7 @@ class Tree(DataStructure, ABC):
                     Transform(node.rline, new_rline),
                 ]
 
-                shrink, scale = self.shrink_if_cross_border(offset_x)
+                shrink, scale = self.shrink_if_cross_boundary(offset_x)
                 if shrink:
                     animations.extend(shrink)
 

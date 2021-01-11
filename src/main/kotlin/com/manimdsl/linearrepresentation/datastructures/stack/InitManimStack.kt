@@ -56,7 +56,7 @@ data class InitManimStack(
         val creationString = if (creationStyle != null) ", creation_style=\"$creationStyle\"" else ""
         val runtimeString = if (creationTime != null) ", run_time=$creationTime" else ""
         val python =
-            mutableListOf("# Constructing new $type \"${text}\"", getConstructor())
+            mutableListOf("# Constructs a new $type \"${text}\"", getConstructor())
         val newIdent = if (showLabel == null || showLabel) "\"$text\"" else ""
         python.add(getInstructionString("$ident.create_init($newIdent$creationString)$runtimeString", true))
         return python

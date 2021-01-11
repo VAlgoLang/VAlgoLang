@@ -13,7 +13,7 @@ class PythonStyleTests {
         val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
+            "x = RectangleBlock(\"rectangle\", stack1, color=${color.toUpperCase()}, text_color=${textColor.toUpperCase()})"
         assertEquals(expected, rectangle.toPython()[1])
     }
 
@@ -25,7 +25,7 @@ class PythonStyleTests {
         val rectangle = Rectangle("x", "rectangle", "stack1", color = color, textColor = textColor)
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1, color=\"$color\", text_color=\"$textColor\")"
+            "x = RectangleBlock(\"rectangle\", stack1, color=\"$color\", text_color=\"$textColor\")"
         assertEquals(expected, rectangle.toPython()[1])
     }
 
@@ -35,7 +35,7 @@ class PythonStyleTests {
         val rectangle = Rectangle("x", "rectangle", "stack1")
 
         val expected =
-            "x = Rectangle_block(\"rectangle\", stack1)"
+            "x = RectangleBlock(\"rectangle\", stack1)"
         assertEquals(expected, rectangle.toPython()[1])
     }
 }

@@ -30,6 +30,7 @@ data class TreeAppendObject(
         val methodName = if (left) "set_left" else "set_right"
         val instruction = getInstructionString("animation", false)
         return listOf(
+            "# Appends \"${childNodeValue.manimObject.ident}\" to the ${if (left) "left" else "right"} of \"${parentNodeValue.manimObject.ident}\"",
             "[$instruction for animation in ${treeValue.manimObject.ident}.check_if_child_will_cross_boundary(${parentNodeValue.manimObject.ident}, ${childNodeValue.manimObject.ident},${
             left.toString()
                 .capitalize()
@@ -60,6 +61,7 @@ data class NodeAppendObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "set_left" else "set_right"
         return listOf(
+            "# Appends \"${childNodeValue.manimObject.ident}\" to the ${if (left) "left" else "right"} of \"${parentNodeValue.manimObject.ident}\"",
             "${parentNodeValue.manimObject.ident}.$methodName(${childNodeValue.manimObject.ident}, 1)",
         )
     }
@@ -98,6 +100,7 @@ data class TreeNodeRestyle(
             emptyList()
         } else {
             listOf(
+                "# Restyles \"$nodeIdent\" for indication",
                 "self.play_animation(*${instructions}${getRuntimeString()})"
             )
         }
@@ -115,6 +118,7 @@ data class TreeEditValue(
     override fun toPython(): List<String> {
         val methodName = "edit_node_value"
         return listOf(
+            "# Edits value of \"${treeValue.manimObject.ident}\" to \"${value}\"",
             getInstructionString(
                 "${treeValue.manimObject.ident}.$methodName(${nodeValue.manimObject.ident}, \"${value}\")",
                 true
@@ -144,6 +148,7 @@ data class TreeDeleteObject(
     override fun toPython(): List<String> {
         val methodName = if (left) "delete_left" else "delete_right"
         return listOf(
+            "# Removes ${if (left) "left" else "right"} of \"${parentNodeValue.manimObject.ident}\"",
             getInstructionString(
                 "${treeValue.manimObject.ident}.$methodName(${parentNodeValue.manimObject.ident})",
                 true

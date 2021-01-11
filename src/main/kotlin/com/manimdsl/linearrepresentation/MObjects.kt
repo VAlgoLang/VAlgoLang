@@ -84,7 +84,7 @@ data class CodeBlock(
     private var boundaries: List<Pair<Double, Double>> = emptyList()
 ) : ShapeWithBoundary(uid = "_code") {
     override val classPath: String = "python/code_block.py"
-    override val className: String = "Code_block"
+    override val className: String = "CodeBlock"
     override val pythonVariablePrefix: String = "code_block"
 
     override fun setNewBoundary(corners: List<Pair<Double, Double>>, newMaxSize: Int) {
@@ -116,14 +116,14 @@ data class CodeBlock(
         codeLines.append("]")
 
         return listOf(
-            "# Building code visualisation pane",
+            "# Builds code visualisation pane",
             "code_lines = $codeLines",
             getConstructor(),
             "$codeTextName = $ident.build()",
             "self.code_end = $ident.code_end",
             "self.code_end = min(sum([len(elem) for elem in code_lines]), self.code_end)",
             "self.play(FadeIn($codeTextName[self.code_start:self.code_end].move_to($ident.move_position)${getRuntimeString()}))",
-            "# Constructing current line pointer",
+            "# Constructs current line pointer",
             "$pointerName = ArrowTip(color=YELLOW).scale($ident.boundary_width * 0.7/5.0).flip(TOP)"
         )
     }
@@ -149,7 +149,7 @@ data class SubtitleBlock(
     override val ident: String = variableNameGenerator.generateNameFromPrefix("subtitle_block")
 ) : ShapeWithBoundary("_subtitle") {
     override val classPath: String = "python/subtitles.py"
-    override val className: String = "Subtitle_block"
+    override val className: String = "SubtitleBlock"
     override val pythonVariablePrefix: String = "subtitle_block"
 
     init {
@@ -165,6 +165,7 @@ data class SubtitleBlock(
 
     override fun toPython(): List<String> {
         return listOf(
+            "# Builds subtitle pane",
             getConstructor(),
             "self.time_objects.append($ident)"
         )
@@ -195,7 +196,7 @@ data class VariableBlock(
     private var boundaries: List<Pair<Double, Double>> = emptyList(),
 ) : ShapeWithBoundary(uid = "_variables") {
     override val classPath: String = "python/variable_block.py"
-    override val className: String = "Variable_block"
+    override val className: String = "VariableBlock"
     override val pythonVariablePrefix: String = "variable_block"
 
     init {
@@ -212,7 +213,7 @@ data class VariableBlock(
 
     override fun toPython(): List<String> {
         return listOf(
-            "# Building variable visualisation pane",
+            "# Builds variable visualisation pane",
             getConstructor(),
             "$variableGroupName = $ident.build()",
             "self.play(FadeIn($variableGroupName)${getRuntimeString()})"
@@ -241,7 +242,7 @@ class Rectangle(
     override val runtime: Double = 1.0,
 ) : MObject() {
     override val classPath: String = "python/rectangle.py"
-    override val className: String = "Rectangle_block"
+    override val className: String = "RectangleBlock"
     override val pythonVariablePrefix: String = "rectangle"
     val style = PythonStyle()
 
@@ -275,7 +276,10 @@ class Rectangle(
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
-            listOf("self.play_animation(${instructions.joinToString(", ")}$runtimeString)")
+            listOf(
+                "# Changes color of \"$ident\"",
+                "self.play_animation(${instructions.joinToString(", ")}$runtimeString)"
+            )
         }
     }
 

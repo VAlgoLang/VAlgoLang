@@ -31,7 +31,9 @@ data class ArrayElemAssignObject(
         val animationString =
             if (animatedStyle?.textColor != null) ", color=${animatedStyle.handleColourValue(animatedStyle.textColor)}" else ""
         val assignIndex2D = if (secondIndex == null) "" else ".rows[$secondIndex]"
+        val commentIndex2D = if (secondIndex == null) "" else "[$secondIndex]"
         return listOf(
+            "# Assigns \"${newElemValue.value}\" to \"$arrayIdent$commentIndex2D[$index]\"",
             getInstructionString(
                 "$arrayIdent$assignIndex2D.update_element($index, \"${newElemValue.value}\"$animationString)",
                 false
@@ -60,6 +62,7 @@ data class ArrayReplaceRow(
     ManimInstr() {
     override fun toPython(): List<String> {
         return listOf(
+            "# Assigns [${newArray.joinToString(separator = ",")}] to \"$arrayIdent[$index]\"",
             getInstructionString(
                 "$arrayIdent.replace_row($index, [${newArray.joinToString(separator = ",")}])",
                 true
@@ -86,7 +89,10 @@ data class Array2DSwap(
     ManimInstr() {
     override fun toPython(): List<String> {
         val instruction = getInstructionString("animations", true)
-        return listOf("[$instruction for animations in array.swap_mobjects(${indices.joinToString(separator = ",")})]")
+        return listOf(
+            "# Swaps \"$arrayIdent[${indices[0]}][${indices[1]}]\" and \"$arrayIdent[${indices[2]}][${indices[3]}]\"",
+            "[$instruction for animations in $arrayIdent.swap_mobjects(${indices.joinToString(separator = ",")})]"
+        )
     }
 }
 
@@ -107,7 +113,10 @@ data class ArrayShortSwap(
 ) :
     ManimInstr() {
     override fun toPython(): List<String> {
-        return listOf(getInstructionString("$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})", true))
+        return listOf(
+            "# Swaps \"$arrayIdent[${indices.first}]\" and \"$arrayIdent[${indices.second}]\"",
+            getInstructionString("$arrayIdent.swap_mobjects(${indices.first}, ${indices.second})", true)
+        )
     }
 }
 
@@ -135,6 +144,7 @@ data class ArrayLongSwap(
     override fun toPython(): List<String> {
         val instruction = getInstructionString("animation", true)
         return listOf(
+            "# Swaps \"$arrayIdent[${indices.first}]\" and \"$arrayIdent[${indices.second}]\" with clone (long swap)",
             "$elem1, $elem2, $animations = $arrayIdent.clone_and_swap(${indices.first}, ${indices.second})",
             "[$instruction for animation in $animations]",
             "$arrayIdent.array_elements[${indices.first}].text = $elem2",
@@ -220,10 +230,17 @@ data class ArrayElemRestyle(
             }
         }
 
+        val commentElements = if (secondIndices == null) {
+            indices.map { "\"$arrayIdent[$it]\"" }
+        } else {
+            indices.mapIndexed { index, i -> "\"$arrayIdent[${secondIndices[index]}][$i]\"" }
+        }
+
         return if (instructions.isEmpty()) {
             emptyList()
         } else {
             listOf(
+                "# Restyles ${commentElements.joinToString(", ")} for indication",
                 getInstructionString(
                     "[animation for animation in [${instructions.joinToString(", ")}] if animation]",
                     true
