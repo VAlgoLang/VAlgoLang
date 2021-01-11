@@ -772,28 +772,28 @@ class VirtualMachine(
             is NumberNode -> DoubleValue(node.double)
             is CharNode -> CharValue(node.value)
             is MethodCallNode -> executeMethodCall(node, insideMethodCall, true)
-            is AddExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x + y }
-            is SubtractExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x - y }
-            is DivideExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x / y }
-            is MultiplyExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> x * y }
-            is PlusExpression -> executeUnaryOp(node) { x -> x }
-            is MinusExpression -> executeUnaryOp(node) { x -> DoubleValue(-(x as DoubleValue).value) }
+            is AddExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> x + y }
+            is SubtractExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> x - y }
+            is DivideExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> x / y }
+            is MultiplyExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> x * y }
+            is PlusExpression -> executeUnaryOperation(node) { x -> x }
+            is MinusExpression -> executeUnaryOperation(node) { x -> DoubleValue(-(x as DoubleValue).value) }
             is BoolNode -> BoolValue(node.value)
-            is AndExpression -> executeShortCircuitOp(
+            is AndExpression -> executeShortCircuitOperation(
                 node,
                 false
             ) { x, y -> BoolValue((x as BoolValue).value && (y as BoolValue).value) }
-            is OrExpression -> executeShortCircuitOp(
+            is OrExpression -> executeShortCircuitOperation(
                 node,
                 true
             ) { x, y -> BoolValue((x as BoolValue).value || (y as BoolValue).value) }
-            is EqExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x == y) }
-            is NeqExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x != y) }
-            is GtExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x > y) }
-            is LtExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x < y) }
-            is GeExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x >= y) }
-            is LeExpression -> executeBinaryOp(node, subtitleExpression) { x, y -> BoolValue(x <= y) }
-            is NotExpression -> executeUnaryOp(node) { x -> BoolValue(!x) }
+            is EqExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x == y) }
+            is NeqExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x != y) }
+            is GtExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x > y) }
+            is LtExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x < y) }
+            is GeExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x >= y) }
+            is LeExpression -> executeBinaryOperation(node, subtitleExpression) { x, y -> BoolValue(x <= y) }
+            is NotExpression -> executeUnaryOperation(node) { x -> BoolValue(!x) }
             is ConstructorNode -> executeConstructor(node, identifier)
             is FunctionCallNode -> executeFunctionCall(node)
             is VoidNode -> VoidValue
@@ -860,7 +860,7 @@ class VirtualMachine(
             }
         }
 
-        private fun executeUnaryOp(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
+        private fun executeUnaryOperation(node: UnaryExpression, op: (first: ExecValue) -> ExecValue): ExecValue {
             val subExpression = executeExpression(node.expr)
             return if (subExpression is RuntimeError) {
                 subExpression
@@ -870,7 +870,7 @@ class VirtualMachine(
         }
 
         // Used for and and or to short-circuit with first value
-        private fun executeShortCircuitOp(
+        private fun executeShortCircuitOperation(
             node: BinaryExpression,
             shortCircuitValue: Boolean,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
@@ -891,7 +891,7 @@ class VirtualMachine(
             )
         }
 
-        private fun executeBinaryOp(
+        private fun executeBinaryOperation(
             node: BinaryExpression,
             subtitleExpression: Boolean,
             op: (first: ExecValue, seconds: ExecValue) -> ExecValue
