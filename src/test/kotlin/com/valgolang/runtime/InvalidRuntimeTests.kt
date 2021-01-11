@@ -28,7 +28,7 @@ class InvalidRuntimeTests {
 
         @JvmStatic
         fun data(): Stream<Arguments> {
-            return File(semanticErrorFilePath).walk().filter { it.isFile && it.extension == "manimdsl" }
+            return File(semanticErrorFilePath).walk().filter { it.isFile && it.extension == "val" }
                 .map { file ->
                     if (filesWithStylesheets.contains(file.nameWithoutExtension)) {
                         Arguments.of(file.path, "${file.parentFile.path}/${file.nameWithoutExtension}.json")
