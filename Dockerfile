@@ -18,4 +18,4 @@ WORKDIR /src
 # Build jar file using gradle
 RUN gradle build -x test
 
-ENTRYPOINT ["java", "-jar", "build/libs/manimdsl-1.0-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "build/libs/valgolang-1.0-SNAPSHOT.jar"]
