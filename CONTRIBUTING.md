@@ -1,4 +1,4 @@
-# Contributing to VALgoLang
+# Contributing to VAlgoLang
 
 A big welcome and thank you for considering contributing to a VAlgoLang open source project!
 
