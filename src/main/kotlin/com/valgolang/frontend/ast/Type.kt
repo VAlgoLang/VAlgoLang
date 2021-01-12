@@ -1,9 +1,21 @@
 package com.valgolang.frontend.ast
 
-// Types (to be used in symbol table also)
+/**
+ * Type
+ *
+ * Represents types
+ *
+ * @constructor Create empty Type
+ */ // Types (to be used in symbol table also)
 abstract class Type : ASTNode()
 
-// Primitive / Data structure distinction requested by code generation
+/**
+ * Primitive type
+ *
+ * A primitive type in VAlgoLang e.g. number, string, boolean and char
+ *
+ * @constructor Create empty Primitive type
+ */ // Primitive / Data structure distinction requested by code generation
 sealed class PrimitiveType : Type()
 
 object NumberType : PrimitiveType() {
