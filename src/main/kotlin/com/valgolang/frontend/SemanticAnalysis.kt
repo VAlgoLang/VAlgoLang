@@ -14,7 +14,16 @@ import com.valgolang.frontend.datastructures.binarytree.BinaryTreeRootAccessNode
 import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import org.antlr.v4.runtime.ParserRuleContext
 
+/**
+ * Semantic analysis
+ *
+ * Class which contains all functions used to aid semantic analysis. Any errors are thrown and held in the error handler.
+ *
+ * @constructor Create empty Semantic analysis
+ */
 class SemanticAnalysis {
+
+    /** Utility Functions **/
 
     private fun getExpressionType(expression: ExpressionNode, currentSymbolTable: SymbolTableVisitor): Type =
         when (expression) {
@@ -44,37 +53,6 @@ class SemanticAnalysis {
             }
             else -> throw NotImplementedError("Expression Type not implemented")
         }
-
-    private fun getBinaryTreeNodeType(
-        expression: BinaryTreeNodeElemAccessNode,
-        currentSymbolTable: SymbolTableVisitor
-    ): Type {
-        val type = currentSymbolTable.getTypeOf(expression.identifier)
-        return if (type is BinaryTreeNodeType) {
-            if (expression.accessChain.isNotEmpty()) {
-                val lastValue = expression.accessChain.last()
-                lastValue.returnType
-            } else {
-                type
-            }
-        } else {
-            ErrorType
-        }
-    }
-
-    private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
-        // To extend to multiple dimensions perform below recursively
-        val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
-        return if (arrayType is ArrayType) {
-            if (arrayType.is2D) {
-                if (expression.indices.size == 2) arrayType.internalType else ArrayType(arrayType.internalType)
-            } else {
-                arrayType.internalType
-            }
-        } else {
-            ErrorType
-        }
-    }
 
     private fun getUnaryExpressionType(expression: UnaryExpression, currentSymbolTable: SymbolTableVisitor): Type {
         val exprType = getExpressionType(expression.expr, currentSymbolTable)
@@ -118,16 +96,40 @@ class SemanticAnalysis {
         return expr1Type == expr2Type || (expr1Type is NullableDataStructure && expr2Type is NullType) || (expr1Type is NullType && expr2Type is NullableDataStructure)
     }
 
+    /**
+     * Infer type
+     *
+     * Infers type of expression
+     *
+     * @param currentSymbolTable
+     * @param expression
+     * @return
+     */
     fun inferType(currentSymbolTable: SymbolTableVisitor, expression: ExpressionNode): Type {
         return getExpressionType(expression, currentSymbolTable)
     }
 
+    /**
+     * Redeclared variable check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param ctx
+     */
     fun redeclaredVariableCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) != ErrorType) {
             redeclarationError(identifier, currentSymbolTable.getTypeOf(identifier), ctx)
         }
     }
 
+    /**
+     * Incompatible types check
+     *
+     * @param lhsType
+     * @param rhsType
+     * @param text
+     * @param ctx
+     */
     fun incompatibleTypesCheck(lhsType: Type, rhsType: Type, text: String, ctx: ParserRuleContext) {
         if (rhsType is NullType && lhsType !is NullableDataStructure && lhsType !is NullType) {
             nonNullableAssignedToNull(lhsType.toString(), ctx)
@@ -136,18 +138,42 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Undeclared identifier check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param ctx
+     */
     fun undeclaredIdentifierCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) == ErrorType) {
             undeclaredAssignError(identifier, ctx)
         }
     }
 
+    /**
+     * Not data structure check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param ctx
+     */
     fun notDataStructureCheck(currentSymbolTable: SymbolTableVisitor, identifier: String, ctx: ParserRuleContext) {
         if (currentSymbolTable.getTypeOf(identifier) !is DataStructureType && currentSymbolTable.getTypeOf(identifier) !is NullType) {
             nonDataStructureMethodError(identifier, ctx)
         }
     }
 
+    /**
+     * Not valid method name for data structure check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param method
+     * @param ctx
+     * @param overrideType
+     * @return
+     */
     fun notValidMethodNameForDataStructureCheck(
         currentSymbolTable: SymbolTableVisitor,
         identifier: String,
@@ -188,12 +214,26 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Primitive internal type for data structure check
+     *
+     * @param internalType
+     * @param ctx
+     */
     fun primitiveInternalTypeForDataStructureCheck(internalType: Type, ctx: ParserRuleContext) {
         if (internalType !is PrimitiveType) {
             dataStructureInternalTypeNotPrimitiveError(internalType, ctx)
         }
     }
 
+    /**
+     * Primitive arg types check
+     *
+     * @param argTypes
+     * @param methodName
+     * @param dataStructureType
+     * @param ctx
+     */
     fun primitiveArgTypesCheck(
         argTypes: List<Type>,
         methodName: String,
@@ -209,6 +249,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Incompatible argument types check
+     *
+     * @param dataStructureType
+     * @param argumentTypes
+     * @param dataStructureMethod
+     * @param ctx
+     */
     fun incompatibleArgumentTypesCheck(
         dataStructureType: DataStructureType,
         argumentTypes: List<Type>,
@@ -258,6 +306,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Incompatible operator type check
+     *
+     * @param operator
+     * @param opExpr
+     * @param currentSymbolTable
+     * @param ctx
+     */
     fun incompatibleOperatorTypeCheck(
         operator: String,
         opExpr: ExpressionNode,
@@ -285,55 +341,14 @@ class SemanticAnalysis {
         }
     }
 
-    fun checkArrayConstructorItemLengthsMatch(
-        openConstructorSize: Int,
-        closeConstructorSize: Int,
-        ctx: ParserRuleContext
-    ) {
-        if (openConstructorSize != closeConstructorSize) {
-            incorrectConstructorItemSize(openConstructorSize, closeConstructorSize, ctx)
-        }
-    }
-
-    fun checkArrayDimensionsNotGreaterThanTwo(arrayDimension: Int, ctx: ParserRuleContext) {
-        if (arrayDimension > 2) {
-            incompatibleArrayDimension(arrayDimension, ctx)
-        }
-    }
-
-    fun checkArrayDimensionsMatchConstructorArguments(
-        dataStructureType: DataStructureType,
-        argumentsSize: Int,
-        ctx: ParserRuleContext
-    ) {
-        if (dataStructureType is ArrayType && argumentsSize != 0) {
-            if ((dataStructureType.is2D && argumentsSize != 2) || (!dataStructureType.is2D && argumentsSize != 1)) {
-                incompatibleArrayDimensionWithConstructorArguments(dataStructureType.is2D, argumentsSize, ctx)
-            }
-        }
-    }
-
-    fun checkArrayElemHasCorrectNumberOfIndices(
-        indices: List<ExpressionNode>,
-        is2DArray: Boolean,
-        ctx: ParserRuleContext
-    ) {
-        val hasCorrectNumberOfIndices = if (is2DArray) indices.size == 2 else indices.size == 1
-        if (!hasCorrectNumberOfIndices) {
-            maxArrayIndexingExceededError(is2DArray, indices.size, ctx)
-        }
-    }
-
-    fun checkArrayElemIndexTypes(
-        indices: List<ExpressionNode>,
-        currentSymbolTable: SymbolTableVisitor,
-        ctx: ParserRuleContext
-    ) {
-        indices.forEach {
-            checkExpressionTypeWithExpectedTypes(it, setOf(NumberType), currentSymbolTable, ctx)
-        }
-    }
-
+    /**
+     * Check expression type with expected type
+     *
+     * @param expression
+     * @param expected
+     * @param currentSymbolTable
+     * @param ctx
+     */
     fun checkExpressionTypeWithExpectedType(
         expression: ExpressionNode,
         expected: Type,
@@ -343,6 +358,14 @@ class SemanticAnalysis {
         checkExpressionTypeWithExpectedTypes(expression, setOf(expected), currentSymbolTable, ctx)
     }
 
+    /**
+     * Check expression type with expected types
+     *
+     * @param expression
+     * @param expected
+     * @param currentSymbolTable
+     * @param ctx
+     */
     fun checkExpressionTypeWithExpectedTypes(
         expression: ExpressionNode,
         expected: Set<Type>,
@@ -355,18 +378,39 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Global return check
+     *
+     * @param inFunction
+     * @param ctx
+     */
     fun globalReturnCheck(inFunction: Boolean, ctx: VAlgoLangParser.ReturnStatementContext) {
         if (!inFunction) {
             globalReturnError(ctx)
         }
     }
 
+    /**
+     * Break or continue outside loop check
+     *
+     * @param action
+     * @param inLoop
+     * @param ctx
+     */
     fun breakOrContinueOutsideLoopCheck(action: String, inLoop: Boolean, ctx: ParserRuleContext) {
         if (!inLoop) {
             breakOrContinueOutsideLoopError(action, ctx)
         }
     }
 
+    /**
+     * Incompatible return types check
+     *
+     * @param currentSymbolTable
+     * @param functionReturnType
+     * @param expression
+     * @param ctx
+     */
     fun incompatibleReturnTypesCheck(
         currentSymbolTable: SymbolTableVisitor,
         functionReturnType: Type,
@@ -379,6 +423,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Invalid number of arguments for functions check
+     *
+     * @param identifier
+     * @param currentSymbolTable
+     * @param numArgs
+     * @param ctx
+     */
     fun invalidNumberOfArgumentsForFunctionsCheck(
         identifier: String,
         currentSymbolTable: SymbolTableVisitor,
@@ -394,6 +446,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Incompatible argument types for functions check
+     *
+     * @param identifier
+     * @param currentSymbolTable
+     * @param argTypes
+     * @param ctx
+     */
     fun incompatibleArgumentTypesForFunctionsCheck(
         identifier: String,
         currentSymbolTable: SymbolTableVisitor,
@@ -419,6 +479,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Missing return check
+     *
+     * @param identifier
+     * @param statements
+     * @param type
+     * @param ctx
+     */
     fun missingReturnCheck(
         identifier: String,
         statements: List<StatementNode>,
@@ -445,12 +513,28 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Void type declaration check
+     *
+     * @param rhsType
+     * @param identifier
+     * @param ctx
+     */
     fun voidTypeDeclarationCheck(rhsType: Type, identifier: String, ctx: ParserRuleContext) {
         if (rhsType is VoidType) {
             voidTypeDeclarationError(identifier, ctx)
         }
     }
 
+    /**
+     * Undeclared function check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param inFunction
+     * @param argTypes
+     * @param ctx
+     */
     fun undeclaredFunctionCheck(
         currentSymbolTable: SymbolTableVisitor,
         identifier: String,
@@ -476,6 +560,15 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Redeclared function check
+     *
+     * @param currentSymbolTable
+     * @param identifier
+     * @param returnType
+     * @param parameters
+     * @param ctx
+     */
     fun redeclaredFunctionCheck(
         currentSymbolTable: SymbolTableVisitor,
         identifier: String,
@@ -510,6 +603,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Incompatible multiple function call
+     *
+     * @param identifier
+     * @param functionData
+     * @param lhsType
+     * @param ctx
+     */
     fun incompatibleMultipleFunctionCall(
         identifier: String,
         functionData: FunctionData,
@@ -521,6 +622,12 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Too many inferred functions check
+     *
+     * @param currentSymbolTable
+     * @param ctx
+     */
     fun tooManyInferredFunctionsCheck(currentSymbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
         val functions = currentSymbolTable.getFunctions()
         functions.forEach { (identifier, data) ->
@@ -531,6 +638,13 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Array2d dimensions match check
+     *
+     * @param initialiser
+     * @param dataStructureType
+     * @param ctx
+     */
     fun array2DDimensionsMatchCheck(
         initialiser: InitialiserNode,
         dataStructureType: DataStructureType,
@@ -544,6 +658,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * All expressions are same type check
+     *
+     * @param expected
+     * @param expressions
+     * @param currentSymbolTable
+     * @param ctx
+     */
     fun allExpressionsAreSameTypeCheck(
         expected: Type,
         expressions: List<ExpressionNode>,
@@ -555,6 +677,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Datastructure constructor check
+     *
+     * @param dataStructureType
+     * @param initialValue
+     * @param argumentTypes
+     * @param ctx
+     */
     fun datastructureConstructorCheck(
         dataStructureType: DataStructureType,
         initialValue: List<ExpressionNode>,
@@ -573,12 +703,25 @@ class SemanticAnalysis {
         incompatibleArgumentTypesCheck(dataStructureType, argumentTypes, constructor, ctx)
     }
 
+    /**
+     * Unable to infer type check
+     *
+     * @param rhsType
+     * @param ctx
+     */
     fun unableToInferTypeCheck(rhsType: Type, ctx: ParserRuleContext) {
         if (rhsType is NullType) {
             unableToInferTypeFromNullType(ctx)
         }
     }
 
+    /**
+     * Invalid array elem assignment
+     *
+     * @param identifier
+     * @param type
+     * @param ctx
+     */
     fun invalidArrayElemAssignment(identifier: String, type: Type, ctx: VAlgoLangParser.Assignment_lhsContext) {
         if (type is StringType) {
             stringImmutabilityError(identifier, ctx)
@@ -587,12 +730,13 @@ class SemanticAnalysis {
         }
     }
 
-    fun invalidMemberAccess(nodeElem: AssignLHS, symbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
-        if (nodeElem is BinaryTreeRootAccessNode && symbolTable.getTypeOf(nodeElem.identifier) !is BinaryTreeType) {
-            unsupportedMethodError(symbolTable.getTypeOf(nodeElem.identifier).toString(), "root", ctx)
-        }
-    }
-
+    /**
+     * Incompatible initialiser check
+     *
+     * @param dataStructureType
+     * @param initialiser
+     * @param ctx
+     */
     fun incompatibleInitialiserCheck(
         dataStructureType: DataStructureType,
         initialiser: ASTNode,
@@ -607,6 +751,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * For loop range type check
+     *
+     * @param symbolTable
+     * @param startExpr
+     * @param endExpr
+     * @param ctx
+     */
     fun forLoopRangeTypeCheck(
         symbolTable: SymbolTableVisitor,
         startExpr: ExpressionNode,
@@ -624,6 +776,13 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * For loop range update number type check
+     *
+     * @param symbolTable
+     * @param change
+     * @param ctx
+     */
     fun forLoopRangeUpdateNumberTypeCheck(
         symbolTable: SymbolTableVisitor,
         change: ExpressionNode,
@@ -635,6 +794,13 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * For loop identifier not being reassigned check
+     *
+     * @param identifier
+     * @param forLoopIdentifiers
+     * @param ctx
+     */
     fun forLoopIdentifierNotBeingReassignedCheck(
         identifier: String,
         forLoopIdentifiers: Set<String>,
@@ -645,6 +811,14 @@ class SemanticAnalysis {
         }
     }
 
+    /**
+     * Check annotation arguments
+     *
+     * @param ctx
+     * @param symbolTable
+     * @param arguments
+     * @return
+     */
     fun checkAnnotationArguments(
         ctx: ParserRuleContext,
         symbolTable: SymbolTableVisitor,
@@ -681,5 +855,123 @@ class SemanticAnalysis {
             }
         }
         else -> throw NotImplementedError("Annotation argument check not implemented")
+    }
+
+    /** Arrays **/
+
+    private fun getArrayElemType(expression: ArrayElemNode, currentSymbolTable: SymbolTableVisitor): Type {
+        // To extend to multiple dimensions perform below recursively
+        val arrayType = currentSymbolTable.getTypeOf(expression.identifier)
+        return if (arrayType is ArrayType) {
+            if (arrayType.is2D) {
+                if (expression.indices.size == 2) arrayType.internalType else ArrayType(arrayType.internalType)
+            } else {
+                arrayType.internalType
+            }
+        } else {
+            ErrorType
+        }
+    }
+
+    /**
+     * Check array constructor item lengths match
+     *
+     * @param openConstructorSize
+     * @param closeConstructorSize
+     * @param ctx
+     */
+    fun checkArrayConstructorItemLengthsMatch(
+        openConstructorSize: Int,
+        closeConstructorSize: Int,
+        ctx: ParserRuleContext
+    ) {
+        if (openConstructorSize != closeConstructorSize) {
+            incorrectConstructorItemSize(openConstructorSize, closeConstructorSize, ctx)
+        }
+    }
+
+    /**
+     * Check array dimensions not greater than two
+     *
+     * @param arrayDimension
+     * @param ctx
+     */
+    fun checkArrayDimensionsNotGreaterThanTwo(arrayDimension: Int, ctx: ParserRuleContext) {
+        if (arrayDimension > 2) {
+            incompatibleArrayDimension(arrayDimension, ctx)
+        }
+    }
+
+    /**
+     * Check array dimensions match constructor arguments
+     *
+     * @param dataStructureType
+     * @param argumentsSize
+     * @param ctx
+     */
+    fun checkArrayDimensionsMatchConstructorArguments(
+        dataStructureType: DataStructureType,
+        argumentsSize: Int,
+        ctx: ParserRuleContext
+    ) {
+        if (dataStructureType is ArrayType && argumentsSize != 0) {
+            if ((dataStructureType.is2D && argumentsSize != 2) || (!dataStructureType.is2D && argumentsSize != 1)) {
+                incompatibleArrayDimensionWithConstructorArguments(dataStructureType.is2D, argumentsSize, ctx)
+            }
+        }
+    }
+
+    /**
+     * Check array elem has correct number of indices
+     *
+     * @param indices
+     * @param is2DArray
+     * @param ctx
+     */
+    fun checkArrayElemHasCorrectNumberOfIndices(
+        indices: List<ExpressionNode>,
+        is2DArray: Boolean,
+        ctx: ParserRuleContext
+    ) {
+        val hasCorrectNumberOfIndices = if (is2DArray) indices.size == 2 else indices.size == 1
+        if (!hasCorrectNumberOfIndices) {
+            maxArrayIndexingExceededError(is2DArray, indices.size, ctx)
+        }
+    }
+
+    /**
+     * Check array elem index types
+     *
+     * @param indices
+     * @param currentSymbolTable
+     * @param ctx
+     */
+    fun checkArrayElemIndexTypes(
+        indices: List<ExpressionNode>,
+        currentSymbolTable: SymbolTableVisitor,
+        ctx: ParserRuleContext
+    ) {
+        indices.forEach {
+            checkExpressionTypeWithExpectedTypes(it, setOf(NumberType), currentSymbolTable, ctx)
+        }
+    }
+
+    /** Binary trees **/
+
+    private fun getBinaryTreeNodeType(
+        expression: BinaryTreeNodeElemAccessNode,
+        currentSymbolTable: SymbolTableVisitor
+    ): Type {
+        val type = currentSymbolTable.getTypeOf(expression.identifier)
+        return if (type is BinaryTreeNodeType) {
+            if (expression.accessChain.isNotEmpty()) {
+                val lastValue = expression.accessChain.last()
+                lastValue.returnType
+            } else {
+                type
+            }
+        } else {
+            ErrorType
+        }
     }
 }
