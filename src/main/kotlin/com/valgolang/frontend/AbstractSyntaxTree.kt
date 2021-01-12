@@ -1,5 +1,8 @@
 package com.valgolang.frontend
 
+import com.valgolang.frontend.datastructures.DataStructureMethod
+import com.valgolang.frontend.datastructures.DataStructureType
+
 open class ASTNode
 
 data class ProgramNode(

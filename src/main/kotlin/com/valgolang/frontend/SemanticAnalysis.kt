@@ -2,6 +2,13 @@ package com.valgolang.frontend
 
 import antlr.VAlgoLangParser
 import com.valgolang.errorhandling.semanticerror.*
+import com.valgolang.frontend.datastructures.DataStructureMethod
+import com.valgolang.frontend.datastructures.DataStructureType
+import com.valgolang.frontend.datastructures.ErrorMethod
+import com.valgolang.frontend.datastructures.NullableDataStructure
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.binarytree.NodeType
+import com.valgolang.frontend.datastructures.binarytree.TreeType
 import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {

@@ -1,6 +1,7 @@
 package com.valgolang
 
 import com.valgolang.frontend.*
+import com.valgolang.frontend.datastructures.stack.StackType
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 

@@ -1,9 +1,9 @@
 package com.valgolang.errorhandling.semanticerror
 
 import com.valgolang.errorhandling.ErrorHandler.addSemanticError
-import com.valgolang.frontend.DataStructureType
 import com.valgolang.frontend.NullType
 import com.valgolang.frontend.Type
+import com.valgolang.frontend.datastructures.DataStructureType
 import org.antlr.v4.runtime.ParserRuleContext
 
 /**

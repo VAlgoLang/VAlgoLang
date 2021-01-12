@@ -2,8 +2,8 @@ package com.valgolang.stylesheet
 
 import com.valgolang.frontend.IdentifierData
 import com.valgolang.frontend.NumberType
-import com.valgolang.frontend.StackType
 import com.valgolang.frontend.SymbolTableVisitor
+import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.EmptyMObject
 import com.valgolang.runtime.datastructures.stack.StackValue
 import org.hamcrest.CoreMatchers.`is`

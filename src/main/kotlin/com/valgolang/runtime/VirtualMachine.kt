@@ -4,6 +4,10 @@ import com.google.gson.Gson
 import com.valgolang.ExitStatus
 import com.valgolang.errorhandling.ErrorHandler.addRuntimeError
 import com.valgolang.frontend.*
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.binarytree.NodeType
+import com.valgolang.frontend.datastructures.binarytree.TreeType
+import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.*
 import com.valgolang.linearrepresentation.datastructures.binarytree.TreeNodeRestyle
 import com.valgolang.runtime.datastructures.BoundaryShape
@@ -857,6 +861,7 @@ class VirtualMachine(
                 is ArrayType -> arrExecutor.executeConstructor(node, dsUID, assignLHS)
                 is TreeType, is NodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
                 /** Extend with further data structures **/
+                else -> throw NotImplementedError("Data structure constructor not supported")
             }
         }
 

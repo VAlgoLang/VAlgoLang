@@ -3,6 +3,14 @@ package com.valgolang.frontend
 import antlr.VAlgoLangParser.*
 import antlr.VAlgoLangParserBaseVisitor
 import com.valgolang.errorhandling.semanticerror.incompatibleOperatorTypeError
+import com.valgolang.frontend.datastructures.DataStructureMethod
+import com.valgolang.frontend.datastructures.DataStructureType
+import com.valgolang.frontend.datastructures.ErrorMethod
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.binarytree.NodeType
+import com.valgolang.frontend.datastructures.binarytree.TreeType
+import com.valgolang.frontend.datastructures.list.ListType
+import com.valgolang.frontend.datastructures.stack.StackType
 import java.util.*
 
 class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {

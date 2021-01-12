@@ -1,6 +1,6 @@
 package com.valgolang.linearrepresentation.datastructures.binarytree
 
-import com.valgolang.frontend.DataStructureType
+import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.linearrepresentation.DataStructureMObject
 import com.valgolang.linearrepresentation.MObject
 import com.valgolang.runtime.datastructures.binarytree.BinaryTreeNodeValue

@@ -1,6 +1,8 @@
 package com.valgolang.runtime.datastructures.binarytree
 
 import com.valgolang.frontend.*
+import com.valgolang.frontend.datastructures.binarytree.NodeType
+import com.valgolang.frontend.datastructures.binarytree.TreeType
 import com.valgolang.linearrepresentation.EmptyMObject
 import com.valgolang.linearrepresentation.ManimInstr
 import com.valgolang.linearrepresentation.VariableNameGenerator
