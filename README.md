@@ -26,8 +26,8 @@ Once manim is installed there are multiple ways to get VAlgoLang.
 
 VAlgoLang is avaliable on Homebrew using the instructions below:
 ```
-    brew tap ManimDSL/homebrew-manimdsl
-    brew install manimdsl
+    brew tap VAlgoLang/homebrew-valgolang
+    brew install valgolang
 ```
 
 Typing `valgolang` in your terminal should show give you access to the compiler.
@@ -66,6 +66,27 @@ Documentation is in progress at [valgolang.github.io](https://valgolang.github.i
 
 ## Contributing
 We welcome all contributions! If you would like to contribute, please see the corresponding [guidelines][contributing]. By contributing, you are agreeing to our [code of conduct][code-of-conduct].
+
+To get started on your local machine, please do the following:
+
+1. Fork and clone the repository and open in your favourite editor. Since the interpreter is written in Kotlin, our choice is [IntelliJ](https://www.jetbrains.com/idea/).
+2. Install [Manim and its dependencies](https://docs.manim.community/en/latest/installation.html).
+3. Make changes to the compiler as you wish.
+4. Run the following command to build the JAR file for the compiler:
+
+```
+./gradlew build -x test
+```
+
+Remember that you'll need to do this every time you make a change and would like to see its effect.
+
+5. Run the following on a `.val` file to see whether your changes are working as expected:
+
+```
+./compile <your-file-name>.val
+```
+
+During development, it might be easier for you to read through the `.py` output file each time you make a change than to wait for Manim to generate a video. In this case, we recommend using the `-p` flag during compilation. For more on the command line arguments for VAlgoLang, see [here](https://valgolang.github.io/usage.html#command-line-arguments).
 
 [contributing]: https://github.com/VAlgoLang/VAlgoLang/blob/master/CONTRIBUTING.md
 [code-of-conduct]: https://github.com/VAlgoLang/VAlgoLang/blob/master/CODE_OF_CONDUCT.md
