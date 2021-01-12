@@ -42,20 +42,22 @@ def move_arrow_to_line(self, line_number, pointer, code_block, code_text):
     line_object = code_block.get_line_at(line_number)
     self.play(FadeIn(pointer.next_to(line_object, LEFT, MED_SMALL_BUFF)))
 
+# Inspired from https://www.reddit.com/r/manim/comments/bubyj2/scrolling_mobjects/
+
 def scroll_down(self, group, scrolls):
-    sh_val = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
+    shift = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
     for i in range(1, 1 + scrolls):
         group[self.code_end + i - 1].next_to(group[self.code_end - 2 + i], DOWN * self.line_spacing, aligned_edge=LEFT)
         self.play(FadeOut(group[self.code_start + i - 1]), FadeIn(group[self.code_end + i - 1]),
-                  group[(self.code_start + i):(self.code_end + i)].shift, sh_val * UP, run_time=0.1)
+                  group[(self.code_start + i):(self.code_end + i)].shift, shift * UP, run_time=0.1)
     self.code_start = self.code_start + scrolls
     self.code_end = self.code_end + scrolls
 
 def scroll_up(self, group, scrolls):
-    sh_val = group[self.code_start].get_corner(UP + LEFT)[1] - group[self.code_start + 1].get_corner(UP + LEFT)[1]
+    shift = group[self.code_start].get_top()[1] - group[self.code_start + 1].get_top()[1]
     for i in range(1, 1 + scrolls):
         group[self.code_start - i].next_to(group[self.code_start - i + 1], UP * self.line_spacing, aligned_edge=LEFT)
         self.play_animation(FadeOut(group[self.code_end - i]), FadeIn(group[self.code_start - i]),
-                            group[(self.code_start - i):(self.code_end - i)].shift, sh_val * DOWN, run_time=0.1)
+                            group[(self.code_start - i):(self.code_end - i)].shift, shift * DOWN, run_time=0.1)
     self.code_start = self.code_start - scrolls
     self.code_end = self.code_end - scrolls
