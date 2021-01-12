@@ -1,164 +1,10 @@
-package com.valgolang.frontend
+package com.valgolang.frontend.ast
 
 import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.DataStructureType
 
-open class ASTNode
-
-data class ProgramNode(
-    val functions: List<FunctionNode>,
-    val statements: List<StatementNode>
-) : ASTNode()
-
-data class FunctionNode(
-    override val lineNumber: Int,
-    val scope: Int,
-    val identifier: String,
-    val parameters: List<ParameterNode>,
-    val statements: List<StatementNode>
-) : CodeNode(lineNumber)
-
-data class ParameterListNode(val parameters: List<ParameterNode>) : ASTNode()
-data class ParameterNode(val identifier: String, val type: Type) : ASTNode()
-
-// All statements making up program
-sealed class StatementNode(open val lineNumber: Int) : ASTNode()
-
-// Animation Command Specific type for easy detection
-sealed class AnimationNode(override val lineNumber: Int) : StatementNode(lineNumber)
-sealed class NoRenderAnimationNode(override val lineNumber: Int) : AnimationNode(lineNumber)
-
-data class SleepNode(override val lineNumber: Int, val sleepTime: ExpressionNode) : NoRenderAnimationNode(lineNumber)
-
-// Comments (not discarded so they can be rendered for educational purposes)
-data class CommentNode(override val lineNumber: Int, val content: String) : AnimationNode(lineNumber)
-
-// Step over to step over code and avoid additional animations
-data class CodeTrackingNode(override val lineNumber: Int, val endLineNumber: Int, val statements: List<StatementNode>) :
-    NoRenderAnimationNode(lineNumber)
-
-sealed class AnnotationBlockNode(override val lineNumber: Int, open val condition: ExpressionNode) :
-    NoRenderAnimationNode(lineNumber)
-
-// Step into code and avoid additional animations
-data class StartCodeTrackingNode(
-    override val lineNumber: Int,
-    val isStepInto: Boolean,
-    override val condition: ExpressionNode
-) :
-    AnnotationBlockNode(lineNumber, condition)
-
-data class StopCodeTrackingNode(
-    override val lineNumber: Int,
-    val isStepInto: Boolean,
-    override val condition: ExpressionNode
-) :
-    AnnotationBlockNode(lineNumber, condition)
-
-// Step into code and make speed changes
-data class StartSpeedChangeNode(
-    override val lineNumber: Int,
-    val speedChange: ExpressionNode,
-    override val condition: ExpressionNode
-) :
-    AnnotationBlockNode(lineNumber, condition)
-
-data class StopSpeedChangeNode(override val lineNumber: Int, override val condition: ExpressionNode) :
-    AnnotationBlockNode(lineNumber, condition)
-
-data class SubtitleAnnotationNode(
-    override val lineNumber: Int,
-    val text: ExpressionNode,
-    val duration: ExpressionNode? = null,
-    override var condition: ExpressionNode,
-    val showOnce: Boolean,
-) : AnnotationBlockNode(lineNumber, condition)
-
-// Code Specific Nodes holding line number
-sealed class CodeNode(override val lineNumber: Int) : StatementNode(lineNumber)
-
-// Used to more easily deal with blocks
-data class ConsecutiveStatementNode(val stat1: StatementNode, val stat2: StatementNode) :
-    StatementNode(stat1.lineNumber)
-
-interface DeclarationOrAssignment {
-    val lineNumber: Int
-    val identifier: AssignLHS
-    val expression: ExpressionNode
-}
-
-data class DeclarationNode(
-    override val lineNumber: Int,
-    override val identifier: AssignLHS,
-    override val expression: ExpressionNode
-) : CodeNode(lineNumber), DeclarationOrAssignment
-
-data class AssignmentNode(
-    override val lineNumber: Int,
-    override val identifier: AssignLHS,
-    override val expression: ExpressionNode
-) : CodeNode(lineNumber), DeclarationOrAssignment
-
-data class ReturnNode(
-    override val lineNumber: Int,
-    val expression: ExpressionNode
-) : CodeNode(lineNumber)
-
-sealed class StatementBlock(
-    override val lineNumber: Int
-) : CodeNode(lineNumber) {
-    abstract val statements: List<StatementNode>
-    abstract val scope: Int
-}
-
-sealed class LoopNode(override val lineNumber: Int) : StatementBlock(lineNumber) {
-    abstract val endLineNumber: Int
-}
-
-data class WhileStatementNode(
-    override val lineNumber: Int,
-    override val endLineNumber: Int,
-    override val scope: Int,
-    val condition: ExpressionNode,
-    override val statements: List<StatementNode>
-) : LoopNode(lineNumber)
-
-data class ForStatementNode(
-    override val lineNumber: Int,
-    override val endLineNumber: Int,
-    override val scope: Int,
-    val beginStatement: DeclarationNode,
-    val endCondition: ExpressionNode,
-    val updateCounter: AssignmentNode,
-    override val statements: List<StatementNode>,
-) : LoopNode(lineNumber)
-
-data class IfStatementNode(
-    override val lineNumber: Int,
-    val endLineNumber: Int,
-    override val scope: Int,
-    val condition: ExpressionNode,
-    override val statements: List<StatementNode>,
-    val elifs: List<ElifNode> = emptyList(),
-    val elseBlock: ElseNode
-) : StatementBlock(lineNumber)
-
-data class ElifNode(
-    override val lineNumber: Int,
-    override val scope: Int,
-    val condition: ExpressionNode,
-    override val statements: List<StatementNode>
-) : StatementBlock(lineNumber)
-
-data class ElseNode(
-    override val lineNumber: Int,
-    override val scope: Int,
-    override val statements: List<StatementNode>
-) : StatementBlock(lineNumber)
-
-sealed class LoopStatementNode(override val lineNumber: Int) : CodeNode(lineNumber)
-data class BreakNode(override val lineNumber: Int, val loopEndLineNumber: Int) : LoopStatementNode(lineNumber)
-data class ContinueNode(override val lineNumber: Int, val loopStartLineNumber: Int) : LoopStatementNode(lineNumber)
+// Expressions
+sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 
 interface AssignLHS {
     val identifier: String
@@ -168,8 +14,6 @@ object EmptyLHS : AssignLHS {
     override val identifier: String = ""
 }
 
-// Expressions
-sealed class ExpressionNode(override val lineNumber: Int) : CodeNode(lineNumber)
 data class IdentifierNode(override val lineNumber: Int, override val identifier: String) :
     ExpressionNode(lineNumber),
     AssignLHS {

@@ -1,6 +1,6 @@
 package com.valgolang.frontend.datastructures.stack
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
 import com.valgolang.frontend.datastructures.ConstructorMethod
 import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.DataStructureType

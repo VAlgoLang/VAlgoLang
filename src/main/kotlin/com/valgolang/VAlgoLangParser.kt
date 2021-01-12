@@ -5,10 +5,10 @@ import antlr.VAlgoLangParser
 import com.valgolang.errorhandling.ErrorHandler
 import com.valgolang.errorhandling.syntaxerror.SyntaxErrorListener
 import com.valgolang.errorhandling.syntaxerror.SyntaxErrorStrategy
-import com.valgolang.frontend.ProgramNode
-import com.valgolang.frontend.StatementNode
 import com.valgolang.frontend.SymbolTableVisitor
 import com.valgolang.frontend.VAlgoLangParserVisitor
+import com.valgolang.frontend.ast.ProgramNode
+import com.valgolang.frontend.ast.StatementNode
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.atn.PredictionMode

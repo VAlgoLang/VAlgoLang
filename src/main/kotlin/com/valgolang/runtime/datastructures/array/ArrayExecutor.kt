@@ -1,6 +1,6 @@
 package com.valgolang.runtime.datastructures.array
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
 import com.valgolang.frontend.datastructures.array.ArrayType
 import com.valgolang.frontend.datastructures.list.ListType
 import com.valgolang.linearrepresentation.EmptyMObject

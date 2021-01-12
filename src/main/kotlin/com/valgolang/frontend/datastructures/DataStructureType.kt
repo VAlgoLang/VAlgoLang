@@ -1,7 +1,7 @@
 package com.valgolang.frontend.datastructures
 
-import com.valgolang.frontend.ErrorType
-import com.valgolang.frontend.Type
+import com.valgolang.frontend.ast.ErrorType
+import com.valgolang.frontend.ast.Type
 
 /**
  * Nullable data structure

@@ -1,5 +1,9 @@
 package com.valgolang.frontend
 
+import com.valgolang.frontend.ast.ErrorType
+import com.valgolang.frontend.ast.ParameterNode
+import com.valgolang.frontend.ast.Type
+
 interface SymbolTableData {
     val type: Type
 }

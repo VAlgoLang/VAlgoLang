@@ -1,4 +1,4 @@
-package com.valgolang.frontend
+package com.valgolang.frontend.ast
 
 // Types (to be used in symbol table also)
 abstract class Type : ASTNode()
@@ -29,9 +29,6 @@ object StringType : PrimitiveType() {
         return "string"
     }
 }
-
-// This is used to collect arguments up into method call node
-data class ArgumentNode(val arguments: List<ExpressionNode>) : ASTNode()
 
 object NullType : Type() {
     override fun toString(): String {

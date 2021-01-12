@@ -1,9 +1,9 @@
 package com.valgolang.symbolTable
 
-import com.valgolang.frontend.ErrorType
 import com.valgolang.frontend.IdentifierData
-import com.valgolang.frontend.NumberType
 import com.valgolang.frontend.SymbolTableVisitor
+import com.valgolang.frontend.ast.ErrorType
+import com.valgolang.frontend.ast.NumberType
 import com.valgolang.frontend.datastructures.stack.StackType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

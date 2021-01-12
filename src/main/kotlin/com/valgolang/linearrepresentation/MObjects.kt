@@ -97,7 +97,7 @@ data class CodeBlock(
 
     override fun getConstructor(): String {
         return "$ident = $className(code_lines, $boundaries, syntax_highlighting=${
-            syntaxHighlightingOn.toString().capitalize()
+        syntaxHighlightingOn.toString().capitalize()
         }, syntax_highlighting_style=\"$syntaxHighlightingStyle\", tab_spacing=$tabSpacing)"
     }
 
@@ -257,18 +257,18 @@ class Rectangle(
         styleProperties.borderColor?.let {
             instructions.add(
                 "FadeToColor($ident.shape, ${
-                    styleProperties.handleColourValue(
-                        it
-                    )
+                styleProperties.handleColourValue(
+                    it
+                )
                 })"
             )
         }
         styleProperties.textColor?.let {
             instructions.add(
                 "FadeToColor($ident.text, ${
-                    styleProperties.handleColourValue(
-                        it
-                    )
+                styleProperties.handleColourValue(
+                    it
+                )
                 })"
             )
         }

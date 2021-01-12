@@ -2,6 +2,7 @@ package com.valgolang.frontend
 
 import antlr.VAlgoLangParser
 import com.valgolang.errorhandling.semanticerror.*
+import com.valgolang.frontend.ast.*
 import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.frontend.datastructures.ErrorMethod

@@ -3,7 +3,9 @@ package com.valgolang.runtime
 import com.google.gson.Gson
 import com.valgolang.ExitStatus
 import com.valgolang.errorhandling.ErrorHandler.addRuntimeError
-import com.valgolang.frontend.*
+import com.valgolang.frontend.FunctionData
+import com.valgolang.frontend.SymbolTableVisitor
+import com.valgolang.frontend.ast.*
 import com.valgolang.frontend.datastructures.array.ArrayType
 import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
 import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType

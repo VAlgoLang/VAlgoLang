@@ -1,8 +1,8 @@
 package com.valgolang.frontend.datastructures.binarytree
 
-import com.valgolang.frontend.NullType
-import com.valgolang.frontend.Type
-import com.valgolang.frontend.VoidType
+import com.valgolang.frontend.ast.NullType
+import com.valgolang.frontend.ast.Type
+import com.valgolang.frontend.ast.VoidType
 import com.valgolang.frontend.datastructures.*
 
 /**

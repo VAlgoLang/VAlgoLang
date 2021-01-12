@@ -1,8 +1,8 @@
 package com.valgolang.frontend.datastructures.list
 
-import com.valgolang.frontend.NumberType
-import com.valgolang.frontend.Type
-import com.valgolang.frontend.VoidType
+import com.valgolang.frontend.ast.NumberType
+import com.valgolang.frontend.ast.Type
+import com.valgolang.frontend.ast.VoidType
 import com.valgolang.frontend.datastructures.ConstructorMethod
 import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.array.ArrayType
