@@ -13,7 +13,6 @@ param_list: param (COMMA param)*                                    #ParameterLi
 param: IDENT COLON type                                                  #Parameter;
 
 stat: SLEEP OPEN_PARENTHESIS expr CLOSE_PARENTHESIS SEMI                 #SleepStatement
-    | COMMENT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS SEMI             #CommentStatement // when string type defined we can adjust
     | LET IDENT (COLON type)? EQUAL expr SEMI                            #DeclarationStatement
     | assignment_lhs EQUAL expr SEMI                                     #AssignmentStatement
     | IF OPEN_PARENTHESIS ifCond=expr CLOSE_PARENTHESIS

@@ -1,9 +1,9 @@
 package com.valgolang.runtime.datastructures.stack
 
 import com.valgolang.frontend.ast.AssignLHS
-import com.valgolang.frontend.ast.ConstructorNode
-import com.valgolang.frontend.ast.DataStructureInitialiserNode
-import com.valgolang.frontend.ast.MethodCallNode
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.DataStructureInitialiserNode
+import com.valgolang.frontend.datastructures.MethodCallNode
 import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.*
 import com.valgolang.linearrepresentation.datastructures.stack.InitManimStack

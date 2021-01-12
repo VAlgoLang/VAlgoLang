@@ -3,12 +3,14 @@ package com.valgolang.frontend
 import antlr.VAlgoLangParser
 import com.valgolang.errorhandling.semanticerror.*
 import com.valgolang.frontend.ast.*
-import com.valgolang.frontend.datastructures.DataStructureMethod
-import com.valgolang.frontend.datastructures.DataStructureType
-import com.valgolang.frontend.datastructures.ErrorMethod
-import com.valgolang.frontend.datastructures.NullableDataStructure
+import com.valgolang.frontend.datastructures.*
+import com.valgolang.frontend.datastructures.array.Array2DInitialiserNode
+import com.valgolang.frontend.datastructures.array.ArrayElemNode
 import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.array.InternalArrayMethodCallNode
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeElemAccessNode
 import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeRootAccessNode
 import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import org.antlr.v4.runtime.ParserRuleContext
 
@@ -40,6 +42,7 @@ class SemanticAnalysis {
                     ErrorType
                 }
             }
+            else -> throw NotImplementedError("Expression Type not implemented")
         }
 
     private fun getBinaryTreeNodeType(

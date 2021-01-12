@@ -4,12 +4,12 @@ import antlr.VAlgoLangParser.*
 import antlr.VAlgoLangParserBaseVisitor
 import com.valgolang.errorhandling.semanticerror.incompatibleOperatorTypeError
 import com.valgolang.frontend.ast.*
-import com.valgolang.frontend.datastructures.DataStructureMethod
-import com.valgolang.frontend.datastructures.DataStructureType
-import com.valgolang.frontend.datastructures.ErrorMethod
+import com.valgolang.frontend.datastructures.*
+import com.valgolang.frontend.datastructures.array.Array2DInitialiserNode
+import com.valgolang.frontend.datastructures.array.ArrayElemNode
 import com.valgolang.frontend.datastructures.array.ArrayType
-import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
-import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
+import com.valgolang.frontend.datastructures.array.InternalArrayMethodCallNode
+import com.valgolang.frontend.datastructures.binarytree.*
 import com.valgolang.frontend.datastructures.list.ListType
 import com.valgolang.frontend.datastructures.stack.StackType
 import java.util.*
@@ -259,12 +259,6 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
 
     override fun visitMethodCallStatement(ctx: MethodCallStatementContext): ASTNode {
         return visit(ctx.method_call())
-    }
-
-    override fun visitCommentStatement(ctx: CommentStatementContext): CommentNode {
-        // Command command given for render purposes
-        lineNumberNodeMap[ctx.start.line] = CommentNode(ctx.start.line, ctx.STRING().text)
-        return lineNumberNodeMap[ctx.start.line] as CommentNode
     }
 
     override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {

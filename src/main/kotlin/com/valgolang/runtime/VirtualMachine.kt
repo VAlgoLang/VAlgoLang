@@ -6,9 +6,12 @@ import com.valgolang.errorhandling.ErrorHandler.addRuntimeError
 import com.valgolang.frontend.FunctionData
 import com.valgolang.frontend.SymbolTableVisitor
 import com.valgolang.frontend.ast.*
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.MethodCallNode
+import com.valgolang.frontend.datastructures.array.ArrayElemNode
 import com.valgolang.frontend.datastructures.array.ArrayType
-import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
-import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
+import com.valgolang.frontend.datastructures.array.InternalArrayMethodCallNode
+import com.valgolang.frontend.datastructures.binarytree.*
 import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.*
 import com.valgolang.linearrepresentation.datastructures.binarytree.TreeNodeRestyle
@@ -813,6 +816,7 @@ class VirtualMachine(
             is CastExpressionNode -> executeCastExpression(node)
             is InternalArrayMethodCallNode -> arrExecutor.executeInternalArrayMethodCall(node)
             is StringNode -> StringValue(node.value)
+            else -> throw NotImplementedError("Expression node not implemented")
         }
 
         private fun executeCastExpression(node: CastExpressionNode): ExecValue {
