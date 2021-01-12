@@ -1,0 +1,44 @@
+fun buildBST(i: number, j: number, arr: Array<number>): Node<number> {
+    if (i == j) {
+        return Node<number>(arr[i]);
+    }
+    if (i > j) {
+        return null;
+    }
+    let m = i+j;
+    m = m/2;
+    let head = Node<number>(arr[m]);
+    head.left = buildBST(i, m-1, arr);
+    head.right = buildBST(m+1, j, arr);
+    return head;
+}
+
+fun binarySearch(target: number, node: Node<number>): boolean {
+    if(node == null) {
+        @subtitle("Target value: " + target + " not found in tree")
+        return false;
+    }
+
+    if(target == node.value) {
+        @subtitle("Target value: " + target + "found")
+        return true;
+    } else if(target < node.value) {
+        @subtitle("Target value: " + target + " less than node value: " + node.value + ". Searching left tree")
+        return binarySearch(target, node.left);
+    } else {
+        @subtitle("Target value: " + target + " greater than node value: " + node.value + ". Searching right tree")
+        return binarySearch(target, node.right);
+    }
+}
+
+let arr = Array<number>(7) {1, 2, 3, 4, 5, 6, 7};
+@stepOver {
+let root = Node<number>(4);
+let tree = Tree<Node<number>>(root);
+root.left = buildBST(0, 2, arr);
+root.right = buildBST(4, arr.size()-1, arr);
+}
+
+let result = binarySearch(3, root);
+
+
