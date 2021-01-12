@@ -9,6 +9,16 @@ import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.frontend.datastructures.ErrorMethod
 
+/**
+ * Array type
+ *
+ * represents type for arrays. Currently only supports up to two dimensional arrays due to complexities in
+ * animating.
+ *
+ * @property internalType
+ * @property is2D
+ * @constructor Create empty Array type
+ */
 open class ArrayType(
     override var internalType: Type,
     var is2D: Boolean = false,
@@ -26,18 +36,42 @@ open class ArrayType(
         override fun toString(): String = "constructor"
     }
 
+    /**
+     * Size
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Size
+     */
     data class Size(
         override val returnType: Type = NumberType,
         override val argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
+    /**
+     * Contains
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Contains
+     */
     data class Contains(
         override val returnType: Type = BoolType,
         override val argumentTypes: List<Pair<Type, Boolean>> = listOf(),
         override val varargs: Boolean = false
     ) : DataStructureMethod
 
+    /**
+     * Swap
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Swap
+     */
     data class Swap(
         override val returnType: Type = VoidType,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(
@@ -62,6 +96,12 @@ open class ArrayType(
 
     override fun toString(): String = "Array<$internalType>"
 
+    /**
+     * Set to2d
+     *
+     * Sets array to two dimensional. Replaces swap method to cater for additional dimensions.
+     *
+     */
     fun setTo2D() {
         is2D = true
         methods["swap"] =

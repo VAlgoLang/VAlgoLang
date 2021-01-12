@@ -5,6 +5,14 @@ import com.valgolang.frontend.Type
 import com.valgolang.frontend.VoidType
 import com.valgolang.frontend.datastructures.*
 
+/**
+ * Binary tree type
+ *
+ * Represents the type for a binary tree (wrapper type for a node)
+ *
+ * @property internalType
+ * @constructor Create empty Binary tree type
+ */
 data class BinaryTreeType(
     override var internalType: Type,
 ) : DataStructureType(internalType) {
@@ -36,6 +44,14 @@ data class BinaryTreeType(
         return result
     }
 
+    /**
+     * Root
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Root
+     */
     class Root(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
@@ -46,6 +62,13 @@ data class BinaryTreeType(
         }
     }
 
+    /**
+     * Binary tree constructor
+     *
+     * @constructor
+     *
+     * @param nodeType
+     */
     class BinaryTreeConstructor(nodeType: BinaryTreeNodeType) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
@@ -56,6 +79,14 @@ data class BinaryTreeType(
     }
 }
 
+/**
+ * Binary tree node type
+ *
+ * Represents nodes that make up a binary tree
+ *
+ * @property internalType
+ * @constructor Create empty Binary tree node type
+ */
 data class BinaryTreeNodeType(
     override var internalType: Type,
 ) : DataStructureType(internalType), NullableDataStructure {
@@ -63,6 +94,13 @@ data class BinaryTreeNodeType(
         "left" to Left(this), "right" to Right(this), "value" to Value(internalType)
     )
 
+    /**
+     * Node constructor
+     *
+     * @constructor
+     *
+     * @param internalType
+     */
     class NodeConstructor(internalType: Type) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
@@ -72,6 +110,14 @@ data class BinaryTreeNodeType(
         override fun toString(): String = "constructor"
     }
 
+    /**
+     * Left
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Left
+     */
     class Left(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
@@ -82,6 +128,14 @@ data class BinaryTreeNodeType(
         }
     }
 
+    /**
+     * Right
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Right
+     */
     class Right(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
@@ -92,6 +146,14 @@ data class BinaryTreeNodeType(
         }
     }
 
+    /**
+     * Value
+     *
+     * @property returnType
+     * @property argumentTypes
+     * @property varargs
+     * @constructor Create empty Value
+     */
     class Value(
         override val returnType: Type,
         override var argumentTypes: List<Pair<Type, Boolean>> = listOf(),
