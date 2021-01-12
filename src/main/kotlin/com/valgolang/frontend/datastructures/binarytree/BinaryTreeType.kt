@@ -5,11 +5,11 @@ import com.valgolang.frontend.Type
 import com.valgolang.frontend.VoidType
 import com.valgolang.frontend.datastructures.*
 
-data class TreeType(
+data class BinaryTreeType(
     override var internalType: Type,
 ) : DataStructureType(internalType) {
     override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
-        "root" to Root(internalType as NodeType)
+        "root" to Root(internalType as BinaryTreeNodeType)
     )
 
     override fun containsMethod(method: String): Boolean {
@@ -21,11 +21,11 @@ data class TreeType(
     }
 
     override fun getConstructor(): ConstructorMethod {
-        return BinaryTreeConstructor(internalType as NodeType)
+        return BinaryTreeConstructor(internalType as BinaryTreeNodeType)
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is TreeType && other.internalType == internalType
+        return other is BinaryTreeType && other.internalType == internalType
     }
 
     override fun toString(): String = "Tree<$internalType>"
@@ -46,7 +46,7 @@ data class TreeType(
         }
     }
 
-    class BinaryTreeConstructor(nodeType: NodeType) : ConstructorMethod {
+    class BinaryTreeConstructor(nodeType: BinaryTreeNodeType) : ConstructorMethod {
         override val minRequiredArgsWithoutInitialValue: Int = 1
         override val returnType: Type = VoidType
         override val argumentTypes: List<Pair<Type, Boolean>> = listOf(nodeType to true)
@@ -56,7 +56,7 @@ data class TreeType(
     }
 }
 
-data class NodeType(
+data class BinaryTreeNodeType(
     override var internalType: Type,
 ) : DataStructureType(internalType), NullableDataStructure {
     override val methods: MutableMap<String, DataStructureMethod> = hashMapOf(
@@ -119,7 +119,7 @@ data class NodeType(
         if (this === other || other is NullType) return true
         if (javaClass != other?.javaClass) return false
 
-        other as NodeType
+        other as BinaryTreeNodeType
 
         if (internalType != other.internalType) return false
 

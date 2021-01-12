@@ -5,8 +5,8 @@ import com.valgolang.ExitStatus
 import com.valgolang.errorhandling.ErrorHandler.addRuntimeError
 import com.valgolang.frontend.*
 import com.valgolang.frontend.datastructures.array.ArrayType
-import com.valgolang.frontend.datastructures.binarytree.NodeType
-import com.valgolang.frontend.datastructures.binarytree.TreeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.*
 import com.valgolang.linearrepresentation.datastructures.binarytree.TreeNodeRestyle
@@ -859,7 +859,7 @@ class VirtualMachine(
             return when (node.type) {
                 is StackType -> stackExecutor.executeConstructor(node, dsUID, assignLHS)
                 is ArrayType -> arrExecutor.executeConstructor(node, dsUID, assignLHS)
-                is TreeType, is NodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
+                is BinaryTreeType, is BinaryTreeNodeType -> btExecutor.executeConstructor(node, dsUID, assignLHS)
                 /** Extend with further data structures **/
                 else -> throw NotImplementedError("Data structure constructor not supported")
             }

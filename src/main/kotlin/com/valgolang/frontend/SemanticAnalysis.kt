@@ -7,8 +7,8 @@ import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.frontend.datastructures.ErrorMethod
 import com.valgolang.frontend.datastructures.NullableDataStructure
 import com.valgolang.frontend.datastructures.array.ArrayType
-import com.valgolang.frontend.datastructures.binarytree.NodeType
-import com.valgolang.frontend.datastructures.binarytree.TreeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import org.antlr.v4.runtime.ParserRuleContext
 
 class SemanticAnalysis {
@@ -33,7 +33,7 @@ class SemanticAnalysis {
             is InternalArrayMethodCallNode -> expression.dataStructureMethod.returnType
             is BinaryTreeRootAccessNode -> {
                 val type = currentSymbolTable.getTypeOf(expression.identifier)
-                if (type is TreeType) {
+                if (type is BinaryTreeType) {
                     type.internalType
                 } else {
                     ErrorType
@@ -46,7 +46,7 @@ class SemanticAnalysis {
         currentSymbolTable: SymbolTableVisitor
     ): Type {
         val type = currentSymbolTable.getTypeOf(expression.identifier)
-        return if (type is NodeType) {
+        return if (type is BinaryTreeNodeType) {
             if (expression.accessChain.isNotEmpty()) {
                 val lastValue = expression.accessChain.last()
                 lastValue.returnType
@@ -584,7 +584,7 @@ class SemanticAnalysis {
     }
 
     fun invalidMemberAccess(nodeElem: AssignLHS, symbolTable: SymbolTableVisitor, ctx: ParserRuleContext) {
-        if (nodeElem is BinaryTreeRootAccessNode && symbolTable.getTypeOf(nodeElem.identifier) !is TreeType) {
+        if (nodeElem is BinaryTreeRootAccessNode && symbolTable.getTypeOf(nodeElem.identifier) !is BinaryTreeType) {
             unsupportedMethodError(symbolTable.getTypeOf(nodeElem.identifier).toString(), "root", ctx)
         }
     }

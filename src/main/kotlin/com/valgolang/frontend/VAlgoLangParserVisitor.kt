@@ -7,8 +7,8 @@ import com.valgolang.frontend.datastructures.DataStructureMethod
 import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.frontend.datastructures.ErrorMethod
 import com.valgolang.frontend.datastructures.array.ArrayType
-import com.valgolang.frontend.datastructures.binarytree.NodeType
-import com.valgolang.frontend.datastructures.binarytree.TreeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import com.valgolang.frontend.datastructures.list.ListType
 import com.valgolang.frontend.datastructures.stack.StackType
 import java.util.*
@@ -771,17 +771,17 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
     }
 
-    override fun visitNodeType(ctx: NodeTypeContext): NodeType {
-        return visit(ctx.node_type()) as NodeType
+    override fun visitNodeType(ctx: NodeTypeContext): BinaryTreeNodeType {
+        return visit(ctx.node_type()) as BinaryTreeNodeType
     }
 
-    override fun visitNode_type(ctx: Node_typeContext): NodeType {
+    override fun visitNode_type(ctx: Node_typeContext): BinaryTreeNodeType {
         val elementType = visit(ctx.primitive_type()) as PrimitiveType
-        return NodeType(elementType)
+        return BinaryTreeNodeType(elementType)
     }
 
-    override fun visitTreeType(ctx: TreeTypeContext): TreeType {
-        return TreeType(visit(ctx.node_type()) as NodeType)
+    override fun visitTreeType(ctx: TreeTypeContext): BinaryTreeType {
+        return BinaryTreeType(visit(ctx.node_type()) as BinaryTreeNodeType)
     }
 
     override fun visitNode_elem(ctx: Node_elemContext): ASTNode {
@@ -805,7 +805,7 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
             mutableListOf()
         }
 
-        return if (accessChain.first() is TreeType.Root) {
+        return if (accessChain.first() is BinaryTreeType.Root) {
             accessChain.removeFirst()
             BinaryTreeRootAccessNode(
                 ctx.start.line,
