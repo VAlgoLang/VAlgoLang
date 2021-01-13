@@ -9,6 +9,12 @@ com.valgolang.errorhandling.semanticerror
 com.valgolang.errorhandling.syntaxerror
 com.valgolang.errorhandling.warnings
 com.valgolang.frontend
+com.valgolang.frontend.ast
+com.valgolang.frontend.datastructures
+com.valgolang.frontend.datastructures.array
+com.valgolang.frontend.datastructures.binarytree
+com.valgolang.frontend.datastructures.list
+com.valgolang.frontend.datastructures.stack
 com.valgolang.linearrepresentation
 com.valgolang.linearrepresentation.datastructures.array
 com.valgolang.linearrepresentation.datastructures.binarytree
