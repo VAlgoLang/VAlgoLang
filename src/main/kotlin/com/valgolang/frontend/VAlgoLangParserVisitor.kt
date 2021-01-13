@@ -861,6 +861,4 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
 
         return visit(ctx.initialiser_list()) as Array2DInitialiserNode
     }
-
-
 }
