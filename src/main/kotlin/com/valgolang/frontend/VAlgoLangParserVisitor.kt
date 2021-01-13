@@ -857,4 +857,8 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
 
         return visit(ctx.initialiser_list()) as Array2DInitialiserNode
     }
+
+    override fun visitBracketedExpression(ctx: BracketedExpressionContext): ASTNode {
+        return visit(ctx.expr())
+    }
 }
