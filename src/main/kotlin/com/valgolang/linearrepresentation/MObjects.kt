@@ -1,6 +1,6 @@
 package com.valgolang.linearrepresentation
 
-import com.valgolang.frontend.DataStructureType
+import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.stylesheet.StylesheetProperty
 
 /** Objects **/

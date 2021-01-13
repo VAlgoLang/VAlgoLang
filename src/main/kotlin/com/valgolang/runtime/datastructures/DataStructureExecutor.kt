@@ -1,6 +1,15 @@
 package com.valgolang.runtime.datastructures
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.AssignLHS
+import com.valgolang.frontend.ast.EmptyInitialiserNode
+import com.valgolang.frontend.ast.NullType
+import com.valgolang.frontend.ast.NumberNode
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.DataStructureInitialiserNode
+import com.valgolang.frontend.datastructures.array.Array2DInitialiserNode
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeType
 import com.valgolang.linearrepresentation.DataStructureMObject
 import com.valgolang.linearrepresentation.ManimInstr
 import com.valgolang.linearrepresentation.VariableNameGenerator
@@ -74,8 +83,8 @@ fun makeConstructorNode(assignedValue: ExecValue, lineNumber: Int): ConstructorN
         is BinaryTreeValue -> {
             with(assignedValue.manimObject as InitTreeStructure) {
                 val internalType = this.type.internalType
-                val root = ConstructorNode(lineNumber, NodeType(internalType), listOf(makeExpressionNode(assignedValue.value.value, lineNumber)), EmptyInitialiserNode)
-                ConstructorNode(lineNumber, TreeType(internalType), listOf(root), EmptyInitialiserNode)
+                val root = ConstructorNode(lineNumber, BinaryTreeNodeType(internalType), listOf(makeExpressionNode(assignedValue.value.value, lineNumber)), EmptyInitialiserNode)
+                ConstructorNode(lineNumber, BinaryTreeType(internalType), listOf(root), EmptyInitialiserNode)
             }
         }
         /** Extend here with other data structure values **/

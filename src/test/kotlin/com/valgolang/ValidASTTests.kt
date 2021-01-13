@@ -1,6 +1,9 @@
 package com.valgolang
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.MethodCallNode
+import com.valgolang.frontend.datastructures.stack.StackType
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 

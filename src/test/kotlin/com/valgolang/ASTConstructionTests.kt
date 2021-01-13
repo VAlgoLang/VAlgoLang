@@ -1,6 +1,10 @@
 package com.valgolang
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.MethodCallNode
+import com.valgolang.frontend.datastructures.binarytree.BinaryTreeNodeType
+import com.valgolang.frontend.datastructures.stack.StackType
 import junit.framework.TestCase.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -564,7 +568,22 @@ class ASTConstructionTests {
         """.trimIndent()
 
         val statements = listOf<StatementNode>(
-            DeclarationNode(1, IdentifierNode(1, "x"), AddExpression(1, StringNode(1, "tree: "), ConstructorNode(1, NodeType(NumberType), listOf(NumberNode(1, 3.0)), EmptyInitialiserNode))),
+            DeclarationNode(
+                1, IdentifierNode(1, "x"),
+                AddExpression(
+                    1, StringNode(1, "tree: "),
+                    ConstructorNode(
+                        1,
+                        BinaryTreeNodeType(
+                            NumberType
+                        ),
+                        listOf(
+                            NumberNode(1, 3.0)
+                        ),
+                        EmptyInitialiserNode
+                    )
+                )
+            ),
         )
 
         val reference = ProgramNode(listOf(), statements)

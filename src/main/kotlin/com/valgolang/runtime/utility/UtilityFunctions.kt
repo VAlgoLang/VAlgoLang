@@ -1,6 +1,6 @@
 package com.valgolang.runtime.utility
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
 import com.valgolang.linearrepresentation.DataStructureMObject
 import com.valgolang.runtime.*
 import com.valgolang.stylesheet.PositionProperties

@@ -1,7 +1,7 @@
 package com.valgolang.linearrepresentation
 
-import com.valgolang.frontend.ErrorType
 import com.valgolang.frontend.SymbolTableVisitor
+import com.valgolang.frontend.ast.ErrorType
 
 /**
  * Name generator

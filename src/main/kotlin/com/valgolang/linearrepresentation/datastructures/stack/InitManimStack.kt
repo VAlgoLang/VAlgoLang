@@ -1,6 +1,6 @@
 package com.valgolang.linearrepresentation.datastructures.stack
 
-import com.valgolang.frontend.DataStructureType
+import com.valgolang.frontend.datastructures.DataStructureType
 import com.valgolang.linearrepresentation.Color
 import com.valgolang.linearrepresentation.DataStructureMObject
 import com.valgolang.linearrepresentation.TextColor

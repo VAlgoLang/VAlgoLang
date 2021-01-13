@@ -1,6 +1,6 @@
 package com.valgolang.runtime
 
-import com.valgolang.frontend.ErrorType
+import com.valgolang.frontend.ast.ErrorType
 import com.valgolang.linearrepresentation.EmptyMObject
 import com.valgolang.linearrepresentation.MObject
 import kotlin.math.roundToInt

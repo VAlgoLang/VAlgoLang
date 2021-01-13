@@ -1,6 +1,8 @@
 package com.valgolang.runtime.datastructures.binarytree
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.AssignLHS
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.binarytree.*
 import com.valgolang.linearrepresentation.EmptyMObject
 import com.valgolang.linearrepresentation.ManimInstr
 import com.valgolang.linearrepresentation.VariableNameGenerator
@@ -41,7 +43,7 @@ class BinaryTreeExecutor(
 ) : DataStructureExecutor {
 
     override fun executeConstructor(node: ConstructorNode, dsUID: String, assignLHS: AssignLHS): ExecValue {
-        if (node.type is TreeType) {
+        if (node.type is BinaryTreeType) {
             val ident = variableNameGenerator.generateNameFromPrefix("tree")
             val root = frame.executeExpression(node.arguments.first()) as BinaryTreeNodeValue
             val position = stylesheet.getPosition(dsUID)
@@ -133,7 +135,7 @@ class BinaryTreeExecutor(
 
         var parentValue: BinaryTreeNodeValue? = rootNode
         for (access in elemAccessNode.accessChain.take(elemAccessNode.accessChain.size - 1)) {
-            if (access is NodeType.Left && parentValue?.left is BinaryTreeNodeValue) {
+            if (access is BinaryTreeNodeType.Left && parentValue?.left is BinaryTreeNodeValue) {
                 parentValue = parentValue.left as? BinaryTreeNodeValue
             } else if (parentValue?.right is BinaryTreeNodeValue) {
                 parentValue = parentValue.right as? BinaryTreeNodeValue
@@ -149,9 +151,9 @@ class BinaryTreeExecutor(
         )
 
         val accessedValue = when (elemAccessNode.accessChain.last()) {
-            is NodeType.Right -> parentValue.right
-            is NodeType.Left -> parentValue.left
-            is NodeType.Value -> {
+            is BinaryTreeNodeType.Right -> parentValue.right
+            is BinaryTreeNodeType.Left -> parentValue.left
+            is BinaryTreeNodeType.Value -> {
                 if (parentValue.binaryTreeValue?.animatedStyle != null) {
                     linearRepresentation.add(
                         TreeNodeRestyle(
@@ -198,12 +200,12 @@ class BinaryTreeExecutor(
         } else if (parent is BinaryTreeNodeValue) {
             var isLeft = false
             when (binaryTreeElemNode.accessChain.last()) {
-                is NodeType.Left -> {
+                is BinaryTreeNodeType.Left -> {
                     parent.left = childValue
                     childValue.depth = parent.depth + 1
                     isLeft = true
                 }
-                is NodeType.Right -> {
+                is BinaryTreeNodeType.Right -> {
                     parent.right = childValue
                     childValue.depth = parent.depth + 1
                     isLeft = false
@@ -349,7 +351,7 @@ class BinaryTreeExecutor(
             return parent
         else if (parent is BinaryTreeNodeValue) {
             when (binaryTreeElemNode.accessChain.last()) {
-                is NodeType.Left -> {
+                is BinaryTreeNodeType.Left -> {
                     parent.left = NullValue
                     if (parent.binaryTreeValue != null) {
                         linearRepresentation.add(
@@ -363,7 +365,7 @@ class BinaryTreeExecutor(
                         )
                     }
                 }
-                is NodeType.Right -> {
+                is BinaryTreeNodeType.Right -> {
                     parent.right = NullValue
                     if (parent.binaryTreeValue != null) {
                         linearRepresentation.add(

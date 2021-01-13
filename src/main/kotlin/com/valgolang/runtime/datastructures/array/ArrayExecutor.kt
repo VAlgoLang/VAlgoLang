@@ -1,6 +1,14 @@
 package com.valgolang.runtime.datastructures.array
 
-import com.valgolang.frontend.*
+import com.valgolang.frontend.ast.*
+import com.valgolang.frontend.datastructures.ConstructorNode
+import com.valgolang.frontend.datastructures.DataStructureInitialiserNode
+import com.valgolang.frontend.datastructures.MethodCallNode
+import com.valgolang.frontend.datastructures.array.Array2DInitialiserNode
+import com.valgolang.frontend.datastructures.array.ArrayElemNode
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.array.InternalArrayMethodCallNode
+import com.valgolang.frontend.datastructures.list.ListType
 import com.valgolang.linearrepresentation.EmptyMObject
 import com.valgolang.linearrepresentation.ManimInstr
 import com.valgolang.linearrepresentation.VariableNameGenerator

@@ -2,8 +2,8 @@ package com.valgolang.linearrepresentation
 
 import com.valgolang.animation.ManimProjectWriter
 import com.valgolang.animation.ManimWriter
-import com.valgolang.frontend.NumberType
-import com.valgolang.frontend.StackType
+import com.valgolang.frontend.ast.NumberType
+import com.valgolang.frontend.datastructures.stack.StackType
 import com.valgolang.linearrepresentation.datastructures.stack.InitManimStack
 import com.valgolang.linearrepresentation.datastructures.stack.StackPopObject
 import com.valgolang.linearrepresentation.datastructures.stack.StackPushObject

@@ -1,7 +1,7 @@
 
 fun move(n: number, source: Stack<number>, target: Stack<number>, aux: Stack<number>) {
     if(n > 0) {
-        stepOver {
+        @stepOver {
         move(n - 1, source, aux, target);
         target.push(source.pop());
         move(n - 1, aux, target, source);

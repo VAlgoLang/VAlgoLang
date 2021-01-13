@@ -3,8 +3,26 @@ package com.valgolang.frontend
 import antlr.VAlgoLangParser.*
 import antlr.VAlgoLangParserBaseVisitor
 import com.valgolang.errorhandling.semanticerror.incompatibleOperatorTypeError
+import com.valgolang.frontend.ast.*
+import com.valgolang.frontend.datastructures.*
+import com.valgolang.frontend.datastructures.array.Array2DInitialiserNode
+import com.valgolang.frontend.datastructures.array.ArrayElemNode
+import com.valgolang.frontend.datastructures.array.ArrayType
+import com.valgolang.frontend.datastructures.array.InternalArrayMethodCallNode
+import com.valgolang.frontend.datastructures.binarytree.*
+import com.valgolang.frontend.datastructures.list.ListType
+import com.valgolang.frontend.datastructures.stack.StackType
 import java.util.*
 
+/**
+ * VAlgoLang parser visitor
+ *
+ * This class implements the VAlgoLangParserBaseVisitor abstract class returning an abstract syntax tree(AST).
+ * Here it traverses the concrete syntax tree (parse tree) to perform semantic analysis,
+ * construct the line to statement node map (lineNumberNodeMap) and the AST.
+ *
+ * @constructor Create empty V algo lang parser visitor
+ */
 class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
     val symbolTable = SymbolTableVisitor()
 
@@ -252,12 +270,6 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return visit(ctx.method_call())
     }
 
-    override fun visitCommentStatement(ctx: CommentStatementContext): CommentNode {
-        // Command command given for render purposes
-        lineNumberNodeMap[ctx.start.line] = CommentNode(ctx.start.line, ctx.STRING().text)
-        return lineNumberNodeMap[ctx.start.line] as CommentNode
-    }
-
     override fun visitWhileStatement(ctx: WhileStatementContext): ASTNode {
         val whileScope = symbolTable.enterScope()
         val whileCondition = visit(ctx.whileCond) as ExpressionNode
@@ -408,7 +420,26 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return elifNode
     }
 
+    override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
+        return visit(ctx.loop_stat()) as LoopStatementNode
+    }
+
+    override fun visitBreakStatement(ctx: BreakStatementContext): BreakNode {
+        val inLoop = loopLineNumberStack.isNotEmpty()
+        val endLineNumber = if (inLoop) loopLineNumberStack.peek().second else -1
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("break", inLoop, ctx)
+        return BreakNode(ctx.start.line, endLineNumber)
+    }
+
+    override fun visitContinueStatement(ctx: ContinueStatementContext): ContinueNode {
+        val inLoop = loopLineNumberStack.isNotEmpty()
+        val startLineNumber = if (inLoop) loopLineNumberStack.peek().first else -1
+        semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
+        return ContinueNode(ctx.start.line, startLineNumber)
+    }
+
     /** Annotations **/
+
     override fun visitCodeTrackingAnnotation(ctx: CodeTrackingAnnotationContext): CodeTrackingNode {
         val isStepInto = ctx.step.type == STEP_INTO
 
@@ -652,6 +683,75 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return unaryOpExpr
     }
 
+    override fun visitArray_elem(ctx: Array_elemContext): ArrayElemNode {
+        val arrayIdentifier = ctx.IDENT().symbol.text
+        val indices = ctx.expr().map { visit(it) as ExpressionNode }
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
+        val type = symbolTable.getTypeOf(arrayIdentifier)
+
+        val internalType = when (type) {
+            is ArrayType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
+                type.internalType
+            }
+            is StringType -> {
+                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, false, ctx)
+                CharType
+            }
+            else -> {
+                incompatibleOperatorTypeError("[]", type, ctx = ctx)
+                ErrorType
+            }
+        }
+
+        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
+        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
+    }
+
+    override fun visitNode_elem(ctx: Node_elemContext): ASTNode {
+        val identifier = ctx.IDENT().symbol.text
+
+        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
+        semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
+
+        val identifierType = symbolTable.getTypeOf(identifier)
+
+        val accessChain = if (ctx.node_elem_access() != null) {
+            val list = mutableListOf<DataStructureMethod>()
+            var type = identifierType
+            for (m in ctx.node_elem_access()) {
+                val member = visitNodeElemAccess(m, identifier, type)
+                list.add(member)
+                type = member.returnType
+            }
+            list
+        } else {
+            mutableListOf()
+        }
+
+        return if (accessChain.first() is BinaryTreeType.Root) {
+            accessChain.removeFirst()
+            BinaryTreeRootAccessNode(
+                ctx.start.line,
+                identifier,
+                BinaryTreeNodeElemAccessNode(ctx.start.line, "root", accessChain)
+            )
+        } else {
+            BinaryTreeNodeElemAccessNode(ctx.start.line, identifier, accessChain)
+        }
+    }
+
+    private fun visitNodeElemAccess(ctx: Node_elem_accessContext, ident: String, type: Type): DataStructureMethod {
+        val child = ctx.IDENT().text
+        return if (type is DataStructureType) {
+            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, ident, child, ctx, type)
+            type.getMethodByName(child)
+        } else {
+            ErrorMethod
+        }
+    }
+
     /** Literals **/
 
     override fun visitNumberLiteral(ctx: NumberLiteralContext): NumberNode {
@@ -719,6 +819,27 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return arrayType
     }
 
+    override fun visitNodeType(ctx: NodeTypeContext): BinaryTreeNodeType {
+        return visit(ctx.node_type()) as BinaryTreeNodeType
+    }
+
+    override fun visitNode_type(ctx: Node_typeContext): BinaryTreeNodeType {
+        val elementType = visit(ctx.primitive_type()) as PrimitiveType
+        return BinaryTreeNodeType(elementType)
+    }
+
+    override fun visitTreeType(ctx: TreeTypeContext): BinaryTreeType {
+        return BinaryTreeType(visit(ctx.node_type()) as BinaryTreeNodeType)
+    }
+
+    override fun visitListType(ctx: ListTypeContext): ASTNode {
+        val elementType = visit(ctx.type()) as Type
+        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(elementType, ctx)
+        return ListType(elementType)
+    }
+
+    /** Data structure Initialisers **/
+
     override fun visitInitialiser_list(ctx: Initialiser_listContext): Array2DInitialiserNode {
         return Array2DInitialiserNode(
             (
@@ -735,111 +856,5 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         }
 
         return visit(ctx.initialiser_list()) as Array2DInitialiserNode
-    }
-
-    override fun visitArray_elem(ctx: Array_elemContext): ArrayElemNode {
-        val arrayIdentifier = ctx.IDENT().symbol.text
-        val indices = ctx.expr().map { visit(it) as ExpressionNode }
-
-        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, arrayIdentifier, ctx)
-        val type = symbolTable.getTypeOf(arrayIdentifier)
-
-        val internalType = when (type) {
-            is ArrayType -> {
-                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, type.is2D, ctx)
-                type.internalType
-            }
-            is StringType -> {
-                semanticAnalyser.checkArrayElemHasCorrectNumberOfIndices(indices, false, ctx)
-                CharType
-            }
-            else -> {
-                incompatibleOperatorTypeError("[]", type, ctx = ctx)
-                ErrorType
-            }
-        }
-
-        semanticAnalyser.checkArrayElemIndexTypes(indices, symbolTable, ctx)
-        return ArrayElemNode(ctx.start.line, arrayIdentifier, indices, internalType)
-    }
-
-    override fun visitNodeType(ctx: NodeTypeContext): NodeType {
-        return visit(ctx.node_type()) as NodeType
-    }
-
-    override fun visitNode_type(ctx: Node_typeContext): NodeType {
-        val elementType = visit(ctx.primitive_type()) as PrimitiveType
-        return NodeType(elementType)
-    }
-
-    override fun visitTreeType(ctx: TreeTypeContext): TreeType {
-        return TreeType(visit(ctx.node_type()) as NodeType)
-    }
-
-    override fun visitNode_elem(ctx: Node_elemContext): ASTNode {
-        val identifier = ctx.IDENT().symbol.text
-
-        semanticAnalyser.undeclaredIdentifierCheck(symbolTable, identifier, ctx)
-        semanticAnalyser.notDataStructureCheck(symbolTable, identifier, ctx)
-
-        val identifierType = symbolTable.getTypeOf(identifier)
-
-        val accessChain = if (ctx.node_elem_access() != null) {
-            val list = mutableListOf<DataStructureMethod>()
-            var type = identifierType
-            for (m in ctx.node_elem_access()) {
-                val member = visitNodeElemAccess(m, identifier, type)
-                list.add(member)
-                type = member.returnType
-            }
-            list
-        } else {
-            mutableListOf()
-        }
-
-        return if (accessChain.first() is TreeType.Root) {
-            accessChain.removeFirst()
-            BinaryTreeRootAccessNode(
-                ctx.start.line,
-                identifier,
-                BinaryTreeNodeElemAccessNode(ctx.start.line, "root", accessChain)
-            )
-        } else {
-            BinaryTreeNodeElemAccessNode(ctx.start.line, identifier, accessChain)
-        }
-    }
-
-    private fun visitNodeElemAccess(ctx: Node_elem_accessContext, ident: String, type: Type): DataStructureMethod {
-        val child = ctx.IDENT().text
-        return if (type is DataStructureType) {
-            semanticAnalyser.notValidMethodNameForDataStructureCheck(symbolTable, ident, child, ctx, type)
-            type.getMethodByName(child)
-        } else {
-            ErrorMethod
-        }
-    }
-
-    override fun visitLoopStatement(ctx: LoopStatementContext): LoopStatementNode {
-        return visit(ctx.loop_stat()) as LoopStatementNode
-    }
-
-    override fun visitBreakStatement(ctx: BreakStatementContext): BreakNode {
-        val inLoop = loopLineNumberStack.isNotEmpty()
-        val endLineNumber = if (inLoop) loopLineNumberStack.peek().second else -1
-        semanticAnalyser.breakOrContinueOutsideLoopCheck("break", inLoop, ctx)
-        return BreakNode(ctx.start.line, endLineNumber)
-    }
-
-    override fun visitContinueStatement(ctx: ContinueStatementContext): ContinueNode {
-        val inLoop = loopLineNumberStack.isNotEmpty()
-        val startLineNumber = if (inLoop) loopLineNumberStack.peek().first else -1
-        semanticAnalyser.breakOrContinueOutsideLoopCheck("continue", inLoop, ctx)
-        return ContinueNode(ctx.start.line, startLineNumber)
-    }
-
-    override fun visitListType(ctx: ListTypeContext): ASTNode {
-        val elementType = visit(ctx.type()) as Type
-        semanticAnalyser.primitiveInternalTypeForDataStructureCheck(elementType, ctx)
-        return ListType(elementType)
     }
 }
