@@ -70,6 +70,7 @@ expr: NUMBER                                                        #NumberLiter
     | left=expr binary_operator=(EQ | NEQ) right=expr               #BinaryExpression
     | left=expr binary_operator=(AND | OR) right=expr               #BinaryExpression
     | cast_method OPEN_PARENTHESIS expr CLOSE_PARENTHESIS          #CastExpression
+    | OPEN_PARENTHESIS expr CLOSE_PARENTHESIS                       #BracketedExpression
     ;
 
 

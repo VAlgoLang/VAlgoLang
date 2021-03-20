@@ -131,6 +131,10 @@ class VAlgoLangParserVisitor : VAlgoLangParserBaseVisitor<ASTNode>() {
         return CastExpressionNode(ctx.start.line, targetType, expr)
     }
 
+    override fun visitBracketedExpression(ctx: BracketedExpressionContext): ExpressionNode {
+        return visit(ctx.expr()) as ExpressionNode
+    }
+
     /** Statements **/
 
     override fun visitSleepStatement(ctx: SleepStatementContext): SleepNode {
