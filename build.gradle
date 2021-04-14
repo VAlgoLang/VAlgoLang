@@ -18,9 +18,16 @@ repositories {
 
 task buildAntlr() {
     println 'Compiling Antlr Parser'
-    exec {
-        workingDir 'antlr_config'
-        commandLine './antlrBuild'
+    if (System.getProperty('os.name').toLowerCase().contains("windows")) {
+        exec {
+            workingDir 'antlr_config'
+            commandLine 'cmd', '/c', 'antlrBuild.bat'
+        }
+    } else {
+        exec {
+            workingDir 'antlr_config'
+            commandLine './antlrBuild'
+        }
     }
 }
 
@@ -56,6 +63,7 @@ jar {
         attributes 'Main-Class': 'com.valgolang.CompilerKt'
     }
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    exclude "**/module-info.class"
 }
 
 
