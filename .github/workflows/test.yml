@@ -16,9 +16,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - uses: DeLaGuardo/setup-graalvm@2.0
+      - uses: DeLaGuardo/setup-graalvm@4.0
         with:
-          graalvm-version: '19.3.0.2.java11'
+          graalvm: '19.3.0.2'
+          java: 'java8'
       - run: java -version
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         run: |
