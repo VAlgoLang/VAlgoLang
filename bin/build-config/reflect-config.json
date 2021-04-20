@@ -1,0 +1,157 @@
+[
+  {
+    "name": "com.valgolang.AnimationQuality",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "com.valgolang.DSLCommandLineArguments",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "boundaries"
+      },
+      {
+        "name": "file"
+      },
+      {
+        "name": "manim"
+      },
+      {
+        "name": "output"
+      },
+      {
+        "name": "python"
+      },
+      {
+        "name": "stylesheet"
+      }
+    ],
+    "methods": [
+      {
+        "name": "open_file",
+        "parameterTypes": [
+          "boolean"
+        ]
+      },
+      {
+        "name": "preview",
+        "parameterTypes": [
+          "boolean"
+        ]
+      },
+      {
+        "name": "progressBars",
+        "parameterTypes": [
+          "boolean"
+        ]
+      },
+      {
+        "name": "quality",
+        "parameterTypes": [
+          "com.valgolang.AnimationQuality"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.util.Collections$UnmodifiableRandomAccessList",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
+  {
+    "name": "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "fields": [
+      {
+        "name": "helpRequested"
+      },
+      {
+        "name": "versionRequested"
+      }
+    ]
+  },
+  {
+    "name": "kotlin.reflect.jvm.internal.ReflectionFactoryImpl",
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "kotlin.KotlinVersion",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "kotlin.KotlinVersion[]"
+  },
+  {
+    "name": "java.lang.Boolean[]"
+  },
+  {
+    "name": "java.lang.String[]"
+  },
+  {
+    "name": "java.lang.Double[]"
+  },
+  {
+    "name": "kotlin.KotlinVersion$Companion"
+  },
+  {
+    "name": "kotlin.KotlinVersion$Companion[]"
+  },
+  {
+    "name": "com.valgolang.stylesheet.StyleProperties",
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true,
+    "allDeclaredClasses": true,
+    "allPublicClasses": true
+  },
+  {
+    "name": "com.valgolang.stylesheet.DefaultStyleProperties",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "com.valgolang.stylesheet.AnimationProperties[]",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "com.valgolang.stylesheet.AnimationProperties",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "com.valgolang.stylesheet.DefaultAnimationProperties",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  },
+  {
+    "name": "com.valgolang.stylesheet.PositionProperties",
+    "allPublicMethods": true,
+    "allDeclaredFields": true,
+    "allDeclaredMethods": true,
+    "allDeclaredConstructors": true
+  }
+]
