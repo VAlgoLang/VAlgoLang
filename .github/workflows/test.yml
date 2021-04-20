@@ -29,8 +29,9 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - uses: DeLaGuardo/setup-graalvm@2.0
+        if: ${{ matrix.os == 'windows-2016' }}
         with:
-          graalvm: '21.0.0.2'
+          graalvm-version: '21.0.0.2'
       - run: java -version
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         run: |
