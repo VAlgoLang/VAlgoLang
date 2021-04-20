@@ -24,6 +24,7 @@ jobs:
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         run: |
           choco install visualstudio2017-workload-vctools
+          choco install -d windows-sdk-7.1 kb2519277
       - name: set env variables and run the Gradle build
         shell: cmd
         run: |
