@@ -34,6 +34,7 @@ jobs:
           graalvm-version: '21.0.0.2'
       - run: java -version
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
+        if: ${{ matrix.os == 'windows-2016' }}
         run: |
           choco install visualstudio2017-workload-vctools
       - name: "Build Native Image (Windows)"
