@@ -32,6 +32,7 @@ jobs:
         if: ${{ matrix.os == 'windows-2016' }}
         with:
           graalvm-version: '21.0.0.2'
+          java: 'java8'
       - run: java -version
       - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
         if: ${{ matrix.os == 'windows-2016' }}
