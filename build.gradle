@@ -4,6 +4,8 @@ plugins {
     id 'org.jmailen.kotlinter' version '3.2.0'
     id "nebula.ospackage" version "8.4.1"
     id("org.jetbrains.dokka") version "1.4.20"
+    id "com.palantir.graal" version "0.7.2"
+    id "org.jetbrains.kotlin.kapt" version "1.4.32"
 }
 
 group 'org.example'
@@ -79,6 +81,9 @@ dependencies {
     compile fileTree(dir: 'lib', include: ['*.jar'])
     compile 'info.picocli:picocli:4.5.1'
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.4.10"
+    kapt 'info.picocli:picocli-codegen:4.6.1'
+    implementation 'info.picocli:picocli:4.6.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.6.1'
 }
 
 compileKotlin {
@@ -88,6 +93,12 @@ compileKotlin {
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+}
+
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
 }
 
 kotlinter {
@@ -104,3 +115,15 @@ test () {
         events ("passed", "skipped", "failed")
     }
 }
+
+graal {
+    mainClass 'com.valgolang.CompilerKt'
+    outputName 'valgolang'
+    nativeImage {
+        option "-H:+ReportExceptionStackTraces"
+        option "-H:ResourceConfigurationFiles=bin/build-config/resource-config.json"
+        option "-H:ReflectionConfigurationFiles=bin/build-config/reflect-config.json"
+        option "--no-fallback"
+    }
+}
+

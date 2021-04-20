@@ -292,7 +292,7 @@ class Stylesheet(private val stylesheetPath: String?, private val symbolTableVis
  */
 inline infix fun <reified T : Any> T.merge(other: T): T {
     val propertiesByName = T::class.declaredMemberProperties.associateBy { it.name }
-    val primaryConstructor = T::class.primaryConstructor
+    val primaryConstructor = T::class.primaryConstructor ?: T::class.constructors.toList().find { function -> function.parameters.isEmpty() }
         ?: throw IllegalArgumentException("merge type must have a primary constructor")
     val args = primaryConstructor.parameters.associateWith { parameter ->
         val property = propertiesByName[parameter.name]
