@@ -11,7 +11,7 @@ jobs:
     name: "Pre Release"
 
     runs-on: ${{ matrix.os }}
-      strategy:
+    strategy:
         matrix:
           os: [ macos-latest, ubuntu-latest, windows-latest ]
 
