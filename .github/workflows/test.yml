@@ -40,9 +40,10 @@ jobs:
           native-image: true
       - name: "Build Native Image (Windows)"
         if: ${{ matrix.os == 'windows-2016' }}
+        shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
-          ./gradlew clean nativeImage
+          gradlew.bat clean nativeImage
       - name: "Build Native Image"
         if: ${{ matrix.os != 'windows-2016' }}
         run: |
