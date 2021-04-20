@@ -28,11 +28,16 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Set up Visual C Build Tools Workload for Visual Studio 2017 Build Tools
+      - uses: ilammy/msvc-dev-cmd@v1.5.0
         if: ${{ matrix.os == 'windows-latest' }}
-        run: |
-            choco install visualstudio2017-workload-vctools
-            call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+      - uses: microsoft/setup-msbuild@v1
+        if: ${{ matrix.os == 'windows-latest' }}
+      - uses: ayltai/setup-graalvm@v1
+        if: ${{ matrix.os == 'windows-latest' }}
+        with:
+          java-version: 8
+          graalvm-version: 20.3.0
+          native-image: true
       - name: "Build Native Image"
         run: |
           ./gradlew clean nativeImage
