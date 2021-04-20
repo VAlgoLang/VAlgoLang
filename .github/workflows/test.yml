@@ -28,7 +28,7 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - uses: DeLaGuardo/setup-graalvm@2.0
+      - uses: DeLaGuardo/setup-graalvm@4.0
         if: ${{ matrix.os == 'windows-2016' }}
         with:
           graalvm: '21.0.0.2'
