@@ -1,0 +1,36 @@
+{
+  "bundles": [
+  ],
+  "resources": [
+    {
+      "pattern": "python/util.py"
+    },
+    {
+      "pattern": "python/array.py"
+    },
+    {
+      "pattern": "python/binary_tree.py"
+    },
+    {
+      "pattern": "python/code_block.py"
+    },
+    {
+      "pattern": "python/data_structure.py"
+    },
+    {
+      "pattern": "python/rectangle.py"
+    },
+    {
+      "pattern": "python/stack.py"
+    },
+    {
+      "pattern": "python/subtitles.py"
+    },
+    {
+      "pattern": "python/variable_block.py"
+    },
+    {"pattern":"META-INF/.*.kotlin_module$"},
+    {"pattern":"META-INF/services/.*"},
+    {"pattern":".*.kotlin_builtins"}
+  ]
+}

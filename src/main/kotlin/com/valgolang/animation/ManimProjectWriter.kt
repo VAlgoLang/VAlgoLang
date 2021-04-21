@@ -26,7 +26,7 @@ class ManimProjectWriter(private val pythonCode: String) {
             File(fileName).writeText(pythonCode)
             fileName
         } else {
-            val tempFile = createTempFile(suffix = ".py")
+            val tempFile = File.createTempFile("tmp", ".py")
             tempFile.writeText(pythonCode)
             tempFile.path
         }
