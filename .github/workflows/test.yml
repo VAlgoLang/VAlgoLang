@@ -7,13 +7,31 @@ on:
       - "native-builds"
 
 jobs:
+
+  release:
+    name: Create Github Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: release-drafter/release-drafter@v5
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
+
   pre-release:
     name: "Pre Release"
-
     runs-on: ${{ matrix.os }}
     strategy:
-        matrix:
-          os: [ macos-latest, ubuntu-latest ]
+      matrix:
+        os: [ macos-latest, ubuntu-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -30,16 +48,38 @@ jobs:
       - name: "Build Native Image"
         run: |
           ./gradlew clean nativeImage
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        run: |
+          echo ::set-output name=file_name::${REPOSITORY_NAME##*/}-${TAG_REF_NAME##*/v} # RepositoryName-v1.0.0
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+        env:
+          TAG_REF_NAME: ${{ github.ref }}
+          REPOSITORY_NAME: ${{ github.repository }}
       - name: "Rename executable"
         shell: bash
         run: |
           value=`cp build/graal/valgolang build/graal/valgolang-${{ matrix.os }}`
-      - uses: "marvinpinto/action-automatic-releases@latest"
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          prerelease: true
-          title: "Development Build"
-          files: |
-            build/graal/valgolang-*
-            build/libs/*.jar
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: build/graal/valgolang-${{ matrix.os }}
+          asset_name: valgolang-${{ matrix.os }}
+#      - uses: "marvinpinto/action-automatic-releases@latest"
+#        with:
+#          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+#          automatic_release_tag: "latest"
+#          prerelease: true
+#          title: "Development Build"
+#          files: |
+#            build/graal/valgolang-*
+#            build/libs/*.jar
