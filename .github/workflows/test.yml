@@ -15,6 +15,8 @@ jobs:
       - name: Create Release
         id: create_release
         uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Output Release URL File
@@ -26,7 +28,7 @@ jobs:
           path: release_url.txt
 
   pre-release:
-    needs: [release]
+    needs: [ release ]
     name: "Pre Release"
     runs-on: ${{ matrix.os }}
     strategy:
