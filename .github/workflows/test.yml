@@ -27,6 +27,7 @@ jobs:
           path: release_url.txt
 
   pre-release:
+    needs: [release]
     name: "Pre Release"
     runs-on: ${{ matrix.os }}
     strategy:
