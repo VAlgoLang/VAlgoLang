@@ -120,7 +120,6 @@ graal {
     mainClass 'com.valgolang.CompilerKt'
     outputName 'valgolang'
     nativeImage {
-        option "-H:+ReportExceptionStackTraces"
         option "-H:ResourceConfigurationFiles=bin/build-config/resource-config.json"
         option "-H:ReflectionConfigurationFiles=bin/build-config/reflect-config.json"
         option "--no-fallback"
